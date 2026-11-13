@@ -112,9 +112,28 @@ function renderVideoTabs() {
   $('#vidTabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; V.tab = b.dataset.v; $$('#vidTabs button').forEach(x => x.classList.toggle('on', x === b)); renderVideos(); };
 }
 const isNew = v => Date.now() - new Date(v.published) < 3 * 86400e3;
-const vidCard = (v, big = false) => `
-  <button class="vid ${big ? 'big' : ''}" data-id="${esc(v.id)}" data-short="${v.short ? 1 : ''}" data-title="${esc(v.title)}">
-    <div class="thumb"><img src="${big ? v.thumb.replace('hqdefault', 'maxresdefault') : v.thumb}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${v.thumb}'">${isNew(v) ? '<span class="badge new">NEW</span>' : ''}</div>
+// 유튜브 썸네일: 기본(hqdefault)은 4:3이라 16:9 칸에 넣으면 잘리거나 검은 띠가 보임
+// → 16:9 원본(maxres / hq720 / mq)을 쓰고, 없으면 다음 후보로 넘어감
+const ytImg = (id, name) => `https://i.ytimg.com/vi/${encodeURIComponent(id)}/${name}.jpg`;
+function thumbTag(v, size = 'md') {
+  const chain = v.short ? ['hqdefault'] // 세로 칸에 가운데를 채우면 쇼츠 화면과 딱 맞음
+    : size === 'lg' ? ['maxresdefault', 'hq720', 'mqdefault']
+    : size === 'sm' ? ['mqdefault'] : ['hq720', 'mqdefault'];
+  const [first, ...rest] = chain.map(n => ytImg(v.id, n));
+  return `<img src="${first}" data-fb="${rest.join(' ')}" alt="" loading="lazy">`;
+}
+function nextThumb(img) {
+  const [n, ...rest] = (img.dataset.fb || '').split(' ').filter(Boolean);
+  if (!n) { delete img.dataset.fb; return; }
+  img.dataset.fb = rest.join(' ');
+  img.src = n;
+}
+// 없는 썸네일은 오류 대신 120×90 회색 이미지가 오기도 해서 크기로도 확인
+document.addEventListener('load', e => { const t = e.target; if (t.tagName === 'IMG' && 'fb' in t.dataset && t.naturalWidth <= 120) nextThumb(t); }, true);
+document.addEventListener('error', e => { const t = e.target; if (t.tagName === 'IMG' && 'fb' in t.dataset) nextThumb(t); }, true);
+const vidCard = (v, size = 'md') => `
+  <button class="vid ${size === 'lg' ? 'big' : ''}" data-id="${esc(v.id)}" data-short="${v.short ? 1 : ''}" data-title="${esc(v.title)}">
+    <div class="thumb">${thumbTag(v, size)}${isNew(v) ? '<span class="badge new">NEW</span>' : ''}</div>
     <div class="info"><div class="title">${esc(v.title)}</div><div class="sub">조회수 ${num(v.views)}회 · ${ago(v.published)}</div></div>
   </button>`;
 function renderVideos() {
@@ -128,14 +147,14 @@ function renderVideos() {
     const max = list[0].views || 1;
     area.innerHTML = `<div class="pop-list">${list.slice(0, 10).map((v, i) => `
       <button class="pop" data-id="${esc(v.id)}" data-short="${v.short ? 1 : ''}" data-title="${esc(v.title)}">
-        <span class="rank">${i + 1}</span><img src="${v.thumb}" alt="" loading="lazy">
+        <span class="rank">${i + 1}</span>${thumbTag({ ...v, short: false }, 'sm')}
         <span><div class="title">${esc(v.title)}</div><div class="sub">조회수 ${num(v.views)}회 · ${ago(v.published)}</div><div class="views-bar"><i style="width:${(v.views / max) * 100}%"></i></div></span>
       </button>`).join('')}</div>`;
   } else if (V.tab === 'shorts') {
     area.innerHTML = `<div class="video-grid shorts">${list.slice(0, 12).map(v => vidCard({ ...v, short: true })).join('')}</div>`;
   } else {
     const [first, ...rest] = list;
-    area.innerHTML = `<div class="featured">${vidCard(first, true)}<div class="feat-side">${rest.slice(0, 3).map(v => vidCard(v)).join('')}</div></div>
+    area.innerHTML = `<div class="featured">${vidCard(first, 'lg')}<div class="feat-side">${rest.slice(0, 3).map(v => vidCard(v, 'sm')).join('')}</div></div>
       <div class="video-grid">${rest.slice(3, 11).map(v => vidCard(v)).join('')}</div>`;
   }
 }
@@ -185,7 +204,7 @@ function dayItems(y, m, d) {
     items.push({ ...p, sub: p.type === 'off' ? '이 날은 쉬어요' : p.type === 'event' ? [p.timed ? hhmm(p.at) : '', p.note].filter(Boolean).join(' · ') : `${hhmm(p.at)} · 치지직`, url: p.url || (p.type === 'plan' ? S.cfg.chzzk.url : null) });
   }
   for (const c of S.yt?.channels || []) for (const v of [...(c.videos || []), ...(c.shorts || [])]) {
-    if (keyOf(new Date(v.published)) === key) items.push({ type: 'yt', at: +new Date(v.published), title: v.title, sub: `${c.name} · ${v.short ? '쇼츠' : '영상'} 업로드 · ${hhmm(new Date(v.published))}`, url: v.url, thumb: v.thumb });
+    if (keyOf(new Date(v.published)) === key) items.push({ type: 'yt', at: +new Date(v.published), title: v.title, sub: `${c.name} · ${v.short ? '쇼츠' : '영상'} 업로드 · ${hhmm(new Date(v.published))}`, url: v.url, thumb: ytImg(v.id, 'mqdefault') });
   }
   return items.sort((a, b) => (a.at || 0) - (b.at || 0));
 }

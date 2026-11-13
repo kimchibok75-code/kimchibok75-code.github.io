@@ -170,6 +170,9 @@ main, .footer { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
 .seg button.on { background: var(--text); color: var(--bg); }
 .seg button:not(.on):hover { color: var(--text); }
 .seg-sub { margin-bottom: 18px; }
+#videos .seg { display: flex; width: fit-content; }
+.seg-ch { margin-bottom: 10px; }
+.seg-ch button { font-size: 15px; padding: 8px 18px; }
 
 /* 영상 */
 .featured { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; margin-bottom: 16px; }
@@ -186,13 +189,12 @@ main, .footer { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
 .vid .badge.new { background: var(--accent); color: var(--accent-ink); }
 .feat-side { display: grid; gap: 12px; align-content: start; }
 .feat-side .vid { display: grid; grid-template-columns: 150px 1fr; }
-.feat-side .vid .thumb { aspect-ratio: 16 / 10; }
+.feat-side .vid .thumb { aspect-ratio: 16 / 9; align-self: center; }
 .feat-side .vid .info { padding: 10px 12px; }
 .video-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 .video-grid.shorts { grid-template-columns: repeat(6, 1fr); }
 .video-grid.shorts .thumb { aspect-ratio: 9 / 16; }
-.video-grid.shorts .thumb img { object-position: center; transform: scale(1.34); }
-.video-grid.shorts .vid:hover .thumb img { transform: scale(1.4); }
+.video-grid.shorts .thumb img { object-position: center; }
 
 /* 인기 순위 */
 .pop-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; counter-reset: pop; }
