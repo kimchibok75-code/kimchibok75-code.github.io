@@ -311,6 +311,22 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
 .hub-rank small { display: block; font-size: 13.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hub-rank span { min-width: 0; }
 
+/* 홈: 팬카페 최신글 */
+.cafe-feed { margin-top: 16px; padding: 22px 24px; }
+.cafe-feed-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.cafe-feed-head strong { font-size: 20px; }
+.cafe-feed-head p { margin: 2px 0 0; font-size: 15px; }
+.cafe-feed .chips { margin: 14px 0 8px; }
+.cafe-feed .chip { padding: 6px 12px; font-size: 14px; }
+.cafe-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; }
+.cafe-list a { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: var(--radius-sm); transition: background .2s; }
+.cafe-list a:hover { background: var(--glass-hover); }
+.cafe-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.cafe-meta { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.cafe-text strong { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cafe-text small { font-size: 13.5px; }
+.cafe-list img { width: 64px; height: 64px; object-fit: cover; border-radius: 12px; flex: none; background: #0002; }
+
 /* 별도 페이지 상단 */
 .page-top { padding-top: 28px; }
 .page-title { margin: 6px 0 0; font-size: clamp(30px, 4vw, 42px); letter-spacing: -0.03em; font-weight: 800; }
@@ -414,7 +430,7 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
   .mod-toolbar { grid-template-columns: 1fr 1fr; }
   .mod-toolbar #modSort { grid-column: 1 / -1; }
   .mod-grid { grid-template-columns: 1fr; }
-  .community, .hub { grid-template-columns: 1fr; }
+  .community, .hub, .cafe-list { grid-template-columns: 1fr; }
   .comm-card { padding: 20px; }
   .day { aspect-ratio: 1 / 1.05; padding: 4px; border-radius: 9px; }
   .day .tag { display: none; }

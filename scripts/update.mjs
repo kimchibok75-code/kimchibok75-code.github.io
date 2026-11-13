@@ -164,8 +164,37 @@ async function updateMods() {
   await enrichAndSave(db);
 }
 
+// ───────────────────────────── 팬카페 최신글 ─────────────────────────────
+// 네이버 카페 공개 게시판의 최신글 목록 (로그인 불필요, 비공개 게시판 글은 원래 안 나옴)
+async function updateCafe() {
+  const slug = new URL(config.cafe.url).pathname.replace(/\//g, '');
+  const gate = await get(`https://apis.naver.com/cafe-web/cafe2/CafeGateInfo.json?cluburl=${slug}`, { type: 'json' });
+  const cafeId = gate?.message?.result?.cafeInfoView?.cafeId || gate?.message?.result?.cafeId || config.cafe.id;
+  if (!cafeId) throw new Error('카페 번호를 못 찾음');
+  const j = await get(`https://apis.naver.com/cafe-web/cafe-boardlist-api/v1/cafes/${cafeId}/menus/0/articles?page=1&pageSize=20&sortBy=TIME&viewType=L`, { type: 'json' });
+  const items = (j?.result?.articleList || []).filter(a => a.type === 'ARTICLE' && !a.item?.blindArticle).map(({ item: a }) => ({
+    id: a.articleId,
+    title: a.subject,
+    board: (a.menuName || '').trim(),
+    head: a.headName || null,
+    author: a.writerInfo?.nickName || '',
+    time: a.writeDateTimestamp,
+    comments: a.commentCount || 0,
+    views: a.readCount || 0,
+    likes: a.likeCount || 0,
+    image: !!a.hasImage,
+    thumb: a.representImage || null,
+    url: `${config.cafe.url.replace(/\/$/, '')}/${a.articleId}`,
+  })).filter(a => a.title);
+  if (!items.length) throw new Error('글 목록이 비어 있음');
+  // 조회수는 자주 바뀌어서 매번 커밋되지 않도록 저장하지 않음
+  for (const a of items) delete a.views;
+  writeJson('cafe.json', { updatedAt: Date.now(), cafeId, url: config.cafe.url, items });
+  console.log(`[cafe] 최신글 ${items.length}개: ${items.slice(0, 3).map(a => a.title).join(' / ')}`);
+}
+
 // ───────────────────────────── 실행 ─────────────────────────────
-const jobs = { youtube: updateYoutube, live: updateLive, workshop: updateWorkshop, mods: updateMods };
+const jobs = { youtube: updateYoutube, live: updateLive, workshop: updateWorkshop, mods: updateMods, cafe: updateCafe };
 let failed = 0;
 for (const [name, fn] of Object.entries(jobs)) {
   if (!want(name)) continue;

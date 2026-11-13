@@ -473,6 +473,37 @@ function renderHub() {
   $('#hubRank').innerHTML = top.map(m => `<li><b>${m.rank}</b><span><strong>${esc(m.title)}</strong><small>${esc(m.ko || m.summary || '')}</small></span></li>`).join('') || '<li class="muted">순위를 불러오지 못했어요</li>';
 }
 
+// ───────── 홈: 팬카페 최신글 ─────────
+const CF = { board: '' };
+const boardName = b => b.replace(/^[^\p{L}\p{N}]+/u, '').trim() || b; // 앞쪽 이모지 떼기
+function renderCafe() {
+  const items = S.cafe?.items || [];
+  if (!items.length) return;
+  $('#cafeFeed').hidden = false;
+  $('#cafeMore').href = S.cafe.url || S.cfg.cafe.url;
+  // 글이 많은 게시판 5개만 필터로 노출
+  const cnt = {}; items.forEach(a => { cnt[a.board] = (cnt[a.board] || 0) + 1; });
+  const boards = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]).slice(0, 5);
+  $('#cafeBoards').innerHTML = ['', ...boards].map(b => `<button class="chip${CF.board === b ? ' on' : ''}" data-b="${esc(b)}">${b ? esc(b) : '전체'}</button>`).join('');
+  const list = items.filter(a => !CF.board || a.board === CF.board).slice(0, 8);
+  $('#cafeList').innerHTML = list.map(a => `
+    <li><a href="${esc(a.url)}" target="_blank" rel="noopener">
+      <span class="cafe-text">
+        <span class="cafe-meta"><span class="pill${/공지/.test(a.board) ? ' acc' : ''}">${esc(boardName(a.board))}</span>${a.head ? `<span class="muted">[${esc(a.head)}]</span>` : ''}</span>
+        <strong>${esc(a.title)}</strong>
+        <small class="muted">${esc(a.author)} · ${ago(a.time)}${a.comments ? ` · 댓글 ${a.comments}` : ''}${a.likes ? ` · 좋아요 ${a.likes}` : ''}</small>
+      </span>
+      ${a.thumb ? `<img src="${esc(a.thumb)}?type=w300" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
+    </a></li>`).join('');
+}
+function initCafe() {
+  renderCafe();
+  $('#cafeBoards').addEventListener('click', e => {
+    const b = e.target.closest('[data-b]'); if (!b) return;
+    CF.board = b.dataset.b; renderCafe();
+  });
+}
+
 // ───────── 모든 페이지 공통 요소 (아이콘 · 푸터 · 알림 동의 창 · 토스트) ─────────
 function injectShell() {
   document.body.insertAdjacentHTML('afterbegin', `
@@ -533,16 +564,16 @@ async function main() {
   injectShell();
   initTheme();
   // 페이지마다 필요한 데이터만 불러옴
-  const need = { home: ['youtube', 'live', 'mods', 'workshop', 'schedule'], mods: ['mods'], weekly: ['workshop'] }[PAGE];
+  const need = { home: ['youtube', 'live', 'mods', 'workshop', 'schedule', 'cafe'], mods: ['mods'], weekly: ['workshop'] }[PAGE];
   const get = name => (need.includes(name) ? load(`data/${name}.json`) : null);
-  [S.cfg, S.yt, S.live, S.mods, S.ws, S.sched] = await Promise.all([
-    load('config/site.json'), get('youtube'), get('live'), get('mods'), get('workshop'), get('schedule'),
+  [S.cfg, S.yt, S.live, S.mods, S.ws, S.sched, S.cafe] = await Promise.all([
+    load('config/site.json'), get('youtube'), get('live'), get('mods'), get('workshop'), get('schedule'), get('cafe'),
   ]);
   if (!S.cfg) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:20px">설정 파일을 불러오지 못했어요. 로컬에서는 <code>npm run dev</code>로 열어 주세요.</p>'); return; }
   if (PAGE === 'home') {
     renderHero(); renderLive();
     renderVideoTabs(); renderVideos();
-    initCalendar(); renderHub(); initNav();
+    initCalendar(); renderHub(); initCafe(); initNav();
     setInterval(refreshLive, 120e3);
   } else if (PAGE === 'mods') {
     $('#sheetLink').href = S.cfg.modSheet.url;

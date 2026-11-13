@@ -41,7 +41,7 @@ jobs:
         run: |
           case "${{ github.event.schedule }}" in
             "*/5 * * * *")  echo "tasks=live" >> "$GITHUB_OUTPUT" ;;
-            "7,37 * * * *") echo "tasks=live youtube" >> "$GITHUB_OUTPUT" ;;
+            "7,37 * * * *") echo "tasks=live youtube cafe" >> "$GITHUB_OUTPUT" ;;
             "15 */6 * * *") echo "tasks=workshop" >> "$GITHUB_OUTPUT" ;;
             "30 18 * * *")  echo "tasks=mods" >> "$GITHUB_OUTPUT" ;;
             *)              echo "tasks=" >> "$GITHUB_OUTPUT" ;;  # push · 수동 실행 → 전부
