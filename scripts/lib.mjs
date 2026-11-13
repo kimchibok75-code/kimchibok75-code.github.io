@@ -1,4 +1,4 @@
-// 공용 유틸: 네트워크, 파일 입출력, 스팀 API, 푸시 알림
+﻿// 怨듭슜 ?좏떥: ?ㅽ듃?뚰겕, ?뚯씪 ?낆텧?? ?ㅽ? API, ?몄떆 ?뚮┝
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,7 +31,7 @@ export function readJson(name, fallback) {
   try { return JSON.parse(fs.readFileSync(path.join(DATA, name), 'utf8')); } catch { return fallback; }
 }
 
-/** 내용(갱신 시각 제외)이 바뀌었을 때만 파일을 씁니다. 바뀌었으면 true */
+/** ?댁슜(媛깆떊 ?쒓컖 ?쒖쇅)??諛붾뚯뿀???뚮쭔 ?뚯씪???곷땲?? 諛붾뚯뿀?쇰㈃ true */
 export function writeJson(name, obj) {
   fs.mkdirSync(DATA, { recursive: true });
   const file = path.join(DATA, name);
@@ -49,7 +49,7 @@ export const decodeXml = s => (s || '')
 
 export const steamIdOf = url => (String(url).match(/[?&]id=(\d+)/) || [])[1] || null;
 
-/** 스팀 창작마당 상세 정보 (API 키 불필요) */
+/** ?ㅽ? 李쎌옉留덈떦 ?곸꽭 ?뺣낫 (API ??遺덊븘?? */
 export async function steamDetails(ids) {
   const out = {};
   const uniq = [...new Set(ids.filter(Boolean))];
@@ -87,12 +87,12 @@ export function cleanBBCode(s = '') {
     .replace(/\s+/g, ' ').trim();
 }
 
-/** OneSignal 웹 푸시 발송. 태그(video/live)로 동의한 사람에게만 보냅니다. */
+/** OneSignal ???몄떆 諛쒖넚. ?쒓렇(video/live)濡??숈쓽???щ엺?먭쾶留?蹂대깄?덈떎. */
 export async function sendPush({ tag, title, body, url, image }) {
   const appId = process.env.ONESIGNAL_APP_ID || config.onesignal.appId;
   const key = process.env.ONESIGNAL_REST_API_KEY;
-  if (!appId || !key) { console.log(`[push:skip] ${tag} · ${title} — OneSignal 설정 없음`); return; }
-  if (process.env.DRY_RUN) { console.log(`[push:dry] ${tag} · ${title} · ${body}`); return; }
+  if (!appId || !key) { console.log(`[push:skip] ${tag} 쨌 ${title} ??OneSignal ?ㅼ젙 ?놁쓬`); return; }
+  if (process.env.DRY_RUN) { console.log(`[push:dry] ${tag} 쨌 ${title} 쨌 ${body}`); return; }
   const res = await fetch('https://api.onesignal.com/notifications?c=push', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Key ${key}` },
@@ -104,9 +104,9 @@ export async function sendPush({ tag, title, body, url, image }) {
       contents: { en: body, ko: body },
       url,
       chrome_web_image: image,
-      chrome_web_icon: config.siteUrl ? `${config.siteUrl.replace(/\/$/, '')}/assets/img/icon-192.png` : undefined,
+      chrome_web_icon: config.siteUrl ? `${config.siteUrl.replace(/\/$/, '')}/assets/img/icon-256.png` : undefined,
       ttl: tag === 'live' ? 60 * 60 * 3 : 60 * 60 * 24,
     }),
   });
-  console.log(`[push] ${tag} · ${title} → ${res.status} ${await res.text()}`);
+  console.log(`[push] ${tag} 쨌 ${title} ??${res.status} ${await res.text()}`);
 }
