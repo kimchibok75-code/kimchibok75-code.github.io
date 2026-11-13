@@ -351,7 +351,7 @@ function renderWeekly() {
     return `<li><a class="rank glass" href="${esc(m.url)}" target="_blank" rel="noopener">
       <span class="no">${m.rank}${move}</span>
       <img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer">
-      <span><div class="title">${esc(m.title)}</div><div class="sum">${esc(m.summary || '')}</div></span>
+      <span><div class="title">${esc(m.title)}</div><div class="sum" title="${esc(m.summary || '')}">${esc(m.ko || m.summary || '')}</div></span>
       <span class="num"><b>${num(m.subs)}</b>구독${ver ? ` · v${ver}` : ''}</span></a></li>`;
   }).join('');
 }

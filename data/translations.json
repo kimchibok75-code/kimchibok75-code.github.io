@@ -1,0 +1,104 @@
+{
+  "items": {
+    "3834727959": {
+      "src": "Defeated enemies may surrender. The loyal, iron-willed, bloodthirsty and psychopathic never surrender; wimps and volatile pawns always do.",
+      "ko": "패배한 적들은 항복할 수 있습니다. 충성스럽고 강철 같은 의지를 갖고 피에 굶주린 정신병자는 결코 항복하지 않습니다. 겁쟁이와 변덕스러운 폰은 항상 그렇습니다.",
+      "at": 1794569725564
+    },
+    "3835096426": {
+      "src": "A new spacer-tier warcasket for Vanilla Factions Expanded - Pirates.",
+      "ko": "Vanilla Factions Expanded - Pirates를 위한 새로운 스페이서 티어 전쟁통입니다.",
+      "at": 1794569717798
+    },
+    "3835373693": {
+      "src": "Retexture for beam repeater from Odyssey DLC. Now it looks like something a human can actually hold in hands.",
+      "ko": "Odyssey DLC의 빔 리피터에 대한 재텍스처. 이제는 인간이 실제로 손에 잡을 수 있는 것처럼 보입니다.",
+      "at": 1794569729148
+    },
+    "3835396297": {
+      "src": "\"Voyager\" - high-frequency hybrid. Raids come thick and fast, and Crisis Points follow quickly.",
+      "ko": "\"Voyager\" - 고주파 하이브리드. 습격은 두껍고 빠르게 진행되며 위기 지점은 빠르게 뒤따릅니다.",
+      "at": 1794569720778
+    },
+    "3835512735": {
+      "src": "While the colonial fleet aggressively exports its own technologies and values, it remains fiercely secretive about the technical details beyond its direct control—to say nothing of the secrets locked ",
+      "ko": "식민지 함대는 자신의 기술과 가치를 공격적으로 수출하지만, 직접 통제할 수 없는 기술적 세부 사항에 대해서는 극비로 남아 있습니다.",
+      "at": 1794569712349
+    },
+    "3835520732": {
+      "src": "Vehicles at Work teaches colonists to drive vehicles on their own, for everyday life on the map, so the truck you spent half your colony's resources building doesn't collect dust.",
+      "ko": "Vehicle at Work는 식민지 주민에게 지도에서 일상 생활을 위해 스스로 차량을 운전하는 방법을 가르쳐 주므로 식민지 자원의 절반을 건설하는 데 사용한 트럭에…",
+      "at": 1794569711130
+    },
+    "3835595282": {
+      "src": "Preserves Yap's seamless wall-integrated textures and Owlchemist's material-aware window construction: metallic, woody, and stony window frames match the walls around them.",
+      "ko": "Yap의 매끄러운 벽 통합 텍스처와 Owlchemist의 재료 인식 창 구성을 보존합니다. 금속, 나무, 돌로 만든 창 프레임이 주변 벽과 일치합니다.",
+      "at": 1794569716533
+    },
+    "3835635048": {
+      "src": "Splitted up the research-requirements for the bridges to make it more compatible with medival playthroughs.",
+      "ko": "브리지에 대한 연구 요구 사항을 분할하여 중세 플레이와 더 잘 호환되도록 했습니다.",
+      "at": 1794569758076
+    },
+    "3835938747": {
+      "src": "Adds more shader-based lighting effects to the game. Every effect is drawn by a custom shader with minimal performance cost, and each one can be toggled and fine-tuned individually in the settings.",
+      "ko": "게임에 더 많은 셰이더 기반 조명 효과를 추가합니다. 모든 효과는 최소한의 성능 비용으로 사용자 정의 셰이더에 의해 그려지며 각 효과는 설정에서 개별적으로 전환하고 미세…",
+      "at": 1794569709766
+    },
+    "3836076384": {
+      "src": "This mod aims to fill the gap in the \"mutation\" system added with the Anomaly DLC, it currently adds a total of 48 new mutations, designed after the base Anomaly Entities.",
+      "ko": "이 모드는 Anomaly DLC에 추가된 \"돌연변이\" 시스템의 공백을 메우는 것을 목표로 하며, 현재 기본 Anomaly Entities를 따라 설계된 총 48개의…",
+      "at": 1794569708678
+    },
+    "3836181293": {
+      "src": "Carry a toy by its ear, pause for a tight cuddle, and give a baby or child a little friend of their own.",
+      "ko": "장난감을 귀에 걸고 잠시 멈춰 꼭 껴안고 아기나 어린이에게 작은 친구를 만들어주세요.",
+      "at": 1794569723442
+    },
+    "3836369455": {
+      "src": "This mod disable a bird's flying ability when it's at the youngest lifestage. Works with any modded bird if it use the vanilla Bird bodyplan.",
+      "ko": "이 모드는 새가 가장 어린 단계에 있을 때 새의 비행 능력을 비활성화합니다. 바닐라 버드 바디플랜을 사용하는 경우 모든 개조된 새와 함께 작동합니다.",
+      "at": 1794569722301
+    },
+    "3836456822": {
+      "src": "Realistic Water completely reimagines how water looks and behaves, without tanking your performance.",
+      "ko": "Realistic Water는 성능을 저하시키지 않으면서 물의 모양과 동작을 완전히 재구성합니다.",
+      "at": 1794569726612
+    },
+    "3836765380": {
+      "src": "Deliver an armored vehicle to the battlefield or transport a loaded truck to a second colony.",
+      "ko": "장갑차를 전장에 배달하거나 적재된 트럭을 두 번째 식민지로 운반하세요.",
+      "at": 1794569713256
+    },
+    "3837063832": {
+      "src": "Pocket maps stop being disconnected side rooms.",
+      "ko": "포켓 맵은 연결이 끊긴 사이드 룸을 중지합니다.",
+      "at": 1794569715645
+    },
+    "3837314353": {
+      "src": "With their outdated technology and struggling economies, the ratkin kingdoms stood little chance against the rogue mechanoids scattered across the planet.",
+      "ko": "구식 기술과 어려움을 겪고 있는 경제로 인해 쥐족 왕국은 행성 전역에 흩어져 있는 불량 기계체에 맞서 싸울 가능성이 거의 없었습니다.",
+      "at": 1794569746864
+    },
+    "3837774191": {
+      "src": "为 Kiiro Race（绮罗种）增加全新的异种分支：德文种。她们有着柔软的卷毛，非常黏人，也擅长照顾伤员。这是我绮罗异种系列的第五位。各位也可以试试我的大型种族模组——渡鸦族啦~",
+      "ko": "Kiiro 레이스에 새로운 이국적인 계통인 독일 종족을 추가했습니다.",
+      "at": 1794569731347
+    },
+    "3837808326": {
+      "src": "Adds two buildings, the supply shelf and the multi-link supply shelf. A workbench linked to a shelf uses the ingredients stored in it directly when working bills.",
+      "ko": "두 개의 건물, 보급 선반과 다중 링크 보급 선반을 추가합니다. 선반과 연결된 작업대는 그 안에 저장된 재료를 바로 청구서 작업 시 활용한다.",
+      "at": 1794569714342
+    },
+    "3837906824": {
+      "src": "The remnants of an ancient, colossal forest dotted with the hollow trunks of the enormous trees that once grew here.",
+      "ko": "한때 이곳에서 자랐던 거대한 나무의 속이 빈 줄기가 곳곳에 흩어져 있는 고대의 거대한 숲의 잔재입니다.",
+      "at": 1794569724742
+    },
+    "3837981505": {
+      "src": "수송 포드와 오디세이 왕복선이 로켓처럼 불꽃과 연기를 내뿜으며 천천히 떠올랐다가 점점 빨라지며 날아갑니다. 세이브 호환.",
+      "ko": "수송 포드와 오디세이 왕복선이 로켓처럼 불꽃과 연기를 내뿜으며 천천히 떠올랐다가 점점 빨라지며 날아갑니다. 세이브 호환.",
+      "at": 1794569718213
+    }
+  }
+}

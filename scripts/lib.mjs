@@ -74,6 +74,8 @@ export async function steamDetails(ids) {
         collection: d.creator_app_id === 766 || d.file_type === 2,
         summary: cleanBBCode(d.description).slice(0, 220),
       };
+      // 원문 설명은 번역용으로만 쓰고 JSON에는 저장하지 않음 (enumerable: false)
+      Object.defineProperty(out[d.publishedfileid], 'raw', { value: d.description || '', enumerable: false });
     }
   }
   return out;

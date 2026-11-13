@@ -4,6 +4,7 @@
 // 새 영상 / 방송 시작을 감지하면 OneSignal 푸시를 보냅니다.
 import { config, get, readJson, writeJson, decodeXml, steamDetails, sendPush } from './lib.mjs';
 import { syncSheet, enrichAndSave } from './sheet.mjs';
+import { koreanSummaries } from './translate.mjs';
 
 const tasks = process.argv.slice(2);
 const want = t => !tasks.length || tasks.includes(t);
@@ -148,6 +149,11 @@ async function updateWorkshop() {
   const prev = readJson('workshop.json', { items: [] });
   const prevRank = Object.fromEntries((prev.items || []).map(m => [m.id, m.rank]));
   for (const m of items) m.prevRank = prevRank[m.id] ?? m.prevRank ?? null;
+  // 설명 한국어 한 줄 요약 (실패해도 순위 갱신은 계속)
+  try {
+    const ko = await koreanSummaries(items.map(m => ({ id: m.id, rawDescription: det[m.id].raw })));
+    for (const m of items) if (ko[m.id]) m.ko = ko[m.id];
+  } catch (e) { console.warn('[translate] 건너뜀:', e.message); }
   writeJson('workshop.json', { updatedAt: Date.now(), source: config.workshop.url, items });
   console.log(`[workshop] TOP ${items.length}: ${items.slice(0, 3).map(m => m.title).join(' / ')}`);
 }
