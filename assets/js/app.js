@@ -371,6 +371,7 @@ function oneSignal() {
       try {
         await OS.init({
           appId,
+          safari_web_id: S.cfg.onesignal.safariWebId,
           serviceWorkerPath: `${base.slice(1)}OneSignalSDKWorker.js`,
           serviceWorkerParam: { scope: base },
           allowLocalhostAsSecureOrigin: true,
