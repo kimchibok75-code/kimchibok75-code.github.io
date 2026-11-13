@@ -82,8 +82,6 @@ function renderHero() {
     </a>`).join('');
   $('#cafeCard').href = cfg.cafe.url; $('#cafeCard').querySelector('p').textContent = cfg.cafe.desc;
   $('#discordCard').href = cfg.discord.url; $('#discordCard').querySelector('p').textContent = cfg.discord.desc;
-  $('#sheetLink').href = cfg.modSheet.url;
-  $('#workshopLink').href = cfg.workshop.url;
 }
 
 function renderLive() {
@@ -170,8 +168,7 @@ document.addEventListener('click', e => {
   const v = e.target.closest('[data-id].vid, [data-id].pop');
   if (v) openPlayer(v.dataset.id, v.dataset.title, !!v.dataset.short);
 });
-$('#player').addEventListener('close', () => { $('#playerFrame').innerHTML = ''; });
-$$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d || e.target.closest('[data-close]')) d.close(); }));
+$('#player')?.addEventListener('close', () => { $('#playerFrame').innerHTML = ''; });
 
 // ───────── 방송 일정 ─────────
 const C = { y: 0, m: 0, sel: null };
@@ -457,13 +454,69 @@ function initNotify() {
   if (N.pref.on) oneSignal(); // 이미 동의한 사람만 SDK 로드
 }
 
-// ───────── 네비 하이라이트 ─────────
+// ───────── 네비 하이라이트 (홈에서 스크롤 위치에 따라) ─────────
 function initNav() {
   const links = $$('.nav-links a');
   const io = new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === `#${e.target.id}`));
+    if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === `./#${e.target.id}`));
   }), { rootMargin: '-45% 0px -50% 0px' });
   $$('main section[id]').forEach(s => io.observe(s));
+}
+
+// ───────── 홈: 모드 페이지 미리보기 ─────────
+function renderHub() {
+  if (S.mods?.items?.length) {
+    $('#hubModsSub').textContent = `김치복이 직접 쓰고 추천하는 모드 ${S.mods.items.length}개`;
+    $('#hubModsCats').innerHTML = S.mods.categories.map(c => `<span class="pill">${c.icon || ''} ${esc(c.label)} ${S.mods.items.filter(m => m.category === c.key).length}</span>`).join('');
+  }
+  const top = (S.ws?.items || []).slice(0, 5);
+  $('#hubRank').innerHTML = top.map(m => `<li><b>${m.rank}</b><span><strong>${esc(m.title)}</strong><small>${esc(m.ko || m.summary || '')}</small></span></li>`).join('') || '<li class="muted">순위를 불러오지 못했어요</li>';
+}
+
+// ───────── 모든 페이지 공통 요소 (아이콘 · 푸터 · 알림 동의 창 · 토스트) ─────────
+function injectShell() {
+  document.body.insertAdjacentHTML('afterbegin', `
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-yt" viewBox="0 0 24 24"><path fill="currentColor" d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12 31 31 0 0 0 1 16.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1c.4-1.6.5-3.2.5-4.8s-.1-3.2-.5-4.8ZM9.8 15V9l5.7 3-5.7 3Z"/></symbol>
+    <symbol id="i-chzzk" viewBox="0 0 24 24"><path fill="currentColor" d="M13.6 2 4 13.4h6.3L8.9 22l11-12.6h-6.6L13.6 2Z"/></symbol>
+    <symbol id="i-cafe" viewBox="0 0 24 24"><path fill="currentColor" d="M3 5h15a3 3 0 0 1 0 6h-.6A7 7 0 0 1 10.5 18h-1A7 7 0 0 1 3 11V5Zm15 4a1 1 0 0 0 0-2v2ZM3 20h15v2H3z"/></symbol>
+    <symbol id="i-discord" viewBox="0 0 24 24"><path fill="currentColor" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.4 18.4 0 0 0-5.6 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9 0 13.5.3 18a19.9 19.9 0 0 0 6 3l1.3-2.1c-.7-.3-1.4-.6-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.8 19.8 0 0 0 6-3c.4-5.2-.8-9.7-3.8-13.6ZM8.5 15.3c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Zm7 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Z"/></symbol>
+    <symbol id="i-steam" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1a11 11 0 0 0-11 10.1l5.9 2.4a3.1 3.1 0 0 1 1.9-.5l2.6-3.8v-.1a4.1 4.1 0 1 1 4.1 4.1h-.1l-3.8 2.7v.2a3.1 3.1 0 0 1-6.1.7L1.3 15A11 11 0 1 0 12 1Zm-4.1 15.8-1.3-.6a2.3 2.3 0 1 0 1.3-3.1l1.4.6a1.7 1.7 0 1 1-1.4 3.1ZM18.3 9.9a2.7 2.7 0 1 0-2.7 2.7 2.7 2.7 0 0 0 2.7-2.7Zm-4.8 0a2 2 0 1 1 2 2 2 2 0 0 1-2-2Z"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="m21 21-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M8 7h9v9"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-sheet" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 3h11l5 5v13H4zM4 10h16M4 15h16M10 10v11"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></symbol>
+  </svg>`);
+  document.body.insertAdjacentHTML('beforeend', `
+  <footer class="footer">
+    <p>© 김치복 · 영상 · 방송 · 모드 정보는 유튜브, 치지직, 스팀에서 자동으로 가져옵니다.</p>
+    <p class="muted" id="updatedAt"></p>
+    <p><button class="link-btn" id="notifySettings">알림 설정</button></p>
+  </footer>
+  <dialog class="modal" id="consent">
+    <form class="modal-box glass consent" method="dialog">
+      <button class="icon-btn modal-x" value="cancel" aria-label="닫기"><svg><use href="#i-x"/></svg></button>
+      <div class="consent-icon"><svg><use href="#i-bell"/></svg></div>
+      <h3>김치복 알림 받기</h3>
+      <p class="muted">받고 싶은 알림을 고르고 동의해 주세요. 언제든 이 화면에서 끌 수 있어요.</p>
+      <label class="toggle"><input type="checkbox" id="optVideo" checked><span class="switch"></span><span><strong>새 영상 알림</strong><small>김치복 · 풀치복 · 음치복 새 영상이 올라오면</small></span></label>
+      <label class="toggle"><input type="checkbox" id="optLive" checked><span class="switch"></span><span><strong>생방송 시작 알림</strong><small>치지직 방송이 켜지면</small></span></label>
+      <label class="agree"><input type="checkbox" id="optAgree"><span>푸시 알림 수신에 동의합니다. 알림 발송을 위해 브라우저의 알림 구독 정보(기기 식별 토큰)가 알림 서비스(OneSignal)에 저장되며, 알림을 끄면 더 이상 발송되지 않습니다.</span></label>
+      <p class="ios-hint" id="iosHint" hidden>📱 아이폰은 Safari 공유 버튼 → <b>홈 화면에 추가</b> 후, 홈 화면의 김치복 앱에서 알림을 켜 주세요.</p>
+      <p class="consent-msg" id="consentMsg" role="status"></p>
+      <div class="consent-actions">
+        <button class="btn btn-ghost" type="button" id="notifyOff">알림 끄기</button>
+        <button class="btn btn-accent" type="button" id="notifyOn">동의하고 알림 받기</button>
+      </div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status"></div>`);
+  $$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d || e.target.closest('[data-close]')) d.close(); }));
 }
 
 // ───────── 시작 ─────────
@@ -471,21 +524,35 @@ async function refreshLive() {
   const prev = S.live?.open;
   const l = await load('data/live.json');
   if (!l) return;
-  S.live = l; renderLive(); renderHero();
+  S.live = l;
+  if (PAGE === 'home') { renderLive(); renderHero(); }
   if (prev === false && l.open) toast('🔴 김치복 생방송이 시작됐어요!');
 }
+const PAGE = document.body.dataset.page || 'home';
 async function main() {
+  injectShell();
   initTheme();
+  // 페이지마다 필요한 데이터만 불러옴
+  const need = { home: ['youtube', 'live', 'mods', 'workshop', 'schedule'], mods: ['mods'], weekly: ['workshop'] }[PAGE];
+  const get = name => (need.includes(name) ? load(`data/${name}.json`) : null);
   [S.cfg, S.yt, S.live, S.mods, S.ws, S.sched] = await Promise.all([
-    load('config/site.json'), load('data/youtube.json'), load('data/live.json'),
-    load('data/mods.json'), load('data/workshop.json'), load('data/schedule.json'),
+    load('config/site.json'), get('youtube'), get('live'), get('mods'), get('workshop'), get('schedule'),
   ]);
   if (!S.cfg) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:20px">설정 파일을 불러오지 못했어요. 로컬에서는 <code>npm run dev</code>로 열어 주세요.</p>'); return; }
-  renderHero(); renderLive();
-  renderVideoTabs(); renderVideos();
-  initCalendar(); initMods(); renderWeekly(); initNotify(); initNav();
+  if (PAGE === 'home') {
+    renderHero(); renderLive();
+    renderVideoTabs(); renderVideos();
+    initCalendar(); renderHub(); initNav();
+    setInterval(refreshLive, 120e3);
+  } else if (PAGE === 'mods') {
+    $('#sheetLink').href = S.cfg.modSheet.url;
+    initMods();
+  } else if (PAGE === 'weekly') {
+    $('#workshopLink').href = S.cfg.workshop.url;
+    renderWeekly();
+  }
+  initNotify();
   const times = [S.yt, S.live, S.ws, S.mods].map(x => x?.updatedAt || 0);
   if (Math.max(...times)) $('#updatedAt').textContent = `마지막 데이터 갱신 ${new Date(Math.max(...times)).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}`;
-  setInterval(refreshLive, 120e3);
 }
 main();

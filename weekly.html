@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>주간 모드 순위 | 김치복</title>
+  <meta name="description" content="스팀 림월드 창작마당 최근 7일 인기 모드 TOP 20 — 한국어 요약 포함">
+  <meta name="theme-color" content="#14110f" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f1ea" media="(prefers-color-scheme: light)">
+  <meta property="og:title" content="주간 모드 순위 | 김치복">
+  <meta property="og:description" content="스팀 림월드 창작마당 최근 7일 인기 모드 TOP 20">
+  <meta property="og:image" content="assets/img/icon-512.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/img/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=__BUILD__">
+</head>
+<body data-page="weekly">
+  <div class="bg" aria-hidden="true"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><i class="grain"></i></div>
+
+  <header class="nav glass">
+    <a class="brand" href="./"><img src="assets/img/profile.jpg" alt="" width="32" height="32"><span>김치복</span></a>
+    <nav class="nav-links" aria-label="메뉴">
+      <a href="./#videos">영상</a><a href="./#schedule">일정</a><a href="mods.html">모드 저장소</a><a href="weekly.html" class="on" aria-current="page">주간 순위</a><a href="./#community">커뮤니티</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="icon-btn" id="themeBtn" aria-label="테마 전환"></button>
+      <button class="btn btn-accent btn-sm" id="notifyBtn" aria-label="알림 설정"><svg><use href="#i-bell"/></svg><span>알림 받기</span></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="section page-top">
+      <div class="section-head">
+        <div>
+          <a class="back" href="./">← 홈</a>
+          <h1 class="page-title">주간 모드 순위</h1>
+          <p class="muted" id="weeklyHint">스팀 림월드 창작마당 · 최근 7일 인기 TOP 20 · 설명은 자동 번역 요약</p>
+        </div>
+        <a class="btn btn-ghost btn-sm" id="workshopLink" target="_blank" rel="noopener"><svg><use href="#i-steam"/></svg>창작마당</a>
+      </div>
+      <ol class="rank-list" id="rankList"></ol>
+    </section>
+  </main>
+
+  <script src="assets/js/app.js?v=__BUILD__" type="module"></script>
+</body>
+</html>
