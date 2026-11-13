@@ -62,7 +62,6 @@ function renderHero() {
   const stats = [];
   if (main?.subs) stats.push(`<span class="stat"><svg style="color:#ff0033"><use href="#i-yt"/></svg>유튜브 <b>${esc(main.subs.replace('구독자 ', ''))}</b></span>`);
   if (live?.followers) stats.push(`<span class="stat"><svg style="color:#00d38b"><use href="#i-chzzk"/></svg>치지직 팔로워 <b>${num(live.followers)}</b></span>`);
-  if (S.mods?.items) stats.push(`<span class="stat">🧩 추천 모드 <b>${S.mods.items.length}</b></span>`);
   $('#heroStats').innerHTML = stats.join('');
 
   const chs = [
@@ -84,22 +83,58 @@ function renderHero() {
   $('#discordCard').href = cfg.discord.url; $('#discordCard').querySelector('p').textContent = cfg.discord.desc;
 }
 
+// ───────── 홈: 생방송 상황판 ─────────
+const dur = ms => { const s = Math.max(0, Math.floor(ms / 1000)); const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, x = s % 60; return `${h}:${String(m).padStart(2, '0')}:${String(x).padStart(2, '0')}`; };
+const until = ms => { const m = Math.max(0, Math.round(ms / 60000)); const d = Math.floor(m / 1440), h = Math.floor(m / 60) % 24, mi = m % 60; return [d && `${d}일`, h && `${h}시간`, (!d && mi) && `${mi}분`].filter(Boolean).join(' ') || '곧'; };
 function renderLive() {
   const l = S.live; if (!l) return;
   const card = $('#liveCard');
-  card.href = l.url;
-  card.classList.toggle('on', l.open);
+  card.href = l.url || S.cfg.chzzk.url;
+  card.classList.toggle('on', !!l.open);
   $('#avatarLive').hidden = !l.open;
+  const last = l.history?.[0];
+  const thumb = l.open ? l.thumb : last?.thumb;
+  $('#liveMedia').innerHTML = `${thumb ? `<img src="${esc(thumb)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : '<span class="lb-ph"><svg><use href="#i-chzzk"/></svg></span>'}<span class="lb-badge">${l.open ? 'LIVE' : '오프라인'}</span>`;
   if (l.open) {
-    $('#liveState').textContent = 'LIVE · 치지직에서 방송 중';
+    $('#liveState').textContent = '지금 치지직에서 방송 중';
     $('#liveTitle').textContent = l.title || '생방송 중';
     $('#liveSub').textContent = [l.category, l.viewers != null ? `시청자 ${num(l.viewers)}명` : '', l.openDate ? `${hhmm(l.openDate)} 시작` : ''].filter(Boolean).join(' · ');
   } else {
-    $('#liveState').textContent = '오프라인';
-    const last = l.history?.[0];
-    $('#liveTitle').textContent = last ? `지난 방송: ${last.title}` : '치지직 방송국';
-    $('#liveSub').textContent = last ? `${ago(last.end)} · ${last.category || ''}` : '';
+    $('#liveState').textContent = '지금은 방송 중이 아니에요';
+    $('#liveTitle').textContent = last ? `지난 방송 · ${last.title}` : '치지직 방송국';
+    $('#liveSub').textContent = last ? `${ago(last.end)} · ${dur(last.end - last.start).replace(/:\d\d$/, '').replace(':', '시간 ')}분 방송${last.category ? ` · ${last.category}` : ''}` : '';
   }
+  tickBoard();
+}
+function tickBoard() {
+  const l = S.live; const el = $('#liveFoot'); if (!l || !el) return;
+  if (l.open) { el.innerHTML = `<span>방송 시간 <b>${l.openDate ? dur(Date.now() - l.openDate) : '-'}</b></span><span class="btn btn-accent btn-sm">보러 가기</span>`; return; }
+  const n = nextBroadcast();
+  el.innerHTML = n ? `<span>다음 방송 <b>${kst(n.at).m + 1}/${kst(n.at).d} (${DOW[kst(n.at).dow]}) ${hhmm(n.at)}</b></span><span class="muted">${n.at - Date.now() > 0 ? `${until(n.at - Date.now())} 후` : '곧 시작'}</span>` : '<span class="muted">예정된 방송이 없어요</span>';
+}
+
+// ───────── 홈: 오늘부터 7일간 방송 일정 ─────────
+function renderWeek() {
+  const t = kst(Date.now());
+  const today = dkey(t.y, t.m, t.d);
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const dt = new Date(Date.UTC(t.y, t.m, t.d + i));
+    const [y, m, d] = [dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()];
+    const key = dkey(y, m, d); const dow = dt.getUTCDay();
+    const plans = plannedOn(y, m, d);
+    const livedToday = (S.live?.history || []).some(h => keyOf(h.start) === key) || (S.live?.open && S.live.openDate && keyOf(S.live.openDate) === key);
+    let what;
+    if (key === today && S.live?.open) what = '<span class="wk-st on">🔴 방송 중</span>';
+    else if (plans.some(p => p.type === 'off')) what = '<span class="wk-st off">휴방</span>';
+    else if (key === today && livedToday) what = '<span class="wk-st done">방송 끝</span>';
+    else {
+      const ps = plans.filter(p => p.type === 'plan' || p.type === 'event');
+      what = ps.length ? ps.map(p => `<span class="wk-st ${p.type}">${p.type === 'event' ? esc(p.title) : `${hhmm(p.at)} 방송`}</span>`).join('') : '<span class="wk-st none">방송 없음</span>';
+    }
+    html += `<li class="${key === today ? 'today' : ''} ${dow === 0 ? 'sun' : dow === 6 ? 'sat' : ''}"><span class="wk-d"><b>${key === today ? '오늘' : DOW[dow]}</b><small>${m + 1}/${d}</small></span>${what}</li>`;
+  }
+  $('#weekList').innerHTML = html;
 }
 
 // ───────── 영상 ─────────
@@ -273,9 +308,9 @@ function initCalendar() {
 }
 
 // ───────── 모드 저장소 ─────────
-const M = { cat: '', section: '', version: '', sort: 'order', q: '', limit: 24 };
-const versionsOf = m => { const v = (m.steam?.tags || []).filter(t => /^\d+\.\d+$/.test(t)); if (m.version && !v.includes(m.version)) v.push(m.version); return v; };
-const latestVersion = m => versionsOf(m).sort((a, b) => parseFloat(b) - parseFloat(a))[0];
+const M = { cat: '', section: '', version: '', sort: 'order', q: '', limit: 60 };
+const VERSIONS = ['1.6', '1.7']; // 버전 정보는 1.6 · 1.7만 표시
+const versionsOf = m => { const v = new Set((m.steam?.tags || []).filter(t => VERSIONS.includes(t))); if (VERSIONS.includes(m.version)) v.add(m.version); return [...v].sort(); };
 const norm = s => String(s || '').toLowerCase().replace(/\s+/g, '');
 function hl(text, q) {
   const t = esc(text); if (!q) return t;
@@ -298,52 +333,65 @@ function filteredMods() {
   }[M.sort];
   return list.sort(by);
 }
+const catOf = k => S.mods.categories.find(c => c.key === k) || { key: k, label: k, icon: '🧩' };
 function renderModFilters() {
   const { categories, items } = S.mods;
-  const count = k => items.filter(m => !k || m.category === k).length;
+  const inVer = m => !M.version || versionsOf(m).includes(M.version);
+  const count = k => items.filter(m => (!k || m.category === k) && inVer(m)).length;
+  // 대분류
   $('#modCats').innerHTML = [{ key: '', label: '전체', icon: '✨' }, ...categories].map(c =>
-    `<button class="chip ${M.cat === c.key ? 'on' : ''}" data-cat="${esc(c.key)}">${c.icon || ''} ${esc(c.label)} <small>${count(c.key)}</small></button>`).join('');
-  const sections = [...new Set(items.filter(m => !M.cat || m.category === M.cat).map(m => m.section))];
-  $('#modSection').innerHTML = `<option value="">세부 분류 전체</option>` + sections.map(s => `<option ${s === M.section ? 'selected' : ''}>${esc(s)}</option>`).join('');
-  const vers = [...new Set(items.flatMap(versionsOf))].sort((a, b) => parseFloat(b) - parseFloat(a));
-  $('#modVersion').innerHTML = `<option value="">버전 전체</option>` + vers.map(v => `<option value="${v}" ${v === M.version ? 'selected' : ''}>${v} 지원</option>`).join('');
+    `<button class="cat ${M.cat === c.key ? 'on' : ''}" data-cat="${esc(c.key)}" role="tab" aria-selected="${M.cat === c.key}"><span class="ci">${c.icon || '🧩'}</span><span>${esc(c.label)}</span><small>${count(c.key)}</small></button>`).join('');
+  // 소분류 (대분류를 고르면 나타남)
+  const secs = M.cat ? [...new Set(items.filter(m => m.category === M.cat).map(m => m.section))] : [];
+  const secCount = s => items.filter(m => m.category === M.cat && m.section === s && inVer(m)).length;
+  $('#modSubs').hidden = !secs.length;
+  $('#modSubs').innerHTML = secs.length ? ['', ...secs].map(s => `<button class="sub ${M.section === s ? 'on' : ''}" data-sec="${esc(s)}">${s ? esc(s) : '전체'} <small>${s ? secCount(s) : count(M.cat)}</small></button>`).join('') : '';
   const cat = categories.find(c => c.key === M.cat);
-  $('#modNotes').innerHTML = cat ? `<strong>${esc(cat.desc || '')}</strong>${cat.notes?.length ? `<ul>${cat.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}` : '';
+  $('#modNotes').innerHTML = cat ? `<strong>${esc(cat.desc || '')}</strong>${cat.notes?.length ? `<details><summary>${esc(cat.label)} 모드 안내 보기</summary><ul>${cat.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul></details>` : ''}` : '';
+}
+function modRow(m, q) {
+  const s = m.steam || {};
+  const img = s.preview ? `${s.preview}${s.preview.includes('?') ? '&' : '?'}imw=160&imh=90&ima=fit&impolicy=Letterbox` : '';
+  const vers = versionsOf(m);
+  return `<a class="mrow" href="${esc(m.url)}" target="_blank" rel="noopener">
+    <span class="mthumb">${m.kind === 'mapfile' ? '🗺️' : m.kind === 'collection' || s.collection ? '📦' : '🧩'}${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</span>
+    <span class="mmain">
+      <span class="mname">${hl(m.name, q)}</span>
+      ${m.desc ? `<span class="mdesc">${hl(m.desc, q)}</span>` : ''}
+    </span>
+    <span class="msec">${M.cat ? '' : `${catOf(m.category).icon || ''} `}${esc(m.section)}</span>
+    <span class="mver">${VERSIONS.map(v => `<i class="${vers.includes(v) ? 'ok' : ''}">${v}</i>`).join('')}</span>
+    <span class="msubs">${s.subs ? `${num(s.subs)}` : '-'}<small>구독</small></span>
+  </a>`;
 }
 function renderMods() {
   const list = filteredMods();
   const q = M.q.trim();
   $('#modCount').textContent = `김치복이 직접 쓰고 추천하는 림월드 모드 · ${list.length}개`;
-  $('#modGrid').innerHTML = list.length ? list.slice(0, M.limit).map(m => {
-    const s = m.steam || {};
-    const img = s.preview ? `${s.preview}${s.preview.includes('?') ? '&' : '?'}imw=480&imh=270&ima=fit&impolicy=Letterbox` : '';
-    const kind = m.kind === 'mapfile' ? '맵 파일' : (m.kind === 'collection' || s.collection) ? '모음집' : m.category;
-    const ver = latestVersion(m);
-    return `<a class="mod glass" href="${esc(m.url)}" target="_blank" rel="noopener">
-      <div class="thumb">${m.kind === 'mapfile' ? '🗺️' : '🧩'}${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<span class="kind">${esc(kind)}</span></div>
-      <div class="body">
-        <div class="name">${hl(m.name, q)}</div>
-        ${m.desc ? `<div class="desc">${hl(m.desc, q)}</div>` : ''}
-        <div class="meta">
-          <span class="pill acc">${esc(m.section)}</span>
-          ${ver ? `<span class="pill">v${esc(ver)}</span>` : ''}
-          ${s.subs ? `<span class="pill">구독 ${num(s.subs)}</span>` : ''}
-          ${s.updated ? `<span class="pill">${ago(s.updated)} 업데이트</span>` : ''}
-        </div>
-      </div></a>`;
-  }).join('') : `<div class="empty" style="grid-column:1/-1">검색 결과가 없어요</div>`;
+  const shown = list.slice(0, M.limit);
+  let html = '';
+  if (!shown.length) html = '<div class="empty">조건에 맞는 모드가 없어요</div>';
+  else if (M.sort === 'order' && !q) { // 추천 순서일 땐 소분류별 머리글로 묶어서 보여 줌
+    let head = '';
+    for (const m of shown) {
+      const h = `${m.category}|${m.section}`;
+      if (h !== head) { head = h; const c = catOf(m.category); html += `<div class="mgroup">${M.cat ? '' : `<span>${c.icon || ''} ${esc(c.label)}</span> · `}${esc(m.section)}</div>`; }
+      html += modRow(m, q);
+    }
+  } else html = shown.map(m => modRow(m, q)).join('');
+  $('#modGrid').innerHTML = html;
   $('#modMore').hidden = list.length <= M.limit;
   $('#modMore').textContent = `더 보기 (${list.length - M.limit}개 남음)`;
 }
 function initMods() {
   if (!S.mods?.items?.length) { $('#modGrid').innerHTML = '<div class="empty">모드 목록을 불러오지 못했어요</div>'; return; }
-  const reset = () => { M.limit = 24; renderMods(); };
-  $('#modCats').onclick = e => { const b = e.target.closest('.chip'); if (!b) return; M.cat = b.dataset.cat; M.section = ''; renderModFilters(); reset(); };
-  $('#modSection').onchange = e => { M.section = e.target.value; reset(); };
-  $('#modVersion').onchange = e => { M.version = e.target.value; reset(); };
+  const reset = () => { M.limit = 60; renderMods(); };
+  $('#modCats').onclick = e => { const b = e.target.closest('.cat'); if (!b) return; M.cat = b.dataset.cat; M.section = ''; renderModFilters(); reset(); };
+  $('#modSubs').onclick = e => { const b = e.target.closest('.sub'); if (!b) return; M.section = b.dataset.sec; renderModFilters(); reset(); };
+  $('#modVersion').onclick = e => { const b = e.target.closest('button'); if (!b) return; M.version = b.dataset.v; $$('#modVersion button').forEach(x => x.classList.toggle('on', x === b)); renderModFilters(); reset(); };
   $('#modSort').onchange = e => { M.sort = e.target.value; reset(); };
   let t; $('#modSearch').oninput = e => { clearTimeout(t); t = setTimeout(() => { M.q = e.target.value; reset(); }, 120); };
-  $('#modMore').onclick = () => { M.limit += 24; renderMods(); };
+  $('#modMore').onclick = () => { M.limit += 60; renderMods(); };
   renderModFilters(); renderMods();
   const g = S.mods.guide;
   if (g?.greeting || g?.faq?.length) {
@@ -463,15 +511,6 @@ function initNav() {
   $$('main section[id]').forEach(s => io.observe(s));
 }
 
-// ───────── 홈: 모드 페이지 미리보기 ─────────
-function renderHub() {
-  if (S.mods?.items?.length) {
-    $('#hubModsSub').textContent = `김치복이 직접 쓰고 추천하는 모드 ${S.mods.items.length}개`;
-    $('#hubModsCats').innerHTML = S.mods.categories.map(c => `<span class="pill">${c.icon || ''} ${esc(c.label)} ${S.mods.items.filter(m => m.category === c.key).length}</span>`).join('');
-  }
-  const top = (S.ws?.items || []).slice(0, 5);
-  $('#hubRank').innerHTML = top.map(m => `<li><b>${m.rank}</b><span><strong>${esc(m.title)}</strong><small>${esc(m.ko || m.summary || '')}</small></span></li>`).join('') || '<li class="muted">순위를 불러오지 못했어요</li>';
-}
 
 // ───────── 홈: 팬카페 최신글 ─────────
 const CF = { board: '' };
@@ -560,7 +599,8 @@ async function refreshLive() {
   const l = { ...(S.live || {}), ...now };
   if (!now.open) { l.viewers = null; }
   S.live = l;
-  if (PAGE === 'home') { renderLive(); renderHero(); }
+  if (PAGE === 'home') { renderLive(); renderHero(); renderWeek(); }
+  if (PAGE === 'schedule' && prev !== l.open) { renderCalendar(); tickNext(); }
   if (prev === false && l.open) toast('🔴 김치복 생방송이 시작됐어요!');
 }
 const PAGE = document.body.dataset.page || 'home';
@@ -568,7 +608,7 @@ async function main() {
   injectShell();
   initTheme();
   // 페이지마다 필요한 데이터만 불러옴
-  const need = { home: ['youtube', 'live', 'mods', 'workshop', 'schedule', 'cafe'], mods: ['mods'], weekly: ['workshop'] }[PAGE];
+  const need = { home: ['youtube', 'live', 'schedule', 'cafe'], schedule: ['youtube', 'live', 'schedule'], mods: ['mods'], weekly: ['workshop'] }[PAGE] || [];
   const get = name => (need.includes(name) ? load(`data/${name}.json`) : null);
   [S.cfg, S.yt, S.live, S.mods, S.ws, S.sched, S.cafe] = await Promise.all([
     load('config/site.json'), get('youtube'), get('live'), get('mods'), get('workshop'), get('schedule'), get('cafe'),
@@ -577,7 +617,11 @@ async function main() {
   if (PAGE === 'home') {
     renderHero(); renderLive();
     renderVideoTabs(); renderVideos();
-    initCalendar(); renderHub(); initCafe(); initNav();
+    renderWeek(); initCafe(); initNav();
+    setInterval(tickBoard, 1000);
+    refreshLive(); setInterval(refreshLive, 60e3);
+  } else if (PAGE === 'schedule') {
+    initCalendar();
     refreshLive(); setInterval(refreshLive, 60e3);
   } else if (PAGE === 'mods') {
     $('#sheetLink').href = S.cfg.modSheet.url;

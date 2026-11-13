@@ -24,7 +24,7 @@
   <header class="nav glass">
     <a class="brand" href="./"><img src="assets/img/profile.jpg" alt="" width="32" height="32"><span>김치복</span></a>
     <nav class="nav-links" aria-label="메뉴">
-      <a href="./#videos">영상</a><a href="./#schedule">일정</a><a href="mods.html">모드 저장소</a><a href="weekly.html">주간 모드 순위</a><a href="./#community">커뮤니티</a>
+      <a href="./#videos">영상</a><a href="schedule.html">방송 일정</a><a href="mods.html">모드 저장소</a><a href="weekly.html">주간 모드 순위</a><a href="./#community">커뮤니티</a>
     </nav>
     <div class="nav-actions">
       <button class="icon-btn" id="themeBtn" aria-label="테마 전환"></button>
@@ -37,26 +37,35 @@
     <section class="hero">
       <div class="hero-card glass">
         <div class="avatar-wrap">
-          <img class="avatar" src="assets/img/profile.jpg" alt="김치복 프로필" width="140" height="140">
+          <img class="avatar" src="assets/img/profile.jpg" alt="김치복 프로필" width="72" height="72">
           <span class="live-dot" id="avatarLive" hidden>LIVE</span>
         </div>
         <div class="hero-text">
-          <p class="eyebrow">RimWorld Creator</p>
           <h1>김치복</h1>
           <p class="tagline" id="tagline"></p>
-          <div class="stats" id="heroStats"></div>
         </div>
-        <div class="hero-side">
-          <a class="live-card" id="liveCard" href="https://chzzk.naver.com/d44a982c742226605f4fcf3b6b4e7629" target="_blank" rel="noopener">
-            <span class="live-state" id="liveState">방송 상태 확인 중…</span>
-            <strong id="liveTitle">치지직</strong>
-            <small id="liveSub"></small>
-          </a>
-        </div>
+        <div class="stats" id="heroStats"></div>
       </div>
 
       <!-- 채널 바로가기 -->
       <div class="channels" id="channels"></div>
+
+      <!-- 생방송 상황판 + 7일 방송 일정 -->
+      <div class="board">
+        <a class="live-board glass" id="liveCard" href="https://chzzk.naver.com/live/d44a982c742226605f4fcf3b6b4e7629" target="_blank" rel="noopener">
+          <div class="lb-media" id="liveMedia"></div>
+          <div class="lb-body">
+            <span class="live-state" id="liveState">방송 상태 확인 중…</span>
+            <strong id="liveTitle">치지직</strong>
+            <small id="liveSub"></small>
+            <div class="lb-foot" id="liveFoot"></div>
+          </div>
+        </a>
+        <div class="week glass">
+          <div class="week-head"><strong>이번 주 방송 일정</strong><a href="schedule.html">달력 보기 →</a></div>
+          <ol class="week-list" id="weekList"></ol>
+        </div>
+      </div>
     </section>
 
     <!-- 영상 -->
@@ -72,43 +81,6 @@
         <button data-v="lives">라이브</button>
       </div>
       <div id="videoArea"></div>
-    </section>
-
-    <!-- 방송 일정 -->
-    <section id="schedule" class="section">
-      <div class="section-head">
-        <div><h2>방송 일정</h2><p class="muted" id="schedHint">매주 금 · 토 · 일 밤 9시 치지직</p></div>
-        <div class="next-live glass-soft" id="nextLive"></div>
-      </div>
-      <div class="cal-wrap">
-        <div class="calendar glass">
-          <div class="cal-head">
-            <button class="icon-btn" id="calPrev" aria-label="이전 달"><svg><use href="#i-left"/></svg></button>
-            <strong id="calTitle"></strong>
-            <button class="icon-btn" id="calNext" aria-label="다음 달"><svg><use href="#i-right"/></svg></button>
-          </div>
-          <div class="cal-grid cal-dow"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
-          <div class="cal-grid" id="calGrid"></div>
-          <div class="cal-legend"><span><i class="dot d-plan"></i>예정 방송</span><span><i class="dot d-live"></i>진행한 방송</span><span><i class="dot d-yt"></i>영상 업로드</span><span><i class="dot d-event"></i>특별 일정</span></div>
-        </div>
-        <aside class="cal-detail glass" id="calDetail"></aside>
-      </div>
-    </section>
-
-    <!-- 모드 (별도 페이지로 연결) -->
-    <section id="mod-hub" class="section">
-      <div class="section-head"><div><h2>림월드 모드</h2><p class="muted">김치복 추천 모드와 창작마당 인기 순위</p></div></div>
-      <div class="hub">
-        <a class="hub-card glass" href="mods.html">
-          <div class="hub-top"><span class="hub-icon">🧩</span><div><strong>모드 저장소</strong><p id="hubModsSub">김치복이 직접 쓰고 추천하는 모드</p></div><svg class="arrow"><use href="#i-arrow"/></svg></div>
-          <div class="hub-chips" id="hubModsCats"></div>
-          <span class="hub-go">이름 · 설명 검색, 분류 · 버전 필터, 구독자 순 정렬까지 →</span>
-        </a>
-        <a class="hub-card glass" href="weekly.html">
-          <div class="hub-top"><span class="hub-icon">🏆</span><div><strong>주간 모드 순위</strong><p>스팀 창작마당 · 최근 7일 인기 TOP 20</p></div><svg class="arrow"><use href="#i-arrow"/></svg></div>
-          <ol class="hub-rank" id="hubRank"></ol>
-        </a>
-      </div>
     </section>
 
     <!-- 커뮤니티 -->

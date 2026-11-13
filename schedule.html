@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>방송 일정 | 김치복</title>
+  <meta name="description" content="김치복 치지직 생방송 일정 — 예정 방송, 지난 방송 다시보기, 영상 업로드를 달력으로">
+  <meta name="theme-color" content="#14110f" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f1ea" media="(prefers-color-scheme: light)">
+  <meta property="og:title" content="방송 일정 | 김치복">
+  <meta property="og:description" content="김치복 치지직 생방송 일정 달력">
+  <meta property="og:image" content="assets/img/icon-512.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/img/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=__BUILD__">
+</head>
+<body data-page="schedule">
+  <div class="bg" aria-hidden="true"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><i class="grain"></i></div>
+
+  <header class="nav glass">
+    <a class="brand" href="./"><img src="assets/img/profile.jpg" alt="" width="32" height="32"><span>김치복</span></a>
+    <nav class="nav-links" aria-label="메뉴">
+      <a href="./#videos">영상</a><a href="schedule.html" class="on" aria-current="page">방송 일정</a><a href="mods.html">모드 저장소</a><a href="weekly.html">주간 모드 순위</a><a href="./#community">커뮤니티</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="icon-btn" id="themeBtn" aria-label="테마 전환"></button>
+      <button class="btn btn-accent btn-sm" id="notifyBtn" aria-label="알림 설정"><svg><use href="#i-bell"/></svg><span>알림 받기</span></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="section page-top">
+      <div class="section-head">
+        <div>
+          <a class="back" href="./">← 홈</a>
+          <h1 class="page-title">방송 일정</h1>
+          <p class="muted" id="schedHint">매주 금 · 토 · 일 밤 9시 치지직</p>
+        </div>
+        <div class="next-live glass-soft" id="nextLive"></div>
+      </div>
+      <div class="cal-wrap">
+        <div class="calendar glass">
+          <div class="cal-head">
+            <button class="icon-btn" id="calPrev" aria-label="이전 달"><svg><use href="#i-left"/></svg></button>
+            <strong id="calTitle"></strong>
+            <button class="icon-btn" id="calNext" aria-label="다음 달"><svg><use href="#i-right"/></svg></button>
+          </div>
+          <div class="cal-grid cal-dow"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="cal-legend"><span><i class="dot d-plan"></i>예정 방송</span><span><i class="dot d-live"></i>진행한 방송</span><span><i class="dot d-yt"></i>영상 업로드</span><span><i class="dot d-event"></i>특별 일정</span></div>
+        </div>
+        <aside class="cal-detail glass" id="calDetail"></aside>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/app.js?v=__BUILD__" type="module"></script>
+</body>
+</html>

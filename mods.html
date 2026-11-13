@@ -22,7 +22,7 @@
   <header class="nav glass">
     <a class="brand" href="./"><img src="assets/img/profile.jpg" alt="" width="32" height="32"><span>김치복</span></a>
     <nav class="nav-links" aria-label="메뉴">
-      <a href="./#videos">영상</a><a href="./#schedule">일정</a><a href="mods.html" class="on" aria-current="page">모드 저장소</a><a href="weekly.html">주간 모드 순위</a><a href="./#community">커뮤니티</a>
+      <a href="./#videos">영상</a><a href="schedule.html">방송 일정</a><a href="mods.html" class="on" aria-current="page">모드 저장소</a><a href="weekly.html">주간 모드 순위</a><a href="./#community">커뮤니티</a>
     </nav>
     <div class="nav-actions">
       <button class="icon-btn" id="themeBtn" aria-label="테마 전환"></button>
@@ -40,10 +40,11 @@
         </div>
         <a class="btn btn-ghost btn-sm" id="sheetLink" target="_blank" rel="noopener"><svg><use href="#i-sheet"/></svg>원본 시트</a>
       </div>
+      <div class="mod-cats" id="modCats" role="tablist" aria-label="대분류"></div>
+      <div class="mod-subs" id="modSubs" aria-label="소분류"></div>
       <div class="mod-toolbar glass">
-        <label class="search"><svg><use href="#i-search"/></svg><input id="modSearch" type="search" placeholder="모드 이름, 설명, 태그 검색" autocomplete="off"></label>
-        <select id="modSection" aria-label="세부 분류"><option value="">세부 분류 전체</option></select>
-        <select id="modVersion" aria-label="지원 버전"><option value="">버전 전체</option></select>
+        <label class="search"><svg><use href="#i-search"/></svg><input id="modSearch" type="search" placeholder="모드 이름, 설명 검색" autocomplete="off"></label>
+        <div class="seg seg-ver" id="modVersion" aria-label="지원 버전"><button data-v="" class="on">모든 버전</button><button data-v="1.6">1.6</button><button data-v="1.7">1.7</button></div>
         <select id="modSort" aria-label="정렬">
           <option value="order">추천 순서</option>
           <option value="subs">구독자 많은 순</option>
@@ -51,9 +52,8 @@
           <option value="name">이름 순</option>
         </select>
       </div>
-      <div class="chips" id="modCats"></div>
       <div class="mod-notes" id="modNotes"></div>
-      <div class="mod-grid" id="modGrid"></div>
+      <div class="mod-list glass" id="modGrid"></div>
       <button class="btn btn-ghost more" id="modMore" hidden>더 보기</button>
       <details class="guide glass" id="guide" hidden><summary>김치복의 모드 사용 안내 &amp; 자주 묻는 질문</summary><div id="guideBody"></div></details>
     </section>
