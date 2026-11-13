@@ -1,9 +1,5 @@
 {
-<<<<<<< Updated upstream
-  "updatedAt": 1794569430141,
-=======
-  "updatedAt": 1794569758480,
->>>>>>> Stashed changes
+  "updatedAt": 1794569799950,
   "source": "https://steamcommunity.com/workshop/browse/?appid=294100&section=readytouseitems&days=7",
   "items": [
     {
@@ -12,17 +8,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836076384",
       "title": "Anomaly Mutations Expanded",
       "preview": "https://images.steamusercontent.com/ugc/14261674108204357317/7E7CC4DB9306E967F64D86CFE92A1536538B194F/",
-<<<<<<< Updated upstream
-      "subs": 5394,
-      "current": 5116,
-      "favorited": 816,
-      "views": 21894,
-=======
       "subs": 5400,
       "current": 5122,
       "favorited": 817,
-      "views": 21918,
->>>>>>> Stashed changes
+      "views": 21920,
       "tags": [
         "Mod",
         "1.6",
@@ -33,7 +22,7 @@
       "size": 29499648,
       "collection": false,
       "summary": "Disclaimer This is my first mod, well, ever. I always wanted to make a Rimworld mod so this is my attempt at adding content I felt was missing from the Anomaly DLC. I've tried balancing these mutations around Vanilla val",
-      "prevRank": 1,
+      "prevRank": null,
       "ko": "이 모드는 Anomaly DLC에 추가된 \"돌연변이\" 시스템의 공백을 메우는 것을 목표로 하며, 현재 기본 Anomaly Entities를 따라 설계된 총 48개의…"
     },
     {
@@ -42,17 +31,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3835938747",
       "title": "More Shader Visuals",
       "preview": "https://images.steamusercontent.com/ugc/11528140942039473253/59757A36F81D58FC3C4265C595DF5186574F7F75/",
-<<<<<<< Updated upstream
-      "subs": 5913,
-      "current": 5550,
-      "favorited": 658,
-      "views": 11697,
-=======
-      "subs": 5934,
-      "current": 5569,
+      "subs": 5937,
+      "current": 5572,
       "favorited": 660,
-      "views": 11723,
->>>>>>> Stashed changes
+      "views": 11728,
       "tags": [
         "Mod",
         "1.7"
@@ -62,12 +44,8 @@
       "size": 766932,
       "collection": false,
       "summary": "More Shader Visuals Adds more shader-based lighting effects to the game. Every effect is drawn by a custom shader with minimal performance cost, and each one can be toggled and fine-tuned individually in the settings. In",
-<<<<<<< Updated upstream
-      "prevRank": 4
-=======
-      "prevRank": 2,
+      "prevRank": null,
       "ko": "게임에 더 많은 셰이더 기반 조명 효과를 추가합니다. 모든 효과는 최소한의 성능 비용으로 사용자 정의 셰이더에 의해 그려지며 각 효과는 설정에서 개별적으로 전환하고 미세…"
->>>>>>> Stashed changes
     },
     {
       "rank": 3,
@@ -75,17 +53,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3835520732",
       "title": "Vehicles at Work",
       "preview": "https://images.steamusercontent.com/ugc/9282552517348411549/6A3ADF625A8BA33AF17D6F30559948F64F34A595/",
-<<<<<<< Updated upstream
-      "subs": 8129,
-      "current": 7704,
-      "favorited": 1092,
-      "views": 23823,
-=======
       "subs": 8133,
       "current": 7707,
       "favorited": 1092,
       "views": 23842,
->>>>>>> Stashed changes
       "tags": [
         "Mod",
         "1.7",
@@ -96,7 +67,7 @@
       "size": 502630,
       "collection": false,
       "summary": "You built the vehicles, now what? It's a decoration until you send it to the world map, which is only a small portion of your playtime. Vehicles at Work teaches colonists to drive vehicles on their own, for everyday life",
-      "prevRank": 3,
+      "prevRank": null,
       "ko": "Vehicle at Work는 식민지 주민에게 지도에서 일상 생활을 위해 스스로 차량을 운전하는 방법을 가르쳐 주므로 식민지 자원의 절반을 건설하는 데 사용한 트럭에…"
     },
     {
@@ -105,17 +76,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3835512735",
       "title": "The Dead Man's Switch - Synthriada",
       "preview": "https://images.steamusercontent.com/ugc/13373880627643152016/D609CED389949552B3E61A6FC40D0EC660196D20/",
-<<<<<<< Updated upstream
-      "subs": 14518,
-      "current": 13276,
-      "favorited": 1582,
-      "views": 41613,
-=======
       "subs": 14523,
       "current": 13281,
       "favorited": 1582,
-      "views": 41627,
->>>>>>> Stashed changes
+      "views": 41628,
       "tags": [
         "Mod",
         "1.7"
@@ -125,12 +89,8 @@
       "size": 17558643,
       "collection": false,
       "summary": "Synthriada - A tale from Heatheroo While the colonial fleet aggressively exports its own technologies and values, it remains fiercely secretive about the technical details beyond its direct control—to say nothing of the ",
-<<<<<<< Updated upstream
-      "prevRank": 3
-=======
-      "prevRank": 4,
+      "prevRank": null,
       "ko": "식민지 함대는 자신의 기술과 가치를 공격적으로 수출하지만, 직접 통제할 수 없는 기술적 세부 사항에 대해서는 극비로 남아 있습니다."
->>>>>>> Stashed changes
     },
     {
       "rank": 5,
@@ -141,11 +101,7 @@
       "subs": 3013,
       "current": 2888,
       "favorited": 474,
-<<<<<<< Updated upstream
-      "views": 7897,
-=======
       "views": 7907,
->>>>>>> Stashed changes
       "tags": [
         "Mod",
         "1.7",
@@ -156,7 +112,7 @@
       "size": 2297043,
       "collection": false,
       "summary": "Deliver an armored vehicle to the battlefield or transport a loaded truck to a second colony. The Cherokee from Vanilla Vehicles Expanded - Tier 3 can now carry one vehicle on its external sling. It will arrive with the ",
-      "prevRank": 5,
+      "prevRank": null,
       "ko": "장갑차를 전장에 배달하거나 적재된 트럭을 두 번째 식민지로 운반하세요."
     },
     {
@@ -165,17 +121,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837808326",
       "title": "Supply Shelf",
       "preview": "https://images.steamusercontent.com/ugc/14471707077254728827/8049B12204A704E4E24CC450B8DFDD66618F7D8B/",
-<<<<<<< Updated upstream
-      "subs": 1447,
-      "current": 1412,
-      "favorited": 180,
-      "views": 4336,
-=======
-      "subs": 1452,
-      "current": 1416,
+      "subs": 1453,
+      "current": 1417,
       "favorited": 181,
-      "views": 4361,
->>>>>>> Stashed changes
+      "views": 4364,
       "tags": [
         "Mod",
         "1.7",
@@ -186,7 +135,7 @@
       "size": 927552,
       "collection": false,
       "summary": "Supply Shelf Adds two buildings, the supply shelf and the multi-link supply shelf . A workbench linked to a shelf uses the ingredients stored in it directly when working bills. Colonists and mechanoids no longer haul the",
-      "prevRank": 6,
+      "prevRank": null,
       "ko": "두 개의 건물, 보급 선반과 다중 링크 보급 선반을 추가합니다. 선반과 연결된 작업대는 그 안에 저장된 재료를 바로 청구서 작업 시 활용한다."
     },
     {
@@ -195,17 +144,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837063832",
       "title": "Seamless Pockets",
       "preview": "https://images.steamusercontent.com/ugc/11610367328486528479/BA821761713939E81E69C50A956EE8A56EBAC3D6/",
-<<<<<<< Updated upstream
-      "subs": 2230,
-      "current": 2148,
-      "favorited": 473,
-      "views": 7922,
-=======
       "subs": 2231,
       "current": 2149,
       "favorited": 474,
-      "views": 7927,
->>>>>>> Stashed changes
+      "views": 7928,
       "tags": [
         "Mod",
         "1.7",
@@ -216,7 +158,7 @@
       "size": 487418,
       "collection": false,
       "summary": "Seamless Pockets Pocket maps stop being disconnected side rooms. A cave, vault or undercave behaves like part of the map its portal stands on: colonists walk through on their own whenever what they need is on the other s",
-      "prevRank": 7,
+      "prevRank": null,
       "ko": "포켓 맵은 연결이 끊긴 사이드 룸을 중지합니다."
     },
     {
@@ -225,14 +167,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3835595282",
       "title": "Windows (Continued) Continued",
       "preview": "https://images.steamusercontent.com/ugc/17909829238785531899/C79CED98007874F390D1421986FA02232D6E5A53/",
-      "subs": 1180,
-      "current": 1123,
+      "subs": 1181,
+      "current": 1124,
       "favorited": 147,
-<<<<<<< Updated upstream
-      "views": 3741,
-=======
-      "views": 3749,
->>>>>>> Stashed changes
+      "views": 3751,
       "tags": [
         "Mod",
         "1.7",
@@ -245,7 +183,7 @@
       "size": 1109608,
       "collection": false,
       "summary": "No one can take my windows from me. Temporary RimWorld 1.7 continuation of Owlchemist's Windows, itself a fork and continuation of Open The Windows by jptrrs. Preserves Yap's seamless wall-integrated textures and Owlchem",
-      "prevRank": 8,
+      "prevRank": null,
       "ko": "Yap의 매끄러운 벽 통합 텍스처와 Owlchemist의 재료 인식 창 구성을 보존합니다. 금속, 나무, 돌로 만든 창 프레임이 주변 벽과 일치합니다."
     },
     {
@@ -257,7 +195,7 @@
       "subs": 11914,
       "current": 11185,
       "favorited": 902,
-      "views": 22935,
+      "views": 22936,
       "tags": [
         "Mod",
         "1.7",
@@ -268,13 +206,11 @@
       "size": 848295,
       "collection": false,
       "summary": "A new spacer-tier warcasket for Vanilla Factions Expanded - Pirates. About The Medic is a 10th-generation combat medic warcasket, built to keep its pilot patching up squadmates under fire. The Set Armor, shoulders and he",
-      "prevRank": 9,
+      "prevRank": null,
       "ko": "Vanilla Factions Expanded - Pirates를 위한 새로운 스페이서 티어 전쟁통입니다."
     },
     {
       "rank": 10,
-<<<<<<< Updated upstream
-=======
       "id": "3837981505",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837981505",
       "title": "[KCB] Liftoff Effects (이륙 이펙트)",
@@ -293,27 +229,19 @@
       "size": 1094668,
       "collection": false,
       "summary": "Transport pods and the Odyssey shuttle now lift off like rockets: flame, smoke, a slow rise, then acceleration. Save-safe. Mod: Orca Shuttle ------------------------------------------------ 수송 포드와 오디세이 왕복선이 로켓처럼 불꽃과 연기를 ",
-      "prevRank": 10,
+      "prevRank": null,
       "ko": "수송 포드와 오디세이 왕복선이 로켓처럼 불꽃과 연기를 내뿜으며 천천히 떠올랐다가 점점 빨라지며 날아갑니다. 세이브 호환."
     },
     {
       "rank": 11,
->>>>>>> Stashed changes
       "id": "3837314353",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837314353",
       "title": "The Dead Man's Switch - RatkinExpand",
       "preview": "https://images.steamusercontent.com/ugc/18425955992400237621/C09023863A63BC8253E2700E3181D016E1AEF0BF/",
-<<<<<<< Updated upstream
-      "subs": 2101,
-      "current": 1996,
-      "favorited": 328,
-      "views": 6821,
-=======
       "subs": 2106,
       "current": 2001,
       "favorited": 328,
-      "views": 6827,
->>>>>>> Stashed changes
+      "views": 6828,
       "tags": [
         "Mod",
         "1.7",
@@ -325,26 +253,19 @@
       "size": 12856567,
       "collection": false,
       "summary": "With their outdated technology and struggling economies, the ratkin kingdoms stood little chance against the rogue mechanoids scattered across the planet. One knightly order after another was torn apart by relentless gun",
-      "prevRank": 11,
+      "prevRank": null,
       "ko": "구식 기술과 어려움을 겪고 있는 경제로 인해 쥐족 왕국은 행성 전역에 흩어져 있는 불량 기계체에 맞서 싸울 가능성이 거의 없었습니다."
     },
     {
-      "rank": 11,
+      "rank": 12,
       "id": "3835396297",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3835396297",
       "title": "The Dead Man's Switch - FairyWing 失能机关-妖精联队",
       "preview": "https://images.steamusercontent.com/ugc/17894181195498426122/0D9908C435A2268213A042A24A9540B53A9C4BE8/",
-<<<<<<< Updated upstream
-      "subs": 6186,
-      "current": 5550,
-      "favorited": 645,
-      "views": 18981,
-=======
-      "subs": 6191,
-      "current": 5555,
+      "subs": 6192,
+      "current": 5556,
       "favorited": 646,
-      "views": 18989,
->>>>>>> Stashed changes
+      "views": 18991,
       "tags": [
         "Mod",
         "1.7"
@@ -354,26 +275,19 @@
       "size": 10450582,
       "collection": false,
       "summary": "Two Crisis Resupply storytellers: \"Voyager\" - high-frequency hybrid. Raids come thick and fast, and Crisis Points follow quickly. \"Vanguard-9\" - contract-driven. Spontaneous raids are sharply reduced; threats arrive as r",
-      "prevRank": 12,
+      "prevRank": null,
       "ko": "\"Voyager\" - 고주파 하이브리드. 습격은 두껍고 빠르게 진행되며 위기 지점은 빠르게 뒤따릅니다."
     },
     {
-      "rank": 12,
+      "rank": 13,
       "id": "3836369455",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836369455",
       "title": "Baby Birds Can't Fly",
       "preview": "https://images.steamusercontent.com/ugc/11462599331613730073/A47BB05CB984307DF6D884EE88E7FF02D1CE2517/",
-<<<<<<< Updated upstream
-      "subs": 3915,
-      "current": 3554,
-      "favorited": 114,
-      "views": 3954,
-=======
       "subs": 3919,
       "current": 3558,
       "favorited": 114,
       "views": 3955,
->>>>>>> Stashed changes
       "tags": [
         "Mod",
         "1.7",
@@ -384,26 +298,19 @@
       "size": 154567,
       "collection": false,
       "summary": "Description This mod disable a bird's flying ability when it's at the youngest lifestage. Works with any modded bird if it use the vanilla Bird bodyplan. Modders can include or exclude additional animals through xml patc",
-      "prevRank": 13,
+      "prevRank": null,
       "ko": "이 모드는 새가 가장 어린 단계에 있을 때 새의 비행 능력을 비활성화합니다. 바닐라 버드 바디플랜을 사용하는 경우 모든 개조된 새와 함께 작동합니다."
     },
     {
-      "rank": 13,
+      "rank": 14,
       "id": "3836181293",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836181293",
       "title": "Comfort Bunny",
       "preview": "https://images.steamusercontent.com/ugc/18318647305348724218/DEBFD11B6C9C7CA45B7617DD65998DC439D6E2B3/",
-<<<<<<< Updated upstream
-      "subs": 2322,
-      "current": 2249,
-      "favorited": 315,
-      "views": 6348,
-=======
       "subs": 2326,
       "current": 2253,
       "favorited": 315,
       "views": 6352,
->>>>>>> Stashed changes
       "tags": [
         "Mod",
         "1.7",
@@ -414,11 +321,11 @@
       "size": 3612605,
       "collection": false,
       "summary": "A little friend to keep close. Carry a toy by its ear, pause for a tight cuddle, and give a baby or child a little friend of their own. During work or while carrying something else, it rides on their back. It waits on th",
-      "prevRank": 14,
+      "prevRank": null,
       "ko": "장난감을 귀에 걸고 잠시 멈춰 꼭 껴안고 아기나 어린이에게 작은 친구를 만들어주세요."
     },
     {
-      "rank": 14,
+      "rank": 15,
       "id": "3837906824",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837906824",
       "title": "Wayward Biomes: Tangled Hollows",
@@ -436,26 +343,19 @@
       "size": 15420824,
       "collection": false,
       "summary": "The remnants of an ancient, colossal forest dotted with the hollow trunks of the enormous trees that once grew here. Though the soil is poor, this overgrown forest is still crowded with giant flowers and fungi. This fair",
-      "prevRank": 15,
+      "prevRank": null,
       "ko": "한때 이곳에서 자랐던 거대한 나무의 속이 빈 줄기가 곳곳에 흩어져 있는 고대의 거대한 숲의 잔재입니다."
     },
     {
-      "rank": 15,
+      "rank": 16,
       "id": "3834727959",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3834727959",
       "title": "敌人投降",
       "preview": "https://images.steamusercontent.com/ugc/17470190041917072310/DF8BC0C8387575B1DEF209BCEDB2B88644128A18/",
-<<<<<<< Updated upstream
-      "subs": 3904,
-      "current": 3534,
-      "favorited": 340,
-      "views": 7364,
-=======
       "subs": 3908,
       "current": 3535,
       "favorited": 340,
       "views": 7367,
->>>>>>> Stashed changes
       "tags": [
         "Mod",
         "1.7"
@@ -465,26 +365,19 @@
       "size": 926998,
       "collection": false,
       "summary": "Defeated enemies may surrender. The loyal, iron-willed, bloodthirsty and psychopathic never surrender; wimps and volatile pawns always do. A surrendered pawn drops their weapon, raises a white flag and waits for a coloni",
-      "prevRank": 16,
+      "prevRank": null,
       "ko": "패배한 적들은 항복할 수 있습니다. 충성스럽고 강철 같은 의지를 갖고 피에 굶주린 정신병자는 결코 항복하지 않습니다. 겁쟁이와 변덕스러운 폰은 항상 그렇습니다."
     },
     {
-      "rank": 16,
+      "rank": 17,
       "id": "3836456822",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836456822",
       "title": "Realistic Water",
       "preview": "https://images.steamusercontent.com/ugc/11624987029502428006/2CBC54EC475EBE614207CCEBE9D3F232B23F572A/",
-<<<<<<< Updated upstream
-      "subs": 1989,
-      "current": 1789,
+      "subs": 1994,
+      "current": 1793,
       "favorited": 334,
-      "views": 6631,
-=======
-      "subs": 1993,
-      "current": 1792,
-      "favorited": 334,
-      "views": 6642,
->>>>>>> Stashed changes
+      "views": 6645,
       "tags": [
         "Mod",
         "1.7"
@@ -494,30 +387,8 @@
       "size": 2787129,
       "collection": false,
       "summary": "Realistic Water completely reimagines how water looks and behaves, without tanking your performance. Shorelines are smoothed so they melt naturally into the landscape, while fallen trees, sandbars and rocky outcroppings ",
-      "prevRank": 17,
+      "prevRank": null,
       "ko": "Realistic Water는 성능을 저하시키지 않으면서 물의 모양과 동작을 완전히 재구성합니다."
-    },
-    {
-      "rank": 17,
-      "id": "3837981505",
-      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837981505",
-      "title": "[KCB] Liftoff Effects (이륙 이펙트)",
-      "preview": "https://images.steamusercontent.com/ugc/9889155727940097281/3595704D9EF4C97D316B91FABD4EFDD21AC23DA1/",
-      "subs": 1078,
-      "current": 1052,
-      "favorited": 114,
-      "views": 2076,
-      "tags": [
-        "Mod",
-        "1.7",
-        "1.6"
-      ],
-      "created": 1794419106000,
-      "updated": 1794506760000,
-      "size": 1094668,
-      "collection": false,
-      "summary": "Transport pods and the Odyssey shuttle now lift off like rockets: flame, smoke, a slow rise, then acceleration. Save-safe. Mod: Orca Shuttle ------------------------------------------------ 수송 포드와 오디세이 왕복선이 로켓처럼 불꽃과 연기를 ",
-      "prevRank": 10
     },
     {
       "rank": 18,
@@ -538,7 +409,7 @@
       "size": 4638633,
       "collection": false,
       "summary": "Update of Lanilors mod The release of RimWorld 1.7 added a system where assets like textures and sounds can be cached to improve performance . To avoid doubling the size of the mod, it was re-released with only this cach",
-      "prevRank": 18,
+      "prevRank": null,
       "ko": "브리지에 대한 연구 요구 사항을 분할하여 중세 플레이와 더 잘 호환되도록 했습니다."
     },
     {
@@ -550,11 +421,7 @@
       "subs": 316,
       "current": 301,
       "favorited": 44,
-<<<<<<< Updated upstream
-      "views": 1646,
-=======
       "views": 1648,
->>>>>>> Stashed changes
       "tags": [
         "Mod",
         "1.7",
@@ -565,7 +432,7 @@
       "size": 823136,
       "collection": false,
       "summary": "About mod: Retexture for beam repeater from Odyssey DLC. Now it looks like something a human can actually hold in hands. And is in higher resolution (512px) . Cyclops mechanoids will use vanilla texture. Please note that",
-      "prevRank": 19,
+      "prevRank": null,
       "ko": "Odyssey DLC의 빔 리피터에 대한 재텍스처. 이제는 인간이 실제로 손에 잡을 수 있는 것처럼 보입니다."
     },
     {
@@ -574,17 +441,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837774191",
       "title": "Kiiro Race - Devon Rex Xenotype (绮罗德文异种)",
       "preview": "https://images.steamusercontent.com/ugc/12082137762489397892/8DF91BB0448353191DA67B343B68C9B15BE4E229/",
-<<<<<<< Updated upstream
-      "subs": 2724,
-      "current": 2648,
-      "favorited": 184,
-      "views": 4381,
-=======
       "subs": 2730,
       "current": 2654,
       "favorited": 184,
       "views": 4389,
->>>>>>> Stashed changes
       "tags": [
         "Mod",
         "1.7",
@@ -595,7 +455,7 @@
       "size": 4423418,
       "collection": false,
       "summary": "【模组简介】 为 Kiiro Race（绮罗种）增加全新的异种分支：德文种。她们有着柔软的卷毛，非常黏人，也擅长照顾伤员。这是我绮罗异种系列的第五位。各位也可以试试我的大型种族模组——渡鸦族啦~ 【新增基因】 1. “黏人卷毛小可爱”： 德文绮罗更不容易厌倦社交娱乐，也更偏好选择社交娱乐；随机交流时更倾向于关系好的人，冒犯等扣关系的权重降低。殖民地中若有一位双方好感均达到40的好友，获得“安心”（心情+5）；否则感到“安全感缺失”（心情",
-      "prevRank": 20,
+      "prevRank": null,
       "ko": "Kiiro 레이스에 새로운 이국적인 계통인 독일 종족을 추가했습니다."
     }
   ]
