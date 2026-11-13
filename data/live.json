@@ -1,0 +1,47 @@
+{
+  "updatedAt": 1794567573850,
+  "open": false,
+  "channelName": "김치복",
+  "channelImage": "https://nng-phinf.pstatic.net/MjAyNjEwMTRfMTYw/MDAxNzkxOTA1NTU1NjM1.o3ggEYjuo83AOpOIG7VyXYM4Npbv5dFgg6_al145gJkg.fZMo3uviMNXMm4EfxdulsY-rlScNqCtkQlWbPErZmX0g.PNG/image.png",
+  "description": "금,토,일 오후 9시 생방 / 다시 보기 -> 유튜브 '풀치복' 채널",
+  "followers": 2215,
+  "url": "https://chzzk.naver.com/d44a982c742226605f4fcf3b6b4e7629",
+  "title": "500% 상한 해제 도전 7지구",
+  "viewers": null,
+  "category": "림월드",
+  "tags": [
+    "림월드유튜버"
+  ],
+  "openDate": 1794139332000,
+  "closeDate": 1794155890000,
+  "thumb": null,
+  "history": [
+    {
+      "id": 16089841,
+      "title": "500% 상한 해제 도전 7지구",
+      "start": 1794139518000,
+      "end": 1794156062000,
+      "category": "림월드",
+      "thumb": "https://livecloud-thumb.akamaized.net/chzzk/kr/live-rewind-image/record/61523898/represent/thumbnail/image_22104066_720_0.jpg",
+      "url": "https://chzzk.naver.com/video/16089841"
+    },
+    {
+      "id": 16056113,
+      "title": "500% 상한 해제 도전 7지구",
+      "start": 1793966731000,
+      "end": 1793984436000,
+      "category": "림월드",
+      "thumb": "https://livecloud-thumb.akamaized.net/chzzk/kr/live-rewind-image/record/61385747/represent/thumbnail/image_22065908_720_0.jpg",
+      "url": "https://chzzk.naver.com/video/16056113"
+    },
+    {
+      "id": 15975916,
+      "title": "500% 상한해제 도전",
+      "start": 1793534602000,
+      "end": 1793549123000,
+      "category": "림월드",
+      "thumb": "https://livecloud-thumb.akamaized.net/chzzk/kr/live-rewind-image/record/61201107/represent/thumbnail/image_21975730_720_0.jpg",
+      "url": "https://chzzk.naver.com/video/15975916"
+    }
+  ]
+}

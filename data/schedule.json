@@ -1,0 +1,8 @@
+{
+  "_help": "방송 일정. weekly = 매주 반복, events = 특별 일정(추가/변경), off = 휴방 날짜. 시간은 한국 시간 기준. days: 0=일 1=월 ... 6=토",
+  "weekly": [
+    { "days": [5, 6, 0], "time": "21:00", "title": "정기 생방송", "platform": "chzzk" }
+  ],
+  "events": [],
+  "off": []
+}

@@ -1,0 +1,84 @@
+name: 데이터 자동 갱신 & 배포
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"    # 치지직 생방송 상태 (5분)
+    - cron: "7,37 * * * *"   # 유튜브 영상 (30분)
+    - cron: "15 */6 * * *"   # 스팀 창작마당 주간 순위 (6시간)
+    - cron: "30 18 * * *"    # 모드 시트 + 스팀 정보 (매일 새벽 3시 30분 KST)
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: update-and-deploy
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.commit.outputs.deploy }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 갱신할 항목 고르기
+        id: pick
+        run: |
+          case "${{ github.event.schedule }}" in
+            "*/5 * * * *")  echo "tasks=live" >> "$GITHUB_OUTPUT" ;;
+            "7,37 * * * *") echo "tasks=live youtube" >> "$GITHUB_OUTPUT" ;;
+            "15 */6 * * *") echo "tasks=workshop" >> "$GITHUB_OUTPUT" ;;
+            "30 18 * * *")  echo "tasks=mods" >> "$GITHUB_OUTPUT" ;;
+            *)              echo "tasks=" >> "$GITHUB_OUTPUT" ;;  # push · 수동 실행 → 전부
+          esac
+
+      - name: 데이터 갱신 (+ 새 영상/방송 알림 발송)
+        continue-on-error: true
+        env:
+          ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
+          ONESIGNAL_REST_API_KEY: ${{ secrets.ONESIGNAL_REST_API_KEY }}
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+        run: node scripts/update.mjs ${{ steps.pick.outputs.tasks }}
+
+      - name: 바뀐 데이터 저장
+        id: commit
+        run: |
+          git config user.name "kimchibok-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --staged --quiet; then
+            echo "변경 없음"
+            if [ "${{ github.event_name }}" = "schedule" ]; then echo "deploy=false" >> "$GITHUB_OUTPUT"; else echo "deploy=true" >> "$GITHUB_OUTPUT"; fi
+          else
+            git commit -m "데이터 자동 갱신 (${{ steps.pick.outputs.tasks || 'all' }})"
+            git pull --rebase --autostash origin main
+            git push
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: update
+    if: needs.update.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4

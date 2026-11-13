@@ -1,0 +1,16 @@
+{
+  "name": "김치복",
+  "tagline": "림월드 크리에이터 · 유튜브 영상 & 치지직 생방송",
+  "siteUrl": "https://kimchibok75-code.github.io",
+  "youtube": [
+    { "key": "kimchibok", "name": "김치복", "desc": "메인 채널 · 림월드 시리즈", "handle": "@김치복", "channelId": "UC699Y51pMl0wWLPA4atcZjQ", "url": "https://www.youtube.com/@%EA%B9%80%EC%B9%98%EB%B3%B5" },
+    { "key": "pulchibok", "name": "풀치복", "desc": "생방송 다시 보기", "handle": "@풀치복", "channelId": "UCBr55M2zkT9QdG5cqn7GNGg", "url": "https://www.youtube.com/@%ED%92%80%EC%B9%98%EB%B3%B5" },
+    { "key": "eumchibok", "name": "음치복", "desc": "음악 채널 · KCB", "handle": "@음치복", "channelId": "UCe745Y9BtgHdI4KBXTs95BA", "url": "https://www.youtube.com/@%EC%9D%8C%EC%B9%98%EB%B3%B5" }
+  ],
+  "chzzk": { "channelId": "d44a982c742226605f4fcf3b6b4e7629", "url": "https://chzzk.naver.com/d44a982c742226605f4fcf3b6b4e7629" },
+  "cafe": { "url": "https://cafe.naver.com/kimchibok", "desc": "공지 · 자유게시판 · 팬아트" },
+  "discord": { "url": "https://discord.com/channels/1197441179197915136/1560847726143471758", "desc": "같이 림월드 이야기해요" },
+  "modSheet": { "id": "1M3PlQORO09Iq6TK3lePosZZAHgLNkuH6poy_QV3PYps", "url": "https://docs.google.com/spreadsheets/d/1M3PlQORO09Iq6TK3lePosZZAHgLNkuH6poy_QV3PYps/edit?gid=128028032#gid=128028032", "tabs": ["필수", "렉개선", "그래픽", "중세", "김치복", "모음집", "맵파일"] },
+  "workshop": { "appId": 294100, "url": "https://steamcommunity.com/workshop/browse/?appid=294100&section=readytouseitems&days=7", "count": 20 },
+  "onesignal": { "appId": "" }
+}

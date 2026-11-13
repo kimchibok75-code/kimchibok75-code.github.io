@@ -1,0 +1,471 @@
+// 김치복 홈페이지 — 데이터는 data/*.json (GitHub Actions가 자동 갱신)
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const store = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* 저장 불가 환경 */ } },
+};
+const bust = () => `?t=${Math.floor(Date.now() / 60000)}`;
+const load = (p, d = null) => fetch(p + bust()).then(r => (r.ok ? r.json() : d)).catch(() => d);
+
+// ───────── 포맷 ─────────
+const KST = 9 * 3600e3;
+const kst = t => { const d = new Date(+t + KST); return { y: d.getUTCFullYear(), m: d.getUTCMonth(), d: d.getUTCDate(), dow: d.getUTCDay(), h: d.getUTCHours(), mi: d.getUTCMinutes() }; };
+const kstTime = (y, m, d, h = 0, mi = 0) => Date.UTC(y, m, d, h, mi) - KST;
+const dkey = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+const keyOf = t => { const k = kst(t); return dkey(k.y, k.m, k.d); };
+const hhmm = t => { const k = kst(t); return `${k.h < 12 ? '오전' : '오후'} ${((k.h + 11) % 12) + 1}:${String(k.mi).padStart(2, '0')}`; };
+const DOW = ['일', '월', '화', '수', '목', '금', '토'];
+function num(n) {
+  if (n == null) return '-';
+  if (n >= 1e8) return `${+(n / 1e8).toFixed(1)}억`;
+  if (n >= 1e4) return `${+(n / 1e4).toFixed(1)}만`;
+  if (n >= 1e3) return `${+(n / 1e3).toFixed(1)}천`;
+  return String(n);
+}
+function ago(t) {
+  const s = (Date.now() - new Date(t)) / 1000;
+  if (s < 60) return '방금';
+  if (s < 3600) return `${Math.floor(s / 60)}분 전`;
+  if (s < 86400) return `${Math.floor(s / 3600)}시간 전`;
+  if (s < 86400 * 30) return `${Math.floor(s / 86400)}일 전`;
+  if (s < 86400 * 365) return `${Math.floor(s / 86400 / 30)}개월 전`;
+  return `${Math.floor(s / 86400 / 365)}년 전`;
+}
+function toast(msg) {
+  const el = $('#toast'); el.textContent = msg; el.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+// ───────── 테마 ─────────
+function initTheme() {
+  const btn = $('#themeBtn');
+  const apply = t => {
+    if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+    const dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    btn.innerHTML = `<svg><use href="#i-${dark ? 'sun' : 'moon'}"/></svg>`;
+    btn.dataset.dark = dark ? '1' : '';
+  };
+  apply(store.get('kcb-theme', null));
+  btn.onclick = () => { const t = btn.dataset.dark ? 'light' : 'dark'; store.set('kcb-theme', t); apply(t); };
+}
+
+// ───────── 상태 ─────────
+const S = { cfg: null, yt: null, live: null, mods: null, ws: null, sched: null };
+
+// ───────── 히어로 & 채널 ─────────
+function renderHero() {
+  const { cfg, yt, live } = S;
+  $('#tagline').textContent = cfg.tagline;
+  const main = yt?.channels?.[0];
+  const stats = [];
+  if (main?.subs) stats.push(`<span class="stat"><svg style="color:#ff0033"><use href="#i-yt"/></svg>유튜브 <b>${esc(main.subs.replace('구독자 ', ''))}</b></span>`);
+  if (live?.followers) stats.push(`<span class="stat"><svg style="color:#00d38b"><use href="#i-chzzk"/></svg>치지직 팔로워 <b>${num(live.followers)}</b></span>`);
+  if (S.mods?.items) stats.push(`<span class="stat">🧩 추천 모드 <b>${S.mods.items.length}</b></span>`);
+  $('#heroStats').innerHTML = stats.join('');
+
+  const chs = [
+    ...cfg.youtube.map(c => {
+      const d = yt?.channels?.find(x => x.key === c.key);
+      return { url: c.url, cls: 'ico-yt', icon: 'yt', img: d?.avatar, name: c.name, sub: d?.subs || c.desc, tag: '유튜브' };
+    }),
+    { url: cfg.chzzk.url, cls: 'ico-chzzk', icon: 'chzzk', name: '치지직', sub: live?.open ? '🔴 지금 방송 중' : '금·토·일 밤 9시' },
+    { url: cfg.cafe.url, cls: 'ico-cafe', icon: 'cafe', name: '팬 카페', sub: '네이버 카페' },
+    { url: cfg.discord.url, cls: 'ico-discord', icon: 'discord', name: '디스코드', sub: '커뮤니티 서버' },
+  ];
+  $('#channels').innerHTML = chs.map(c => `
+    <a class="ch-card glass" href="${esc(c.url)}" target="_blank" rel="noopener">
+      <span class="ch-ico ${c.cls}">${c.img ? `<img src="${esc(c.img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<svg><use href="#i-${c.icon}"/></svg>`}</span>
+      <span><strong>${esc(c.name)}${c.tag ? ` <small style="display:inline;color:var(--faint)">${c.tag}</small>` : ''}</strong><small>${esc(c.sub)}</small></span>
+      <svg class="arrow"><use href="#i-arrow"/></svg>
+    </a>`).join('');
+  $('#cafeCard').href = cfg.cafe.url; $('#cafeCard').querySelector('p').textContent = cfg.cafe.desc;
+  $('#discordCard').href = cfg.discord.url; $('#discordCard').querySelector('p').textContent = cfg.discord.desc;
+  $('#sheetLink').href = cfg.modSheet.url;
+  $('#workshopLink').href = cfg.workshop.url;
+}
+
+function renderLive() {
+  const l = S.live; if (!l) return;
+  const card = $('#liveCard');
+  card.href = l.url;
+  card.classList.toggle('on', l.open);
+  $('#avatarLive').hidden = !l.open;
+  if (l.open) {
+    $('#liveState').textContent = 'LIVE · 치지직에서 방송 중';
+    $('#liveTitle').textContent = l.title || '생방송 중';
+    $('#liveSub').textContent = [l.category, l.viewers != null ? `시청자 ${num(l.viewers)}명` : '', l.openDate ? `${hhmm(l.openDate)} 시작` : ''].filter(Boolean).join(' · ');
+  } else {
+    $('#liveState').textContent = '오프라인';
+    const last = l.history?.[0];
+    $('#liveTitle').textContent = last ? `지난 방송: ${last.title}` : '치지직 방송국';
+    $('#liveSub').textContent = last ? `${ago(last.end)} · ${last.category || ''}` : '';
+  }
+}
+
+// ───────── 영상 ─────────
+const V = { ch: store.get('kcb-ch', 0), tab: 'videos' };
+function renderVideoTabs() {
+  $('#chTabs').innerHTML = S.cfg.youtube.map((c, i) => `<button data-i="${i}" class="${i === V.ch ? 'on' : ''}">${esc(c.name)}</button>`).join('');
+  $('#chTabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; V.ch = +b.dataset.i; store.set('kcb-ch', V.ch); renderVideoTabs(); renderVideos(); };
+  $('#vidTabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; V.tab = b.dataset.v; $$('#vidTabs button').forEach(x => x.classList.toggle('on', x === b)); renderVideos(); };
+}
+const isNew = v => Date.now() - new Date(v.published) < 3 * 86400e3;
+const vidCard = (v, big = false) => `
+  <button class="vid ${big ? 'big' : ''}" data-id="${esc(v.id)}" data-short="${v.short ? 1 : ''}" data-title="${esc(v.title)}">
+    <div class="thumb"><img src="${big ? v.thumb.replace('hqdefault', 'maxresdefault') : v.thumb}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${v.thumb}'">${isNew(v) ? '<span class="badge new">NEW</span>' : ''}</div>
+    <div class="info"><div class="title">${esc(v.title)}</div><div class="sub">조회수 ${num(v.views)}회 · ${ago(v.published)}</div></div>
+  </button>`;
+function renderVideos() {
+  const area = $('#videoArea');
+  const ch = S.yt?.channels?.[V.ch];
+  const list = ch?.[V.tab] || [];
+  // 라이브 탭은 영상이 있는 채널에서만 의미가 있으므로 숨김 처리
+  $$('#vidTabs button').forEach(b => { b.hidden = !!S.yt && !(ch?.[b.dataset.v] || []).length; });
+  if (!list.length) { area.innerHTML = `<div class="empty">아직 불러온 영상이 없어요</div>`; return; }
+  if (V.tab === 'popular') {
+    const max = list[0].views || 1;
+    area.innerHTML = `<div class="pop-list">${list.slice(0, 10).map((v, i) => `
+      <button class="pop" data-id="${esc(v.id)}" data-short="${v.short ? 1 : ''}" data-title="${esc(v.title)}">
+        <span class="rank">${i + 1}</span><img src="${v.thumb}" alt="" loading="lazy">
+        <span><div class="title">${esc(v.title)}</div><div class="sub">조회수 ${num(v.views)}회 · ${ago(v.published)}</div><div class="views-bar"><i style="width:${(v.views / max) * 100}%"></i></div></span>
+      </button>`).join('')}</div>`;
+  } else if (V.tab === 'shorts') {
+    area.innerHTML = `<div class="video-grid shorts">${list.slice(0, 12).map(v => vidCard({ ...v, short: true })).join('')}</div>`;
+  } else {
+    const [first, ...rest] = list;
+    area.innerHTML = `<div class="featured">${vidCard(first, true)}<div class="feat-side">${rest.slice(0, 3).map(v => vidCard(v)).join('')}</div></div>
+      <div class="video-grid">${rest.slice(3, 11).map(v => vidCard(v)).join('')}</div>`;
+  }
+}
+function openPlayer(id, title, short) {
+  const dlg = $('#player');
+  $('#playerFrame').className = `player-frame${short ? ' short' : ''}`;
+  $('#playerFrame').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0" title="${esc(title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+  $('#playerTitle').textContent = title;
+  $('#playerLink').href = short ? `https://www.youtube.com/shorts/${id}` : `https://www.youtube.com/watch?v=${id}`;
+  dlg.showModal();
+}
+document.addEventListener('click', e => {
+  const v = e.target.closest('[data-id].vid, [data-id].pop');
+  if (v) openPlayer(v.dataset.id, v.dataset.title, !!v.dataset.short);
+});
+$('#player').addEventListener('close', () => { $('#playerFrame').innerHTML = ''; });
+$$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d || e.target.closest('[data-close]')) d.close(); }));
+
+// ───────── 방송 일정 ─────────
+const C = { y: 0, m: 0, sel: null };
+function plannedOn(y, m, d) {
+  const sch = S.sched || { weekly: [], events: [], off: [] };
+  const key = dkey(y, m, d);
+  const dow = new Date(Date.UTC(y, m, d)).getUTCDay();
+  const out = [];
+  if (!(sch.off || []).includes(key)) {
+    for (const w of sch.weekly || []) if (w.days.includes(dow)) {
+      const [h, mi] = w.time.split(':').map(Number);
+      out.push({ type: 'plan', at: kstTime(y, m, d, h, mi), title: w.title, platform: w.platform });
+    }
+  } else out.push({ type: 'off', title: '휴방' });
+  for (const ev of sch.events || []) if (ev.date === key) {
+    const [h = 0, mi = 0] = (ev.time || '0:0').split(':').map(Number);
+    out.push({ type: 'event', at: kstTime(y, m, d, h, mi), title: ev.title, note: ev.note, url: ev.url, timed: !!ev.time });
+  }
+  return out;
+}
+function dayItems(y, m, d) {
+  const key = dkey(y, m, d);
+  const todayKey = keyOf(Date.now());
+  const items = [];
+  const lives = (S.live?.history || []).filter(h => keyOf(h.start) === key).map(h => ({ type: 'live', at: h.start, title: h.title, sub: `${hhmm(h.start)} ~ ${hhmm(h.end)} · ${h.category || ''}`, url: h.url, thumb: h.thumb }));
+  if (S.live?.open && S.live.openDate && keyOf(S.live.openDate) === key) lives.unshift({ type: 'live', at: S.live.openDate, title: `🔴 ${S.live.title || '방송 중'}`, sub: `${hhmm(S.live.openDate)} 시작 · 방송 중`, url: S.live.url, thumb: S.live.thumb });
+  items.push(...lives);
+  for (const p of plannedOn(y, m, d)) {
+    if (p.type === 'plan' && (key < todayKey || lives.length)) continue; // 지난 날은 실제 방송 기록으로 표시
+    items.push({ ...p, sub: p.type === 'off' ? '이 날은 쉬어요' : p.type === 'event' ? [p.timed ? hhmm(p.at) : '', p.note].filter(Boolean).join(' · ') : `${hhmm(p.at)} · 치지직`, url: p.url || (p.type === 'plan' ? S.cfg.chzzk.url : null) });
+  }
+  for (const c of S.yt?.channels || []) for (const v of [...(c.videos || []), ...(c.shorts || [])]) {
+    if (keyOf(new Date(v.published)) === key) items.push({ type: 'yt', at: +new Date(v.published), title: v.title, sub: `${c.name} · ${v.short ? '쇼츠' : '영상'} 업로드 · ${hhmm(new Date(v.published))}`, url: v.url, thumb: v.thumb });
+  }
+  return items.sort((a, b) => (a.at || 0) - (b.at || 0));
+}
+function renderCalendar() {
+  const { y, m } = C;
+  $('#calTitle').textContent = `${y}년 ${m + 1}월`;
+  const first = new Date(Date.UTC(y, m, 1)).getUTCDay();
+  const today = keyOf(Date.now());
+  let html = '';
+  for (let i = 0; i < 42; i++) {
+    const dt = new Date(Date.UTC(y, m, 1 - first + i));
+    const [yy, mm, dd] = [dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()];
+    if (i >= 35 && mm !== m) break;
+    const key = dkey(yy, mm, dd);
+    const items = dayItems(yy, mm, dd);
+    const label = items.find(x => x.type === 'event') || items.find(x => x.type === 'live') || items.find(x => x.type === 'plan') || items.find(x => x.type === 'off');
+    const types = [...new Set(items.map(x => x.type).filter(t => t !== 'off'))];
+    const tagTxt = label ? (label.type === 'live' ? '방송함' : label.type === 'plan' ? hhmm(label.at).replace(':00', '시') : label.title) : '';
+    html += `<button class="day ${mm !== m ? 'out' : ''} ${key === today ? 'today' : ''} ${key === C.sel ? 'sel' : ''}" data-key="${key}" aria-label="${mm + 1}월 ${dd}일 일정 ${items.length}개">
+      <span class="n">${dd}</span>
+      ${label ? `<span class="tag t-${label.type}">${esc(tagTxt)}</span>` : ''}
+      <span class="dots">${types.map(t => `<i class="dot d-${t}"></i>`).join('')}</span></button>`;
+  }
+  $('#calGrid').innerHTML = html;
+  renderDayDetail();
+}
+function renderDayDetail() {
+  const [y, m, d] = C.sel.split('-').map(Number);
+  const items = dayItems(y, m - 1, d);
+  const dow = DOW[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+  const color = { plan: 'var(--accent)', live: 'var(--green)', yt: '#ff3355', event: 'var(--purple)', off: 'var(--faint)' };
+  $('#calDetail').innerHTML = `<h3>${m}월 ${d}일 (${dow})</h3>` + (items.length ? items.map(it => {
+    const inner = `${it.thumb ? `<img src="${esc(it.thumb)}" alt="" loading="lazy">` : `<span class="bar" style="background:${color[it.type]}"></span>`}<span><strong>${esc(it.title)}</strong><small>${esc(it.sub || '')}</small></span>`;
+    return it.url ? `<a class="ev" href="${esc(it.url)}" target="_blank" rel="noopener">${inner}</a>` : `<div class="ev">${inner}</div>`;
+  }).join('') : '<p class="muted">일정이 없어요</p>');
+}
+function nextBroadcast() {
+  const now = Date.now(); const t = kst(now);
+  for (let i = 0; i < 21; i++) {
+    const dt = new Date(Date.UTC(t.y, t.m, t.d + i));
+    const list = plannedOn(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()).filter(p => (p.type === 'plan' || (p.type === 'event' && p.timed)) && p.at > now - 2 * 3600e3);
+    if (list.length) return list.sort((a, b) => a.at - b.at)[0];
+  }
+  return null;
+}
+function tickNext() {
+  const el = $('#nextLive');
+  if (S.live?.open) { el.innerHTML = `<span>🔴 지금 방송 중</span><a class="btn btn-accent btn-sm" href="${esc(S.live.url)}" target="_blank" rel="noopener">보러 가기</a>`; return; }
+  const n = nextBroadcast();
+  if (!n) { el.hidden = true; return; }
+  el.hidden = false;
+  const diff = n.at - Date.now();
+  const k = kst(n.at);
+  if (diff <= 0) { el.innerHTML = `<span>곧 방송 시작!</span><b>${DOW[k.dow]} ${hhmm(n.at)}</b>`; return; }
+  const dd = Math.floor(diff / 86400e3), hh = Math.floor(diff / 3600e3) % 24, mm = Math.floor(diff / 60e3) % 60, ss = Math.floor(diff / 1e3) % 60;
+  const p = v => String(v).padStart(2, '0');
+  el.innerHTML = `<span>다음 방송 · ${k.m + 1}/${k.d} (${DOW[k.dow]}) ${hhmm(n.at)}</span><b>${dd ? `${dd}일 ` : ''}${p(hh)}:${p(mm)}:${p(ss)}</b>`;
+}
+function initCalendar() {
+  const t = kst(Date.now());
+  C.y = t.y; C.m = t.m; C.sel = dkey(t.y, t.m, t.d);
+  const w = S.sched?.weekly?.[0];
+  if (w) $('#schedHint').textContent = `매주 ${w.days.slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map(d => DOW[d]).join(' · ')} ${hhmm(kstTime(2000, 0, 1, ...w.time.split(':').map(Number)))} 치지직`;
+  $('#calPrev').onclick = () => { C.m--; if (C.m < 0) { C.m = 11; C.y--; } renderCalendar(); };
+  $('#calNext').onclick = () => { C.m++; if (C.m > 11) { C.m = 0; C.y++; } renderCalendar(); };
+  $('#calGrid').onclick = e => { const b = e.target.closest('.day'); if (!b) return; C.sel = b.dataset.key; $$('.day').forEach(x => x.classList.toggle('sel', x === b)); renderDayDetail(); };
+  renderCalendar();
+  tickNext(); setInterval(tickNext, 1000);
+}
+
+// ───────── 모드 저장소 ─────────
+const M = { cat: '', section: '', version: '', sort: 'order', q: '', limit: 24 };
+const versionsOf = m => { const v = (m.steam?.tags || []).filter(t => /^\d+\.\d+$/.test(t)); if (m.version && !v.includes(m.version)) v.push(m.version); return v; };
+const latestVersion = m => versionsOf(m).sort((a, b) => parseFloat(b) - parseFloat(a))[0];
+const norm = s => String(s || '').toLowerCase().replace(/\s+/g, '');
+function hl(text, q) {
+  const t = esc(text); if (!q) return t;
+  const words = q.split(/\s+/).filter(Boolean).map(w => esc(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return words.length ? t.replace(new RegExp(`(${words.join('|')})`, 'gi'), '<mark>$1</mark>') : t;
+}
+function filteredMods() {
+  const words = M.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  let list = S.mods.items.filter(m =>
+    (!M.cat || m.category === M.cat) &&
+    (!M.section || m.section === M.section) &&
+    (!M.version || versionsOf(m).includes(M.version)) &&
+    (!words.length || words.every(w => norm([m.name, m.desc, m.section, m.category, m.steam?.title, ...(m.steam?.tags || [])].join(' ')).includes(w.replace(/\s+/g, '')))));
+  const catOrder = Object.fromEntries(S.mods.categories.map((c, i) => [c.key, i]));
+  const by = {
+    order: (a, b) => (catOrder[a.category] - catOrder[b.category]) || (a.order - b.order),
+    subs: (a, b) => (b.steam?.subs || 0) - (a.steam?.subs || 0),
+    updated: (a, b) => (b.steam?.updated || 0) - (a.steam?.updated || 0),
+    name: (a, b) => a.name.localeCompare(b.name, 'ko'),
+  }[M.sort];
+  return list.sort(by);
+}
+function renderModFilters() {
+  const { categories, items } = S.mods;
+  const count = k => items.filter(m => !k || m.category === k).length;
+  $('#modCats').innerHTML = [{ key: '', label: '전체', icon: '✨' }, ...categories].map(c =>
+    `<button class="chip ${M.cat === c.key ? 'on' : ''}" data-cat="${esc(c.key)}">${c.icon || ''} ${esc(c.label)} <small>${count(c.key)}</small></button>`).join('');
+  const sections = [...new Set(items.filter(m => !M.cat || m.category === M.cat).map(m => m.section))];
+  $('#modSection').innerHTML = `<option value="">세부 분류 전체</option>` + sections.map(s => `<option ${s === M.section ? 'selected' : ''}>${esc(s)}</option>`).join('');
+  const vers = [...new Set(items.flatMap(versionsOf))].sort((a, b) => parseFloat(b) - parseFloat(a));
+  $('#modVersion').innerHTML = `<option value="">버전 전체</option>` + vers.map(v => `<option value="${v}" ${v === M.version ? 'selected' : ''}>${v} 지원</option>`).join('');
+  const cat = categories.find(c => c.key === M.cat);
+  $('#modNotes').innerHTML = cat ? `<strong>${esc(cat.desc || '')}</strong>${cat.notes?.length ? `<ul>${cat.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}` : '';
+}
+function renderMods() {
+  const list = filteredMods();
+  const q = M.q.trim();
+  $('#modCount').textContent = `김치복이 직접 쓰고 추천하는 림월드 모드 · ${list.length}개`;
+  $('#modGrid').innerHTML = list.length ? list.slice(0, M.limit).map(m => {
+    const s = m.steam || {};
+    const img = s.preview ? `${s.preview}${s.preview.includes('?') ? '&' : '?'}imw=480&imh=270&ima=fit&impolicy=Letterbox` : '';
+    const kind = m.kind === 'mapfile' ? '맵 파일' : (m.kind === 'collection' || s.collection) ? '모음집' : m.category;
+    const ver = latestVersion(m);
+    return `<a class="mod glass" href="${esc(m.url)}" target="_blank" rel="noopener">
+      <div class="thumb">${m.kind === 'mapfile' ? '🗺️' : '🧩'}${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<span class="kind">${esc(kind)}</span></div>
+      <div class="body">
+        <div class="name">${hl(m.name, q)}</div>
+        ${m.desc ? `<div class="desc">${hl(m.desc, q)}</div>` : ''}
+        <div class="meta">
+          <span class="pill acc">${esc(m.section)}</span>
+          ${ver ? `<span class="pill">v${esc(ver)}</span>` : ''}
+          ${s.subs ? `<span class="pill">구독 ${num(s.subs)}</span>` : ''}
+          ${s.updated ? `<span class="pill">${ago(s.updated)} 업데이트</span>` : ''}
+        </div>
+      </div></a>`;
+  }).join('') : `<div class="empty" style="grid-column:1/-1">검색 결과가 없어요</div>`;
+  $('#modMore').hidden = list.length <= M.limit;
+  $('#modMore').textContent = `더 보기 (${list.length - M.limit}개 남음)`;
+}
+function initMods() {
+  if (!S.mods?.items?.length) { $('#modGrid').innerHTML = '<div class="empty">모드 목록을 불러오지 못했어요</div>'; return; }
+  const reset = () => { M.limit = 24; renderMods(); };
+  $('#modCats').onclick = e => { const b = e.target.closest('.chip'); if (!b) return; M.cat = b.dataset.cat; M.section = ''; renderModFilters(); reset(); };
+  $('#modSection').onchange = e => { M.section = e.target.value; reset(); };
+  $('#modVersion').onchange = e => { M.version = e.target.value; reset(); };
+  $('#modSort').onchange = e => { M.sort = e.target.value; reset(); };
+  let t; $('#modSearch').oninput = e => { clearTimeout(t); t = setTimeout(() => { M.q = e.target.value; reset(); }, 120); };
+  $('#modMore').onclick = () => { M.limit += 24; renderMods(); };
+  renderModFilters(); renderMods();
+  const g = S.mods.guide;
+  if (g?.greeting || g?.faq?.length) {
+    $('#guide').hidden = false;
+    $('#guideBody').innerHTML = `${esc(g.greeting)}${g.faq?.length ? `<div class="faq">${g.faq.map(f => `<div><b>Q. ${esc(f.q)}</b>A. ${esc(f.a)}</div>`).join('')}</div>` : ''}`;
+  }
+}
+
+// ───────── 주간 순위 ─────────
+function renderWeekly() {
+  const items = S.ws?.items || [];
+  if (!items.length) { $('#rankList').innerHTML = '<div class="empty">순위를 불러오지 못했어요</div>'; return; }
+  $('#rankList').innerHTML = items.map(m => {
+    let move = '';
+    if (m.prevRank == null) move = '<small class="new">NEW</small>';
+    else if (m.prevRank > m.rank) move = `<small class="up">▲${m.prevRank - m.rank}</small>`;
+    else if (m.prevRank < m.rank) move = `<small class="down">▼${m.rank - m.prevRank}</small>`;
+    else move = '<small style="color:var(--faint)">–</small>';
+    const img = m.preview ? `${m.preview}${m.preview.includes('?') ? '&' : '?'}imw=240&imh=135&ima=fit&impolicy=Letterbox` : '';
+    const ver = (m.tags || []).filter(t => /^\d+\.\d+$/.test(t)).sort((a, b) => parseFloat(b) - parseFloat(a))[0];
+    return `<li><a class="rank glass" href="${esc(m.url)}" target="_blank" rel="noopener">
+      <span class="no">${m.rank}${move}</span>
+      <img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer">
+      <span><div class="title">${esc(m.title)}</div><div class="sum">${esc(m.summary || '')}</div></span>
+      <span class="num"><b>${num(m.subs)}</b>구독${ver ? ` · v${ver}` : ''}</span></a></li>`;
+  }).join('');
+}
+
+// ───────── 알림 (OneSignal 웹 푸시) ─────────
+const N = { pref: store.get('kcb-notify', { on: false, video: true, live: true }), ready: null };
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+function oneSignal() {
+  if (N.ready) return N.ready;
+  const appId = S.cfg?.onesignal?.appId;
+  if (!appId) return (N.ready = Promise.resolve(null));
+  N.ready = new Promise(resolve => {
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    const base = new URL('.', location.href).pathname; // GitHub Pages 하위 경로 대응
+    window.OneSignalDeferred.push(async OS => {
+      try {
+        await OS.init({
+          appId,
+          serviceWorkerPath: `${base.slice(1)}OneSignalSDKWorker.js`,
+          serviceWorkerParam: { scope: base },
+          allowLocalhostAsSecureOrigin: true,
+          notifyButton: { enable: false },
+          promptOptions: { autoPrompt: false },
+        });
+        resolve(OS);
+      } catch (e) { console.warn('OneSignal init 실패', e); resolve(null); }
+    });
+    const s = document.createElement('script');
+    s.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js'; s.defer = true;
+    s.onerror = () => resolve(null);
+    document.head.appendChild(s);
+  });
+  return N.ready;
+}
+function paintNotifyBtn() {
+  const b = $('#notifyBtn');
+  b.classList.toggle('subscribed', N.pref.on);
+  b.classList.toggle('btn-accent', !N.pref.on);
+  b.querySelector('span').textContent = N.pref.on ? '알림 받는 중' : '알림 받기';
+}
+function openConsent() {
+  $('#optVideo').checked = N.pref.video; $('#optLive').checked = N.pref.live;
+  $('#optAgree').checked = N.pref.on;
+  $('#notifyOff').hidden = !N.pref.on;
+  $('#notifyOn').textContent = N.pref.on ? '설정 저장' : '동의하고 알림 받기';
+  $('#iosHint').hidden = !(isIOS && !standalone);
+  $('#consentMsg').textContent = '';
+  $('#consent').showModal();
+}
+async function subscribe() {
+  const msg = $('#consentMsg');
+  const video = $('#optVideo').checked, live = $('#optLive').checked;
+  if (!video && !live) { msg.textContent = '받을 알림을 하나 이상 골라 주세요.'; return; }
+  if (!$('#optAgree').checked) { msg.textContent = '알림 수신 동의에 체크해 주세요.'; return; }
+  if (isIOS && !standalone) { msg.textContent = '아이폰은 먼저 홈 화면에 추가해 주세요.'; return; }
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) { msg.textContent = '이 브라우저는 푸시 알림을 지원하지 않아요.'; return; }
+  msg.textContent = '알림 권한을 요청하는 중…';
+  const OS = await oneSignal();
+  if (!OS) { msg.textContent = '알림 서버가 아직 연결되지 않았어요. (운영자 설정 필요)'; return; }
+  try {
+    await OS.Notifications.requestPermission();
+    if (!OS.Notifications.permission) { msg.textContent = '브라우저에서 알림이 차단되어 있어요. 주소창의 🔒 아이콘에서 알림을 허용해 주세요.'; return; }
+    await OS.User.PushSubscription.optIn();
+    await OS.User.addTags({ video: video ? '1' : '0', live: live ? '1' : '0', consent_at: String(Date.now()) });
+    N.pref = { on: true, video, live }; store.set('kcb-notify', N.pref); paintNotifyBtn();
+    $('#consent').close();
+    toast(`🔔 ${[video && '새 영상', live && '생방송'].filter(Boolean).join(' · ')} 알림을 받아요`);
+  } catch (e) { console.warn(e); msg.textContent = '알림 설정 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.'; }
+}
+async function unsubscribe() {
+  const OS = await oneSignal();
+  try { if (OS) { await OS.User.addTags({ video: '0', live: '0' }); await OS.User.PushSubscription.optOut(); } } catch (e) { console.warn(e); }
+  N.pref = { ...N.pref, on: false }; store.set('kcb-notify', N.pref); paintNotifyBtn();
+  $('#consent').close(); toast('알림을 껐어요');
+}
+function initNotify() {
+  paintNotifyBtn();
+  $('#notifyBtn').onclick = openConsent;
+  $('#notifySettings').onclick = openConsent;
+  $('#notifyOn').onclick = subscribe;
+  $('#notifyOff').onclick = unsubscribe;
+  if (N.pref.on) oneSignal(); // 이미 동의한 사람만 SDK 로드
+}
+
+// ───────── 네비 하이라이트 ─────────
+function initNav() {
+  const links = $$('.nav-links a');
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === `#${e.target.id}`));
+  }), { rootMargin: '-45% 0px -50% 0px' });
+  $$('main section[id]').forEach(s => io.observe(s));
+}
+
+// ───────── 시작 ─────────
+async function refreshLive() {
+  const prev = S.live?.open;
+  const l = await load('data/live.json');
+  if (!l) return;
+  S.live = l; renderLive(); renderHero();
+  if (prev === false && l.open) toast('🔴 김치복 생방송이 시작됐어요!');
+}
+async function main() {
+  initTheme();
+  [S.cfg, S.yt, S.live, S.mods, S.ws, S.sched] = await Promise.all([
+    load('config/site.json'), load('data/youtube.json'), load('data/live.json'),
+    load('data/mods.json'), load('data/workshop.json'), load('data/schedule.json'),
+  ]);
+  if (!S.cfg) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:20px">설정 파일을 불러오지 못했어요. 로컬에서는 <code>npm run dev</code>로 열어 주세요.</p>'); return; }
+  renderHero(); renderLive();
+  renderVideoTabs(); renderVideos();
+  initCalendar(); initMods(); renderWeekly(); initNotify(); initNav();
+  const times = [S.yt, S.live, S.ws, S.mods].map(x => x?.updatedAt || 0);
+  if (Math.max(...times)) $('#updatedAt').textContent = `마지막 데이터 갱신 ${new Date(Math.max(...times)).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}`;
+  setInterval(refreshLive, 120e3);
+}
+main();

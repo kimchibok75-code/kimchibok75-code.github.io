@@ -1,0 +1,16 @@
+{
+  "name": "kimchibok-homepage",
+  "private": true,
+  "type": "module",
+  "description": "김치복 홈페이지 — 정적 사이트 + 자동 데이터 갱신",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "update": "node scripts/update.mjs",
+    "update:live": "node scripts/update.mjs live",
+    "update:youtube": "node scripts/update.mjs youtube",
+    "update:workshop": "node scripts/update.mjs workshop",
+    "update:mods": "node scripts/update.mjs mods",
+    "add-mod": "node scripts/add-mod.mjs"
+  }
+}
