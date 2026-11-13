@@ -9,6 +9,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      test_push:
+        description: "테스트 알림 보내기 (해당 알림 구독자 전원에게 발송)"
+        type: choice
+        default: "안 보냄"
+        options: ["안 보냄", "video", "live"]
 
 permissions:
   contents: write
@@ -48,6 +54,13 @@ jobs:
           ONESIGNAL_REST_API_KEY: ${{ secrets.ONESIGNAL_REST_API_KEY }}
           STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
         run: node scripts/update.mjs ${{ steps.pick.outputs.tasks }}
+
+      - name: 테스트 알림
+        if: github.event_name == 'workflow_dispatch' && inputs.test_push != '안 보냄'
+        env:
+          ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
+          ONESIGNAL_REST_API_KEY: ${{ secrets.ONESIGNAL_REST_API_KEY }}
+        run: node scripts/test-push.mjs ${{ inputs.test_push }}
 
       - name: 바뀐 데이터 저장
         id: commit
