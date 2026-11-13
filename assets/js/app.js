@@ -408,17 +408,18 @@ function renderWeekly() {
   if (!items.length) { $('#rankList').innerHTML = '<div class="empty">순위를 불러오지 못했어요</div>'; return; }
   $('#rankList').innerHTML = items.map(m => {
     let move = '';
-    if (m.prevRank == null) move = '<small class="new">NEW</small>';
-    else if (m.prevRank > m.rank) move = `<small class="up">▲${m.prevRank - m.rank}</small>`;
-    else if (m.prevRank < m.rank) move = `<small class="down">▼${m.rank - m.prevRank}</small>`;
-    else move = '<small style="color:var(--faint)">–</small>';
-    const img = m.preview ? `${m.preview}${m.preview.includes('?') ? '&' : '?'}imw=240&imh=135&ima=fit&impolicy=Letterbox` : '';
-    const ver = (m.tags || []).filter(t => /^\d+\.\d+$/.test(t)).sort((a, b) => parseFloat(b) - parseFloat(a))[0];
-    return `<li><a class="rank glass" href="${esc(m.url)}" target="_blank" rel="noopener">
-      <span class="no">${m.rank}${move}</span>
-      <img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer">
-      <span><div class="title">${esc(m.title)}</div><div class="sum" title="${esc(m.summary || '')}">${esc(m.ko || m.summary || '')}</div></span>
-      <span class="num"><b>${num(m.subs)}</b>구독${ver ? ` · v${ver}` : ''}</span></a></li>`;
+    if (m.prevRank == null) move = '<i class="mv new">NEW</i>';
+    else if (m.prevRank > m.rank) move = `<i class="mv up">▲${m.prevRank - m.rank}</i>`;
+    else if (m.prevRank < m.rank) move = `<i class="mv down">▼${m.rank - m.prevRank}</i>`;
+    const img = m.preview ? `${m.preview}${m.preview.includes('?') ? '&' : '?'}imw=480&imh=270&ima=fit&impolicy=Letterbox` : '';
+    const vers = VERSIONS.filter(v => (m.tags || []).includes(v));
+    return `<li><a class="wcard glass" href="${esc(m.url)}" target="_blank" rel="noopener">
+      <span class="wthumb">${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}<b class="wno">${m.rank}</b>${move}</span>
+      <span class="wbody">
+        <strong class="wtitle">${esc(m.title)}</strong>
+        <span class="wsum" title="${esc(m.summary || '')}">${esc(m.ko || m.summary || '')}</span>
+        <span class="wmeta"><span>구독 <b>${num(m.subs)}</b></span><span class="mver">${VERSIONS.map(v => `<i class="${vers.includes(v) ? 'ok' : ''}">${v}</i>`).join('')}</span></span>
+      </span></a></li>`;
   }).join('');
 }
 
