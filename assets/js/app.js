@@ -90,7 +90,7 @@ function renderLive() {
   const l = S.live; if (!l) return;
   const card = $('#liveCard');
   card.href = l.url || S.cfg.chzzk.url;
-  card.classList.toggle('on', !!l.open);
+  $('#board').classList.toggle('on', !!l.open);
   $('#avatarLive').hidden = !l.open;
   const last = l.history?.[0];
   const thumb = l.open ? l.thumb : last?.thumb;
@@ -108,9 +108,12 @@ function renderLive() {
 }
 function tickBoard() {
   const l = S.live; const el = $('#liveFoot'); if (!l || !el) return;
-  if (l.open) { el.innerHTML = `<span>방송 시간 <b>${l.openDate ? dur(Date.now() - l.openDate) : '-'}</b></span><span class="btn btn-accent btn-sm">보러 가기</span>`; return; }
+  if (l.open) { el.innerHTML = `<small>방송 시간</small><b>${l.openDate ? dur(Date.now() - l.openDate) : '-'}</b><a class="btn btn-accent btn-sm" href="${esc(l.url || S.cfg.chzzk.url)}" target="_blank" rel="noopener">보러 가기</a>`; return; }
   const n = nextBroadcast();
-  el.innerHTML = n ? `<span>다음 방송 <b>${kst(n.at).m + 1}/${kst(n.at).d} (${DOW[kst(n.at).dow]}) ${hhmm(n.at)}</b></span><span class="muted">${n.at - Date.now() > 0 ? `${until(n.at - Date.now())} 후` : '곧 시작'}</span>` : '<span class="muted">예정된 방송이 없어요</span>';
+  if (!n) { el.innerHTML = '<small>예정된 방송이 없어요</small>'; return; }
+  const k = kst(n.at);
+  const left = n.at - Date.now(); const days = Math.floor(left / 86400e3);
+  el.innerHTML = `<small>다음 방송까지</small><b>${left > 0 ? `${days ? `${days}일 ` : ''}${dur(left - days * 86400e3)}` : '곧 시작!'}</b><span>${k.m + 1}/${k.d} (${DOW[k.dow]}) ${hhmm(n.at)}</span>`;
 }
 
 // ───────── 홈: 오늘부터 7일간 방송 일정 ─────────
@@ -124,15 +127,14 @@ function renderWeek() {
     const key = dkey(y, m, d); const dow = dt.getUTCDay();
     const plans = plannedOn(y, m, d);
     const livedToday = (S.live?.history || []).some(h => keyOf(h.start) === key) || (S.live?.open && S.live.openDate && keyOf(S.live.openDate) === key);
-    let what;
-    if (key === today && S.live?.open) what = '<span class="wk-st on">🔴 방송 중</span>';
-    else if (plans.some(p => p.type === 'off')) what = '<span class="wk-st off">휴방</span>';
-    else if (key === today && livedToday) what = '<span class="wk-st done">방송 끝</span>';
-    else {
-      const ps = plans.filter(p => p.type === 'plan' || p.type === 'event');
-      what = ps.length ? ps.map(p => `<span class="wk-st ${p.type}">${p.type === 'event' ? esc(p.title) : `${hhmm(p.at)} 방송`}</span>`).join('') : '<span class="wk-st none">방송 없음</span>';
-    }
-    html += `<li class="${key === today ? 'today' : ''} ${dow === 0 ? 'sun' : dow === 6 ? 'sat' : ''}"><span class="wk-d"><b>${key === today ? '오늘' : DOW[dow]}</b><small>${m + 1}/${d}</small></span>${what}</li>`;
+    // 상태: on(방송 중) · plan(예정) · event(특별) · done(방송 끝) · off(휴방) · none(없음)
+    const ps = plans.filter(p => p.type === 'plan' || p.type === 'event');
+    let st = 'none', label = '쉬는 날';
+    if (key === today && S.live?.open) { st = 'on'; label = 'LIVE'; }
+    else if (plans.some(p => p.type === 'off')) { st = 'off'; label = '휴방'; }
+    else if (key === today && livedToday) { st = 'done'; label = '방송 끝'; }
+    else if (ps.length) { st = ps[0].type; label = ps[0].type === 'event' ? ps[0].title : hhmm(ps[0].at).replace(':00', '시'); }
+    html += `<li class="wk ${st} ${key === today ? 'today' : ''} ${dow === 0 ? 'sun' : dow === 6 ? 'sat' : ''}"><b>${key === today ? '오늘' : DOW[dow]}</b><small>${m + 1}.${d}</small><span>${esc(label)}</span></li>`;
   }
   $('#weekList').innerHTML = html;
 }
@@ -307,7 +309,7 @@ function initCalendar() {
   tickNext(); setInterval(tickNext, 1000);
 }
 
-// ───────── 모드 저장소 ─────────
+// ───────── 모드 추천 ─────────
 const M = { cat: '', section: '', version: '', sort: 'order', q: '', limit: 60 };
 const VERSIONS = ['1.6', '1.7']; // 버전 정보는 1.6 · 1.7만 표시
 const versionsOf = m => { const v = new Set((m.steam?.tags || []).filter(t => VERSIONS.includes(t))); if (VERSIONS.includes(m.version)) v.add(m.version); return [...v].sort(); };
@@ -513,18 +515,13 @@ function initNav() {
 
 
 // ───────── 홈: 팬카페 최신글 ─────────
-const CF = { board: '' };
 const boardName = b => b.replace(/^[^\p{L}\p{N}]+/u, '').trim() || b; // 앞쪽 이모지 떼기
 function renderCafe() {
   const items = S.cafe?.items || [];
   if (!items.length) return;
   $('#cafeFeed').hidden = false;
   $('#cafeMore').href = S.cafe.url || S.cfg.cafe.url;
-  // 글이 많은 게시판 5개만 필터로 노출
-  const cnt = {}; items.forEach(a => { cnt[a.board] = (cnt[a.board] || 0) + 1; });
-  const boards = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]).slice(0, 5);
-  $('#cafeBoards').innerHTML = ['', ...boards].map(b => `<button class="chip${CF.board === b ? ' on' : ''}" data-b="${esc(b)}">${b ? esc(b) : '전체'}</button>`).join('');
-  const list = items.filter(a => !CF.board || a.board === CF.board).slice(0, 8);
+  const list = items.slice(0, 8);
   $('#cafeList').innerHTML = list.map(a => `
     <li><a href="${esc(a.url)}" target="_blank" rel="noopener">
       <span class="cafe-text">
@@ -535,13 +532,7 @@ function renderCafe() {
       ${a.thumb ? `<img src="${esc(a.thumb)}?type=w300" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
     </a></li>`).join('');
 }
-function initCafe() {
-  renderCafe();
-  $('#cafeBoards').addEventListener('click', e => {
-    const b = e.target.closest('[data-b]'); if (!b) return;
-    CF.board = b.dataset.b; renderCafe();
-  });
-}
+function initCafe() { renderCafe(); }
 
 // ───────── 모든 페이지 공통 요소 (아이콘 · 푸터 · 알림 동의 창 · 토스트) ─────────
 function injectShell() {
@@ -561,7 +552,15 @@ function injectShell() {
     <symbol id="i-sheet" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 3h11l5 5v13H4zM4 10h16M4 15h16M10 10v11"/></symbol>
     <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
     <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></g></symbol>
+    <symbol id="i-puzzle" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M10 4a2 2 0 1 1 4 0v2h4v4h-2a2 2 0 1 0 0 4h2v4h-4v-2a2 2 0 1 0-4 0v2H6v-4H4a2 2 0 1 1 0-4h2V6h4z"/></symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 21h8"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 5h16v11H9l-5 4z"/></symbol>
   </svg>`);
+  // 모바일 하단 메뉴 (화면이 좁을 때만 보임)
+  const tabs = [['home', './', 'i-home', '홈'], ['schedule', 'schedule.html', 'i-cal', '방송 일정'], ['mods', 'mods.html', 'i-puzzle', '모드'], ['weekly', 'weekly.html', 'i-trophy', '주간 순위'], ['community', './#community', 'i-chat', '커뮤니티']];
+  document.body.insertAdjacentHTML('beforeend', `<nav class="tabbar glass" aria-label="모바일 메뉴">${tabs.map(([k, href, ic, label]) => `<a href="${href}" class="${k === PAGE ? 'on' : ''}"${k === PAGE ? ' aria-current="page"' : ''}><svg><use href="#${ic}"/></svg><span>${label}</span></a>`).join('')}</nav>`);
   document.body.insertAdjacentHTML('beforeend', `
   <footer class="footer">
     <p>© 김치복 · 영상 · 방송 · 모드 정보는 유튜브, 치지직, 스팀에서 자동으로 가져옵니다.</p>

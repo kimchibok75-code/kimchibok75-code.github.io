@@ -1,7 +1,7 @@
 {
   "name": "김치복",
   "short_name": "김치복",
-  "description": "림월드 유튜버 김치복 — 최신 영상, 생방송 알림, 방송 일정, 모드 저장소",
+  "description": "림월드 유튜버 김치복 — 최신 영상, 생방송 알림, 방송 일정, 모드 추천",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

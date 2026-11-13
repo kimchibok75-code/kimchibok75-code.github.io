@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>김치복 | 림월드 유튜버</title>
-  <meta name="description" content="림월드 유튜버 김치복 공식 홈페이지 — 최신 영상, 생방송 알림, 방송 일정, 모드 저장소, 창작마당 주간 순위">
+  <meta name="description" content="림월드 유튜버 김치복 공식 홈페이지 — 최신 영상, 생방송 알림, 방송 일정, 모드 추천, 창작마당 주간 순위">
   <meta name="theme-color" content="#14110f" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f6f1ea" media="(prefers-color-scheme: light)">
   <meta property="og:title" content="김치복 | 림월드 유튜버">
-  <meta property="og:description" content="최신 영상 · 생방송 알림 · 방송 일정 · 모드 저장소 · 주간 모드 순위">
+  <meta property="og:description" content="최신 영상 · 생방송 알림 · 방송 일정 · 모드 추천 · 주간 모드 순위">
   <meta property="og:image" content="assets/img/icon-512.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/img/icon-192.png">
@@ -24,7 +24,7 @@
   <header class="nav glass">
     <a class="brand" href="./"><img src="assets/img/profile.jpg" alt="" width="32" height="32"><span>김치복</span></a>
     <nav class="nav-links" aria-label="메뉴">
-      <a href="./#videos">영상</a><a href="schedule.html">방송 일정</a><a href="mods.html">모드 저장소</a><a href="weekly.html">주간 모드 순위</a><a href="./#community">커뮤니티</a>
+      <a href="./#videos">영상</a><a href="schedule.html">방송 일정</a><a href="mods.html">모드 추천</a><a href="weekly.html">주간 모드 순위</a><a href="./#community">커뮤니티</a>
     </nav>
     <div class="nav-actions">
       <button class="icon-btn" id="themeBtn" aria-label="테마 전환"></button>
@@ -51,20 +51,20 @@
       <div class="channels" id="channels"></div>
 
       <!-- 생방송 상황판 + 7일 방송 일정 -->
-      <div class="board">
-        <a class="live-board glass" id="liveCard" href="https://chzzk.naver.com/live/d44a982c742226605f4fcf3b6b4e7629" target="_blank" rel="noopener">
-          <div class="lb-media" id="liveMedia"></div>
-          <div class="lb-body">
-            <span class="live-state" id="liveState">방송 상태 확인 중…</span>
-            <strong id="liveTitle">치지직</strong>
-            <small id="liveSub"></small>
-            <div class="lb-foot" id="liveFoot"></div>
-          </div>
-        </a>
-        <div class="week glass">
-          <div class="week-head"><strong>이번 주 방송 일정</strong><a href="schedule.html">달력 보기 →</a></div>
-          <ol class="week-list" id="weekList"></ol>
+      <div class="board glass" id="board">
+        <div class="lb-top">
+          <a class="lb-main" id="liveCard" href="https://chzzk.naver.com/live/d44a982c742226605f4fcf3b6b4e7629" target="_blank" rel="noopener">
+            <div class="lb-media" id="liveMedia"></div>
+            <div class="lb-body">
+              <span class="live-state" id="liveState">방송 상태 확인 중…</span>
+              <strong id="liveTitle">치지직</strong>
+              <small id="liveSub"></small>
+            </div>
+          </a>
+          <div class="lb-count" id="liveFoot"></div>
         </div>
+        <div class="week-head"><strong>이번 주 방송</strong><a href="schedule.html">달력 보기 →</a></div>
+        <ol class="week-strip" id="weekList"></ol>
       </div>
     </section>
 
@@ -94,7 +94,7 @@
         </a>
         <a class="comm-card glass discord" id="discordCard" target="_blank" rel="noopener">
           <span class="comm-icon"><svg><use href="#i-discord"/></svg></span>
-          <div><strong>디스코드</strong><p>같이 림월드 이야기해요</p></div>
+          <div><strong>디스코드</strong><p>채팅 위주 소통을 원하면 디스코드로</p></div>
           <svg class="arrow"><use href="#i-arrow"/></svg>
         </a>
       </div>
@@ -103,7 +103,6 @@
           <div><strong>팬카페 새 글</strong><p class="muted">김복단 카페에 올라온 최근 글</p></div>
           <a class="btn btn-ghost btn-sm" id="cafeMore" target="_blank" rel="noopener"><svg><use href="#i-cafe"/></svg>카페에서 보기</a>
         </div>
-        <div class="chips" id="cafeBoards"></div>
         <ul class="cafe-list" id="cafeList"></ul>
       </div>
     </section>
