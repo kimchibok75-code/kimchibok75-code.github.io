@@ -40,6 +40,11 @@
       "ko": "브리지에 대한 연구 요구 사항을 분할하여 중세 플레이와 더 잘 호환되도록 했습니다.",
       "at": 1794569758076
     },
+    "3835737267": {
+      "src": "Realistic Rain is a performance conscious visual overhaul of the rain and lighting, Rain now causes puddles to form, brief rain will hardly create any puddles, heavy rain will saturate the ground.",
+      "ko": "Realistic Rain은 성능을 고려한 비와 조명의 시각적 정밀 검사입니다.",
+      "at": 1794569943612
+    },
     "3835938747": {
       "src": "Adds more shader-based lighting effects to the game. Every effect is drawn by a custom shader with minimal performance cost, and each one can be toggled and fine-tuned individually in the settings.",
       "ko": "게임에 더 많은 셰이더 기반 조명 효과를 추가합니다. 모든 효과는 최소한의 성능 비용으로 사용자 정의 셰이더에 의해 그려지며 각 효과는 설정에서 개별적으로 전환하고 미세…",
