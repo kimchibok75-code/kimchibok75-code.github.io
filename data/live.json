@@ -1,10 +1,10 @@
 {
-  "updatedAt": 1794567573850,
+  "updatedAt": 1794594986819,
   "open": false,
   "channelName": "김치복",
   "channelImage": "https://nng-phinf.pstatic.net/MjAyNjEwMTRfMTYw/MDAxNzkxOTA1NTU1NjM1.o3ggEYjuo83AOpOIG7VyXYM4Npbv5dFgg6_al145gJkg.fZMo3uviMNXMm4EfxdulsY-rlScNqCtkQlWbPErZmX0g.PNG/image.png",
   "description": "금,토,일 오후 9시 생방 / 다시 보기 -> 유튜브 '풀치복' 채널",
-  "followers": 2215,
+  "followers": 2214,
   "url": "https://chzzk.naver.com/d44a982c742226605f4fcf3b6b4e7629",
   "title": "500% 상한 해제 도전 7지구",
   "viewers": null,
@@ -12,10 +12,19 @@
   "tags": [
     "림월드유튜버"
   ],
-  "openDate": 1794139332000,
-  "closeDate": 1794155890000,
+  "openDate": 1794571294000,
+  "closeDate": 1794587300000,
   "thumb": null,
   "history": [
+    {
+      "id": 16167643,
+      "title": "500% 상한 해제 도전 7지구",
+      "start": 1794571604000,
+      "end": 1794587599000,
+      "category": "림월드",
+      "thumb": "https://livecloud-thumb.akamaized.net/chzzk/kr/live-rewind-image/record/61653447/represent/thumbnail/image_22192586_720_0.jpg",
+      "url": "https://chzzk.naver.com/video/16167643"
+    },
     {
       "id": 16089841,
       "title": "500% 상한 해제 도전 7지구",
