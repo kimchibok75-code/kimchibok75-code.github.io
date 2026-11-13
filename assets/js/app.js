@@ -312,7 +312,7 @@ function initCalendar() {
 // ───────── 모드 추천 ─────────
 const M = { cat: '', section: '', version: '', sort: 'order', q: '', limit: 60 };
 const VERSIONS = ['1.6', '1.7']; // 버전 정보는 1.6 · 1.7만 표시
-const versionsOf = m => { const v = new Set((m.steam?.tags || []).filter(t => VERSIONS.includes(t))); if (VERSIONS.includes(m.version)) v.add(m.version); return [...v].sort(); };
+const versionsOf = m => { const v = new Set((m.steam?.tags || []).filter(t => VERSIONS.includes(t))); String(m.version || '').split(/[\s,/]+/).forEach(x => VERSIONS.includes(x) && v.add(x)); return [...v].sort(); };
 const norm = s => String(s || '').toLowerCase().replace(/\s+/g, '');
 function hl(text, q) {
   const t = esc(text); if (!q) return t;

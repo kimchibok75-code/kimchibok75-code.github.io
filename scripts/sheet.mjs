@@ -8,7 +8,7 @@ const CATEGORY_INFO = {
   '렉개선': { icon: '⚡', desc: '렉 개선 · 최적화 · 틱 감소' },
   '그래픽': { icon: '🎨', desc: '보기 좋게 바꿔주는 그래픽 모드' },
   '중세': { icon: '🏰', desc: '중세 테마 플레이 모드' },
-  '김치복': { icon: '🥬', desc: '김치복이 직접 만든 모드' },
+  '김치복제작': { label: '김치복 제작', icon: '🥬', desc: '김치복이 직접 만든 모드', section: '김치복이 만든 모드' },
   '모음집': { icon: '📦', desc: '시리즈 · 생방송에서 사용한 모드 모음집' },
   '맵파일': { icon: '🗺️', desc: '모드 목록 불러오기용 저장 파일' },
   '추천': { icon: '👍', desc: '김치복 추천 모드' },
@@ -82,14 +82,14 @@ export async function syncSheet() {
         name: name.trim().replace(/\s+/g, ' '),
         desc: desc.trim(),
         category: tab,
-        section: section?.title || tab,
+        section: section?.title || CATEGORY_INFO[tab]?.section || tab,
         version: version.trim(),
         kind: tab === '맵파일' ? 'mapfile' : tab === '모음집' ? 'collection' : 'mod',
         order: order++,
         source: 'sheet',
       });
     });
-    if (sheetItems.some(m => m.category === tab)) categories.push({ key: tab, label: tab, ...CATEGORY_INFO[tab], notes });
+    if (sheetItems.some(m => m.category === tab)) { const { section: _s, ...info } = CATEGORY_INFO[tab] || {}; categories.push({ key: tab, label: tab, ...info, notes }); }
   }
   if (sheetItems.length < 10) throw new Error(`시트에서 모드를 ${sheetItems.length}개밖에 못 읽음 — 형식이 바뀌었는지 확인 필요`);
 

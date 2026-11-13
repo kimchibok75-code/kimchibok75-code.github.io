@@ -10,7 +10,7 @@
   "chzzk": { "channelId": "d44a982c742226605f4fcf3b6b4e7629", "url": "https://chzzk.naver.com/d44a982c742226605f4fcf3b6b4e7629", "liveApi": "https://kimchibok-live.kimchibok.workers.dev/live" },
   "cafe": { "url": "https://cafe.naver.com/kimchibok", "desc": "공지 · 자유게시판 · 팬아트" },
   "discord": { "url": "https://discord.com/channels/1197441179197915136/1560847726143471758", "desc": "채팅 위주 소통을 원하면 디스코드로" },
-  "modSheet": { "id": "1M3PlQORO09Iq6TK3lePosZZAHgLNkuH6poy_QV3PYps", "url": "https://docs.google.com/spreadsheets/d/1M3PlQORO09Iq6TK3lePosZZAHgLNkuH6poy_QV3PYps/edit?gid=128028032#gid=128028032", "tabs": ["필수", "렉개선", "그래픽", "중세", "김치복", "모음집", "맵파일"] },
+  "modSheet": { "id": "1M3PlQORO09Iq6TK3lePosZZAHgLNkuH6poy_QV3PYps", "url": "https://docs.google.com/spreadsheets/d/1M3PlQORO09Iq6TK3lePosZZAHgLNkuH6poy_QV3PYps/edit?gid=128028032#gid=128028032", "tabs": ["개요", "김치복제작", "필수", "렉개선", "그래픽", "중세", "모음집", "맵파일"] },
   "workshop": { "appId": 294100, "url": "https://steamcommunity.com/workshop/browse/?appid=294100&section=readytouseitems&days=7", "count": 20 },
   "onesignal": { "appId": "864f9dc4-3d3c-4147-8f0f-152ad26a73ac", "safariWebId": "web.onesignal.auto.30b8db8e-86b1-4367-8886-055d3d362718" }
 }
