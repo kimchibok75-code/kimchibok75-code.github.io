@@ -551,10 +551,14 @@ function injectShell() {
 }
 
 // ───────── 시작 ─────────
+// 방송 상태는 Cloudflare 서버(liveApi)에서 실시간으로 받아 옴. 실패하면 data/live.json 그대로 사용
 async function refreshLive() {
   const prev = S.live?.open;
-  const l = await load('data/live.json');
-  if (!l) return;
+  const api = S.cfg?.chzzk?.liveApi;
+  const now = api ? await fetch(api, { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)).catch(() => null) : null;
+  if (!now || now.error) return;
+  const l = { ...(S.live || {}), ...now };
+  if (!now.open) { l.viewers = null; }
   S.live = l;
   if (PAGE === 'home') { renderLive(); renderHero(); }
   if (prev === false && l.open) toast('🔴 김치복 생방송이 시작됐어요!');
@@ -574,7 +578,7 @@ async function main() {
     renderHero(); renderLive();
     renderVideoTabs(); renderVideos();
     initCalendar(); renderHub(); initCafe(); initNav();
-    setInterval(refreshLive, 120e3);
+    refreshLive(); setInterval(refreshLive, 60e3);
   } else if (PAGE === 'mods') {
     $('#sheetLink').href = S.cfg.modSheet.url;
     initMods();

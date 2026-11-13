@@ -118,7 +118,8 @@ async function updateLive() {
   writeJson('live.json', live);
   console.log(`[live] ${open ? '🔴 방송 중' : '오프라인'} · ${live.title || ''} · 기록 ${history.length}개`);
 
-  if (open && (!state.live.open || state.live.liveId !== d.liveId)) {
+  // 방송 시작 알림은 Cloudflare 서버(worker/)가 1분마다 확인해서 보냄. liveApi가 없을 때만 여기서 보냄
+  if (!config.chzzk.liveApi && open && (!state.live.open || state.live.liveId !== d.liveId)) {
     await sendPush({ tag: 'live', title: `🔴 ${c.channelName || '김치복'} 생방송 시작!`, body: d.liveTitle || '지금 치지직에서 방송 중', url: config.chzzk.url, image: live.thumb || undefined });
   }
   state.live = { open, liveId: d.liveId ?? state.live.liveId };
