@@ -51,12 +51,15 @@ async function updateYoutube() {
     const [videos, shorts, popular, lives] = await Promise.all([safe('UULF'), safe('UUSH'), safe('UULP'), safe('UULV')]);
     const old = prev.channels.find(c => c.key === ch.key) || {};
     const meta = await channelMeta(ch);
+    // 유튜브 목록이 가끔 몇 시간씩 비어서(또는 404로) 옴 → 빈 목록이면 기존 영상 유지
+    const keep = (list, prevList) => (list?.length ? list : prevList?.length ? prevList : list || []);
+    if (old.videos?.length && !videos?.length) console.warn(`[youtube] ${ch.name} 영상 목록이 비어서 와서 기존 목록 유지`);
     const c = {
       key: ch.key, name: ch.name, url: ch.url, title: meta.title || old.title || ch.name,
       subs: meta.subs || old.subs || null, avatar: meta.avatar || old.avatar || null,
-      videos: videos ?? old.videos ?? [], shorts: shorts ?? old.shorts ?? [],
-      popular: (popular ?? old.popular ?? []).sort((a, b) => b.views - a.views),
-      lives: lives ?? old.lives ?? [],
+      videos: keep(videos, old.videos), shorts: keep(shorts, old.shorts),
+      popular: [...keep(popular, old.popular)].sort((a, b) => b.views - a.views),
+      lives: keep(lives, old.lives),
     };
     channels.push(c);
     for (const v of [...c.videos, ...c.shorts]) {
