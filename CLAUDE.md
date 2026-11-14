@@ -43,6 +43,18 @@
 - 삭제: `node scripts/add-mod.mjs --remove "<url>"`
 - 버전 표시는 1.6과 1.7만 남김 (`app.js`의 `VERSIONS`).
 
+## 새 컴퓨터(사무실 등)에서 처음 시작할 때
+1. Git과 Node.js가 있는지 확인. 없으면 설치 안내 (git-scm.com, nodejs.org)
+2. 저장소 받기:
+   `git clone https://github.com/kimchibok75-code/kimchibok75-code.github.io.git "$HOME\Desktop\김치복 홈페이지"`
+3. 깃허브에 처음 올릴 때 로그인 창이 뜨면 사용자가 직접 로그인
+   - 배포 확인용 `gh`를 쓰려면: GitHub CLI 설치 → `gh auth login`
+4. Cloudflare Worker(`worker/`)를 다시 배포해야 할 때만:
+   - `worker` 폴더에서 `npx --yes wrangler@4 login` → 브라우저가 열리면 사용자가 직접 허용
+   - 그다음 `npx --yes wrangler@4 deploy`
+   - 비밀 키(`ONESIGNAL_REST_API_KEY`)는 이미 Cloudflare에 저장돼 있으므로 다시 넣을 필요 없음
+5. 집 컴퓨터의 Claude 메모리(한국어 설명, 모드 URL 처리법)는 이 파일에 다 옮겨 두었으니 따로 챙길 것 없음
+
 ## 작업 환경 메모 (Windows)
 - git과 gh가 PATH에 없으면 먼저 실행:
   `$env:Path = "C:\Program Files\Git\cmd;C:\Program Files\GitHub CLI;" + $env:Path`
