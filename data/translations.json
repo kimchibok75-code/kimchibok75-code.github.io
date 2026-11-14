@@ -145,14 +145,21 @@
     },
     "3838082034": {
       "src": "I know this has been the most anticipated mod since Vanilla Gravships 2. Its finally here.",
+      "full": "저는 이것이 Vanilla Gravships 2 이후 가장 기대되는 모드라는 것을 알고 있습니다. 드디어 출시되었습니다.",
       "ko": "저는 이것이 Vanilla Gravships 2 이후 가장 기대되는 모드라는 것을 알고 있습니다. 드디어 출시되었습니다.",
-      "at": 1794676322364
+      "at": 1794694713395
     },
     "3838111458": {
       "src": "A visual overhaul for fire, snow, weather and shadows in RimWorld 1.7.",
       "full": "RimWorld 1.7의 불, 눈, 날씨 및 그림자에 대한 시각적 점검.",
       "ko": "RimWorld 1.7의 불, 눈, 날씨 및 그림자에 대한 시각적 점검.",
       "at": 1794687921448
+    },
+    "3839580086": {
+      "src": "폰들이 앞뒤로 겹쳐 있을 때, 뒤에 있는 폰이 앞에 있는 폰에 가려지도록 그리는 순서를 자동으로 조정합니다.",
+      "full": "폰들이 앞뒤로 겹쳐 있을 때, 뒤에 있는 폰이 앞에 있는 폰에 가려지도록 그리는 순서를 자동으로 조정합니다.",
+      "ko": "폰들이 앞뒤로 겹쳐 있을 때, 뒤에 있는 폰이 앞에 있는 폰에 가려지도록 그리는 순서를 자동으로 조정합니다.",
+      "at": 1794694712912
     },
     "3839642536": {
       "src": "This mod is an add-on for SQUISHY Ranged that adds melee combat animations.",
