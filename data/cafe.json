@@ -1,8 +1,21 @@
 {
-  "updatedAt": 1794665112825,
+  "updatedAt": 1794676328028,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 194,
+      "title": "제군들 우주로 나아가라 The Dead Man's Switch - Expedition",
+      "board": "💽 모드 추천/제작",
+      "head": "소개",
+      "author": "로드ROAD",
+      "time": 1794668996787,
+      "comments": 0,
+      "likes": 0,
+      "image": false,
+      "thumb": null,
+      "url": "https://cafe.naver.com/kimchibok/194"
+    },
     {
       "id": 193,
       "title": "안녕하세요",
@@ -249,19 +262,6 @@
       "image": false,
       "thumb": null,
       "url": "https://cafe.naver.com/kimchibok/174"
-    },
-    {
-      "id": 173,
-      "title": "오늘자 방송 의문점에 대하여...",
-      "board": "💬 자유 게시판",
-      "head": null,
-      "author": "김치복2",
-      "time": 1794077445230,
-      "comments": 3,
-      "likes": 0,
-      "image": false,
-      "thumb": null,
-      "url": "https://cafe.naver.com/kimchibok/173"
     }
   ]
 }
