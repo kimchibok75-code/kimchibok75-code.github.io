@@ -70,6 +70,11 @@
       "ko": "Realistic Water는 성능을 저하시키지 않으면서 물의 모양과 동작을 완전히 재구성합니다.",
       "at": 1794569726612
     },
+    "3836639070": {
+      "src": "This mod turns the Milira's halo into a glowing “light bulb.” You can also switch modes in the mod settings to turn the halo into a disco ball—just like on the cover!",
+      "ko": "이 모드는 Milira의 후광을 빛나는 \"전구\"로 바꿉니다. 표지에 있는 것처럼 모드 설정에서 모드를 전환하여 후광을 디스코 볼로 바꿀 수도 있습니다!",
+      "at": 1794628226254
+    },
     "3836765380": {
       "src": "Deliver an armored vehicle to the battlefield or transport a loaded truck to a second colony.",
       "ko": "장갑차를 전장에 배달하거나 적재된 트럭을 두 번째 식민지로 운반하세요.",
@@ -109,6 +114,11 @@
       "src": "수송 포드와 오디세이 왕복선이 로켓처럼 불꽃과 연기를 내뿜으며 천천히 떠올랐다가 점점 빨라지며 날아갑니다. 세이브 호환.",
       "ko": "수송 포드와 오디세이 왕복선이 로켓처럼 불꽃과 연기를 내뿜으며 천천히 떠올랐다가 점점 빨라지며 날아갑니다. 세이브 호환.",
       "at": 1794569718213
+    },
+    "3838111458": {
+      "src": "A visual overhaul for fire, snow, weather and shadows in RimWorld 1.7.",
+      "ko": "RimWorld 1.7의 불, 눈, 날씨 및 그림자에 대한 시각적 점검.",
+      "at": 1794628224989
     }
   }
 }
