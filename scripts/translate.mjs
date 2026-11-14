@@ -60,13 +60,16 @@ async function googleTranslate(text) {
   return (j?.[0] || []).map(s => s?.[0] || '').join('').trim();
 }
 
-/** 한국어 결과를 한 줄로 다듬기 */
-function oneLine(ko, max = 95) {
+/** 한국어 결과를 짧게 다듬기 — 문장 중간에서 "…"으로 끊지 않고, 완성된 문장 단위로 자름 */
+function oneLine(ko, max = 140) {
   ko = ko.replace(/\s+/g, ' ').trim();
   if (ko.length <= max) return ko;
-  const cut = ko.slice(0, max);
-  const end = Math.max(cut.lastIndexOf('다.'), cut.lastIndexOf('요.'));
-  return end > 30 ? cut.slice(0, end + 2) : `${cut.replace(/[\s,.·]+\S*$/, '')}…`;
+  const sentences = ko.match(/[^.!?。]+[.!?。]+["')\]]*\s*/g) || [];
+  let out = '';
+  for (const s of sentences) { if (out && (out + s).length > max) break; out += s; }
+  out = out.trim();
+  if (out.length >= 20) return out;
+  return `${ko.slice(0, max).replace(/[\s,.·]+\S*$/, '')}…`; // 첫 문장부터 너무 길 때만 …
 }
 
 /** items: [{ id, rawDescription }] → { id: '한국어 한 줄' } */
@@ -78,11 +81,11 @@ export async function koreanSummaries(items) {
     const lead = extractLead(rawDescription);
     if (!lead) continue;
     const hit = cache.items[id];
-    if (hit && hit.src === lead.text) { out[id] = hit.ko; continue; }
+    if (hit && hit.src === lead.text && hit.full) { out[id] = hit.ko = oneLine(hit.full); continue; }
     try {
       const ko = lead.korean ? lead.text : await googleTranslate(lead.text);
       if (!ko) throw new Error('빈 번역');
-      cache.items[id] = { src: lead.text, ko: oneLine(ko), at: Date.now() };
+      cache.items[id] = { src: lead.text, full: ko, ko: oneLine(ko), at: Date.now() };
       out[id] = cache.items[id].ko;
       fresh++;
       await new Promise(r => setTimeout(r, 400)); // 너무 빠르게 연달아 요청하지 않기

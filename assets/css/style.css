@@ -590,3 +590,13 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
   .cafe::after { --c: #03c75a; } .discord::after { --c: #5865f2; }
   html { scroll-behavior: auto; }
 }
+
+/* 휴대폰: 글자가 …으로 잘리지 않게 줄바꿈해서 전부 보여 주기 */
+@media (max-width: 600px) {
+  .vid .title, .pop .title, .rank .title, .wtitle, .wsum { display: block; -webkit-line-clamp: unset; overflow: visible; }
+  .mname, .mdesc, .cafe-text strong { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+  .mname { line-height: 1.35; }
+  .mdesc { line-height: 1.45; margin-top: 2px; }
+  .cafe-text strong { line-height: 1.4; }
+  .wk span { white-space: normal; word-break: keep-all; line-height: 1.25; overflow: visible; }
+}
