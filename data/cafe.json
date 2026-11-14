@@ -1,8 +1,34 @@
 {
-  "updatedAt": 1794639491422,
+  "updatedAt": 1794665112825,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 193,
+      "title": "안녕하세요",
+      "board": "🍀 가입 인사",
+      "head": null,
+      "author": "Vinherom",
+      "time": 1794664091170,
+      "comments": 0,
+      "likes": 0,
+      "image": false,
+      "thumb": null,
+      "url": "https://cafe.naver.com/kimchibok/193"
+    },
+    {
+      "id": 192,
+      "title": "생방송 성형,뽑기 표 [ 랜패철 500% 26.11 ]",
+      "board": "📢 공지사항",
+      "head": "생방송",
+      "author": "김치복",
+      "time": 1794657482867,
+      "comments": 0,
+      "likes": 0,
+      "image": true,
+      "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMTRfMTEz/MDAxNzk0NjU3NDE4MjY3.IzU4E_aqejj5Ci0hoIWFKNmIJEf4x4bWPnRLtNXAeD4g.6yOyV4UigP9x0ZfGDEzTcalxbwTJtzXEz0n0Jhj_5cMg.JPEG/1_%25EB%2582%25A8%25EC%259E%2590%25ED%2597%25A4%25EC%2596%25B4_1.jpg",
+      "url": "https://cafe.naver.com/kimchibok/192"
+    },
     {
       "id": 191,
       "title": "랜디야... 나 무서워... [ 림월드 500% 상한해제 (5) ]",
@@ -236,32 +262,6 @@
       "image": false,
       "thumb": null,
       "url": "https://cafe.naver.com/kimchibok/173"
-    },
-    {
-      "id": 172,
-      "title": "안녕하세요",
-      "board": "🍀 가입 인사",
-      "head": null,
-      "author": "불송이",
-      "time": 1794035731983,
-      "comments": 1,
-      "likes": 0,
-      "image": true,
-      "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMDdfMzgg/MDAxNzk0MDM1NTkxNDU5.FSjA_XayketwAbI-O7hBrGSbf8ZNLXZjG1ZcwUNormsg.McZSOOChKGVX989gAQTug2MRAOEuAWM0XXk68f5W-kUg.PNG/image.png",
-      "url": "https://cafe.naver.com/kimchibok/172"
-    },
-    {
-      "id": 171,
-      "title": "림월드 캐릭터 오류인가요? 모드 충돌인가요??",
-      "board": "🗺️ 림월드 자유 게시판",
-      "head": null,
-      "author": "jun",
-      "time": 1794029717263,
-      "comments": 2,
-      "likes": 0,
-      "image": true,
-      "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMDdfMjI2/MDAxNzk0MDI5NjAyMzU2.lNe4NA2JeWYCliKO6kyak4e0N_6gXIMf8KwLLin04Pwg.ivvmKdUO3NWYv-lRThUQL5E3NXvRuMiPbkWZDvGgJgkg.PNG/%25EC%258A%25A4%25ED%2581%25AC%25EB%25A6%25B0%25EC%2583%25B7_2026-11-07_143219.png",
-      "url": "https://cafe.naver.com/kimchibok/171"
     }
   ]
 }
