@@ -1,8 +1,21 @@
 {
-  "updatedAt": 1794600627039,
+  "updatedAt": 1794639491422,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 191,
+      "title": "랜디야... 나 무서워... [ 림월드 500% 상한해제 (5) ]",
+      "board": "⏰ 영상 알림",
+      "head": "풀치복",
+      "author": "김치복",
+      "time": 1794630685197,
+      "comments": 0,
+      "likes": 0,
+      "image": false,
+      "thumb": null,
+      "url": "https://cafe.naver.com/kimchibok/191"
+    },
     {
       "id": 190,
       "title": "이제는 메카 동물도 타는 기디업2 메카노이드 탑승",
@@ -249,19 +262,6 @@
       "image": true,
       "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMDdfMjI2/MDAxNzk0MDI5NjAyMzU2.lNe4NA2JeWYCliKO6kyak4e0N_6gXIMf8KwLLin04Pwg.ivvmKdUO3NWYv-lRThUQL5E3NXvRuMiPbkWZDvGgJgkg.PNG/%25EC%258A%25A4%25ED%2581%25AC%25EB%25A6%25B0%25EC%2583%25B7_2026-11-07_143219.png",
       "url": "https://cafe.naver.com/kimchibok/171"
-    },
-    {
-      "id": 170,
-      "title": "영상 주제 추천(?)",
-      "board": "👍 컨셉 추천 게시판",
-      "head": null,
-      "author": "크론니",
-      "time": 1794009161740,
-      "comments": 1,
-      "likes": 0,
-      "image": false,
-      "thumb": null,
-      "url": "https://cafe.naver.com/kimchibok/170"
     }
   ]
 }
