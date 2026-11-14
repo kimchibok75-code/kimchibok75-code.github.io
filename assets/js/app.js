@@ -57,30 +57,24 @@ const S = { cfg: null, yt: null, live: null, mods: null, ws: null, sched: null }
 // ───────── 히어로 & 채널 ─────────
 function renderHero() {
   const { cfg, yt, live } = S;
-  $('#tagline').textContent = cfg.tagline;
-  const main = yt?.channels?.[0];
-  const stats = [];
-  if (main?.subs) stats.push(`<span class="stat"><svg style="color:#ff0033"><use href="#i-yt"/></svg>유튜브 <b>${esc(main.subs.replace('구독자 ', ''))}</b></span>`);
-  if (live?.followers) stats.push(`<span class="stat"><svg style="color:#00d38b"><use href="#i-chzzk"/></svg>치지직 팔로워 <b>${num(live.followers)}</b></span>`);
-  $('#heroStats').innerHTML = stats.join('');
-
+  const ext = ' target="_blank" rel="noopener"';
   const chs = [
     ...cfg.youtube.map(c => {
       const d = yt?.channels?.find(x => x.key === c.key);
-      return { url: c.url, cls: 'ico-yt', icon: 'yt', img: d?.avatar, name: c.name, sub: d?.subs || c.desc, tag: '유튜브' };
+      return { url: c.url, cls: 'ico-yt', icon: 'yt', img: d?.avatar, name: c.name, sub: d?.subs || c.desc, tag: '유튜브', ext };
     }),
-    { url: cfg.chzzk.url, cls: 'ico-chzzk', icon: 'chzzk', name: '치지직', sub: live?.open ? '🔴 지금 방송 중' : '금·토·일 밤 9시' },
-    { url: cfg.cafe.url, cls: 'ico-cafe', icon: 'cafe', name: '팬 카페', sub: '네이버 카페' },
-    { url: cfg.discord.url, cls: 'ico-discord', icon: 'discord', name: '디스코드', sub: '커뮤니티 서버' },
+    { url: cfg.chzzk.url, cls: 'ico-chzzk', icon: 'chzzk', name: '치지직', sub: live?.open ? '🔴 지금 방송 중' : '금·토·일 밤 9시', ext },
+    { url: cfg.cafe.url, cls: 'ico-cafe', icon: 'cafe', name: '팬 카페', sub: '네이버 카페', ext },
+    { url: cfg.discord.url, cls: 'ico-discord', icon: 'discord', name: '디스코드', sub: '채팅으로 소통', ext },
+    { url: 'mods.html', cls: 'ico-mods', icon: 'puzzle', name: '모드 추천', sub: '김치복 추천 모드' },
+    { url: 'weekly.html', cls: 'ico-weekly', icon: 'trophy', name: '주간 모드 순위', sub: '이번 주 TOP 20' },
   ];
   $('#channels').innerHTML = chs.map(c => `
-    <a class="ch-card glass" href="${esc(c.url)}" target="_blank" rel="noopener">
+    <a class="ch-card glass" href="${esc(c.url)}"${c.ext || ''}>
       <span class="ch-ico ${c.cls}">${c.img ? `<img src="${esc(c.img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<svg><use href="#i-${c.icon}"/></svg>`}</span>
-      <span><strong>${esc(c.name)}${c.tag ? ` <small style="display:inline;color:var(--faint)">${c.tag}</small>` : ''}</strong><small>${esc(c.sub)}</small></span>
-      <svg class="arrow"><use href="#i-arrow"/></svg>
+      <span class="ch-text"><strong>${esc(c.name)}${c.tag ? ` <em>${c.tag}</em>` : ''}</strong><small>${esc(c.sub)}</small></span>
+      <svg class="arrow"><use href="#i-${c.ext ? 'arrow' : 'chev'}"/></svg>
     </a>`).join('');
-  $('#cafeCard').href = cfg.cafe.url; $('#cafeCard').querySelector('p').textContent = cfg.cafe.desc;
-  $('#discordCard').href = cfg.discord.url; $('#discordCard').querySelector('p').textContent = cfg.discord.desc;
 }
 
 // ───────── 홈: 생방송 상황판 ─────────
@@ -91,7 +85,6 @@ function renderLive() {
   const card = $('#liveCard');
   card.href = l.url || S.cfg.chzzk.url;
   $('#board').classList.toggle('on', !!l.open);
-  $('#avatarLive').hidden = !l.open;
   const last = l.history?.[0];
   const thumb = l.open ? l.thumb : last?.thumb;
   $('#liveMedia').innerHTML = `${thumb ? `<img src="${esc(thumb)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : '<span class="lb-ph"><svg><use href="#i-chzzk"/></svg></span>'}<span class="lb-badge">${l.open ? 'LIVE' : '오프라인'}</span>`;
@@ -522,7 +515,7 @@ function renderCafe() {
   if (!items.length) return;
   $('#cafeFeed').hidden = false;
   $('#cafeMore').href = S.cafe.url || S.cfg.cafe.url;
-  const list = items.slice(0, 8);
+  const list = items.slice(0, PAGE === 'community' ? 20 : 8);
   $('#cafeList').innerHTML = list.map(a => `
     <li><a href="${esc(a.url)}" target="_blank" rel="noopener">
       <span class="cafe-text">
@@ -533,7 +526,12 @@ function renderCafe() {
       ${a.thumb ? `<img src="${esc(a.thumb)}?type=w300" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
     </a></li>`).join('');
 }
-function initCafe() { renderCafe(); }
+function initCafe() {
+  const cc = $('#cafeCard'), dc = $('#discordCard');
+  if (cc) { cc.href = S.cfg.cafe.url; cc.querySelector('p').textContent = S.cfg.cafe.desc; }
+  if (dc) { dc.href = S.cfg.discord.url; dc.querySelector('p').textContent = S.cfg.discord.desc; }
+  renderCafe();
+}
 
 // ───────── 모든 페이지 공통 요소 (아이콘 · 푸터 · 알림 동의 창 · 토스트) ─────────
 function injectShell() {
@@ -555,12 +553,13 @@ function injectShell() {
     <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></symbol>
     <symbol id="i-home" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></symbol>
     <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></g></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></symbol>
     <symbol id="i-puzzle" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M10 4a2 2 0 1 1 4 0v2h4v4h-2a2 2 0 1 0 0 4h2v4h-4v-2a2 2 0 1 0-4 0v2H6v-4H4a2 2 0 1 1 0-4h2V6h4z"/></symbol>
     <symbol id="i-trophy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 21h8"/></symbol>
     <symbol id="i-chat" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 5h16v11H9l-5 4z"/></symbol>
   </svg>`);
   // 모바일 하단 메뉴 (화면이 좁을 때만 보임)
-  const tabs = [['home', './', 'i-home', '홈'], ['schedule', 'schedule.html', 'i-cal', '방송 일정'], ['mods', 'mods.html', 'i-puzzle', '모드'], ['weekly', 'weekly.html', 'i-trophy', '주간 순위'], ['community', './#community', 'i-chat', '커뮤니티']];
+  const tabs = [['home', './', 'i-home', '홈'], ['schedule', 'schedule.html', 'i-cal', '방송 일정'], ['mods', 'mods.html', 'i-puzzle', '모드'], ['weekly', 'weekly.html', 'i-trophy', '주간 순위'], ['community', 'community.html', 'i-chat', '커뮤니티']];
   document.body.insertAdjacentHTML('beforeend', `<nav class="tabbar glass" aria-label="모바일 메뉴">${tabs.map(([k, href, ic, label]) => `<a href="${href}" class="${k === PAGE ? 'on' : ''}"${k === PAGE ? ' aria-current="page"' : ''}><svg><use href="#${ic}"/></svg><span>${label}</span></a>`).join('')}</nav>`);
   document.body.insertAdjacentHTML('beforeend', `
   <footer class="footer">
@@ -608,7 +607,7 @@ async function main() {
   injectShell();
   initTheme();
   // 페이지마다 필요한 데이터만 불러옴
-  const need = { home: ['youtube', 'live', 'schedule', 'cafe'], schedule: ['youtube', 'live', 'schedule'], mods: ['mods'], weekly: ['workshop'] }[PAGE] || [];
+  const need = { home: ['youtube', 'live', 'schedule'], community: ['cafe'], schedule: ['youtube', 'live', 'schedule'], mods: ['mods'], weekly: ['workshop'] }[PAGE] || [];
   const get = name => (need.includes(name) ? load(`data/${name}.json`) : null);
   [S.cfg, S.yt, S.live, S.mods, S.ws, S.sched, S.cafe] = await Promise.all([
     load('config/site.json'), get('youtube'), get('live'), get('mods'), get('workshop'), get('schedule'), get('cafe'),
@@ -617,12 +616,14 @@ async function main() {
   if (PAGE === 'home') {
     renderHero(); renderLive();
     renderVideoTabs(); renderVideos();
-    renderWeek(); initCafe(); initNav();
+    renderWeek(); initNav();
     setInterval(tickBoard, 1000);
     refreshLive(); setInterval(refreshLive, 60e3);
   } else if (PAGE === 'schedule') {
     initCalendar();
     refreshLive(); setInterval(refreshLive, 60e3);
+  } else if (PAGE === 'community') {
+    initCafe();
   } else if (PAGE === 'mods') {
     $('#sheetLink').href = S.cfg.modSheet.url;
     initMods();

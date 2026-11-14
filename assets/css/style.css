@@ -24,6 +24,7 @@
   --radius: 22px;
   --radius-sm: 14px;
   --blur: 22px;
+  --bar: rgba(24, 20, 17, .94);
   color-scheme: dark;
 }
 :root[data-theme="light"] {
@@ -43,6 +44,7 @@
   --blob1: #ffb070;
   --blob2: #ff8c94;
   --blob3: #8fd3c7;
+  --bar: rgba(250, 246, 240, .95);
   color-scheme: light;
 }
 @media (prefers-color-scheme: light) {
@@ -50,7 +52,7 @@
     --bg: #f6f1ea; --bg2: #efe6db; --text: #24180f; --muted: rgba(36, 24, 15, .62); --faint: rgba(36, 24, 15, .4);
     --glass: rgba(255, 255, 255, .5); --glass-strong: rgba(255, 255, 255, .68); --glass-hover: rgba(255, 255, 255, .8);
     --stroke: rgba(255, 255, 255, .75); --stroke-strong: rgba(36, 24, 15, .14); --shadow: 0 10px 40px rgba(120, 70, 30, .14);
-    --accent: #f26a00; --green: #00a86b; --blob1: #ffb070; --blob2: #ff8c94; --blob3: #8fd3c7; color-scheme: light;
+    --accent: #f26a00; --green: #00a86b; --blob1: #ffb070; --blob2: #ff8c94; --blob3: #8fd3c7; --bar: rgba(250, 246, 240, .95); color-scheme: light;
   }
 }
 
@@ -120,7 +122,7 @@ svg { width: 1em; height: 1em; flex: none; }
 main, .footer { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
 
 /* 히어로 */
-.hero { padding: 24px 0 8px; }
+.hero { padding: 20px 0 8px; display: grid; gap: 14px; }
 .hero-card { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; padding: 16px 20px; }
 .avatar-wrap { position: relative; }
 .avatar { width: 64px; height: 64px; border-radius: 20px; object-fit: cover; box-shadow: 0 8px 24px rgba(255, 106, 0, .35); }
@@ -175,16 +177,19 @@ main, .footer { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
 .wk.today { box-shadow: 0 0 0 2px var(--accent); opacity: 1; }
 
 /* 채널 카드 */
-.channels { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-top: 14px; }
-.ch-card { display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: var(--radius-sm); transition: transform .2s, background .2s; position: relative; min-width: 0; }
-.ch-card:hover { transform: translateY(-3px); background: var(--glass-hover); }
-.ch-card .ch-ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 23px; color: #fff; overflow: hidden; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.channels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.ch-card { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: var(--radius-sm); transition: transform .2s, background .2s; min-width: 0; }
+.ch-card:hover { transform: translateY(-2px); background: var(--glass-hover); }
+.ch-card .ch-ico { width: 44px; height: 44px; flex: none; border-radius: 13px; display: grid; place-items: center; font-size: 24px; color: #fff; overflow: hidden; }
 .ch-card .ch-ico img { width: 100%; height: 100%; object-fit: cover; }
-.ch-card strong { font-size: 16px; display: block; }
-.ch-card small { color: var(--muted); font-size: 13.5px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ch-card .arrow { position: absolute; top: 14px; right: 14px; color: var(--faint); font-size: 17px; transition: .2s; }
-.ch-card:hover .arrow { color: var(--text); transform: translate(2px, -2px); }
-.ico-yt { background: #ff0033; } .ico-chzzk { background: #00d38b; color: #000 !important; } .ico-cafe { background: #03c75a; } .ico-discord { background: #5865f2; }
+.ch-text { min-width: 0; flex: 1; }
+.ch-card strong { font-size: 16px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-card strong em { font-style: normal; font-weight: 500; font-size: 12.5px; color: var(--faint); }
+.ch-card small { color: var(--muted); font-size: 13.5px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+.ch-card .arrow { flex: none; color: var(--faint); font-size: 17px; transition: .2s; }
+.ch-card:hover .arrow { color: var(--text); transform: translateX(2px); }
+.ico-yt { background: #ff0033; } .ico-chzzk { background: #00d38b; color: #000 !important; } .ico-cafe { background: #03c75a; } .ico-discord { background: #5865f2; } .ico-mods { background: linear-gradient(135deg, var(--accent), var(--accent-2)); } .ico-weekly { background: linear-gradient(135deg, #8b5cf6, #c084fc); }
 
 /* 섹션 */
 .section { padding: 64px 0 8px; }
@@ -477,7 +482,6 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
 
 /* 반응형 */
 @media (max-width: 1080px) {
-  .channels { grid-template-columns: repeat(3, 1fr); }
   .video-grid { grid-template-columns: repeat(3, 1fr); }
   .video-grid.shorts { grid-template-columns: repeat(4, 1fr); }
   .pop-list { grid-template-columns: 1fr; }
@@ -485,6 +489,7 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
 }
 @media (max-width: 860px) {
   .nav-links { display: none; }
+  .channels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hero-card { grid-template-columns: auto 1fr; }
   .stats { grid-column: 1 / -1; justify-content: flex-start; }
   .featured, .cal-wrap { grid-template-columns: 1fr; }
@@ -518,11 +523,11 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
   .week-strip { gap: 4px; }
   .wk { padding: 7px 1px; border-radius: 10px; }
   .wk b { font-size: 13px; } .wk small { font-size: 11px; } .wk span { font-size: 11px; margin-top: 3px; }
-  .channels { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .ch-card { padding: 10px; gap: 6px; }
-  .ch-card .ch-ico { width: 32px; height: 32px; border-radius: 10px; font-size: 19px; }
-  .ch-card strong { font-size: 14px; }
-  .ch-card strong small, .ch-card .arrow { display: none !important; }
+  .channels { gap: 8px; }
+  .ch-card { padding: 10px 11px; gap: 10px; }
+  .ch-card .ch-ico { width: 36px; height: 36px; border-radius: 11px; font-size: 20px; }
+  .ch-card strong { font-size: 14.5px; }
+  .ch-card strong em, .ch-card .arrow { display: none; }
   .ch-card small { font-size: 12px; }
   .section { padding-top: 48px; }
   .video-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -567,4 +572,21 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
   .cal-grid { gap: 3px; }
   .calendar { padding: 12px; }
   .next-live { width: 100%; }
+}
+
+/* 휴대폰·태블릿: 스크롤 끊김 줄이기
+   - 배경 번짐(blur) 효과와 움직이는 배경을 가벼운 그라데이션으로 바꿈
+   - 카드 뒤 흐림(backdrop-filter)을 끔 → 스크롤할 때마다 다시 그리는 일이 없어짐 */
+@media (max-width: 860px), (hover: none) and (pointer: coarse) {
+  :root { --shadow: 0 4px 16px rgba(0, 0, 0, .22); }
+  .bg { transform: translateZ(0); contain: strict; }
+  .blob { animation: none; filter: none; background: radial-gradient(closest-side, var(--c), transparent) !important; }
+  .b1 { --c: var(--blob1); } .b2 { --c: var(--blob2); } .b3 { --c: var(--blob3); }
+  .grain { display: none; }
+  .glass, .glass-soft, .seg, .cat, .chip, .vid .badge, .mod .thumb .kind, .wno, .mv, .modal::backdrop { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .glass, .glass-soft { box-shadow: var(--shadow); }
+  .nav, .tabbar { background: var(--bar); }
+  .comm-card::after { filter: none; background: radial-gradient(closest-side, var(--c, transparent), transparent) !important; }
+  .cafe::after { --c: #03c75a; } .discord::after { --c: #5865f2; }
+  html { scroll-behavior: auto; }
 }

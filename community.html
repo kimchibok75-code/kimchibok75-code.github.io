@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>커뮤니티 | 김치복</title>
+  <meta name="description" content="김치복 팬 카페 새 글과 디스코드 바로가기">
+  <meta name="theme-color" content="#14110f" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f1ea" media="(prefers-color-scheme: light)">
+  <meta property="og:title" content="커뮤니티 | 김치복">
+  <meta property="og:description" content="팬 카페 새 글 · 디스코드">
+  <meta property="og:image" content="assets/img/icon-512.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/img/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=__BUILD__">
+</head>
+<body data-page="community">
+  <div class="bg" aria-hidden="true"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><i class="grain"></i></div>
+
+  <header class="nav glass">
+    <a class="brand" href="./"><img src="assets/img/profile.jpg" alt="" width="32" height="32"><span>김치복</span></a>
+    <nav class="nav-links" aria-label="메뉴">
+      <a href="./#videos">영상</a><a href="schedule.html">방송 일정</a><a href="mods.html">모드 추천</a><a href="weekly.html">주간 모드 순위</a><a href="community.html" class="on" aria-current="page">커뮤니티</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="icon-btn" id="themeBtn" aria-label="테마 전환"></button>
+      <button class="btn btn-accent btn-sm" id="notifyBtn" aria-label="알림 설정"><svg><use href="#i-bell"/></svg><span>알림 받기</span></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="section page-top">
+      <div class="section-head">
+        <div>
+          <a class="back" href="./">← 홈</a>
+          <h1 class="page-title">커뮤니티</h1>
+          <p class="muted">팬 카페와 디스코드에서 같이 놀아요</p>
+        </div>
+      </div>
+      <div class="community">
+        <a class="comm-card glass cafe" id="cafeCard" target="_blank" rel="noopener">
+          <span class="comm-icon"><svg><use href="#i-cafe"/></svg></span>
+          <div><strong>김치복 팬 카페</strong><p>공지 · 자유게시판 · 팬아트</p></div>
+          <svg class="arrow"><use href="#i-arrow"/></svg>
+        </a>
+        <a class="comm-card glass discord" id="discordCard" target="_blank" rel="noopener">
+          <span class="comm-icon"><svg><use href="#i-discord"/></svg></span>
+          <div><strong>디스코드</strong><p>채팅 위주 소통을 원하면 디스코드로</p></div>
+          <svg class="arrow"><use href="#i-arrow"/></svg>
+        </a>
+      </div>
+      <div class="cafe-feed glass" id="cafeFeed" hidden>
+        <div class="cafe-feed-head">
+          <div><strong>팬카페 새 글</strong><p class="muted">김복단 카페에 올라온 최근 글</p></div>
+          <a class="btn btn-ghost btn-sm" id="cafeMore" target="_blank" rel="noopener"><svg><use href="#i-cafe"/></svg>카페에서 보기</a>
+        </div>
+        <ul class="cafe-list" id="cafeList"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/app.js?v=__BUILD__" type="module"></script>
+</body>
+</html>

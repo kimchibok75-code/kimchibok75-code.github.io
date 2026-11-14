@@ -90,7 +90,7 @@ jobs:
         with:
           ref: main
       - name: 캐시 무효화용 버전 번호 넣기
-        run: sed -i "s/__BUILD__/${GITHUB_SHA::8}/g" index.html mods.html weekly.html schedule.html
+        run: sed -i "s/__BUILD__/${GITHUB_SHA::8}/g" index.html mods.html weekly.html schedule.html community.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

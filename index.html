@@ -24,7 +24,7 @@
   <header class="nav glass">
     <a class="brand" href="./"><img src="assets/img/profile.jpg" alt="" width="32" height="32"><span>김치복</span></a>
     <nav class="nav-links" aria-label="메뉴">
-      <a href="./#videos">영상</a><a href="schedule.html">방송 일정</a><a href="mods.html">모드 추천</a><a href="weekly.html">주간 모드 순위</a><a href="./#community">커뮤니티</a>
+      <a href="./#videos">영상</a><a href="schedule.html">방송 일정</a><a href="mods.html">모드 추천</a><a href="weekly.html">주간 모드 순위</a><a href="community.html">커뮤니티</a>
     </nav>
     <div class="nav-actions">
       <button class="icon-btn" id="themeBtn" aria-label="테마 전환"></button>
@@ -35,19 +35,8 @@
   <main id="top">
     <!-- 히어로 -->
     <section class="hero">
-      <div class="hero-card glass">
-        <div class="avatar-wrap">
-          <img class="avatar" src="assets/img/profile.jpg" alt="김치복 프로필" width="72" height="72">
-          <span class="live-dot" id="avatarLive" hidden>LIVE</span>
-        </div>
-        <div class="hero-text">
-          <h1>김치복</h1>
-          <p class="tagline" id="tagline"></p>
-        </div>
-        <div class="stats" id="heroStats"></div>
-      </div>
-
-      <!-- 채널 바로가기 -->
+      <h1 class="sr-only">김치복 — 림월드 크리에이터</h1>
+      <!-- 바로가기: 윗줄 채널 4개, 아랫줄 카페·디스코드·모드 추천·주간 모드 순위 -->
       <div class="channels" id="channels"></div>
 
       <!-- 생방송 상황판 + 7일 방송 일정 -->
@@ -81,30 +70,6 @@
         <button data-v="lives">라이브</button>
       </div>
       <div id="videoArea"></div>
-    </section>
-
-    <!-- 커뮤니티 -->
-    <section id="community" class="section">
-      <div class="section-head"><div><h2>커뮤니티</h2><p class="muted">같이 놀아요</p></div></div>
-      <div class="community">
-        <a class="comm-card glass cafe" id="cafeCard" target="_blank" rel="noopener">
-          <span class="comm-icon"><svg><use href="#i-cafe"/></svg></span>
-          <div><strong>김치복 팬 카페</strong><p>공지 · 자유게시판 · 팬아트</p></div>
-          <svg class="arrow"><use href="#i-arrow"/></svg>
-        </a>
-        <a class="comm-card glass discord" id="discordCard" target="_blank" rel="noopener">
-          <span class="comm-icon"><svg><use href="#i-discord"/></svg></span>
-          <div><strong>디스코드</strong><p>채팅 위주 소통을 원하면 디스코드로</p></div>
-          <svg class="arrow"><use href="#i-arrow"/></svg>
-        </a>
-      </div>
-      <div class="cafe-feed glass" id="cafeFeed" hidden>
-        <div class="cafe-feed-head">
-          <div><strong>팬카페 새 글</strong><p class="muted">김복단 카페에 올라온 최근 글</p></div>
-          <a class="btn btn-ghost btn-sm" id="cafeMore" target="_blank" rel="noopener"><svg><use href="#i-cafe"/></svg>카페에서 보기</a>
-        </div>
-        <ul class="cafe-list" id="cafeList"></ul>
-      </div>
     </section>
   </main>
 
