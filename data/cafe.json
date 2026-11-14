@@ -1,8 +1,21 @@
 {
-  "updatedAt": 1794676328028,
+  "updatedAt": 1794683234398,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 195,
+      "title": "림월드 바다 속에서 살아남기라니!!!",
+      "board": "🗺️ 림월드 자유 게시판",
+      "head": null,
+      "author": "김치복",
+      "time": 1794680592143,
+      "comments": 0,
+      "likes": 0,
+      "image": false,
+      "thumb": null,
+      "url": "https://cafe.naver.com/kimchibok/195"
+    },
     {
       "id": 194,
       "title": "제군들 우주로 나아가라 The Dead Man's Switch - Expedition",
@@ -10,7 +23,7 @@
       "head": "소개",
       "author": "로드ROAD",
       "time": 1794668996787,
-      "comments": 0,
+      "comments": 1,
       "likes": 0,
       "image": false,
       "thumb": null,
@@ -23,7 +36,7 @@
       "head": null,
       "author": "Vinherom",
       "time": 1794664091170,
-      "comments": 0,
+      "comments": 1,
       "likes": 0,
       "image": false,
       "thumb": null,
@@ -249,19 +262,6 @@
       "image": true,
       "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMDhfMjAg/MDAxNzk0MTA3ODE0NTQz.ThedAvIWXT1aIYxDdWIW6VOQDgdgZucLVycPgyBanb8g.87-ekalPy22AXsyne2Jqv-8ar5s_xw1rUrV_vEZQfnYg.PNG/%25EB%25B3%2580%25EA%25B2%25BD%25EA%25B3%2584%25EB%258A%25A5%25EB%25A0%25A5%25ED%258F%2589%25EA%25B0%2580_Core_202611001.png",
       "url": "https://cafe.naver.com/kimchibok/175"
-    },
-    {
-      "id": 174,
-      "title": "이번 정작지 느낌이 좋습니다! [ 림월드 500% 상한해제 (2) ]",
-      "board": "⏰ 영상 알림",
-      "head": "풀치복",
-      "author": "김치복2",
-      "time": 1794098006080,
-      "comments": 0,
-      "likes": 0,
-      "image": false,
-      "thumb": null,
-      "url": "https://cafe.naver.com/kimchibok/174"
     }
   ]
 }
