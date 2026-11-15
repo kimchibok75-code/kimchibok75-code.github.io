@@ -1,7 +1,7 @@
 # 김치복 홈페이지 — Claude 작업 메모
 
 > 다른 컴퓨터(사무실 등)에서 이어서 작업할 때 Claude가 가장 먼저 읽는 파일입니다.
-> 마지막 정리: 2026-11-15 (치복 타운 2단계까지)
+> 마지막 정리: 2026-11-16 (치복 타운 4단계까지)
 
 ## 꼭 지킬 것
 - **설명은 항상 쉬운 한국어로.** 영어로 설명하지 않기. 사용자가 해야 할 일은 "1. 어디를 → 2. 무엇을 누르기"처럼 구체적인 순서로 적기.
@@ -91,7 +91,7 @@
 - 기획서: `plan/웹게임-기획서.md` (v0.8)
   - **팬 마을 + 성장**: 레벨·경험치·골드, 능력치(힘·민첩·지력·운), 장비 5칸(무기·모자·갑옷·신발·장신구) + 등급·강화, 스킨(겉모습만), 사냥터 자동 사냥(4곳 + 보스)
   - 소통은 최소한: 근처·전체 채팅 + 이모트만. **귓속말·친구·선물·거래 없음** (친목 우려). 집은 언제나 모두 공개
-  - 건물은 누르면 바로 이용, 대각선 8방향 이동, 이름표는 머리 위, PC 전체화면 버튼
+  - 건물은 누르면 바로 이용, 이동은 좌표로 자유롭게(4단계부터), 이름표는 머리 위, PC 전체화면 버튼
   - 사용자가 거절한 방향: 나이 먹는 인생 게임(v0.1), 역할극(v0.2)
   - **결정 필요**: 기획서 4-4 "화면을 닫아도 사냥(최대 8시간, 효율 70%)"
 - 목업: `plan/mockup.html` (가짜 데이터, 서버 없음). 비공개 링크: https://claude.ai/artifact/5zN1k7xe4ZoBKpHpk1rTuv
@@ -105,8 +105,8 @@
 - 게임 화면: `game.html` (https://kimchibok75-code.github.io/game.html). **메뉴에 링크 안 걸음**, 검색 제외(noindex). 첫 공개는 3단계
   - 목업을 복사해서 만듦. 이제부터는 game.html이 진짜, 목업은 기획용
   - 1단계에서 되는 것: 가입(복구 코드) · 로그인(30일 유지) · 비밀번호 찾기 · 비밀번호/복구 코드 바꾸기 · 캐릭터 만들기 · 마을 걷기 · **위치·겉모습·소개 서버 저장** · 능력치 찍기(포인트가 있을 때)
-  - 잠긴 것: 텃밭·분수·집(4단계). `LATER` 목록으로 잠금 (가게·사냥터는 2단계에서 열림)
-  - 방송국·전광판은 실제 방송 상태(kimchibok-live의 `/live`)를 1분마다 읽음
+  - (4단계에서 잠금 `LATER`는 비움. 방송국은 삭제)
+  - 전광판은 실제 방송 상태(kimchibok-live의 `/live`)를 1분마다 읽음
 - 공용 규칙: `assets/js/game-rules.js` — 숫자·계산식. 화면(game.html)과 서버가 **같은 파일**을 씀
 - 서버: Cloudflare Worker **`kimchibok-game`** (`game-worker/` 폴더)
   - 주소: https://kimchibok-game.kimchibok.workers.dev (`/api/signup`, `/api/login`, `/api/recover`, `/api/me`, `/api/character`, `/api/move`, `/api/stats`, `/api/password`, `/api/recovery-code`, `/api/logout`)
@@ -206,8 +206,25 @@
   - 다시 돌리려면: 새 캐릭터로 `startHunt` → 30초마다 `settle` + 물약 채우기 + `rollGacha`로 뽑고 좋은 것 끼기 + 칸 강화 (스크립트는 임시 폴더에 만들어 씀)
 - 화면 확인할 때: 미리보기 창이 숨겨져 있으면 스크린샷이 늦게 바뀌니 `read_page`·JS로 확인
 
-### 다음: 4단계 (집과 놀거리)
-- 집 꾸미기(전체 공개), 텃밭·분수·도감
+### 4단계 (생활 놀거리) — 2026-11-16 배포, 테스트 통과
+- 기획서 4-7에 정리. 방송국은 삭제
+- **지도**: `assets/js/game-map.js` (80×60칸, 화면과 서버가 같은 파일). 정해진 규칙(노이즈)으로 만들어서 서버도 집 자리·나무·바위를 똑같이 확인함
+  - 맨 위의 `T, MW, MH`는 game-rules.js와 꼭 같게 (두 번 불러오지 않으려고 따로 적음)
+  - `BUILDINGS`(마을회관 hall, 낚시점 fishshop, 벌목소 lumber, 채광소 quarry, 텃밭 창고 farmshed 등), `NODES`(나무·바위), `PLOTS`(텃밭 9칸), `canHouse`(중심가 `inCore` 밖, 안 겹치게), `ROOM_*`(집 안 11×8칸, 문 (5,7))
+- **자유 이동**: 길 찾기는 칸 A*로 한 뒤 직선으로 펴서 걸음(`walkTo(ch, px, py)` 픽셀, `walkToTile` 칸). 몸 반지름 7px로 부딪힘 확인(`freeAt`, `clear`). 화살표/끌기는 0.5초마다 예상 목적지만 보냄
+- **DB**: `migrations/0008_life.sql` — `characters.life`(JSON 한 칸: 코인·목재·석재·텃밭·칭호·버프·알바·채집 쿨), `houses` 표(user_id, x, y, roof). 모든 칭호를 `new`로 초기화함
+- **서버 기능**: `/api/title`, `/api/fish/shop`, `/api/farm/plant|plantall|water|harvest|can|plot|unlock`, `/api/gather`, `/api/work/hire|collect`, `/api/wish`, `/api/house/build|roof`, `GET /api/houses`. 칭호는 `checkTitles`가 확인해서 응답의 `newTitles`로 알려 줌
+- **실시간**: `{t:'room', r}` (r = 집 주인 id, 0 = 마을). 같은 방 사람끼리만 보이고 대화도 같은 방끼리. `{t:'house'}` → 다들 집 목록 다시 읽음
+- 숫자: game-rules.js의 `FISH_SHOP, CANS, FARM, CROPS, GATHER, WORK, HOUSE, WISH, WISH_TABLE, BUFFS, OPTS, TITLES`
+- 그림: 몬스터 `MON_ART`(보스는 `MON_BASE` + 왕관), 집 `houseParts`, 건물 `BLD`. 그림은 `sprite()`로 한 번 그려 두고 `blit`
+- 사냥: 근접은 `want`(확실히 닿는 거리)까지 다가간 뒤 `ok`를 벗어나야 다시 쫓음. 활·지팡이는 덤비는 몬스터가 1.6칸 안이면 2.8칸까지 물러나며 쏨, 구석이면 3초 그 자리에서 싸움 (`updateHunt`)
+- **내 컴퓨터에서 서버까지 시험하기** (실제 DB를 안 건드림)
+  1. `game-worker` 폴더에서 `npx --yes wrangler@4 d1 migrations apply kimchibok-game --local`
+  2. 같은 폴더에서 `npx --yes wrangler@4 dev --local --port 8787` (백그라운드로)
+  3. 미리보기에서 `http://localhost:5173/game.html?api=http://localhost:8787` (`?api=`는 localhost에서만 먹힘)
+
+### 다음: 4-2단계
+- 집 안 가구 사기·놓기·옮기기, 도감
 
 ## 남은 일 / 확인할 것
 - **실제 생방송 때 확인하기**: 2026-11-14(토) 밤 9시 방송이 첫 실전 테스트
