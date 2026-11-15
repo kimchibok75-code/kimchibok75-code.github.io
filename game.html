@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>치복 타운</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-visual">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#cfe8f3">
 <link rel="icon" href="assets/img/icon-192.png">
@@ -155,7 +155,11 @@ body.hunting .side { display: none; }
 .actions { display: grid; gap: 8px; }
 .actions .btn { text-align: left; display: flex; justify-content: space-between; align-items: center; }
 .actions .btn small { font-weight: 500; color: inherit; opacity: .75; }
-.close { justify-self: end; border: 0; background: none; font-size: 15px; color: var(--ink-soft); text-decoration: underline; }
+.close { display: none; }
+.xclose { position: sticky; top: 0; z-index: 3; justify-self: end; margin: -6px -6px -58px 0; width: 46px; height: 46px; border-radius: 50%; border: 2px solid var(--ink); background: #fff; box-shadow: 0 3px 0 var(--ink); display: grid; place-items: center; padding: 0; cursor: pointer; color: var(--ink); }
+.xclose svg { width: 22px; height: 22px; }
+.xclose:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.sheet > h3 { padding-right: 50px; min-height: 40px; }
 .prof { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px; align-items: center; }
 .prof canvas { width: 90px; height: 104px; }
 .prof h3 { font-size: 24px; }
@@ -218,7 +222,8 @@ body.hunting .zoom { display: none; }
 .hb-top { display: flex; align-items: center; gap: 6px; }
 .hb-top b { white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .hb-top span { margin-left: auto; white-space: nowrap; font-size: 12px !important; }
-.hbmin { border: 1.5px solid var(--line); background: #fff; border-radius: 8px; width: 28px; height: 26px; font-size: 14px; line-height: 1; flex: none; cursor: pointer; }
+.hbmin { border: 1.5px solid var(--line); background: #fff; border-radius: 9px; width: 36px; height: 34px; padding: 0; flex: none; cursor: pointer; display: grid; place-items: center; color: var(--ink); }
+.hbmin svg { width: 22px; height: 22px; }
 .huntbox.min .hb-stats, .huntbox.min .hb-row, .huntbox.min #hbBack { display: none; }
 .huntbox.min { width: auto; }
 .huntbox.min .hbmin { transform: rotate(180deg); }
@@ -274,8 +279,11 @@ body.hunting .chat-log { height: 64px; }
 @keyframes fade { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .panel, .toast { transition: none; } }
 /* 강화 애니메이션 */
-.anvil { position: relative; height: 96px; display: flex; align-items: flex-end; justify-content: center; gap: 2px; font-size: 44px; margin: 8px 0; }
-.anvil .ham { display: inline-block; transform-origin: 85% 85%; animation: hammer .32s ease-in infinite; }
+.anvil { position: relative; height: 96px; display: flex; align-items: flex-end; justify-content: center; font-size: 44px; margin: 8px 0; }
+.anvil .ham { position: absolute; left: calc(50% - 82px); bottom: 14px; display: inline-block; transform-origin: 85% 85%; animation: hammer .32s ease-in infinite; }
+.enh-diff { display: grid; gap: 6px; margin: 0; padding: 10px 12px; list-style: none; background: #fff; border: 1.5px solid var(--line); border-radius: 12px; }
+.enh-diff li { display: flex; justify-content: space-between; gap: 10px; font-weight: 700; }
+.enh-diff .up { color: #2f8f45; } .enh-diff .same { color: var(--ink-soft); font-weight: 500; }
 .anvil .item { display: inline-block; animation: glow .64s ease-in-out infinite; }
 .anvil.done .ham { animation: none; opacity: 0; }
 .anvil.done .item { animation: none; }
@@ -476,7 +484,7 @@ body.hunting .chat-log { height: 64px; }
     <div class="zoom"><button class="iconbtn" id="zIn" aria-label="크게 보기">＋</button><button class="iconbtn" id="zOut" aria-label="작게 보기">－</button></div>
     <div class="banner" id="liveBanner" hidden>🔴 김치복 생방송 중!</div>
     <section class="huntbox" id="huntBox" hidden aria-label="자동 사냥">
-      <div class="hb-top"><b id="hbField">🌾 바람 들판</b><span id="hbTime">자동 사냥 00:00</span><button class="hbmin" id="hbMin" type="button" aria-label="현황판 접기" aria-expanded="true">▾</button></div>
+      <div class="hb-top"><b id="hbField">🌾 바람 들판</b><span id="hbTime">자동 사냥 00:00</span><button class="hbmin" id="hbMin" type="button" aria-label="현황판 접기" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg></button></div>
       <div class="hb-stats">
         <span>처치 <b id="hbKills">0</b></span><span>경험치 <b id="hbExp">+0</b></span>
         <span>골드 <b id="hbGold">+0</b></span><span>아이템 <b id="hbDrops">0</b></span>
@@ -814,7 +822,13 @@ function emote(ch, e) { if (ch === me) netSend({ t: 'emo', e }); ch.emote = { e,
 // ───────── 화면 그리기 ─────────
 const cv = $('#map'), ctx = cv.getContext('2d');
 let cam = { x: me.x, y: me.y }, W = 0, H = 0, DPR = 1;
-function resize() { DPR = Math.min(devicePixelRatio || 1, 2); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * DPR; cv.height = H * DPR; }
+// 크기가 바뀔 때만 다시 만들고, 바로 다시 그림 (휴대폰 키보드가 뜨고 내려갈 때 화면이 비어 번쩍이던 문제)
+function resize() {
+  const d = Math.min(devicePixelRatio || 1, 2), w = cv.clientWidth, h = cv.clientHeight;
+  if (w === W && h === H && d === DPR) return;
+  DPR = d; W = w; H = h; cv.width = W * DPR; cv.height = H * DPR;
+  if (W && H && !$('#app').hidden) try { render(performance.now()); } catch {}
+}
 new ResizeObserver(resize).observe(cv);
 
 function drawBuilding(b) {
@@ -954,7 +968,7 @@ function render(now) {
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(ground, 0, 0);
   // 목적지 표시
-  if (me.path.length) { const d = me.path[me.path.length - 1]; ctx.strokeStyle = 'rgba(232,85,58,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(d.x, d.y + 6, 9 + Math.sin(now / 150) * 2, 4, 0, 0, 7); ctx.stroke(); }
+  if (me.path.length && !STEER.on) { const d = me.path[me.path.length - 1]; ctx.strokeStyle = 'rgba(232,85,58,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(d.x, d.y + 6, 9 + Math.sin(now / 150) * 2, 4, 0, 0, 7); ctx.stroke(); }
   // 아래쪽에 있는 것이 앞에 오도록 정렬해서 그림
   const vx0 = cam.x - W / z / 2 - 4 * T, vx1 = cam.x + W / z / 2 + 4 * T, vy0 = cam.y - H / z / 2 - 4 * T, vy1 = cam.y + H / z / 2 + 4 * T;
   const vis = (x, y) => x > vx0 && x < vx1 && y > vy0 && y < vy1;
@@ -1364,7 +1378,8 @@ const modal = $('#modal'), sheet = $('#sheet');
 let reopen = null;   // 지금 열린 가게 화면 (사고 나서 다시 그리기용)
 // 창을 연 터치가 곧바로 창 안의 버튼까지 눌러 버리지 않게, 열린 뒤 0.4초 동안은 누름을 무시
 let modalAt = 0;
-function openModal(html, onReady, keep) { if (!keep) modalAt = performance.now(); const st = keep ? sheet.scrollTop : 0; sheet.onclick = null; sheet.innerHTML = html; modal.hidden = false; onReady?.(sheet); if (keep) sheet.scrollTop = st; else sheet.querySelector('button, input')?.focus({ preventScroll: true }); }
+const XBTN = '<button class="xclose" type="button" data-close aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
+function openModal(html, onReady, keep) { if (!keep) modalAt = performance.now(); const st = keep ? sheet.scrollTop : 0; sheet.onclick = null; sheet.innerHTML = XBTN + html; modal.hidden = false; onReady?.(sheet); if (keep) sheet.scrollTop = st; else sheet.querySelector('button:not(.xclose), input')?.focus({ preventScroll: true }); }
 function closeModal() { modal.hidden = true; sheet.innerHTML = ''; reopen = null; }
 modal.addEventListener('click', e => { if (performance.now() - modalAt < 400) { e.stopPropagation(); e.preventDefault(); } }, true);
 modal.addEventListener('click', e => { if (e.target === modal || e.target.closest('[data-close]')) closeModal(); });
@@ -1836,12 +1851,28 @@ function enterTown(first) {   // first: 방금 받은 /api/me 결과 (자리 비
 
 // ───────── 강화: 한 번 누를 때 딱 1단계씩, 망치질 애니메이션 뒤에 결과 ─────────
 const fmtSec = n => `${Math.floor(n / 60)}:${String(Math.max(0, n) % 60).padStart(2, '0')}`;
+// 강화 전후 비교용: 장비 수치(이름, 값)와 내 전투 수치
+function enhStats(it) {
+  const m = enhMul(it);
+  if (it.slot === 'weapon') return [[it.wt === 'staff' ? '마력' : '공격', Math.round(it.atk * m)]];
+  if (it.slot === 'acc') return [[`${STATS[it.stat].n}`, Math.round(it.val * m)]];
+  return [['방어', Math.round(it.def * m)], ['체력', Math.round(it.hp * m)]];
+}
+function charStats(D, it) {
+  if (it.slot === 'weapon') return [[it.wt === 'staff' ? '내 마력' : '내 공격력', D.hit]];
+  if (it.slot === 'acc') return [['내 공격력', D.hit], ['내 최대 체력', D.maxHp]];
+  return [['내 물리 방어', D.def], ['내 마법 방어', D.mdef], ['내 최대 체력', D.maxHp]];
+}
+function diffList(a, b) {
+  return `<ul class="enh-diff">${a.map(([n, v], i) => { const w = b[i][1], d = w - v; return `<li><span>${n}</span><span class="${d > 0 ? 'up' : 'same'}">${v.toLocaleString()} → ${w.toLocaleString()}${d > 0 ? ` (+${d.toLocaleString()})` : ''}</span></li>`; }).join('')}</ul>`;
+}
 async function doEnhance(id) {
   const it = Object.values(me.equip).find(i => i?.id === id); if (!it || it.enh >= 10) return;
   const smith = BUILDINGS.find(b => b.id === 'smith'), rate = enhRate(it.enh, derive()), cost = TIERS[it.tier].req * ENH_COST[it.enh];
   if (me.gold < cost) return toast('골드가 부족해요');
   openModal(`<h3>⚒️ 강화</h3><p style="text-align:center">${itemTag(it)} <b>+${it.enh} → +${it.enh + 1}</b> · 성공 ${+rate.toFixed(2)}% · ${goldTxt(cost)}</p>
     <div class="anvil" id="anvil"><span class="ham">🔨</span><span class="item">${gIcon(it)}</span></div><div class="enh-result" id="enhRes">땅! 땅! 땅!</div><div class="actions" id="enhBtns"></div>`);
+  const before = { ...it }, d0 = derive();
   const [j] = await Promise.all([act('/api/enhance', { id }), new Promise(r => setTimeout(r, 1500))]);   // 결과가 빨리 와도 1.5초는 두드림
   const an = $('#anvil'), res = $('#enhRes'), btns = $('#enhBtns'); if (!an) return;
   an.classList.add('done');
@@ -1850,6 +1881,7 @@ async function doEnhance(id) {
     an.classList.add('ok'); res.className = 'enh-result ok'; res.textContent = `✨ 성공! ${itemName(j.item)}`;
     for (let k = 0; k < 10; k++) { const sp = document.createElement('span'); sp.className = 'spark'; sp.textContent = ['✨', '⭐', '🔥'][k % 3]; sp.style.setProperty('--dx', `${Math.cos(k / 10 * 6.28) * 70}px`); sp.style.setProperty('--dy', `${Math.sin(k / 10 * 6.28) * 45}px`); an.appendChild(sp); }
     emote(me, '🎉'); logAct(`${itemName(j.item)} 강화 성공`);
+    res.insertAdjacentHTML('afterend', diffList([...enhStats(before), ...charStats(d0, before)], [...enhStats(j.item), ...charStats(derive(), j.item)]));
   } else { an.classList.add('bad'); res.className = 'enh-result bad'; res.textContent = '💨 실패… 단계는 그대로예요 (골드만 사용)'; emote(me, '❓'); logAct('강화 실패'); }
   const now = Object.values(me.equip).find(i => i?.id === id), nc = now && now.enh < 10 ? TIERS[now.tier].req * ENH_COST[now.enh] : 0;
   btns.innerHTML = `${now && now.enh < 10 ? `<button class="btn main" data-x="again" ${me.gold < nc ? 'disabled' : ''}>🔨 한 번 더 (+${now.enh} → +${now.enh + 1})<small>${goldTxt(nc)} · 성공 ${+enhRate(now.enh, derive()).toFixed(2)}%</small></button>` : ''}<button class="btn" data-x="back">대장간으로</button>`;
