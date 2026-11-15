@@ -1,6 +1,6 @@
 // 자동 사냥 계산 (기획서 4장). 화면의 전투는 보여 주기용이고, 실제 결과는 여기서 정해짐.
 // 흐른 시간만큼 몬스터를 한 마리씩 잡는 과정을 빠르게 흉내 냄.
-import { FIELDS, MONS, HUNT, POTS, FAR, derive, expPenalty, addExp, pick, biteDmg } from '../../assets/js/game-rules.js';
+import { FIELDS, MONS, HUNT, POTS, FAR, derive, expPenalty, addExp, pick, biteDmg, cntAdd } from '../../assets/js/game-rules.js';
 
 const MAX_STEPS = 300000;   // 한 번 계산할 때 최대 반복 (안전장치)
 
@@ -8,17 +8,21 @@ const MAX_STEPS = 300000;   // 한 번 계산할 때 최대 반복 (안전장치
 function fight(st, D, mon, boss) {
   let t = boss ? 0 : (1 + Math.random()) / D.spd * (D.far ? FAR.walk : 1);  // 다음 몬스터까지 걸어가는 시간 (민첩이 높으면 빠름, 원거리는 멀리서 쏘니 덜 걸음)
   let hp = mon.hp, nextHit = .4, nextBite = 1.2 + (D.far ? FAR.lead : 0), steps = 0, healed = 0;   // 원거리: 몬스터가 다가오는 동안 먼저 공격
-  const bite = boss ? 1.3 : 1.6, regen = D.maxHp * HUNT.huntRegen;
+  const bite = boss ? 1.3 : 1.6, regen = D.maxHp * D.regen;
   const heal = () => { st.hp = Math.min(D.maxHp, st.hp + (t - healed) * regen); healed = t; };   // 사냥 중에도 체력이 천천히 참
   while (hp > 0 && steps++ < 20000) {
     if (nextHit <= nextBite) {
       t += nextHit; nextBite -= nextHit; nextHit = D.gap;
       let dmg = D.hit * (.9 + Math.random() * .2);   // 지팡이는 마력, 나머지는 공격력
       if (Math.random() * 100 < D.sp) dmg *= D.spMul;
-      if (Math.random() * 100 < D.crit) dmg *= 1.5;
-      hp -= Math.max(1, Math.round(dmg));
+      if (Math.random() * 100 < D.crit) dmg *= D.critM;
+      if (boss) dmg *= 1 + D.bossP / 100;
+      dmg = Math.max(1, Math.round(dmg)); hp -= dmg;
+      if (D.steal) st.hp = Math.min(D.maxHp, st.hp + dmg * D.steal / 100);   // 흡혈
     } else {
       t += nextBite; nextHit -= nextBite; nextBite = bite; heal();
+      // 원거리(궁수·마법사): 거리를 유지하며 싸움 → 몬스터가 다시 붙을 때까지 한 번 더 쏠 시간이 생김
+      if (D.far && Math.random() < Math.min(FAR.kiteMax, FAR.kite + D.dex * .0008)) nextBite += FAR.back;
       if (Math.random() * 100 >= D.eva) st.hp -= biteDmg(mon, D);   // 물리/마법 방어력
       if (st.hp <= D.maxHp * st.potAt / 100) drink(st, D);
       if (st.hp <= 0) return { t, dead: true };
@@ -31,7 +35,7 @@ function drink(st, D) {
   const p = st.pots, miss = D.maxHp - st.hp;
   const k = miss >= 200 && p.l ? 'l' : p.s ? 's' : p.l ? 'l' : p.xl ? 'xl' : null;
   if (!k) return;
-  p[k]--; st.used++; st.hp = Math.min(D.maxHp, st.hp + POTS[k].heal(D.maxHp));
+  p[k]--; st.used++; st.hp = Math.min(D.maxHp, st.hp + POTS[k].heal(D.maxHp) * (1 + D.potP / 100));
 }
 
 // 사냥 시작
@@ -72,7 +76,9 @@ export function settle(c, at) {
   }
   h.debt = sec < 0 ? -sec : 0;
   c.hp = Math.max(0, Math.round(st.hp)); out.pots = st.used; h.pots += st.used;
+  cntAdd(c, 'kills', out.kills); if (out.bosses.length) cntAdd(c, 'boss', out.bosses.length);
   if (out.died) {
+    cntAdd(c, 'died');
     const lost = Math.floor(h.gold * HUNT.deathLoss);
     c.gold = Math.max(0, c.gold - lost); out.lost = lost; out.summary = summary(h, at);
     c.hunt = null; c.hp = Math.round(derive(c).maxHp * .3); c.hpAt = at;
@@ -80,7 +86,7 @@ export function settle(c, at) {
   return out;
 }
 function reward(c, h, out, f, mon, D, boss) {
-  const e = Math.max(1, Math.round(mon.exp * expPenalty(c.lv, mon.lv)));
+  const e = Math.max(1, Math.round(mon.exp * expPenalty(c.lv, mon.lv) * (1 + D.expB / 100)));
   const g = Math.max(1, Math.round(mon.gold * HUNT.goldMul * (1 + D.goldB / 100) * (.8 + Math.random() * .4)));
   out.up += addExp(c, e);
   c.gold += g; out.kills++; out.exp += e; out.gold += g; h.kills++; h.exp += e; h.gold += g;

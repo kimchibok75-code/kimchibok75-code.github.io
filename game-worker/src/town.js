@@ -31,7 +31,7 @@ export class Town extends DurableObject {
   info(ws) { return ws.deserializeAttachment() || {}; }
   save(ws, a) { ws.serializeAttachment(a); }
   members(except) { return this.ctx.getWebSockets().filter(w => w !== except && this.info(w).id && !this.info(w).gone); }
-  pub(a) { return { id: a.id, n: a.n, adm: a.adm, ...a.look, x: a.x, y: a.y, tx: a.tx, ty: a.ty, hunt: a.hunt, sit: a.sit ?? -1 }; }
+  pub(a) { return { id: a.id, n: a.n, adm: a.adm, ...a.look, x: a.x, y: a.y, tx: a.tx, ty: a.ty, hunt: a.hunt, sit: a.sit ?? -1, room: a.room2 || 0 }; }
   send(ws, o) { try { ws.send(JSON.stringify(o)); } catch {} }
   all(o, except) { const s = JSON.stringify(o); for (const w of this.members(except)) try { w.send(s); } catch {} }
 
@@ -66,7 +66,7 @@ export class Town extends DurableObject {
     const others = this.members(ws);
     if (others.length >= MAX) { this.send(ws, { t: 'full' }); return ws.close(4001, 'full'); }
     Object.assign(a, { pending: false, dev, kind, id: u.id, n: u.nick, adm: !!u.is_admin, joined: u.created_at, mute: u.mute_until || 0, limited: (rep?.n || 0) >= 3,
-      look: lookRow(c), x: c.x, y: c.y, tx: c.x, ty: c.y, hunt: !!c.hunt, sit: -1, sent: [], last: [], cool: 0, lookAt: 0, emoAt: 0 });
+      look: lookRow(c), x: c.x, y: c.y, tx: c.x, ty: c.y, hunt: !!c.hunt, sit: -1, room2: 0, sent: [], last: [], cool: 0, lookAt: 0, emoAt: 0, houseAt: 0 });
     this.save(ws, a);
     this.send(ws, { t: 'hi', id: a.id, ch: a.room, list: others.map(w => this.pub(this.info(w))) });
     this.all({ t: 'join', p: this.pub(a) }, ws);
@@ -89,6 +89,10 @@ export class Town extends DurableObject {
       if (b >= 0 && this.members(ws).some(w => { const o = this.info(w); return o.id !== a.id && o.sit === b; })) return;   // 이미 누가 앉아 있음
       a.sit = b; this.save(ws, a); return this.all({ t: 'sit', id: a.id, b }, ws);
     }
+    // 집 안에 들어감 (r = 집 주인 id, 0 = 마을). 같은 방에 있는 사람끼리만 보임
+    if (m.t === 'room') { const r = Number.isInteger(m.r) && m.r >= 0 ? m.r : 0; Object.assign(a, { room2: r, sit: -1, x: m.x | 0, y: m.y | 0, tx: m.x | 0, ty: m.y | 0 }); this.save(ws, a); return this.all({ t: 'room', id: a.id, r, x: a.x, y: a.y }, ws); }
+    // 누가 집을 짓거나 옮김 → 다들 집 목록을 다시 받아 옴
+    if (m.t === 'house') { if (t - a.houseAt < 5000) return; a.houseAt = t; this.save(ws, a); return this.all({ t: 'house' }, ws); }
     if (m.t === 'hunt') { a.hunt = !!m.on; a.sit = -1; this.save(ws, a); return this.all({ t: 'hunt', id: a.id, on: a.hunt }, ws); }
     if (m.t === 'emo') { if (!EMOTES.includes(m.e) || t - a.emoAt < 800) return; a.emoAt = t; this.save(ws, a); return this.all({ t: 'emo', id: a.id, e: m.e }, ws); }
     if (m.t === 'look') {   // 겉모습·레벨이 바뀜 → 저장된 값을 다시 읽어서 알림
@@ -126,7 +130,7 @@ export class Town extends DurableObject {
     const out = JSON.stringify({ t: 'say', id: a.id, n: a.n, text: r.text, ch });
     for (const w of this.members()) {
       const b = w === ws ? a : this.info(w);
-      if (ch === 'all' || w === ws || (!a.hunt && !b.hunt && Math.hypot(b.tx - a.tx, b.ty - a.ty) < NEAR)) try { w.send(out); } catch {}
+      if (ch === 'all' || w === ws || (!a.hunt && !b.hunt && (a.room2 || 0) === (b.room2 || 0) && Math.hypot(b.tx - a.tx, b.ty - a.ty) < NEAR)) try { w.send(out); } catch {}
     }
     if (r.notes.length) this.send(ws, { t: 'note', notes: r.notes });
     const DB = this.env.DB;
