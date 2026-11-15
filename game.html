@@ -1199,8 +1199,11 @@ function tap(sx, sy) {
 // ───────── 모달 ─────────
 const modal = $('#modal'), sheet = $('#sheet');
 let reopen = null;   // 지금 열린 가게 화면 (사고 나서 다시 그리기용)
-function openModal(html, onReady, keep) { const st = keep ? sheet.scrollTop : 0; sheet.onclick = null; sheet.innerHTML = html; modal.hidden = false; onReady?.(sheet); if (keep) sheet.scrollTop = st; else sheet.querySelector('button, input')?.focus({ preventScroll: true }); }
+// 창을 연 터치가 곧바로 창 안의 버튼까지 눌러 버리지 않게, 열린 뒤 0.4초 동안은 누름을 무시
+let modalAt = 0;
+function openModal(html, onReady, keep) { if (!keep) modalAt = performance.now(); const st = keep ? sheet.scrollTop : 0; sheet.onclick = null; sheet.innerHTML = html; modal.hidden = false; onReady?.(sheet); if (keep) sheet.scrollTop = st; else sheet.querySelector('button, input')?.focus({ preventScroll: true }); }
 function closeModal() { modal.hidden = true; sheet.innerHTML = ''; reopen = null; }
+modal.addEventListener('click', e => { if (performance.now() - modalAt < 400) { e.stopPropagation(); e.preventDefault(); } }, true);
 modal.addEventListener('click', e => { if (e.target === modal || e.target.closest('[data-close]')) closeModal(); });
 addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
 const actBtn = (id, label, cost) => `<button class="btn" data-a="${id}">${label}${cost ? `<small>${cost}</small>` : ''}</button>`;
