@@ -557,9 +557,10 @@ function injectShell() {
     <symbol id="i-puzzle" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M10 4a2 2 0 1 1 4 0v2h4v4h-2a2 2 0 1 0 0 4h2v4h-4v-2a2 2 0 1 0-4 0v2H6v-4H4a2 2 0 1 1 0-4h2V6h4z"/></symbol>
     <symbol id="i-trophy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 21h8"/></symbol>
     <symbol id="i-chat" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 5h16v11H9l-5 4z"/></symbol>
+    <symbol id="i-game" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a4 4 0 0 1 4 4v1.5a3.5 3.5 0 0 1-6.3 2.1L13.5 14h-3l-1.2 1.6A3.5 3.5 0 0 1 3 13.5V12a4 4 0 0 1 4-4z"/><path d="M8 11v3M6.5 12.5h3"/><circle cx="16" cy="11.5" r=".6" fill="currentColor"/><circle cx="17.5" cy="13" r=".6" fill="currentColor"/></g></symbol>
   </svg>`);
   // 모바일 하단 메뉴 (화면이 좁을 때만 보임)
-  const tabs = [['home', './', 'i-home', '홈'], ['schedule', 'schedule.html', 'i-cal', '방송 일정'], ['mods', 'mods.html', 'i-puzzle', '모드'], ['weekly', 'weekly.html', 'i-trophy', '주간 순위'], ['community', 'community.html', 'i-chat', '커뮤니티']];
+  const tabs = [['home', './', 'i-home', '홈'], ['schedule', 'schedule.html', 'i-cal', '방송 일정'], ['mods', 'mods.html', 'i-puzzle', '모드'], ['weekly', 'weekly.html', 'i-trophy', '주간 순위'], ['community', 'community.html', 'i-chat', '커뮤니티'], ['game', 'game.html', 'i-game', '치복 타운']];
   document.body.insertAdjacentHTML('beforeend', `<nav class="tabbar glass" aria-label="모바일 메뉴">${tabs.map(([k, href, ic, label]) => `<a href="${href}" class="${k === PAGE ? 'on' : ''}"${k === PAGE ? ' aria-current="page"' : ''}><svg><use href="#${ic}"/></svg><span>${label}</span></a>`).join('')}</nav>`);
   document.body.insertAdjacentHTML('beforeend', `
   <footer class="footer">

@@ -469,8 +469,8 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
 /* 모바일 하단 메뉴 */
 .tabbar { display: none; }
 @media (max-width: 860px) {
-  .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 60; padding: 6px; border-radius: 22px; }
-  .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 2px; border-radius: 16px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+  .tabbar { display: grid; grid-template-columns: repeat(6, 1fr); position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 60; padding: 6px; border-radius: 22px; }
+  .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 1px; border-radius: 16px; font-size: 11.5px; white-space: nowrap; letter-spacing: -.02em; font-weight: 600; color: var(--muted); }
   .tabbar svg { width: 22px; height: 22px; }
   .tabbar a.on { color: var(--accent); background: rgba(255, 122, 26, .12); }
   body { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
