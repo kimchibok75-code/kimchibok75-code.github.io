@@ -2,7 +2,7 @@
 import { scanBad } from './filter.js';
 
 const ALLOW_LINKS = ['youtube.com/@김치복', 'youtube.com', 'youtu.be', 'chzzk.naver.com', 'cafe.naver.com/kimchibok', 'discord.com/channels/1197441179197915136'];
-const LINK_RE = /(https?:\/\/\S+|www\.\S+|\b[\w-]+\.(com|net|kr|io|gg|me|co|org|xyz|ly)\b\S*)/ig;
+const LINK_RE = /(https?:\/\/\S+|www\.\S+|\b(?:[\w-]+\.)+(com|net|kr|io|gg|me|co|org|xyz|ly)\b\S*)/ig;
 
 // 결과: { ok, text, notes } 또는 { ok: false, why, warn }
 export function cleanChat(raw) {
@@ -13,7 +13,7 @@ export function cleanChat(raw) {
   const before = text; text = text.replace(/(.)\1{10,}/gu, (m, c) => c.repeat(10));
   if (text !== before) notes.push('반복 글자를 10개로 줄였어요');
   let link = false;
-  text = text.replace(LINK_RE, m => { if (ALLOW_LINKS.some(a => m.toLowerCase().includes(a))) return m; link = true; return ''; });
+  text = text.replace(LINK_RE, m => { const u = m.toLowerCase().replace(/^https?:\/\//, '').replace(/^(www|m)\./, ''); if (ALLOW_LINKS.some(a => u === a || u.startsWith(a + '/') || u.startsWith(a + '?'))) return m; link = true; return ''; });   // 주소 맨 앞(사이트 이름)이 같아야 함
   if (link) return { ok: false, why: '인터넷 주소는 보낼 수 없어요 (김치복 공식 링크만 가능)' };
   const pi = text;
   text = text.replace(/01[016789][-. ]?\d{3,4}[-. ]?\d{4}/g, '(전화번호 가림)').replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, '(이메일 가림)').replace(/\d{6}[- ]?[1-4]\d{6}/g, '(주민번호 가림)');

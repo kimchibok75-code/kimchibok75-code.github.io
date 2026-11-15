@@ -2,7 +2,8 @@
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
 import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, FISH_GRADES, rollFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
-  fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, FISH_SHOP, fishZone, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES } from '../../assets/js/game-rules.js';
+  fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, FISH_SHOP, fishZone, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
+  dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText } from '../../assets/js/game-rules.js';
 import { canHouse, isSolid, NODES, BACK } from '../../assets/js/game-map.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
@@ -56,6 +57,7 @@ async function route(req, env, url) {
   if (m === 'GET' && p === '/api/fish/rank') return fishRank(env, s.user);
   if (m === 'GET' && p === '/api/houses') return json({ houses: (await env.DB.prepare('SELECT h.user_id AS id, u.nick, h.x, h.y, h.roof FROM houses h JOIN users u ON u.id = h.user_id WHERE u.banned = 0').all()).results });
   if (m === 'POST' && p === '/api/fish/reel') return fishReel(req, env, s.user);
+  if (m === 'GET' && p === '/api/news') return json(await news(env));
   if (p.startsWith('/api/admin/')) return admin(p, m, req, env, s.user, url);
   if (m === 'GET' && p === '/api/blocks') return json({ blocks: (await env.DB.prepare('SELECT b.target_id AS id, u.nick FROM blocks b JOIN users u ON u.id = b.target_id WHERE b.user_id = ?').bind(s.user.id).all()).results });
   if (m === 'POST' && p === '/api/block') return block(req, env, s.user);
@@ -109,13 +111,19 @@ async function auth(req, env) {
   return { user, tokenHash };
 }
 async function checkPw(user, pw) { return same(await pbkdf2(String(pw || ''), user.pw_salt, user.pw_iter), user.pw_hash); }
-function lockedMsg(user) { const left = user.lock_until - now(); return left > 0 ? `여러 번 틀려서 잠겼어요. ${Math.ceil(left / 60e3)}분 뒤에 다시 해 주세요` : null; }
-async function countFail(env, user) {
-  const n = user.fail_count + 1;
-  if (n >= LOCK_FAILS) { await env.DB.prepare('UPDATE users SET fail_count = 0, lock_until = ? WHERE id = ?').bind(now() + LOCK_MS, user.id).run(); return `${LOCK_FAILS}번 틀려서 10분 동안 잠겼어요`; }
-  await env.DB.prepare('UPDATE users SET fail_count = ? WHERE id = ?').bind(n, user.id).run();
-  return n;
+const ipOf = async req => sha256('login:' + (req.headers.get('CF-Connecting-IP') || 'local'));
+async function lockedMsg(env, user, ip) {
+  const r = await env.DB.prepare('SELECT until FROM login_fails WHERE user_id = ? AND ip_hash = ?').bind(user.id, ip).first();
+  const left = (r?.until || 0) - now(); return left > 0 ? `여러 번 틀려서 잠겼어요. ${Math.ceil(left / 60e3)}분 뒤에 다시 해 주세요` : null;
 }
+async function countFail(env, user, ip) {
+  const r = await env.DB.prepare('SELECT n FROM login_fails WHERE user_id = ? AND ip_hash = ?').bind(user.id, ip).first(), n = (r?.n || 0) + 1;
+  const lock = n >= LOCK_FAILS ? now() + LOCK_MS : 0;
+  await env.DB.prepare('INSERT INTO login_fails (user_id, ip_hash, n, until, at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(user_id, ip_hash) DO UPDATE SET n = excluded.n, until = excluded.until, at = excluded.at').bind(user.id, ip, lock ? 0 : n, lock, now()).run();
+  if (Math.random() < .05) await env.DB.prepare('DELETE FROM login_fails WHERE at < ?').bind(now() - 864e5).run();
+  return lock ? `${LOCK_FAILS}번 틀려서 10분 동안 잠겼어요` : n;
+}
+const clearFails = (env, user, ip) => env.DB.prepare('DELETE FROM login_fails WHERE user_id = ? AND ip_hash = ?').bind(user.id, ip).run();
 const findUser = (env, nick) => env.DB.prepare('SELECT * FROM users WHERE nick_key = ?').bind(String(nick || '').trim().toLowerCase()).first();
 
 // ───────── 가입 · 로그인 · 비밀번호 찾기 ─────────
@@ -149,18 +157,18 @@ async function signup(req, env) {
 async function login(req, env) {
   const b = await readBody(req), user = await findUser(env, b.nick);
   if (!user) fail(401, '닉네임 또는 비밀번호가 맞지 않아요');
-  const locked = lockedMsg(user); if (locked) fail(429, locked);
-  if (!(await checkPw(user, b.pw))) { const r = await countFail(env, user); fail(401, typeof r === 'string' ? r : `닉네임 또는 비밀번호가 맞지 않아요 (${r}/${LOCK_FAILS})`); }
+  const ip = await ipOf(req), locked = await lockedMsg(env, user, ip); if (locked) fail(429, locked);
+  if (!(await checkPw(user, b.pw))) { const r = await countFail(env, user, ip); fail(401, typeof r === 'string' ? r : `닉네임 또는 비밀번호가 맞지 않아요 (${r}/${LOCK_FAILS})`); }
   if (user.banned) fail(403, '이용이 정지된 계정이에요. 김치복 디스코드나 팬 카페로 문의해 주세요');
-  await env.DB.prepare('UPDATE users SET fail_count = 0, lock_until = 0, last_login = ? WHERE id = ?').bind(now(), user.id).run();
+  await env.DB.prepare('UPDATE users SET last_login = ? WHERE id = ?').bind(now(), user.id).run(); await clearFails(env, user, ip);
   await log(env, user.id, 'login');
   return json({ token: await newSession(env, user.id, !!b.keep), me: await loadMe(env, user) });
 }
 async function recover(req, env) {
   const b = await readBody(req), user = await findUser(env, b.nick);
   if (!user) fail(401, '닉네임 또는 복구 코드가 맞지 않아요');
-  const locked = lockedMsg(user); if (locked) fail(429, locked);
-  if (normCode(b.code).length !== 12 || !same(await sha256(normCode(b.code)), user.rec_hash)) { const r = await countFail(env, user); fail(401, typeof r === 'string' ? r : `닉네임 또는 복구 코드가 맞지 않아요 (${r}/${LOCK_FAILS})`); }
+  const ip = await ipOf(req), locked = await lockedMsg(env, user, ip); if (locked) fail(429, locked);
+  if (normCode(b.code).length !== 12 || !same(await sha256(normCode(b.code)), user.rec_hash)) { const r = await countFail(env, user, ip); fail(401, typeof r === 'string' ? r : `닉네임 또는 복구 코드가 맞지 않아요 (${r}/${LOCK_FAILS})`); }
   const pw = String(b.pw || '');
   if (!allOk(pwChecks(pw, user.nick))) fail(400, '새 비밀번호: 영문+숫자 8글자 이상, 닉네임·흔한 비밀번호 X');
   const salt = randB64(16), code = newCode();
@@ -197,7 +205,7 @@ function oldGear(c) {
 function meOut(user, c) {
   const h = c.hunt;
   return {
-    id: user.id, nick: user.nick, admin: !!user.is_admin,
+    id: user.id, nick: user.nick, admin: !!user.is_admin, gfx: c.gfx || {}, world: c._w ? { lv: c._w.lv, live: c._w.live } : null,
     char: { face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair, hairC: c.hairC, intro: c.intro, title: c.title, x: c.x, y: c.y, lv: c.lv, exp: c.exp, gold: c.gold,
       str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
       cls: c.cls, enh: c.enh, gacha: c.gacha, preset: c.preset, life: c.life, presets: c.presets.map((p, i) => (i === c.preset ? { ...p, s: [c.str, c.dex, c.int, c.luk] } : p)),
@@ -209,16 +217,40 @@ async function loadMe(env, user) {
   const r = await env.DB.prepare('SELECT * FROM characters WHERE user_id = ?').bind(user.id).first();
   return meOut(user, toChar(r));
 }
+// ───────── 마을 전체: 공동 건설 · 방송 · 마을 소식 ─────────
+let WORLD = { at: 0, v: null }, NEWS = { at: 0, v: null };
+async function liveNow(env) {   // 방송 상태는 kimchibok-live Worker에게 물어봄 (서비스 연결)
+  try { if (!env.LIVE) return false; const r = await env.LIVE.fetch('https://live/live'); return !!(await r.json()).open; } catch { return false; }
+}
+async function world(env, fresh) {
+  if (!fresh && WORLD.v && Date.now() - WORLD.at < 30e3) return WORLD.v;
+  const [v, live] = await Promise.all([env.DB.prepare('SELECT * FROM village WHERE id = 1').first(), liveNow(env)]);
+  WORLD = { at: Date.now(), v: { lv: v?.lv || 0, wood: v?.wood || 0, stone: v?.stone || 0, gold: v?.gold || 0, live: live || (v?.live_until || 0) > Date.now(), liveUntil: v?.live_until || 0 } };
+  return WORLD.v;
+}
+async function news(env) {
+  if (NEWS.v && Date.now() - NEWS.at < 20e3) return NEWS.v;
+  const [W, top, chron] = await Promise.all([world(env),
+    env.DB.prepare('SELECT u.nick, g.score FROM village_give g JOIN users u ON u.id = g.user_id WHERE u.banned = 0 ORDER BY g.score DESC LIMIT 10').all(),
+    env.DB.prepare('SELECT at, kind, text FROM chronicle ORDER BY id DESC LIMIT 30').all()]);
+  NEWS = { at: Date.now(), v: { village: W, top: top.results.map(r => ({ nick: r.nick, score: Math.round(r.score) })), chron: chron.results } };
+  return NEWS.v;
+}
+// 마을 연대기 (전설 물고기, 신화 장비, 공동 건설 완성 등 큰일만)
+const chron = (env, kind, text) => env.DB.prepare('INSERT INTO chronicle (at, kind, text) VALUES (?, ?, ?)').bind(now(), kind, String(text).slice(0, 120)).run().then(() => { NEWS.at = 0; }).catch(() => {});
+
 // 캐릭터를 읽고 → 사냥 정산 → 바꾸고 → 저장. 그 사이 다른 요청이 먼저 바꿨으면(ver가 다르면) 처음부터 다시
 async function play(env, user, fn) {
   for (let tries = 0; tries < 4; tries++) {
     const r = await env.DB.prepare('SELECT * FROM characters WHERE user_id = ?').bind(user.id).first();
-    const c = toChar(r), at = now(), out = {}; c._adm = !!user.is_admin;
+    const W = await world(env), c = toChar(r), at = now(), out = {}; c._adm = !!user.is_admin; c.gfx = worldFx(W, at); c._w = W;
+    const lv0 = c.lv; dailyState(c, at);
     if (!c.hunt) {   // 마을: 체력이 1초에 2%씩 참
       const max = derive(c).maxHp;
       c.hp = Math.min(max, Math.round(c.hp + Math.max(0, (at - (c.hpAt || at)) / 1000) * max * HUNT.townRegen)); c.hpAt = at;
     } else out.hunt = settle(c, at);
     const res = (await fn(c, at, out)) || {};
+    const dq = checkDaily(c, at); if (dq.length) out.daily = dq;   // 매일 의뢰 · 도장
     const got = checkTitles(c); if (got.length) out.newTitles = got;   // 새로 깬 칭호
     const w = await env.DB.prepare(`UPDATE characters SET title = ?, x = ?, y = ?, lv = ?, exp = ?, gold = ?, s_str = ?, s_dex = ?, s_int = ?, s_luk = ?, points = ?, hp = ?, hp_at = ?,
         equip = ?, bag = ?, hats = ?, hat = ?, eyes = ?, pots = ?, pot_at = ?, hunt = ?, bonus_day = ?, job_at = ?, cls = ?, enh = ?, presets = ?, preset = ?, gacha = ?, life = ?, ver = ver + 1, updated_at = ? WHERE user_id = ? AND ver = ?`)
@@ -227,7 +259,9 @@ async function play(env, user, fn) {
     if (w.meta.changes) {
       if (res.log) await log(env, user.id, res.log[0], res.log[1] || '');
       if (res.after) await res.after();   // 캐릭터 저장이 끝난 뒤 할 일 (낚시 기록 등)
-      delete res.log; delete res.after;
+      if (res.chron) await chron(env, res.chron[0], `${user.nick}님이 ${res.chron[1]}`);
+      if (lv0 < LV_CAP && c.lv >= LV_CAP) await chron(env, 'lv', `${user.nick}님이 ${LV_CAP}레벨이 되었어요!`);
+      delete res.log; delete res.after; delete res.chron;
       return json({ me: meOut(user, c), ...out, ...res });
     }
   }
@@ -240,7 +274,8 @@ function dailyBonus(c, at) {
   c.bonusDay = day; const g = c.lv * 20; c.gold += g; cntAdd(c, 'days');
   return { bonus: g };
 }
-const spend = (c, n) => { if (c.gold < n) fail(400, '골드가 부족해요'); c.gold -= n; };
+const spend = (c, n) => { if (!Number.isFinite(n) || n < 0) fail(400, '잘못된 요청이에요'); if (c.gold < n) fail(400, '골드가 부족해요'); c.gold -= n; };
+const own = (o, k) => typeof k === 'string' && Object.hasOwn(o, k);   // "__proto__" 같은 이름으로 속이는 것 막기
 const findBag = (c, id) => { const i = c.bag.findIndex(it => it.id === String(id)); if (i < 0) fail(400, '이미 고른 장비예요'); return i; };
 const townOnly = c => { if (c.hunt) fail(400, '사냥 중에는 할 수 없어요. 마을로 돌아온 뒤에 해 주세요'); };
 const notWorking = c => { if (c.jobAt) fail(400, '카페 알바 중이에요. 알바를 끝내거나 그만둔 뒤에 해 주세요'); };
@@ -272,7 +307,7 @@ const GAME = {
   // 카페
   '/api/pots'(c, b) {
     const k = b.k, n = Number(b.n);
-    if (!POTS[k] || ![1, 5, 10].includes(n)) fail(400, '잘못된 요청이에요');
+    if (!own(POTS, k) || ![1, 5, 10].includes(n)) fail(400, '잘못된 요청이에요');
     if (c.pots[k] + n > 999) fail(400, '물약은 종류마다 999개까지예요');
     spend(c, POTS[k].price * n); c.pots[k] += n;
   },
@@ -283,7 +318,7 @@ const GAME = {
   '/api/gacha/pull'(c, b) {
     townOnly(c);
     const box = b.box, n = Number(b.n);
-    if (!GACHA[box] || ![1, 10].includes(n)) fail(400, '잘못된 요청이에요');
+    if (!own(GACHA, box) || ![1, 10].includes(n)) fail(400, '잘못된 요청이에요');
     const g0 = gachaInfo(c.gacha[box]), cost = n === 10 ? Math.round(g0.cost * 10 * GACHA_TEN) : g0.cost;
     spend(c, cost);
     const items = []; let got = 0;
@@ -296,7 +331,8 @@ const GAME = {
     }
     c.gold += got;
     const g1 = gachaInfo(c.gacha[box]), keep = new Set(c.bag.map(p => p.id));
-    return { items: items.map(it => ({ ...it, keep: keep.has(it.id) })), got, cost, lvUp: g1.lv > g0.lv ? g1.lv : 0,
+    const myth = items.find(it => it.g === 'myth');
+    return { items: items.map(it => ({ ...it, keep: keep.has(it.id) })), got, cost, lvUp: g1.lv > g0.lv ? g1.lv : 0, chron: myth ? ['myth', `신화 장비 「${itemName(myth)}」를 뽑았어요!`] : null,
       log: ['gacha', `${GACHA[box].n} ${n}회 -${cost} +${got} ${items.filter(it => ['epic', 'legend', 'myth'].includes(it.g)).map(it => `${it.st}단계 ${GRADES[it.g].n} ${itemName(it)}`).join(', ')}`] };
   },
   // 비교 창에서 고르기: take = 바꾸기(쓰던 것은 분해) / 아니면 새 장비를 분해
@@ -310,7 +346,7 @@ const GAME = {
   },
   // 클래스 바꾸기 (언제든 무료): 지금 쓰는 무기가 바뀜
   '/api/class'(c, b) {
-    if (!CLASSES[b.cls]) fail(400, '없는 클래스예요');
+    if (!own(CLASSES, b.cls)) fail(400, '없는 클래스예요');
     c.cls = b.cls; c.hp = Math.min(c.hp, derive(c).maxHp);
   },
   // 능력치 프리셋: 바꾸기 · 이름 정하기
@@ -330,9 +366,9 @@ const GAME = {
   // 대장간: 장비 칸(슬롯)을 강화. 장비를 바꿔도 강화 단계는 그대로
   '/api/enhance'(c, b) {
     townOnly(c);
-    const slot = String(b.slot || ''); if (!SLOTS[slot]) fail(400, '없는 칸이에요');
+    const slot = String(b.slot || ''); if (!own(SLOTS, slot)) fail(400, '없는 칸이에요');
     const l = c.enh[slot] || 0; if (l >= ENH_MAX) fail(400, `이미 최대 강화(+${ENH_MAX})예요`);
-    const cost = ENH_COST[l]; spend(c, cost);
+    const cost = ENH_COST[l]; spend(c, cost); cntAdd(c, 'enhTry');
     const ok = Math.random() * 100 < enhRate(l, derive(c));   // 운이 높으면 성공 확률 조금 더
     if (ok) { c.enh[slot] = l + 1; cntAdd(c, 'enhOk'); c.life.cnt.enhMax = Math.max(c.life.cnt.enhMax || 0, l + 1); }   // 실패해도 단계가 떨어지지 않음 (골드만 사라짐)
     c.hp = Math.min(c.hp, derive(c).maxHp);
@@ -379,16 +415,52 @@ const GAME = {
     const left = Math.ceil(((row?.last_cast || 0) + FISHING.cooldown - at) / 1000);
     if (left > 0) fail(429, `너무 빨라요. ${left}초 뒤에 다시 던질 수 있어요`);
     const D = derive(c), F = c.life.fish, fish = rollFish(D.luk, F.rod, F.bait), wait = Math.round(FISHING.waitMin + Math.random() * (FISHING.waitMax - FISHING.waitMin)), gd = FISH_GRADES[fish.grade];
-    const cast = JSON.stringify({ fish, biteAt: at + wait });
-    return { wait, zone: fishZone(fish.grade, F.rod, D.fx), speed: gd.speed, strong: ['rare', 'epic', 'legend'].includes(fish.grade), cooldown: FISHING.cooldown,
+    const zone = fishZone(fish.grade, F.rod, D.fx), zl = +(.08 + Math.random() * (.84 - zone)).toFixed(3);
+    const cast = JSON.stringify({ fish, biteAt: at + wait, zl, zone, speed: gd.speed });
+    return { wait, zone, zl, speed: gd.speed, strong: ['rare', 'epic', 'legend'].includes(fish.grade), cooldown: FISHING.cooldown,
       after: () => env.DB.prepare('INSERT INTO fishing (user_id, bait, last_cast) VALUES (?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET bait = excluded.bait, last_cast = excluded.last_cast').bind(user.id, cast, at).run() };
+  },
+  // ───── 할 이유 (기획서 4-8) ─────
+  // 공동 건설에 기부: 목재·석재·골드. 모자라는 만큼만 받음. 다 모이면 다음 건물로
+  async '/api/village/give'(c, b, at, out, env, user) {
+    const W = await world(env, true), P = VILLAGE[W.lv]; if (!P) fail(400, '마을 공사가 모두 끝났어요. 고마워요!');
+    const have = { wood: c.life.res.wood, stone: c.life.res.stone, gold: c.gold }, g = {};
+    for (const k of ['wood', 'stone', 'gold']) {
+      const n = Math.floor(Number(b[k]) || 0); if (!Number.isFinite(n) || n < 0) fail(400, '잘못된 숫자예요');
+      g[k] = Math.max(0, Math.min(n, have[k], P.need[k] - W[k]));
+    }
+    if (!g.wood && !g.stone && !g.gold) fail(400, '보낼 수 있는 게 없어요 (가진 것이 없거나 이미 다 모였어요)');
+    c.life.res.wood -= g.wood; c.life.res.stone -= g.stone; c.gold -= g.gold; cntAdd(c, 'give');
+    const score = giveScore(g);
+    return { gave: g, log: ['give', JSON.stringify(g)], after: async () => {
+      const DB = env.DB;
+      await DB.batch([
+        DB.prepare('UPDATE village SET wood = MIN(?, wood + ?), stone = MIN(?, stone + ?), gold = MIN(?, gold + ?), at = ? WHERE id = 1 AND lv = ?').bind(P.need.wood, g.wood, P.need.stone, g.stone, P.need.gold, g.gold, at, W.lv),
+        DB.prepare('INSERT INTO village_give (user_id, score, at) VALUES (?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET score = score + excluded.score, at = excluded.at').bind(user.id, score, at)]);
+      const v = await DB.prepare('SELECT * FROM village WHERE id = 1').first();
+      if (v && v.lv === W.lv && v.wood >= P.need.wood && v.stone >= P.need.stone && v.gold >= P.need.gold) {
+        const done = await DB.prepare('UPDATE village SET lv = lv + 1, wood = 0, stone = 0, gold = 0 WHERE id = 1 AND lv = ?').bind(W.lv).run();
+        if (done.meta.changes) {
+          await chron(env, 'village', `🎉 마을 사람들이 힘을 모아 「${P.n}」을(를) 완성했어요! 이제 모두 ${fxText(P.fx)}`);
+          await toRooms(env, { act: 'event', e: { k: 'village', lv: W.lv + 1, n: P.n } });
+        }
+      }
+      WORLD.at = 0; NEWS.at = 0;
+    } };
+  },
+  // 방송 출석: 김치복님이 방송 중일 때 하루 한 번
+  '/api/live/checkin'(c, b, at) {
+    if (!c._w?.live) fail(400, '지금은 방송 중이 아니에요');
+    const day = dayKey(at); if (c.life.liveDay === day) fail(400, '오늘은 이미 출석했어요');
+    c.life.liveDay = day; const g = liveGift(c.lv); c.gold += g; cntAdd(c, 'live');
+    return { gift: g };
   },
   // ───── 4단계 ─────
   // 칭호 달기 (가진 것만)
   '/api/title'(c, b) { const id = String(b.id || ''); if (!c.life.titles.includes(id)) fail(400, '아직 없는 칭호예요'); c.title = id; },
   // 낚시점: 낚싯대 · 미끼 올리기 (낚시 코인)
   '/api/fish/shop'(c, b) {
-    const k = b.k, S = FISH_SHOP[k]; if (!S) fail(400, '없는 물건이에요');
+    const k = b.k; if (!own(FISH_SHOP, k)) fail(400, '없는 물건이에요'); const S = FISH_SHOP[k];
     const l = c.life.fish[k]; if (l >= S.cost.length) fail(400, '이미 최고 단계예요');
     if (c.life.coins.fish < S.cost[l]) fail(400, '낚시 코인이 부족해요');
     c.life.coins.fish -= S.cost[l]; c.life.fish[k] = l + 1;
@@ -458,7 +530,7 @@ const GAME = {
   },
   // 벌목소·채광소 알바: 고용 · 모인 것 받기
   '/api/work/hire'(c, b, at) {
-    const k = b.kind, W = WORK[k]; if (!W) fail(400, '없는 곳이에요');
+    const k = b.kind; if (!own(WORK, k)) fail(400, '없는 곳이에요'); const W = WORK[k];
     const w = c.life.work[k]; if (w.n >= W.max) fail(400, `알바는 ${W.max}명까지예요`);
     const cost = W.hire(w.n + 1);
     if (c.gold < cost.gold) fail(400, '골드가 부족해요');
@@ -468,7 +540,7 @@ const GAME = {
     return { log: ['hire', `${k} ${w.n}`] };
   },
   '/api/work/collect'(c, b, at) {
-    const k = b.kind, W = WORK[k]; if (!W) fail(400, '없는 곳이에요');
+    const k = b.kind; if (!own(WORK, k)) fail(400, '없는 곳이에요'); const W = WORK[k];
     const w = c.life.work[k], { have } = workSettle(w, k, at); if (have < 1) fail(400, '아직 모인 게 없어요');
     w.acc -= have; c.life.res[W.res] += have; cntAdd(c, W.res, have);
     return { res: W.res, amt: have };
@@ -476,7 +548,7 @@ const GAME = {
   // 소원 분수: 10분에 한 번, 10골드
   '/api/wish'(c, b, at) {
     townOnly(c);
-    const L = c.life, left = Math.ceil((L.wishAt + WISH.cd - at) / 1000);
+    const L = c.life, left = Math.ceil((L.wishAt + WISH.cd * (eventNow(at)?.k === 'wish' ? .5 : 1) - at) / 1000);
     if (left > 0) fail(400, `분수가 아직 잔잔해요. ${Math.ceil(left / 60)}분 뒤에 다시 빌 수 있어요`);
     spend(c, WISH.cost); L.wishAt = at; cntAdd(c, 'wish');
     const o = rollWish(), r = { k: o.k };
@@ -490,7 +562,8 @@ const GAME = {
   // 집: 짓기(처음) · 옮기기(이사) · 지붕 색. 집 자리는 서버가 지도로 확인
   async '/api/house/build'(c, b, at, out, env, user) {
     townOnly(c);
-    const x = Number(b.x), y = Number(b.y), roof = Math.max(0, Math.min(HOUSE.roofs.length - 1, Number(b.roof) || 0)), had = !!c.life.house;
+    const x = Number(b.x), y = Number(b.y), roof = Math.max(0, Math.min(HOUSE.roofs.length - 1, Math.trunc(Number(b.roof)) || 0)), had = !!c.life.house;
+    if (!Number.isInteger(x) || !Number.isInteger(y)) fail(400, '집을 지을 수 없는 자리예요');
     const others = (await env.DB.prepare('SELECT x, y FROM houses WHERE user_id != ?').bind(user.id).all()).results;
     const why = canHouse(x, y, others); if (why) fail(400, why);
     const cost = had ? HOUSE.move : HOUSE.cost;
@@ -499,13 +572,14 @@ const GAME = {
     c.gold -= cost.gold; c.life.res.wood -= cost.wood; c.life.res.stone -= cost.stone;
     c.life.house = { x, y, roof: had ? c.life.house.roof : roof }; if (!had) cntAdd(c, 'house');
     const h = c.life.house;
-    return { moved: had, log: ['house', `${x},${y}`],
-      after: () => env.DB.prepare('INSERT INTO houses (user_id, x, y, roof, at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET x = excluded.x, y = excluded.y, roof = excluded.roof, at = excluded.at').bind(user.id, h.x, h.y, h.roof, at).run() };
+    return { moved: had, log: ['house', `${x},${y}`], chron: had ? null : ['house', '마을에 집을 지었어요'],
+      after: async () => { await env.DB.prepare('INSERT INTO houses (user_id, x, y, roof, at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET x = excluded.x, y = excluded.y, roof = excluded.roof, at = excluded.at').bind(user.id, h.x, h.y, h.roof, at).run(); await toRooms(env, { act: 'house', h: { id: user.id, nick: user.nick, ...h } }); } };
   },
   async '/api/house/roof'(c, b, at, out, env, user) {
     if (!c.life.house) fail(400, '먼저 집을 지어 주세요');
-    c.life.house.roof = Math.max(0, Math.min(HOUSE.roofs.length - 1, Number(b.roof) || 0));
-    return { after: () => env.DB.prepare('UPDATE houses SET roof = ? WHERE user_id = ?').bind(c.life.house.roof, user.id).run() };
+    c.life.house.roof = Math.max(0, Math.min(HOUSE.roofs.length - 1, Math.trunc(Number(b.roof)) || 0));
+    const h = c.life.house;
+    return { after: async () => { await env.DB.prepare('UPDATE houses SET roof = ? WHERE user_id = ?').bind(h.roof, user.id).run(); await toRooms(env, { act: 'house', h: { id: user.id, nick: user.nick, ...h } }); } };
   },
   // 능력치 찍기 (남은 포인트 안에서)
   '/api/stats'(c, b) {
@@ -576,19 +650,25 @@ async function fishReel(req, env, user) {
   if (!row?.bait) fail(400, '먼저 낚싯대를 던져 주세요');
   const del = await env.DB.prepare("UPDATE fishing SET bait = '' WHERE user_id = ? AND bait = ?").bind(user.id, row.bait).run();
   if (!del.meta.changes) fail(400, '먼저 낚싯대를 던져 주세요');
-  const { fish, biteAt } = JSON.parse(row.bait);
+  const { fish, biteAt, zl, zone, speed } = JSON.parse(row.bait);
+  // t = 화면에서 입질이 보이고 당길 때까지 걸린 초. 실제로 흐른 시간과 맞아야 함 (통신 지연은 2초까지 봐줌)
+  const t = Number(b.t), gone = (at - biteAt) / 1000, pos = .5 - .5 * Math.cos(t * speed * Math.PI * 2), w = zone;
+  const hit = Number.isFinite(t) && t >= 0 && t <= 4.6 && gone >= t - .3 && gone <= t + 2 && pos >= zl && pos <= zl + w, perfect = hit && pos >= zl + w / 3 && pos <= zl + w * 2 / 3;
   let why = null;
-  if (at < biteAt) why = 'early';                                  // 입질 전에 당김
+  if (at < biteAt || !(t >= 0)) why = 'early';                     // 입질 전에 당김
   else if (at > biteAt + FISHING.window) why = 'late';             // 너무 늦음
-  else if (!b.hit) why = 'miss';                                   // 타이밍을 못 맞춤
+  else if (!hit) why = 'miss';                                     // 타이밍을 못 맞춤
   if (why) return play(env, user, () => ({ caught: false, why, fish: { i: fish.i, n: fish.n, grade: fish.grade } }));
-  const price = Math.round(fish.price * (b.perfect ? FISHING.perfect : 1)), info = JSON.stringify({ i: fish.i, n: fish.n, grade: fish.grade, len: fish.len, price });
+  const day = new Date(at + 9 * 3600e3).toISOString().slice(0, 10), dr = await env.DB.prepare('SELECT day, day_n FROM fishing WHERE user_id = ?').bind(user.id).first();
+  const dayN = dr?.day === day ? dr.day_n + 1 : 1, tired = dayN > FISHING.dayFull ? .5 : 1;   // 하루에 너무 많이 낚으면 값이 절반 (자동 낚시 막기)
+  const price = Math.round(fish.price * (perfect ? FISHING.perfect : 1) * tired), info = JSON.stringify({ i: fish.i, n: fish.n, grade: fish.grade, len: fish.len, price });
   return play(env, user, c => {
-    c.gold += price;   // 낚은 물고기는 바로 팔림
-    const coin = Math.round((FISH_COIN[fish.grade] + (b.perfect ? 1 : 0)) * (1 + (derive(c).fx.fishC || 0) / 100));
-    c.life.coins.fish += coin; cntAdd(c, 'fish'); if (b.perfect) cntAdd(c, 'perfect'); if (fish.grade === 'legend') cntAdd(c, 'legendFish'); if (fish.n === '낡은 장화') cntAdd(c, 'boot');
-    return { caught: true, fish: { ...fish, price }, perfect: !!b.perfect, coin,
-      after: () => env.DB.prepare(`UPDATE fishing SET count = count + 1, gold = gold + ?,
+    const sell = Math.round(price * (1 + (c.gfx?.fishP || 0) / 100));
+    c.gold += sell;   // 낚은 물고기는 바로 팔림
+    const coin = Math.round((FISH_COIN[fish.grade] + (perfect ? 1 : 0)) * (1 + (derive(c).fx.fishC || 0) / 100) * tired);
+    c.life.coins.fish += coin; cntAdd(c, 'fish'); if (perfect) cntAdd(c, 'perfect'); if (fish.grade === 'legend') cntAdd(c, 'legendFish'); if (fish.n === '낡은 장화') cntAdd(c, 'boot');
+    return { caught: true, fish: { ...fish, price: sell }, perfect, coin, tired: tired < 1, chron: fish.grade === 'legend' ? ['fish', `전설 물고기 ${fish.n} ${fish.len}cm를 낚았어요!`] : null,
+      after: () => env.DB.prepare(`UPDATE fishing SET count = count + 1, gold = gold + ?, day = '${day}', day_n = ${dayN},
           best_price_fish = CASE WHEN ? > best_price THEN ? ELSE best_price_fish END, best_price = MAX(best_price, ?),
           best_len_fish = CASE WHEN ? > best_len THEN ? ELSE best_len_fish END, best_len = MAX(best_len, ?) WHERE user_id = ?`)
         .bind(price, price, info, price, fish.len, info, fish.len, user.id).run() };
@@ -671,6 +751,11 @@ async function admin(p, m, req, env, user, url) {
   const body = m === 'POST' ? await readBody(req) : {}, id = Number(body.id);
   const userOf = async uid => { const u = await DB.prepare('SELECT id, nick FROM users WHERE id = ?').bind(uid).first(); if (!u) fail(404, '없는 사람이에요'); return u; };
   const done = async (kind, detail) => DB.prepare('INSERT INTO activity (user_id, kind, detail, at) VALUES (?, ?, ?, ?)').bind(user.id, 'admin-' + kind, detail, t).run();
+  if (m === 'POST' && p === '/api/admin/live') {   // 방송 보너스를 정해진 분만큼 켬 (0 = 끔)
+    const min = Math.max(0, Math.min(600, Math.floor(Number(body.min) || 0)));
+    await DB.prepare('UPDATE village SET live_until = ? WHERE id = 1').bind(min ? t + min * 60e3 : 0).run(); WORLD.at = 0; await done('live', String(min));
+    return json({ ok: true, until: min ? t + min * 60e3 : 0 });
+  }
   if (m === 'POST' && p === '/api/admin/cheat') {
     const k = String(body.k || ''); await done('cheat', `${k} ${body.n ?? ''}`.trim());
     return play(env, user, (c, at) => cheat(c, k, body, at, env, user));

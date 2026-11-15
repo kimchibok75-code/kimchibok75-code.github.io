@@ -7,6 +7,8 @@ import { T, MW, MH } from '../../assets/js/game-rules.js';
 
 export const MAX_CH = 3;              // 마을 채널 수 (채널마다 50명)
 const MAX = 50, NEAR = 9 * T, DAY = 864e5;
+const RATE = { cap: 12, per: 6 };     // 한 연결에서 1초에 6개(순간 12개)까지만. 넘으면 끊음 (도배·과부하 방지)
+const CHAT_DAY = 1500;                // 한 사람이 하루에 보낼 수 있는 채팅 수 (DB 쓰기 한도 지키기)
 const EMOTES = ['👋', '❤️', '😂', '🎉', '💤', '❓', '✨'];
 const now = () => Date.now();
 const left = ms => ms >= 3600e3 ? `${Math.floor(ms / 3600e3)}시간 ${Math.ceil(ms % 3600e3 / 60e3)}분` : ms >= 60e3 ? `${Math.ceil(ms / 60e3)}분` : `${Math.ceil(ms / 1000)}초`;
@@ -27,9 +29,15 @@ export class Town extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));   // 연결 유지용 (방을 깨우지 않음)
+    this.cache = new Map(); this.rate = new Map(); this.talk = new Map();   // 연결 정보 캐시 · 메시지 속도 · 사람별 채팅 기록 (다시 접속해도 이어짐)
   }
-  info(ws) { return ws.deserializeAttachment() || {}; }
-  save(ws, a) { ws.serializeAttachment(a); }
+  info(ws) { let a = this.cache.get(ws); if (!a) { a = ws.deserializeAttachment() || {}; this.cache.set(ws, a); } return a; }
+  save(ws, a) { this.cache.set(ws, a); ws.serializeAttachment(a); }
+  // 로그인 안 한 채 10초 넘게 붙어 있는 연결은 끊음
+  sweep() { const t = now(); for (const w of this.ctx.getWebSockets()) { const a = this.info(w); if (a.pending && t - (a.at || 0) > 10e3) { a.pending = false; a.gone = true; this.save(w, a); try { w.close(4401, 'auth'); } catch {} } } }
+  async alarm() { this.sweep(); if (this.ctx.getWebSockets().some(w => this.info(w).pending)) await this.ctx.storage.setAlarm(now() + 15e3); }
+  // 사람별 채팅 기록 (sent: 최근 10초, last: 최근 3개, cool: 쉬는 시간 끝, day/n: 오늘 보낸 수)
+  talkOf(id) { let k = this.talk.get(id); if (!k) { k = { sent: [], last: [], cool: 0, day: '', n: 0 }; this.talk.set(id, k); if (this.talk.size > 500) this.talk.delete(this.talk.keys().next().value); } return k; }
   members(except) { return this.ctx.getWebSockets().filter(w => w !== except && this.info(w).id && !this.info(w).gone); }
   pub(a) { return { id: a.id, n: a.n, adm: a.adm, ...a.look, x: a.x, y: a.y, tx: a.tx, ty: a.ty, hunt: a.hunt, sit: a.sit ?? -1, room: a.room2 || 0 }; }
   send(ws, o) { try { ws.send(JSON.stringify(o)); } catch {} }
@@ -43,8 +51,10 @@ export class Town extends DurableObject {
       return Response.json(w ? { dev: this.info(w).dev, kind: this.info(w).kind } : null);
     }
     const pair = new WebSocketPair(), [client, server] = Object.values(pair);
+    this.sweep(); if (this.ctx.getWebSockets().length > MAX + 30) return new Response('busy', { status: 503 });
     this.ctx.acceptWebSocket(server);
-    this.save(server, { pending: true, room: Number(url.searchParams.get('ch')) || 1, at: now() });   // 첫 메시지로 로그인 확인
+    this.save(server, { pending: true, room: Math.min(MAX_CH, Math.max(1, Number(url.searchParams.get('ch')) | 0 || 1)), at: now() });   // 첫 메시지로 로그인 확인
+    if (!(await this.ctx.storage.getAlarm())) await this.ctx.storage.setAlarm(now() + 15e3);
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -75,6 +85,9 @@ export class Town extends DurableObject {
   async webSocketMessage(ws, msg) {
     if (typeof msg !== 'string' || msg.length > 600) return;
     let m; try { m = JSON.parse(msg); } catch { return; }
+    const t0 = now(), r = this.rate.get(ws) || { tok: RATE.cap, at: t0 };
+    r.tok = Math.min(RATE.cap, r.tok + (t0 - r.at) / 1000 * RATE.per); r.at = t0; r.tok -= 1; this.rate.set(ws, r);
+    if (r.tok < 0) { try { ws.close(4008, 'too fast'); } catch {} return this.webSocketClose(ws); }
     const a = this.info(ws);
     if (a.pending) return m.t === 'auth' ? this.join(ws, a, m.token, m) : ws.close(4401, 'auth');
     if (!a.id || a.gone) return;
@@ -90,9 +103,10 @@ export class Town extends DurableObject {
       a.sit = b; this.save(ws, a); return this.all({ t: 'sit', id: a.id, b }, ws);
     }
     // 집 안에 들어감 (r = 집 주인 id, 0 = 마을). 같은 방에 있는 사람끼리만 보임
-    if (m.t === 'room') { const r = Number.isInteger(m.r) && m.r >= 0 ? m.r : 0; Object.assign(a, { room2: r, sit: -1, x: m.x | 0, y: m.y | 0, tx: m.x | 0, ty: m.y | 0 }); this.save(ws, a); return this.all({ t: 'room', id: a.id, r, x: a.x, y: a.y }, ws); }
-    // 누가 집을 짓거나 옮김 → 다들 집 목록을 다시 받아 옴
-    if (m.t === 'house') { if (t - a.houseAt < 5000) return; a.houseAt = t; this.save(ws, a); return this.all({ t: 'house' }, ws); }
+    if (m.t === 'room') {
+      if (!num(m.x, MW * T) || !num(m.y, MH * T)) return;
+      const r = Number.isInteger(m.r) && m.r >= 0 && m.r < 1e9 ? m.r : 0; Object.assign(a, { room2: r, sit: -1, x: m.x | 0, y: m.y | 0, tx: m.x | 0, ty: m.y | 0 }); this.save(ws, a); return this.all({ t: 'room', id: a.id, r, x: a.x, y: a.y }, ws);
+    }
     if (m.t === 'hunt') { a.hunt = !!m.on; a.sit = -1; this.save(ws, a); return this.all({ t: 'hunt', id: a.id, on: a.hunt }, ws); }
     if (m.t === 'emo') { if (!EMOTES.includes(m.e) || t - a.emoAt < 800) return; a.emoAt = t; this.save(ws, a); return this.all({ t: 'emo', id: a.id, e: m.e }, ws); }
     if (m.t === 'look') {   // 겉모습·레벨이 바뀜 → 저장된 값을 다시 읽어서 알림
@@ -104,9 +118,9 @@ export class Town extends DurableObject {
     if (m.t === 'say') return this.say(ws, a, m);
   }
   async webSocketClose(ws) {
-    const a = this.info(ws);
+    const a = this.info(ws); this.rate.delete(ws);
     if (a.id && !a.dup) this.all({ t: 'leave', id: a.id }, ws);
-    a.gone = true; this.save(ws, a);
+    a.gone = true; this.save(ws, a); this.cache.delete(ws);
     try { ws.close(); } catch {}
   }
   async webSocketError(ws) { return this.webSocketClose(ws); }
@@ -117,16 +131,19 @@ export class Town extends DurableObject {
     const raw = String(m.text || '');
     if (raw.startsWith('/') && a.adm) return this.command(ws, a, raw);
     if (a.mute > t) return no(`채팅 금지 중이에요 (남은 시간 ${left(a.mute - t)})`);
-    if (a.cool > t) return no(`잠깐 쉬어 가요. ${Math.ceil((a.cool - t) / 1000)}초 뒤에 다시 말할 수 있어요`);
-    a.sent = (a.sent || []).filter(x => t - x < 10e3);
-    if (a.sent.length && t - a.sent[a.sent.length - 1] < 1000) return no('천천히 말해 주세요 (1초에 1번)');
-    if (a.sent.length >= 5) { a.cool = t + 30e3; a.sent = []; this.save(ws, a); return no('10초 안에 너무 많이 보냈어요. 30초 동안 채팅을 쉬어요 (도배 방지)'); }
+    const k = this.talkOf(a.id), day = new Date(t + 9 * 3600e3).toISOString().slice(0, 10);
+    if (k.day !== day) { k.day = day; k.n = 0; }
+    if (k.cool > t) return no(`잠깐 쉬어 가요. ${Math.ceil((k.cool - t) / 1000)}초 뒤에 다시 말할 수 있어요`);
+    if (k.n >= CHAT_DAY) return no('오늘은 채팅을 너무 많이 했어요. 내일 다시 이야기해요');
+    k.sent = k.sent.filter(x => t - x < 10e3);
+    if (k.sent.length && t - k.sent[k.sent.length - 1] < 1000) return no('천천히 말해 주세요 (1초에 1번)');
+    if (k.sent.length >= 5) { k.cool = t + 30e3; k.sent = []; return no('10초 안에 너무 많이 보냈어요. 30초 동안 채팅을 쉬어요 (도배 방지)'); }
     if (ch === 'all' && t - a.joined < 600e3) return no(`가입 후 10분 동안은 근처 대화만 가능해요 (남은 시간 ${left(600e3 - (t - a.joined))})`);
     if (ch === 'all' && a.limited) return no('신고가 여러 번 들어와서, 김치복님이 확인할 때까지 근처 대화만 가능해요');
     const r = cleanChat(raw);
     if (!r.ok) return r.warn ? this.warn(ws, a, r.why) : r.why && no(r.why);
-    if (a.last.length >= 2 && a.last.slice(-2).every(x => x === r.text)) return no('같은 말을 3번 연속 보낼 수 없어요');
-    a.last = [...a.last, r.text].slice(-3); a.sent.push(t); this.save(ws, a);
+    if (k.last.length >= 2 && k.last.slice(-2).every(x => x === r.text)) return no('같은 말을 3번 연속 보낼 수 없어요');
+    k.last = [...k.last, r.text].slice(-3); k.sent.push(t); k.n++;
     const out = JSON.stringify({ t: 'say', id: a.id, n: a.n, text: r.text, ch });
     for (const w of this.members()) {
       const b = w === ws ? a : this.info(w);
@@ -181,6 +198,8 @@ export class Town extends DurableObject {
   // 관리자 기능 (서버 안에서만 부름)
   async admin(b) {
     if (b.act === 'notice') this.all({ t: 'notice', text: b.text });
+    if (b.act === 'house') this.all({ t: 'house', h: b.h });   // 누가 집을 짓거나 옮김 → 그 집만 고쳐 그림
+    if (b.act === 'event') this.all({ t: 'event', e: b.e });   // 마을 사건·공동 건설 소식
     for (const w of this.members()) {
       const a = this.info(w); if (a.id !== b.id) continue;
       if (b.act === 'dup') { a.gone = true; a.dup = true; this.save(w, a); this.send(w, { t: 'dup' }); try { w.close(4002, 'dup'); } catch {} this.all({ t: 'leave', id: a.id }, w); }

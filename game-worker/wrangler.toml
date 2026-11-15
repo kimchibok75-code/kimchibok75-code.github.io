@@ -22,3 +22,8 @@ class_name = "Town"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["Town"]
+
+# 방송 상태 (kimchibok-live Worker에 바로 연결, 요청 수 아낌)
+[[services]]
+binding = "LIVE"
+service = "kimchibok-live"

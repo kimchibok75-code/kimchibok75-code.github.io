@@ -55,6 +55,7 @@ h3.sub { margin: 14px 0 6px; font-size: 15px; }
 .tbar { display: block; height: 5px; background: var(--paper-2); border-radius: 3px; margin: 4px 0 2px; overflow: hidden; } .tbar i { display: block; height: 100%; background: #e9a23b; }
 .btns.cheat { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; } .admform select { font: inherit; padding: 6px; border-radius: 8px; border: 1px solid var(--line); }
 .ttabs { flex-wrap: wrap; } .ttabs button { flex: 0 0 auto; padding: 6px 10px; white-space: nowrap; word-break: keep-all; }
+.ico { width: 1.25em; height: 1.25em; vertical-align: -.28em; display: inline-block; margin: 0 .04em; pointer-events: none; user-select: none; }
 .gtablebtn { width: 100%; margin: 8px 0 2px; }
 .gtable-wrap { overflow-x: auto; margin: 8px 0; -webkit-overflow-scrolling: touch; }
 .gtable { border-collapse: collapse; font-size: 12px; min-width: 620px; width: 100%; }
@@ -171,7 +172,8 @@ body.hunting .side { display: none; }
 .chat-log { list-style: none; margin: 0; padding: 6px 12px; height: 132px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; font-size: 14px; }
 .chat-log li { line-height: 1.4; overflow-wrap: anywhere; }
 .chat-log b { font-weight: 700; }
-.chat-log .sys { color: var(--kimchi); font-size: 13px; }
+.chat-log .sys { color: #5d4a1f; background: #fff7e2; border-radius: 8px; padding: 3px 8px; margin: 3px 0; font-size: 13px; line-height: 1.45; }
+.chat-log .sys.warn { color: #9b2c1a; background: #ffece7; }
 .chat-log .tag { font-size: 11px; font-weight: 700; color: var(--ink-soft); margin-right: 4px; }
 .emotes { display: flex; gap: 4px; padding: 0 8px 6px; flex-wrap: wrap; }
 .emotes[hidden] { display: none; }
@@ -355,6 +357,11 @@ body.hunting .chat-log { height: 64px; }
   .feed li { justify-self: start; max-width: 100%; background: rgba(31, 42, 58, .62); color: #fff; padding: 4px 9px; border-radius: 9px; font-size: 13px; overflow-wrap: anywhere; animation: fade 6s forwards; }
   .zoom { top: auto; bottom: calc(var(--dock-h) + 70px + env(safe-area-inset-bottom, 0px)); }
   .hud .chip.hide-m { display: none; }
+  .hud { flex-wrap: wrap; padding-right: 46px; row-gap: 5px; }
+  .hud .spacer { display: none; }
+  .hud #setBtn { position: absolute; top: 0; right: 0; }
+  .hud .chip { font-size: 13px; padding: 5px 9px; }
+  .chip.ev .evn { display: none; }
   .banner { top: 56px; font-size: 13px; }
   .modal { place-items: end center; padding: 0; }
   .sheet { width: 100%; border-radius: 20px 20px 0 0; border-width: 2px 0 0; box-shadow: none; padding-bottom: max(18px, env(safe-area-inset-bottom, 0px)); }
@@ -395,6 +402,47 @@ body.hunting .chat-log { height: 64px; }
 .fishbar .core { position: absolute; top: 0; bottom: 0; left: 33.3%; width: 33.4%; background: #3fae55; }
 .fishbar .needle { position: absolute; top: -2px; bottom: -2px; width: 5px; margin-left: -2.5px; background: #e8553a; border-radius: 3px; box-shadow: 0 0 0 2px #fff; }
 .pull { width: 100%; font-size: 18px; padding: 14px; }
+/* 마을 소식판 */
+.iconbtn { position: relative; }
+.iconbtn .dot { position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; border-radius: 50%; background: var(--kimchi); border: 2px solid #fff; }
+.chip.ev { cursor: pointer; background: #fff4d6; border-color: #b7791f; color: #7a4a00; }
+.pbar { display: block; height: 9px; border-radius: 99px; background: #e4e9e0; overflow: hidden; border: 1px solid #cfd8cb; }
+.pbar b { display: block; height: 100%; background: linear-gradient(90deg, #f0b84a, #e9a23b); border-radius: 99px; transition: width .4s; }
+.pbar.ok b { background: linear-gradient(90deg, #6fbf73, #4f9d5a); }
+.newsb h4.sub { margin: 16px 0 8px; font-size: 15px; }
+.dq { display: grid; gap: 8px; }
+.dqi { display: grid; grid-template-columns: 38px 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
+.dqi.ok { background: #eef7ec; border-color: #b9dbb5; }
+.dqi .ic { font-size: 26px; text-align: center; }
+.dqi .nm { display: grid; gap: 4px; font-weight: 700; }
+.dqi .nm small { font-weight: 400; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.dqi .rw { font-weight: 700; white-space: nowrap; }
+.stamps { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.stamp { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; border: 2px dashed #b9c4b4; color: #9aa79a; font-weight: 700; font-size: 18px; }
+.stamp.on { border: 2px solid var(--kimchi); background: #fff0ec; color: var(--kimchi); }
+.boxr { padding: 8px 12px; border-radius: 12px; border: 2px dashed #d7b66a; font-weight: 700; }
+.boxr.on { border-style: solid; background: #fff4d6; }
+.vproj { padding: 12px; border-radius: 14px; background: #fff; border: 1px solid var(--line); display: grid; gap: 8px; }
+.vhead { display: flex; gap: 10px; align-items: center; }
+.vhead .big, .nbox .big { font-size: 34px; }
+.vhead small, .nbox small { display: block; color: var(--ink-soft); }
+.vrow { display: grid; grid-template-columns: 72px 1fr auto; gap: 8px; align-items: center; font-size: 14px; }
+.vrow small { font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+.vgive { display: grid; gap: 8px; margin-bottom: 10px; }
+.vgive label { display: grid; grid-template-columns: 1fr 90px; gap: 6px; align-items: center; }
+.vgive label input { padding: 7px 8px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+.vgive .q { grid-column: 1 / -1; display: flex; gap: 6px; }
+.vgive .q .mini { flex: 1; }
+.vdone, .vtop, .chron { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.vdone li { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; align-items: center; padding: 6px 10px; border-radius: 10px; background: #f3f5f0; color: #8a948a; }
+.vdone li.on { background: #eef7ec; color: var(--ink); }
+.vdone li small, .vtop li small { color: var(--ink-soft); }
+.vtop li { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; padding: 4px 8px; }
+.nbox { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; background: #fff; border: 1px solid var(--line); margin-bottom: 8px; }
+.nbox.on { background: #fff4d6; border-color: #e3c37a; }
+.nbox.live { background: #fff0ec; border-color: #f1a99a; }
+.chron li { padding: 6px 10px; border-left: 3px solid #e3c37a; background: #fffdf6; border-radius: 0 8px 8px 0; font-size: 14px; }
+.chron li small { color: var(--ink-soft); margin-right: 4px; }
 .rtabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; }
 .rtabs button { flex: 1 0 auto; white-space: nowrap; padding: 7px 8px; border-radius: 10px; border: 1px solid var(--line); background: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
 .rtabs button[aria-pressed="true"] { background: #1f2a3a; color: #fff; }
@@ -567,11 +615,12 @@ body.hunting .chat-log { height: 64px; }
       <span class="chip" id="coinChip">🪙 1,230</span>
       <span class="chip" id="jobChip" hidden>☕ 알바 1:00</span>
       <span class="chip" id="buffChip" hidden title="분수 버프"></span>
+      <span class="chip ev" id="evChip" hidden></span>
       <span class="spacer"></span>
       <button class="iconbtn" id="fsBtn" aria-label="전체화면" title="전체화면 (Esc로 나가기)">⛶</button>
       <button class="iconbtn" id="setBtn" aria-label="설정">⚙️</button>
     </div>
-    <div class="side"><button class="iconbtn" id="townBtn" aria-label="마을 바로가기" title="마을 바로가기">🏘️</button><button class="iconbtn" id="roamBtn" aria-label="자유 행동" title="자유 행동: 켜 두면 캐릭터가 알아서 돌아다니고 인사해요" aria-pressed="false">🚶</button></div>
+    <div class="side"><button class="iconbtn" id="newsBtn" aria-label="마을 소식판" title="마을 소식판: 오늘 의뢰 · 공동 건설 · 마을 소식">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn" id="townBtn" aria-label="마을 바로가기" title="마을 바로가기">🏘️</button><button class="iconbtn" id="roamBtn" aria-label="자유 행동" title="자유 행동: 켜 두면 캐릭터가 알아서 돌아다니고 인사해요" aria-pressed="false">🚶</button></div>
     <div class="zoom"><button class="iconbtn" id="zIn" aria-label="크게 보기">＋</button><button class="iconbtn" id="zOut" aria-label="작게 보기">－</button></div>
     <div class="banner" id="liveBanner" hidden>🔴 김치복 생방송 중!</div>
     <button class="roombtn" id="roomBtn" type="button" hidden>🚪 집에서 나가기</button>
@@ -621,7 +670,9 @@ body.hunting .chat-log { height: 64px; }
 'use strict';
 import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, fishOdds, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
-  TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, fxText } from './assets/js/game-rules.js?v=__BUILD__';
+  TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, fxText,
+  dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx } from './assets/js/game-rules.js?v=__BUILD__';
+import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico } from './assets/js/game-icons.js?v=__BUILD__';
 import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSolid, noise2, inCore, BUILDINGS as MAP_BUILDINGS, SPOTS, PORTAL, BACK, FISH_AT, PLOTS, BENCHES, NODES, DECO,
   HOUSE_W, HOUSE_H, canHouse, ROOM_W, ROOM_H, ROOM_DOOR } from './assets/js/game-map.js?v=__BUILD__';
 const API = (location.hostname === 'localhost' && new URLSearchParams(location.search).get('api')) || 'https://kimchibok-game.kimchibok.workers.dev';   // 시험용: localhost에서만 ?api=http://localhost:8787 로 바꿀 수 있음
@@ -1123,7 +1174,7 @@ function drawBuilding(b, now) {
 function plaque(label, x, y, bg = '#fbfcf7', fs = 13) {
   ctx.font = `700 ${fs}px "IBM Plex Sans KR", sans-serif`; const tw = ctx.measureText(label).width + 14;
   ctx.fillStyle = bg; ctx.strokeStyle = INK; ctx.lineWidth = 2; rr(ctx, x - tw / 2, y - 10, tw, 20, 7); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, x, y + .5);
+  ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; fillTextIco(ctx, label, x, y + .5);
 }
 // 집 (작은 오두막). 지붕 색은 주인이 고름
 function houseParts(roof) {
@@ -1172,7 +1223,7 @@ function drawBoard(s, now) {
   const X = s.x * T, Y = s.y * T, w = s.w * T;
   inkDraw(ctx, [{ path: R(X + 18, Y - 4, 7, 30, 2), c: '#5b4636' }, { path: R(X + w - 25, Y - 4, 7, 30, 2), c: '#5b4636' }, { path: R(X + 4, Y - 34, w - 8, 40, 7), c: S.live ? '#1f2a3a' : '#33405a' }], 2.2);
   ctx.font = '700 15px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  if (S.live) { ctx.fillStyle = Math.floor(now / 500) % 2 ? '#ff4d4f' : '#ffd166'; ctx.fillText('🔴 김치복 생방송 중!', X + w / 2, Y - 14); }
+  if (S.live) { ctx.fillStyle = Math.floor(now / 500) % 2 ? '#ff4d4f' : '#ffd166'; fillTextIco(ctx, '🔴 김치복 생방송 중!', X + w / 2, Y - 14); }
   else { ctx.fillStyle = '#c9f0d2'; ctx.fillText('다음 방송 · 금토일 밤 9시', X + w / 2, Y - 14); }
 }
 function drawPortal(now) {
@@ -1197,7 +1248,7 @@ function drawPlots(now) {
     const cr = cropOf(p.c), k = Math.min(1, plotGrown(p, f, Date.now()) / cr.sec);
     for (const dx of [-18, 0, 18]) {
       const x = P.x + dx, y = P.y + 3;
-      if (k >= 1) { ctx.font = '19px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText(cr.i, x, y + Math.sin(now / 300 + dx) * 1.2); }
+      if (k >= 1) { ctx.font = '19px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; fillTextIco(ctx, cr.i, x, y + Math.sin(now / 300 + dx) * 1.2); }
       else if (k < .3) { ctx.fillStyle = '#5b3a1f'; ctx.beginPath(); ctx.arc(x - 3, y - 2, 1.8, 0, 7); ctx.arc(x + 3, y - 1, 1.8, 0, 7); ctx.fill(); ctx.fillStyle = '#7fcf5a'; ctx.fillRect(x - 1, y - 7, 2, 5); }
       else { const s = k < .7 ? 1 : 1.5; inkDraw(ctx, [{ path: R(x - 1, y - 10 * s, 2, 10 * s, 1), c: '#4f9d3a' }, { path: E(x - 5 * s, y - 9 * s, 5 * s, 2.6 * s, .5), c: '#7fcf5a' }, { path: E(x + 5 * s, y - 10 * s, 5 * s, 2.6 * s, -.5), c: '#7fcf5a' }], 1.2); }
     }
@@ -1206,18 +1257,23 @@ function drawPlots(now) {
   });
 }
 
+const BUB = new Map();
 function bubbleAt(x, y, text, mine) {
   ctx.font = '500 13px "IBM Plex Sans KR", sans-serif';
-  const lines = []; let cur = '';
-  for (const ch of [...text]) { if (ctx.measureText(cur + ch).width > 150) { lines.push(cur); cur = ch; } else cur += ch; }
-  if (cur) lines.push(cur);
-  const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 16, h = lines.length * 17 + 10, bx = x - w / 2, by = y - h - 8;
+  let L = BUB.get(text);   // 줄 나누기는 한 번만 계산 (매 장면마다 다시 재지 않게)
+  if (!L) {
+    const lines = []; let cur = '';
+    for (const ch of [...text]) { if (measureTextIco(ctx, cur + ch) > 150) { lines.push(cur); cur = ch; } else cur += ch; }
+    if (cur) lines.push(cur);
+    L = { lines, w: Math.max(...lines.map(l => measureTextIco(ctx, l))) }; if (BUB.size > 200) BUB.clear(); BUB.set(text, L);
+  }
+  const lines = L.lines, w = L.w + 16, h = lines.length * 17 + 10, bx = x - w / 2, by = y - h - 8;
   ctx.fillStyle = mine ? '#fff4e0' : '#fff'; ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 1.5;
   rr(ctx, bx, by, w, h, 9); ctx.fill(); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(x - 5, by + h - .5); ctx.lineTo(x, by + h + 6); ctx.lineTo(x + 5, by + h - .5); ctx.fill(); ctx.stroke();
   ctx.fillStyle = mine ? '#fff4e0' : '#fff'; ctx.fillRect(x - 4, by + h - 2, 8, 2.5);
   ctx.fillStyle = '#1f2a3a'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  lines.forEach((l, i) => ctx.fillText(l, x, by + 6 + i * 17));
+  lines.forEach((l, i) => fillTextIco(ctx, l, x, by + 6 + i * 17));
 }
 
 let last = performance.now(), clock = 0;
@@ -1268,12 +1324,12 @@ function nameTagAt(c, now) {
     ctx.fillStyle = 'rgba(255,244,214,.95)'; ctx.strokeStyle = 'rgba(176,122,30,.9)'; ctx.lineWidth = 1.2; rr(ctx, c.x - w2 / 2, top - 15, w2, 14, 7); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#8a5a12'; ctx.fillText(tn, c.x, top - 7.5); top -= 16;
   }
-  if (c.emote && c.emote.until > now) { const k = 1 - (c.emote.until - now) / 2200; ctx.font = '22px sans-serif'; ctx.globalAlpha = Math.min(1, (1 - k) * 3); ctx.fillText(c.emote.e, c.x + tw / 2 + 12, c.y - 60 - k * 14); ctx.globalAlpha = 1; }
+  if (c.emote && c.emote.until > now) { const k = 1 - (c.emote.until - now) / 2200; ctx.font = '22px sans-serif'; ctx.globalAlpha = Math.min(1, (1 - k) * 3); fillTextIco(ctx, c.emote.e, c.x + tw / 2 + 12, c.y - 60 - k * 14); ctx.globalAlpha = 1; }
   if (c.bubble && c.bubble.until > now) bubbleAt(c.x, top - 2, c.bubble.text, c === me);
   else if (c === me && me.job && !HT) { const l = jobLeft(); bubbleAt(c.x, top - 2, l ? `☕ 알바 중 ${fmtSec(l)}` : '☕ 알바 끝!', true); }
 }
 function drawTownFloats() {
-  for (const f of TF) { const k = f.t / 1.4; ctx.globalAlpha = Math.min(1, (1 - k) * 2.5); ctx.font = '900 15px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(31,42,58,.9)'; ctx.fillStyle = f.color; const y = f.y - k * 34; ctx.strokeText(f.text, f.x, y); ctx.fillText(f.text, f.x, y); }
+  for (const f of TF) { const k = f.t / 1.4; ctx.globalAlpha = Math.min(1, (1 - k) * 2.5); ctx.font = '900 15px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(31,42,58,.9)'; ctx.fillStyle = f.color; const y = f.y - k * 34; fillTextIco(ctx, f.text, f.x, y, true); }
   ctx.globalAlpha = 1;
 }
 function render(now) {
@@ -1323,12 +1379,12 @@ function renderRoom(now) {
   ctx.setTransform(DPR * z, 0, 0, DPR * z, ox * DPR, oy * DPR);
   ctx.drawImage(roomGround, 0, 0);
   inkDraw(ctx, [...winP(2 * T, 10, 44, 34), ...winP(ROOM_W * T - 2 * T - 44, 10, 44, 34), { path: R(ROOM_W * T / 2 - 40, 8, 80, 26, 5), c: '#fbfcf7' }], 2);
-  ctx.font = '700 12px "IBM Plex Sans KR", sans-serif'; ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(`🏠 ${S.roomNick || ''}님의 집`, ROOM_W * T / 2, 21.5);
+  ctx.font = '700 12px "IBM Plex Sans KR", sans-serif'; ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; fillTextIco(ctx, `🏠 ${S.roomNick || ''}님의 집`, ROOM_W * T / 2, 21.5);
   // 문 (누르면 나감)
   const dx = ROOM_DOOR.x * T + T / 2, dy = ROOM_H * T;
   inkDraw(ctx, [{ path: R(dx - 22, dy - 8, 44, 10, 3), c: '#7a4b2a' }, { path: R(dx - 26, dy - 22, 52, 14, 6), c: '#e8553a' }, { flat: 1, path: R(dx - 20, dy - 18, 40, 6, 3), c: '#f2a24a' }], 2);
-  ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; ctx.fillStyle = '#fff'; ctx.fillText('🚪 나가기', dx, dy - 15);
-  ctx.font = '600 12px "IBM Plex Sans KR", sans-serif'; ctx.fillStyle = 'rgba(80,50,25,.55)'; ctx.fillText('가구는 곧 들어와요 🛋️', ROOM_W * T / 2, 2.6 * T);
+  ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; ctx.fillStyle = '#fff'; fillTextIco(ctx, '🚪 나가기', dx, dy - 15);
+  ctx.font = '600 12px "IBM Plex Sans KR", sans-serif'; ctx.fillStyle = 'rgba(80,50,25,.55)'; fillTextIco(ctx, '가구는 곧 들어와요 🛋️', ROOM_W * T / 2, 2.6 * T);
   const chars = [me, ...people.filter(shown)];
   chars.sort((a, b) => a.y - b.y).forEach(c => drawChar(ctx, c.x, c.y + 6, c, clock + (c.seed || 0)));
   for (const c of chars) nameTag(c, now);
@@ -1388,7 +1444,7 @@ function enterHunt(h) {
   for (let i = 0; i < 8; i++) spawnMon(false);
   document.body.classList.add('hunting'); $('#huntBox').hidden = false; $('#hbField').textContent = `${f.i} ${f.n}`;
   setPlace(f.n);
-  clearInterval(syncT); syncT = setInterval(huntSync, 30e3);
+  clearInterval(syncT); syncT = setInterval(huntSync, 60e3);   // 서버는 90초까지 100%로 쳐 줌
   netSend({ t: 'hunt', on: true });
 }
 function exitHuntView() {
@@ -1633,7 +1689,7 @@ function renderHunt(now) {
       ctx.fillStyle = 'rgba(31,42,58,.75)'; rr(ctx, m.x - w / 2 - 1, top - 1, w + 2, 6, 3); ctx.fill();
       ctx.fillStyle = m.boss ? '#ffb020' : '#ef6a50'; rr(ctx, m.x - w / 2, top, w * Math.max(0, m.hp / m.d.hp), 4, 2); ctx.fill();
       ctx.font = `700 ${m.boss ? 13 : 10.5}px "IBM Plex Sans KR", sans-serif`; ctx.fillStyle = '#fff'; ctx.strokeStyle = 'rgba(31,42,58,.8)'; ctx.lineWidth = 3;
-      const label = `${m.boss ? '👑 ' : ''}Lv.${m.d.lv} ${m.d.n}`; ctx.strokeText(label, m.x, top - 9); ctx.fillText(label, m.x, top - 9);
+      const label = `${m.boss ? '👑 ' : ''}Lv.${m.d.lv} ${m.d.n}`; fillTextIco(ctx, label, m.x, top - 9, true);
     }
   }
   nameTag(me, now);
@@ -1642,7 +1698,7 @@ function renderHunt(now) {
     const k = t.t / t.life, pop = Math.max(0, 1 - t.t / .14), sz = t.size * (1 + pop * (t.big ? .9 : .5));
     ctx.globalAlpha = Math.min(1, (1 - k) * 2.5);
     ctx.font = `900 ${sz}px "IBM Plex Sans KR", sans-serif`; ctx.lineWidth = t.big ? 4.5 : 3.5; ctx.strokeStyle = 'rgba(31,42,58,.9)'; ctx.fillStyle = t.color;
-    const y = t.y - (1 - Math.pow(1 - Math.min(1, k * 1.6), 3)) * 34, x = t.x + t.vx * k; ctx.strokeText(t.text, x, y); ctx.fillText(t.text, x, y);
+    const y = t.y - (1 - Math.pow(1 - Math.min(1, k * 1.6), 3)) * 34, x = t.x + t.vx * k; fillTextIco(ctx, t.text, x, y, true);
   }
   ctx.globalAlpha = 1;
   if (me.hurt > 0) {   // 맞으면 화면 가장자리가 잠깐 빨갛게
@@ -1948,7 +2004,7 @@ function trySend(raw) {
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 function addChat(m) {
   const li = document.createElement('li');
-  if (m.sys) { li.className = 'sys'; li.textContent = `⚠️ ${m.text}`; }
+  if (m.sys) { const t = String(m.text), em = /^\p{Extended_Pictographic}/u.test(t), bad = /^(⚠️|🚫|🚨|⛔)|금지|경고|차단|쉬어/.test(t); li.className = bad ? 'sys warn' : 'sys'; li.textContent = em ? t : `${bad ? '⚠️' : '💬'} ${t}`; }
   else { li.innerHTML = `<span class="tag">${m.mode}</span><b>${esc(m.who)}</b> ${esc(m.text)}`; }
   const log = $('#chatLog'); log.append(li); while (log.children.length > 80) log.firstChild.remove(); log.scrollTop = log.scrollHeight;
   const f = $('#feed'); const fl = li.cloneNode(true); f.append(fl); while (f.children.length > 4) f.firstChild.remove(); setTimeout(() => fl.remove(), 6000);
@@ -2085,7 +2141,7 @@ function applyMe(m) {
   const c = m.char, keepPos = HT && c.hunt;
   Object.assign(me, { name: m.nick, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair || 'none', hairC: c.hairC || HAIR_COLORS[0], intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
     str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp || derive().maxHp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
-    cls: c.cls || 'sword', enh: c.enh || {}, presets: c.presets, preset: c.preset || 0, gacha: c.gacha || { w: 0, a: 0 }, life: c.life || me.life, uid: m.id ?? me.uid });
+    cls: c.cls || 'sword', enh: c.enh || {}, presets: c.presets, preset: c.preset || 0, gacha: c.gacha || { w: 0, a: 0 }, life: c.life || me.life, uid: m.id ?? me.uid, gfx: m.gfx || {}, world: m.world || me.world });
   me.job = c.job; me.jobEnd = c.job ? Date.now() + c.job.left * 1000 : 0;
   me.hunt = c.hunt; if (!keepPos) { me.path = []; me.moving = false; }
   if ($('#potAt')) setPotAt(me.potAt);
@@ -2114,7 +2170,9 @@ function took(j) {
     else if (!srv && HT) exitHuntView();
     else if (srv && HT) { HT.srv = srv; HT.loc = { kills: 0, exp: 0, gold: 0 }; HT.bossAt = performance.now() + (srv.boss - srv.t) * 1000; }
     for (const id of j.newTitles || []) { const x = titleOf(id); toast(`🏷️ 새 칭호 「${x.n}」!`); sysMsg(`🏷️ 새 칭호를 얻었어요: 「${x.n}」 · ${fxText(x.fx) || '효과 없음'} · 캐릭터창의 칭호를 눌러 달 수 있어요`); emote(me, '🎉'); }
-    if (j.bonus) { toast(`🎁 오늘 첫 접속 보너스 🪙 ${j.bonus.toLocaleString()}`); sysMsg(`🎁 오늘 첫 접속 보너스: 골드 ${j.bonus.toLocaleString()} (레벨 × 20)`); }
+    if (j.bonus) { toast(`🎁 오늘 첫 접속 보너스 🪙 ${j.bonus.toLocaleString()}`); sysMsg(`🎁 오늘 첫 접속 보너스: 골드 ${j.bonus.toLocaleString()} (레벨 × 20) · 📋 소식판에서 오늘 의뢰를 확인해 보세요!`); setTimeout(() => { if (modal.hidden) openNews('daily'); }, 900); }
+    if (j.daily?.length) tookDaily(j.daily);
+    renderNewsDot();
     if (me.lv > lv0) {
       emote(me, '🎉'); if (HT) floatText(me.x, me.y - 90, 'LEVEL UP!', '#ffd166', 22, 1.8);
       toast(`🎉 레벨 ${me.lv}! 능력치 포인트 +${(me.lv - lv0) * 4}`); sysMsg(`레벨 ${me.lv} 달성! 캐릭터창 → 능력치에서 포인트를 찍어 보세요`); logAct(`레벨 ${me.lv} 달성`);
@@ -2128,14 +2186,19 @@ async function act(path, body) {
   try { const j = await api(path, body); took(j); return j; } catch (x) { toast(x.message); return null; }
 }
 // 위치 저장: 멈췄을 때 (너무 자주는 안 보냄)
-let lastSaved = '', moveT = null;
+let lastSaved = '', moveT = null, savedAt = 0;
+const SAVE_GAP = 45e3;
 function savePos(now) {
   if (!token || $('#app').hidden || S.away || me.room) return;
-  const k = `${Math.round(me.x)},${Math.round(me.y)}`; if (k === lastSaved) return;
-  clearTimeout(moveT);
-  const send = () => { lastSaved = k; api('/api/move', { x: me.x, y: me.y }, { keepalive: true }).catch(() => (lastSaved = '')); };
-  if (now) send(); else moveT = setTimeout(send, 1500);
+  const send = () => {
+    moveT = null; if (!token || S.away || me.room) return;
+    const k = `${Math.round(me.x)},${Math.round(me.y)}`; if (k === lastSaved) return;
+    lastSaved = k; savedAt = Date.now(); api('/api/move', { x: me.x, y: me.y }, { keepalive: true }).catch(() => (lastSaved = ''));
+  };
+  if (now) { clearTimeout(moveT); return send(); }
+  if (!moveT) moveT = setTimeout(send, Math.max(1500, SAVE_GAP - (Date.now() - savedAt)));
 }
+addEventListener('pagehide', () => savePos(true));
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') savePos(true); else if (HT) huntSync(); });
 // 겉모습 저장 (색을 여러 번 눌러도 마지막 것만)
 let lookT = null;
@@ -2145,7 +2208,8 @@ function saveLook() {
 }
 // 실제 김치복 방송 상태 (홈페이지와 같은 Worker)
 async function checkLive() {
-  try { const j = await (await fetch(LIVE_API, { cache: 'no-store' })).json(); if (!!j.open !== S.live) { S.live = !!j.open; $('#liveBanner').hidden = !S.live; if (S.live) sysMsg(`🔴 김치복님 생방송 중! ${j.title || ''}`); } } catch {}
+  try { const j = await (await fetch(LIVE_API, { cache: 'no-store' })).json(); if (!!j.open !== S.live) { S.live = !!j.open; $('#liveBanner').hidden = !S.live; if (S.live) sysMsg(`🔴 김치복님 생방송 중! ${j.title || ''} · 방송 중에는 마을 모두 경험치·골드 보너스!`); } } catch {}
+  liveCheckin();
 }
 
 // 2단계 이후에 열리는 곳
@@ -2272,8 +2336,8 @@ function enterTown(first) {   // first: 방금 받은 /api/me 결과 (자리 비
     cam = { x: me.x, y: me.y };
     if (!S.greeted) { S.greeted = true; addChat({ sys: true, text: `${me.name}님, 치복 타운에 온 걸 환영해요! 바닥을 누르면 그 자리로 걸어가요(화살표·끌기도 OK). 🌳 나무·🪨 바위를 누르면 채집, 오른쪽 끝 보라색 포탈은 자동 사냥이에요` }); logAct('치복 타운 도착'); }
     if (first) took(first); else act('/api/me');   // 사냥 정산(자리 비운 동안 결과)과 오늘 첫 접속 보너스
-    checkLive(); clearInterval(liveT); liveT = setInterval(checkLive, 60e3);
-    loadBlocks(); netConnect(); loadHouses(); clearInterval(S.houseT); S.houseT = setInterval(loadHouses, 120e3);
+    checkLive(); clearInterval(liveT); liveT = setInterval(checkLive, 180e3);
+    loadBlocks(); netConnect(); loadHouses();   // 그 뒤로는 누가 집을 지으면 서버가 알려 줌 ({t:'house', h})
   });
 }
 
@@ -2597,7 +2661,7 @@ function hallSheet(b, keep) {
     <ul class="ilist">${list.map(x => row(`<span class="roofdot" style="background:${HOUSE.roofs[x.roof] || HOUSE.roofs[0]}"></span>`, `${esc(x.nick)}님의 집${x.id === me.uid ? ' <span class="tagok">내 집</span>' : ''}`, '', `<button class="mini" data-x="visit:${x.id}">구경 가기</button>`)).join('') || '<li><span></span><span class="muted">아직 집이 없어요. 첫 번째 주인이 되어 보세요!</span><span></span></li>'}</ul>`, el => wire(el, async x => {
     const [a, v] = x.split(':');
     if (a === 'roof') { S.roof = +v; return reopen?.(); }
-    if (a === 'reroof') { const j = await act('/api/house/roof', { roof: +v }); if (j) { await loadHouses(); netSend({ t: 'house' }); toast('🎨 지붕 색을 바꿨어요'); reopen?.(); } return; }
+    if (a === 'reroof') { const j = await act('/api/house/roof', { roof: +v }); if (j) { await loadHouses(); toast('🎨 지붕 색을 바꿨어요'); reopen?.(); } return; }
     if (a === 'visit') { const t = HOUSES.find(k => k.id === +v); if (t) visitHouse(t); return; }
     if (a === 'place') startPlace(h ? h.roof : S.roof);
   }), keep);
@@ -2628,7 +2692,7 @@ $('#placeNo').onclick = () => { S.place = null; paintPlace(); };
 $('#placeOk').onclick = async () => {
   const p = S.place; if (!p || p.why || p.x == null) return;
   const had = !!LIFE().house, j = await act('/api/house/build', { x: p.x, y: p.y, roof: p.roof }); if (!j) return;
-  S.place = null; paintPlace(); await loadHouses(); netSend({ t: 'house' });
+  S.place = null; paintPlace(); await loadHouses();
   const h = myHouse(); if (h && TOWN.bad(Math.floor(me.x / T), Math.floor(me.y / T))) { [me.x, me.y] = houseDoor(h); me.path = []; cam = { x: me.x, y: me.y }; netGo(); savePos(true); }
   emote(me, '🎉'); toast(had ? '🚚 이사를 마쳤어요!' : '🎉 내 집이 생겼어요! 집을 누르면 들어갈 수 있어요'); logAct(had ? '집 이사' : '내 집 짓기');
   if (!had) sysMsg(`🏠 ${me.name}님의 집이 생겼어요! 마을회관에서 다른 사람 집도 구경할 수 있어요`);
@@ -2772,7 +2836,7 @@ function onNet(m) {
   else if (m.t === 'sit') { const p = personOf(m.id); if (p) { if (m.b >= 0) sitDown(p, m.b); else standUp(p); } }
   else if (m.t === 'leave') people = people.filter(p => p.id !== m.id);
   else if (m.t === 'room') { const p = personOf(m.id); if (p) Object.assign(p, { room: m.r || 0, x: m.x, y: m.y, path: [], sit: -1 }); }
-  else if (m.t === 'house') loadHouses();
+  else if (m.t === 'house' && m.h && Number.isInteger(m.h.id)) setHouses([...HOUSES.filter(h => h.id !== m.h.id), m.h]);
   else if (m.t === 'go') { const p = personOf(m.id); if (p) { standUp(p); netMove(p, m); } }
   else if (m.t === 'hunt') { const p = personOf(m.id); if (p) { p.hunt = m.on; p.path = []; p.sit = -1; } }
   else if (m.t === 'emo') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) emote(p, m.e); }
@@ -2786,6 +2850,7 @@ function onNet(m) {
   else if (m.t === 'nope') sysMsg(m.why);
   else if (m.t === 'note') m.notes.forEach(n => sysMsg(n));
   else if (m.t === 'sys') sysMsg(m.text);
+  else if (m.t === 'event' && m.e?.k === 'village') { sysMsg(`🎉 마을 사람들이 힘을 모아 「${String(m.e.n).slice(0, 20)}」을(를) 완성했어요! 이제 마을 모두에게 효과가 생겨요`); toast(`🎉 「${String(m.e.n).slice(0, 20)}」 완성!`); NEWS.at = 0; emote(me, '🎉'); act('/api/me'); }
   else if (m.t === 'notice') { sysMsg(`📢 공지: ${m.text}`); toast(`📢 ${m.text}`); }
   else if (m.t === 'kick' || m.t === 'bye') { NET.want = false; sysMsg(m.why); toast(m.why); }
   setOnline();
@@ -2876,8 +2941,10 @@ async function openAdmin(tab = ADM.tab) {
   }
   if (tab === 'notice') {
     return show(`<p class="muted">모든 마을 채널에 공지가 떠요 (100글자까지). 채팅창에서 <b>/공지 내용</b>, <b>/조용 닉네임 10분</b>, <b>/내보내기 닉네임</b> 으로도 할 수 있어요.</p>
-      <div class="admform"><input id="aNotice" maxlength="100" placeholder="공지 내용"><button class="mini main" data-x="send">보내기</button></div>`,
-      async (x, el) => { const text = el.querySelector('#aNotice').value.trim(); if (!text) return; await api('/api/admin/notice', { text }); toast('공지를 보냈어요'); el.querySelector('#aNotice').value = ''; });
+      <div class="admform"><input id="aNotice" maxlength="100" placeholder="공지 내용"><button class="mini main" data-x="send">보내기</button></div>
+      <h4 class="sub">📺 방송 보너스 직접 켜기</h4><p class="muted">방송 연결이 안 될 때나 이벤트용. 켜는 동안 마을 모두 ${fxText(LIVE_FX)}, 방송 출석 가능.</p>
+      <div class="actions"><button class="mini" data-x="live:60">1시간</button><button class="mini" data-x="live:180">3시간</button><button class="mini" data-x="live:0">끄기</button></div>`,
+      async (x, el) => { if (x.startsWith('live:')) { const min = +x.slice(5); await api('/api/admin/live', { min }); toast(min ? `방송 보너스를 ${min}분 동안 켰어요 (30초 안에 반영)` : '방송 보너스를 껐어요'); return; } const text = el.querySelector('#aNotice').value.trim(); if (!text) return; await api('/api/admin/notice', { text }); toast('공지를 보냈어요'); el.querySelector('#aNotice').value = ''; });
   }
 }
 
@@ -2947,8 +3014,8 @@ function bite() {
   F.phase = 'bite'; const c = F.cast;
   $('#water').classList.add('bite');
   $('#fishMsg').innerHTML = c.strong ? '<b style="color:#e8553a">❗❗ 강한 입질! 지금!</b>' : '<b style="color:#e8553a">❗ 입질! 지금!</b>';
-  const zl = .08 + Math.random() * (.84 - c.zone);
-  F.zone = [zl, zl + c.zone];
+  const zl = c.zl ?? .08 + Math.random() * (.84 - c.zone);
+  F.zone = [zl, zl + c.zone]; F.t0 = performance.now();
   $('#fishGame').insertAdjacentHTML('afterbegin', `<div class="fishbar"><div class="zone" style="left:${zl * 100}%;width:${c.zone * 100}%"><div class="core"></div></div><div class="needle" id="needle"></div></div>`);
   $('#pullBtn').classList.add('main');
   const t0 = performance.now();
@@ -2959,18 +3026,19 @@ function bite() {
     if (t > 4.5) pull(true);   // 너무 늦으면 놓침
   }, 16);
 }
-function stopFish() { clearTimeout(F.timer); clearInterval(F.timer); F.timer = null; if (F.phase !== 'idle' && F.phase !== 'reeling') { const was = F.phase; F.phase = 'idle'; if (was === 'wait' || was === 'bite') api('/api/fish/reel', { hit: false }).catch(() => {}); } }
+function stopFish() { clearTimeout(F.timer); clearInterval(F.timer); F.timer = null; if (F.phase !== 'idle' && F.phase !== 'reeling') { const was = F.phase; F.phase = 'idle'; if (was === 'wait' || was === 'bite') api('/api/fish/reel', { t: -1 }).catch(() => {}); } }
 async function pull(late) {
   if (F.phase !== 'wait' && F.phase !== 'bite') return;
   const was = F.phase; clearTimeout(F.timer); clearInterval(F.timer); F.phase = 'reeling';
   const [a, b] = F.zone || [0, 0], w = b - a, hit = was === 'bite' && late !== true && F.pos >= a && F.pos <= b, perfect = hit && F.pos >= a + w / 3 && F.pos <= b - w / 3;
-  let j; try { j = await api('/api/fish/reel', { hit, perfect }); took(j); } catch (x) { F.phase = 'idle'; F.msg = x.message; return paintFishing(); }
+  const tt = was === 'bite' && late !== true ? +((performance.now() - F.t0) / 1000).toFixed(3) : -1;
+  let j; try { j = await api('/api/fish/reel', { t: tt }); took(j); } catch (x) { F.phase = 'idle'; F.msg = x.message; return paintFishing(); }
   F.phase = 'idle';
   if (j.caught) {
-    const f = j.fish; F.msg = `${perfect ? '🌟 완벽! ' : '🎉 '}${fishTag(f)} ${f.len}cm → 바로 팔았어요 ${goldTxt(f.price)} · ${COIN.fish[0]} +${j.coin || 0}`;
+    const f = j.fish; F.msg = `${j.perfect ? '🌟 완벽! ' : '🎉 '}${fishTag(f)} ${f.len}cm → 바로 팔았어요 ${goldTxt(f.price)} · ${COIN.fish[0]} +${j.coin || 0}${j.tired ? " (오늘 많이 낚아서 값·코인 절반)" : ""}`;
     emote(me, '🎉'); logAct(`${f.i} ${f.n} ${f.len}cm +${f.price}`);
     if (['epic', 'legend'].includes(f.grade)) sysMsg(`🎣 ${FG[f.grade].n} 물고기! ${f.n} ${f.len}cm`);
-    try { F.rank = await api('/api/fish/rank'); } catch {}
+    if (Date.now() - (F.rankAt || 0) > 60e3) { F.rankAt = Date.now(); try { F.rank = await api('/api/fish/rank'); } catch {} }   // 순위는 1분에 한 번만 새로
   } else {
     const f = j.fish, tag = ['rare', 'epic', 'legend'].includes(f.grade) ? ` 앗, ${fishTag(f)}였는데…!` : '';
     F.msg = (j.why === 'early' ? '💨 너무 빨리 당겼어요. 입질이 온 뒤에 당겨요' : j.why === 'late' ? '💨 너무 늦었어요. 물고기가 도망갔어요' : '💨 놓쳤어요. 바늘이 초록 칸에 있을 때 당겨요') + tag;
@@ -2981,7 +3049,99 @@ async function pull(late) {
 addEventListener('keydown', e => { if (e.code === 'Space' && $('#pullBtn') && (F.phase === 'wait' || F.phase === 'bite')) { e.preventDefault(); pull(); } });
 new MutationObserver(() => { if (modal.hidden && F.phase !== 'idle' && F.phase !== 'reeling' && F.phase !== 'casting') stopFish(); }).observe(modal, { attributes: true, attributeFilter: ['hidden'] });
 
+const liveOn = () => S.live || !!me.world?.live;
+
+// ───────── 마을 소식판 (기획서 4-8): 오늘 의뢰 · 공동 건설 · 마을 소식 ─────────
+const NEWS = { tab: 'daily', data: null, at: 0, give: { wood: 0, stone: 0, gold: 0 } };
+const bar = (v, max, c = '') => `<i class="pbar ${c}"><b style="width:${Math.min(100, max ? v / max * 100 : 0)}%"></b></i>`;
+function dailyView() {
+  const d = me.life?.daily, day = dayKey(Date.now());
+  if (!d || d.day !== day) return '<p class="muted">오늘 의뢰를 불러오는 중이에요…</p>';
+  const tasks = dailyTasks(day), s = me.life.stamp || { n: 0, box: false };
+  return `<p class="muted" style="margin:0 0 8px">매일 새 의뢰 ${DAILY_N}개. 다 하면 바로 보상을 받아요. 모두 끝내면 <b>도장</b> 1개!</p>
+    <div class="dq">${tasks.map((q, i) => { const p = Math.min(q.v, dailyProg(me, q)), ok = d.done.includes(i); return `<div class="dqi${ok ? ' ok' : ''}"><span class="ic">${q.i}</span><span class="nm">${q.n}<small>${p.toLocaleString()} / ${q.v.toLocaleString()}</small>${bar(p, q.v, ok ? 'ok' : '')}</span><span class="rw">${ok ? '✅' : goldTxt(dailyGold(me.lv))}</span></div>`; }).join('')}</div>
+    <h4 class="sub">이번 주 도장 <small class="muted">(월요일에 새로 시작)</small></h4>
+    <div class="stamps">${Array.from({ length: STAMP_GOAL }, (_, i) => `<span class="stamp${i < s.n ? ' on' : ''}">${i < s.n ? '🥬' : i + 1}</span>`).join('')}<span class="boxr${s.box ? ' on' : ''}">${s.box ? '🎁 받음!' : '🎁'}</span></div>
+    <p class="muted">도장 1개: 🐚 3 · 🌻 3 / 도장 ${STAMP_GOAL}개 상자: ${goldTxt(weekBox(me.lv).gold)} · 🐚 ${weekBox(me.lv).fish} · 🌻 ${weekBox(me.lv).farm}</p>`;
+}
+function villageView() {
+  const W = NEWS.data?.village; if (!W) return '<p class="muted">불러오는 중…</p>';
+  const P = VILLAGE[W.lv], R = me.life?.res || { wood: 0, stone: 0 }, g = NEWS.give;
+  const done = VILLAGE.slice(0, W.lv), effect = o => fxText(o);
+  return `${P ? `<div class="vproj"><div class="vhead"><span class="big">${P.i}</span><div><b>${W.lv + 1}번째 공사: ${P.n}</b><small>다 지으면 마을 모두에게 영원히: <b>${effect(P.fx)}</b></small></div></div>
+      ${[['wood', '🪵 목재'], ['stone', '🪨 석재'], ['gold', '🪙 골드']].map(([k, n]) => `<div class="vrow"><span>${n}</span>${bar(W[k], P.need[k], W[k] >= P.need[k] ? 'ok' : '')}<small>${W[k].toLocaleString()} / ${P.need[k].toLocaleString()}</small></div>`).join('')}
+    </div>
+    <h4 class="sub">내 것 보내기 <small class="muted">(모자란 만큼만 받아요)</small></h4>
+    <div class="vgive">${[['wood', '🪵', R.wood], ['stone', '🪨', R.stone], ['gold', '🪙', me.gold]].map(([k, i, have]) => `<label><span>${i} <small>${have.toLocaleString()}개 있음</small></span><input type="number" min="0" max="${have}" step="1" data-g="${k}" value="${g[k] || ''}" placeholder="0"><span class="q"><button class="mini" data-x="q:${k}:.1">10%</button><button class="mini" data-x="q:${k}:.5">절반</button><button class="mini" data-x="q:${k}:1">전부</button></span></label>`).join('')}</div>
+    <button class="btn main" data-x="give" style="width:100%">🏗️ 공사에 보내기</button>` : '<p><b>🎉 모든 공사가 끝났어요!</b> 마을 사람들 덕분이에요.</p>'}
+    <h4 class="sub">다 지은 곳</h4>
+    <ul class="vdone">${VILLAGE.map((x, i) => `<li class="${i < W.lv ? 'on' : ''}"><span>${x.i}</span><b>${x.n}</b><small>${i < W.lv ? effect(x.fx) : i === W.lv ? '짓는 중' : '아직'}</small></li>`).join('')}</ul>
+    <h4 class="sub">많이 도와준 사람</h4>
+    <ol class="vtop">${(NEWS.data.top || []).map((t, i) => `<li><span>${['🥇', '🥈', '🥉'][i] || i + 1}</span><b>${esc(t.nick)}</b><small>${t.score.toLocaleString()}점</small></li>`).join('') || '<li class="muted">아직 없어요. 첫 번째가 되어 보세요!</li>'}</ol>
+    <p class="muted">점수: 목재 1개 = 1점, 석재 1개 = 1.2점, 골드 500 = 1점</p>`;
+}
+function newsView() {
+  const t = Date.now(), e = eventNow(t), n = nextEvent(t), live = liveOn(), W = NEWS.data?.village, fx = worldFx({ lv: W?.lv ?? me.world?.lv ?? 0, live }, t);
+  return `<div class="nbox ${e ? 'on' : ''}"><span class="big">${e ? e.i : '⏳'}</span><div>${e ? `<b>지금 마을 사건: ${e.n}</b><small>${e.d} · ${fmtLeft(Math.ceil((e.end - t) / 1000))} 남음</small>` : `<b>다음 마을 사건: ${n.n}</b><small>${n.d} · ${fmtLeft(Math.ceil((n.start - t) / 1000))} 뒤 시작</small>`}</div></div>
+    <div class="nbox ${live ? 'live' : ''}"><span class="big">🔴</span><div>${live ? `<b>김치복님 방송 중!</b><small>마을 모두 ${fxText(LIVE_FX)} · 출석하면 ${goldTxt(liveGift(me.lv))} (하루 한 번)</small>` : `<b>방송 보너스</b><small>김치복님이 방송하면 마을 모두 ${fxText(LIVE_FX)} · 방송 출석 선물</small>`}</div></div>
+    <p class="muted" style="margin:6px 0">지금 마을 전체 효과: <b>${fxText(fx) || '없음'}</b></p>
+    <h4 class="sub">마을 연대기</h4>
+    <ul class="chron">${(NEWS.data?.chron || []).map(c => `<li><small>${fmtT(c.at)}</small> ${esc(c.text)}</li>`).join('') || '<li class="muted">아직 큰일이 없었어요. 첫 기록의 주인공이 되어 보세요!</li>'}</ul>
+    <p class="muted">마을 사건은 2시간마다 40분씩 열려요: ${EVENTS.map(x => `${x.i} ${x.n}`).join(' · ')}</p>`;
+}
+async function openNews(tab = NEWS.tab, again) {
+  NEWS.tab = tab;
+  if (!again && Date.now() - NEWS.at > 15e3) { try { NEWS.data = await api('/api/news'); NEWS.at = Date.now(); } catch {} }
+  const tabs = [['daily', '📋 오늘 의뢰'], ['village', '🏗️ 공동 건설'], ['news', '📰 마을 소식']];
+  const body = tab === 'daily' ? dailyView() : tab === 'village' ? villageView() : newsView();
+  openModal(`<h3>📋 마을 소식판</h3><div class="rtabs">${tabs.map(([k, n]) => `<button type="button" data-t="${k}" aria-pressed="${k === tab}">${n}</button>`).join('')}</div><div class="newsb">${body}</div>`, el => {
+    el.querySelector('.rtabs').onclick = e => { const t = e.target.closest('[data-t]')?.dataset.t; if (t) openNews(t, true); };
+    el.querySelectorAll('[data-g]').forEach(inp => inp.oninput = () => { NEWS.give[inp.dataset.g] = Math.max(0, Math.floor(+inp.value || 0)); });
+    wire(el.querySelector('.newsb'), async x => {
+      const [a, k, v] = x.split(':');
+      if (a === 'q') { const have = k === 'gold' ? me.gold : me.life.res[k]; NEWS.give[k] = Math.floor(have * +v); return openNews('village', true); }
+      if (a === 'give') {
+        const g = NEWS.give; if (!g.wood && !g.stone && !g.gold) return toast('보낼 양을 적어 주세요');
+        const j = await act('/api/village/give', g); if (!j) return;
+        NEWS.give = { wood: 0, stone: 0, gold: 0 }; NEWS.at = 0;
+        const t = [j.gave.wood && `🪵 ${j.gave.wood.toLocaleString()}`, j.gave.stone && `🪨 ${j.gave.stone.toLocaleString()}`, j.gave.gold && `🪙 ${j.gave.gold.toLocaleString()}`].filter(Boolean).join(' · ');
+        toast(`🏗️ 고마워요! ${t} 보냈어요`); sysMsg(`🏗️ 공동 건설에 ${t} 보냈어요`); logAct(`공동 건설 기부 ${t}`); emote(me, '🎉');
+        return openNews('village');
+      }
+    });
+  }, again);
+}
+// 매일 의뢰·도장 보상 알림 (서버 응답의 daily)
+function tookDaily(list) {
+  for (const x of list) {
+    if (x.gold) { toast(`📋 의뢰 완료! ${x.i} ${x.n} · ${goldTxt(x.gold)}`); sysMsg(`📋 오늘 의뢰 완료: ${x.n} (+${x.gold.toLocaleString()} 골드)`); }
+    if (x.stamp) { toast(`🥬 오늘 의뢰를 다 했어요! 도장 ${x.stamp}/${STAMP_GOAL}`); sysMsg(`🥬 도장 ${x.stamp}개째! 🐚 +3 · 🌻 +3`); emote(me, '🎉'); }
+    if (x.box) { toast(`🎁 도장 ${STAMP_GOAL}개 상자! ${goldTxt(x.box.gold)}`); sysMsg(`🎁 이번 주 도장 상자: 골드 ${x.box.gold.toLocaleString()} · 🐚 ${x.box.fish} · 🌻 ${x.box.farm}`); }
+  }
+  renderNewsDot();
+}
+// 소식판 버튼의 빨간 점: 오늘 아직 안 한 의뢰가 있으면
+function renderNewsDot() { const d = me.life?.daily, dot = $('#newsDot'); if (dot) dot.hidden = !!(d && d.day === dayKey(Date.now()) && d.done.length >= DAILY_N); }
+// 지금 마을 사건 · 방송 보너스 표시 (1초마다)
+setInterval(() => {
+  const c = $('#evChip'); if (!c || $('#app').hidden) return;
+  const t = Date.now(), e = eventNow(t);
+  c.hidden = !e && !liveOn();
+  const k = e ? e.k + Math.ceil((e.end - t) / 1000) : liveOn() ? 'live' : '';
+  if (c.dataset.k !== k) { c.dataset.k = k; if (e) c.innerHTML = `${e.i} <span class="evn">${e.n}</span> ${fmtSec(Math.ceil((e.end - t) / 1000))}`; else if (liveOn()) c.innerHTML = '🔴 <span class="evn">방송 </span>보너스'; }
+  c.title = e ? e.d : '방송 중: 경험치·골드 보너스';
+}, 1000);
+// 방송 출석 (방송 중이면 하루 한 번 자동)
+async function liveCheckin() {
+  if (!liveOn() || !token || $('#app').hidden || me.life?.liveDay === dayKey(Date.now()) || S.checkin) return;
+  S.checkin = true; try { const j = await api('/api/live/checkin', {}); took(j); toast(`📺 방송 출석! ${goldTxt(j.gift)}`); sysMsg(`📺 김치복님 방송 출석 선물: 골드 ${j.gift.toLocaleString()} · 방송 중에는 마을 모두 경험치·골드 보너스!`); } catch {} finally { S.checkin = false; }
+}
+$('#newsBtn').onclick = () => openNews(); $('#evChip').onclick = () => openNews('news');
+
 let toastT; function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2600); }
+// 이모지 → 직접 그린 그림 (화면 글자는 자동, 캔버스는 fillTextIco)
+preloadIcons(); iconize(document.body);
+
 // 처음 열 때: 로그인 유지 중이면 바로 마을로
 showAuth('login');
 if (token) api('/api/me').then(j => { applyMe(j.me); enterTown(j); }).catch(() => {});

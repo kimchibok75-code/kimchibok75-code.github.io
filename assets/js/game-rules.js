@@ -213,7 +213,7 @@ export const FISH = {
   epic: [['🦈', '철갑상어', 80, 200, 350], ['🐟', '참치', 100, 250, 400], ['🐢', '바다거북', 30, 80, 300], ['🦈', '상어', 150, 350, 450]],
   legend: [['🥬', '김치 잉어', 50, 120, 1500], ['🐉', '강의 용', 100, 300, 2000], ['🐋', '아기 고래', 300, 800, 1800], ['👑', '황금 붕어', 20, 50, 1200]],
 };
-export const FISHING = { cooldown: 10e3, waitMin: 1500, waitMax: 4500, window: 7000, perfect: 1.2 };
+export const FISHING = { cooldown: 10e3, waitMin: 1500, waitMax: 4500, window: 7000, perfect: 1.2, dayFull: 400 };   // dayFull: 하루에 이만큼 넘게 낚으면 값·코인 절반
 // 등급별 확률(%) — 운 · 낚싯대(rod) · 미끼(bait)가 높을수록 좋은 등급이 잘 나옴
 export function fishOdds(luk = 0, rod = 0, bait = 0) {
   const lb = 1 + luk * .005, m = { normal: 1, uncommon: 1 + .12 * bait + .04 * rod, rare: (1 + .22 * bait + .1 * rod) * lb, epic: (1 + .35 * bait + .15 * rod) * lb, legend: (1 + .5 * bait + .2 * rod) * lb };
@@ -337,7 +337,7 @@ export function optScore(it) { return (it?.o || []).reduce((a, [k, v]) => a + v 
 // ───────── 칭호 (도전 과제를 깨면 생김. 갖고만 있어도 효과) ─────────
 // k: 세는 것 (lv·str·dex·int·luk = 캐릭터 값, 나머지 = life.cnt) · v: 목표 · fx: 보유 효과
 export const FX_N = { atkP: ['공격력', '%'], defP: ['방어', '%'], hpP: ['최대 체력', '%'], crit: ['치명타', '%p'], eva: ['회피', '%p'], goldP: ['골드', '%'], expP: ['경험치', '%'], spdP: ['이동 속도', '%'],
-  fishC: ['낚시 코인', '%'], fishZ: ['낚시 판정 칸', '%'], farmP: ['작물 골드', '%'], farmC: ['텃밭 코인', '%'], gather: ['채집량', '개'], enhB: ['강화 확률', '%p'], bossP: ['보스 피해', '%'], regen: ['사냥 중 회복', '%p/초'] };
+  fishC: ['낚시 코인', '%'], fishZ: ['낚시 판정 칸', '%'], farmP: ['작물 골드', '%'], farmC: ['텃밭 코인', '%'], gather: ['채집량', '개'], fishP: ['물고기 값', '%'], enhB: ['강화 확률', '%p'], bossP: ['보스 피해', '%'], regen: ['사냥 중 회복', '%p/초'] };
 const tt = (id, n, g, k, v, fx, d) => ({ id, n, g, k, v, fx, d });
 export const TITLE_GROUPS = ['마을', '성장', '사냥', '낚시', '텃밭', '채집', '장비'];
 export const TITLES = [
@@ -369,6 +369,10 @@ export const TITLES = [
   tt('e10', '망치질을 배운', '장비', 'enhOk', 10, { enhB: .5 }, '강화 성공 10번'), tt('e10max', '+10을 해낸', '장비', 'enhMax', 10, { atkP: 2, enhB: .5 }, '아무 칸이나 +10 강화'),
   tt('wi10', '소원을 비는', '마을', 'wish', 10, { goldP: 1 }, '소원 10번'), tt('wi100', '분수의 단골인', '마을', 'wish', 100, { goldP: 2, expP: 1 }, '소원 100번'),
   tt('jack', '대박이 난', '마을', 'jackpot', 1, { goldP: 3 }, '분수에서 대박 (아주 드묾)'),
+  tt('dq10', '의뢰를 해결하는', '마을', 'daily', 10, { goldP: 1 }, '매일 의뢰 10개'), tt('dq100', '마을의 해결사인', '마을', 'daily', 100, { goldP: 2, expP: 2 }, '매일 의뢰 100개'),
+  tt('wb1', '도장을 다 모은', '마을', 'weekBox', 1, { expP: 1 }, '한 주에 도장 5개'), tt('wb8', '두 달을 성실하게 보낸', '마을', 'weekBox', 8, { expP: 2, hpP: 2 }, '도장 상자 8번'),
+  tt('give1', '마을을 함께 짓는', '마을', 'give', 1, { hpP: 1 }, '공동 건설에 기부'), tt('give50', '마을의 기둥인', '마을', 'give', 50, { goldP: 2, hpP: 2 }, '공동 건설 기부 50번'),
+  tt('live1', '방송을 함께 본', '마을', 'live', 1, { expP: 1 }, '방송 중에 출석'), tt('live10', '방송의 단골인', '마을', 'live', 10, { expP: 2, goldP: 2 }, '방송 출석 10번'),
   tt('day7', '일주일을 함께한', '마을', 'days', 7, { expP: 1 }, '7일 접속'), tt('day30', '한 달을 함께한', '마을', 'days', 30, { expP: 3 }, '30일 접속'),
   tt('job10', '카페에서 일하는', '마을', 'job', 10, { goldP: 1 }, '카페 알바 10번'), tt('job100', '바리스타가 된', '마을', 'job', 100, { goldP: 2, spdP: 2 }, '카페 알바 100번'),
   tt('chief', '마을을 지키는', '마을', 'adm', 1, { hpP: 3 }, '치복 타운 관리자'),
@@ -386,8 +390,93 @@ export function titleFx(c) { const fx = {}; for (const id of c.life?.titles || [
 // 효과 합계: 가진 칭호 전부 + 지금 버프 + 장비 옵션(방어구 3칸 + 지금 클래스 무기)
 export function statFx(c) {
   const fx = titleFx(c), b = c.life?.buff;
+  if (c.gfx) addFx(fx, c.gfx);   // 마을 전체 효과 (사건 · 방송 · 공동 건설)
   if (b && b.until > Date.now() && BUFFS[b.k]) addFx(fx, BUFFS[b.k].fx);
   for (const s of [...ARMOR_SLOTS, CLASSES[c.cls] ? c.cls : 'sword']) addFx(fx, Object.fromEntries(c.equip?.[s]?.o || []));
   return fx;
 }
 export const fxText = fx => Object.entries(fx).map(([k, v]) => `${FX_N[k]?.[0] || OPTS[k]?.n || k} +${v}${FX_N[k]?.[1] ?? OPTS[k]?.u ?? ''}`).join(' · ');
+
+// ───────── 할 이유 (기획서 4-8): 매일 의뢰 · 주간 도장 · 마을 사건 · 공동 건설 · 방송 보너스 ─────────
+export const dayKey = t => new Date(t + 9 * 3600e3).toISOString().slice(0, 10);   // 한국 날짜
+export const weekKey = t => { const d = new Date(t + 9 * 3600e3); d.setUTCDate(d.getUTCDate() - (d.getUTCDay() + 6) % 7); return d.toISOString().slice(0, 10); };   // 그 주 월요일
+const hash = s => { let h = 2166136261; for (const ch of String(s)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
+const seeded = s => { let x = hash(s) || 1; return () => { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; }; };
+
+// 매일 의뢰: 날마다 4개 (모두 같은 의뢰). k = 세는 기록(cnt), v = 목표
+export const DAILY_POOL = [
+  { k: 'kills', n: '몬스터 잡기', v: 80, i: '⚔️' }, { k: 'fish', n: '물고기 낚기', v: 8, i: '🎣' }, { k: 'crops', n: '작물 수확하기', v: 6, i: '🌾' },
+  { k: 'water', n: '텃밭에 물 주기', v: 3, i: '💧' }, { k: 'wood', n: '목재 모으기', v: 20, i: '🪵' }, { k: 'stone', n: '석재 모으기', v: 15, i: '🪨' },
+  { k: 'wish', n: '분수에 소원 빌기', v: 2, i: '⛲' }, { k: 'gacha', n: '장비 뽑기', v: 10, i: '🎰' }, { k: 'enhTry', n: '장비 칸 강화하기', v: 3, i: '🔨' },
+  { k: 'give', n: '공동 건설에 기부하기', v: 1, i: '🏗️' }, { k: 'job', n: '카페 알바 하기', v: 1, i: '☕' }, { k: 'perfect', n: '완벽하게 낚기', v: 2, i: '🌟' },
+];
+export const DAILY_N = 4, STAMP_GOAL = 5;
+export const dailyGold = lv => 500 + lv * 100;               // 의뢰 하나 보상 (사냥 약 4분어치)
+export const weekBox = lv => ({ gold: 5000 + lv * 1500, fish: 15, farm: 15 });   // 도장 5개 상자 (사냥 약 1시간어치)
+export function dailyTasks(day) {
+  const r = seeded('daily' + day), pool = [...DAILY_POOL], out = [];
+  while (out.length < DAILY_N) out.push(pool.splice(Math.floor(r() * pool.length), 1)[0]);
+  return out;
+}
+const cntOf = (c, k) => c.life.cnt[k] || 0;
+export function dailyState(c, t) {
+  const L = c.life, day = dayKey(t);
+  if (!L.daily || L.daily.day !== day) L.daily = { day, base: Object.fromEntries(DAILY_POOL.map(q => [q.k, cntOf(c, q.k)])), done: [] };
+  if (!L.stamp || L.stamp.week !== weekKey(t)) L.stamp = { week: weekKey(t), n: 0, box: false };
+  return L.daily;
+}
+export const dailyProg = (c, q) => q.k === 'give' && ((c._w || c.world)?.lv || 0) >= VILLAGE.length ? q.v : Math.max(0, cntOf(c, q.k) - (c.life.daily?.base?.[q.k] ?? cntOf(c, q.k)));
+// 다 한 의뢰는 바로 보상. 4개 다 하면 도장 1개, 그 주 도장 5개면 상자
+export function checkDaily(c, t) {
+  const d = dailyState(c, t), tasks = dailyTasks(d.day), got = [];
+  tasks.forEach((q, i) => {
+    if (d.done.includes(i) || dailyProg(c, q) < q.v) return;
+    d.done.push(i); const g = dailyGold(c.lv); c.gold += g; cntAdd(c, 'daily'); got.push({ n: q.n, i: q.i, gold: g });
+  });
+  if (got.length && d.done.length >= tasks.length && !d.stamped) {
+    d.stamped = true; const s = c.life.stamp; s.n++; c.life.coins.fish += 3; c.life.coins.farm += 3; got.push({ stamp: s.n });
+    if (s.n >= STAMP_GOAL && !s.box) { s.box = true; const b = weekBox(c.lv); c.gold += b.gold; c.life.coins.fish += b.fish; c.life.coins.farm += b.farm; cntAdd(c, 'weekBox'); got.push({ box: b }); }
+  }
+  return got;
+}
+
+// 마을 사건: 2시간마다 한 번, 40분 동안. 시간으로 정해져서 화면·서버가 똑같이 계산 (저장할 것 없음)
+export const EVENT_BLOCK = 2 * 3600e3, EVENT_LEN = 40 * 60e3;
+export const EVENTS = [
+  { k: 'fish', n: '황금 물때', i: '🐟', d: '물고기 값 +50% · 낚시 코인 +30%', fx: { fishP: 50, fishC: 30 } },
+  { k: 'farm', n: '풍년 잔치', i: '🌾', d: '작물 골드 +50% · 텃밭 코인 +50%', fx: { farmP: 50, farmC: 50 } },
+  { k: 'wind', n: '바람 부는 날', i: '🌳', d: '나무·바위 채집량 +2', fx: { gather: 2 } },
+  { k: 'mons', n: '몬스터 대이동', i: '⚔️', d: '사냥 경험치 +25%', fx: { expP: 25 } },
+  { k: 'market', n: '반짝 장날', i: '💰', d: '골드 +20%', fx: { goldP: 20 } },
+  { k: 'smith', n: '대장장이 축제', i: '🔨', d: '강화 확률 +3%p', fx: { enhB: 3 } },
+  { k: 'wish', n: '별이 빛나는 분수', i: '⛲', d: '소원 대기 시간 절반', fx: {} },
+];
+export function eventAt(t) {
+  const b = Math.floor(t / EVENT_BLOCK), r = seeded('ev' + b), start = b * EVENT_BLOCK + Math.floor(r() * (EVENT_BLOCK - EVENT_LEN) / 60e3) * 60e3;
+  return { ...EVENTS[Math.floor(r() * EVENTS.length)], start, end: start + EVENT_LEN };
+}
+export const eventNow = t => { const e = eventAt(t); return t >= e.start && t < e.end ? e : null; };
+export function nextEvent(t) { const e = eventAt(t); return t < e.start ? e : eventAt((Math.floor(t / EVENT_BLOCK) + 1) * EVENT_BLOCK); }
+
+// 방송 보너스: 김치복님이 방송 중이면 마을 모두
+export const LIVE_FX = { expP: 30, goldP: 20 };
+export const liveGift = lv => 1000 + lv * 200;               // 방송 출석 보상 (하루 한 번, 사냥 약 8분어치)
+
+// 마을 공동 건설: 모두가 목재·석재·골드를 모아 하나씩 지음. 다 지으면 마을 모두에게 영원히 효과
+export const VILLAGE = [
+  { id: 'flower', n: '광장 꽃밭', i: '🌻', need: { wood: 1500, stone: 800, gold: 300000 }, fx: { expP: 3 } },
+  { id: 'light', n: '강가 등대', i: '🏛️', need: { wood: 3500, stone: 3500, gold: 1000000 }, fx: { fishC: 10, fishZ: 5 } },
+  { id: 'stage', n: '축제 무대', i: '🎉', need: { wood: 6000, stone: 4000, gold: 2500000 }, fx: { goldP: 5 } },
+  { id: 'spa', n: '마을 온천', i: '💧', need: { wood: 6000, stone: 10000, gold: 5000000 }, fx: { hpP: 5, regen: .5 } },
+  { id: 'bridge', n: '무지개 다리', i: '🌈', need: { wood: 14000, stone: 14000, gold: 10000000 }, fx: { atkP: 5 } },
+  { id: 'tower', n: '김치복 기념탑', i: '👑', need: { wood: 25000, stone: 25000, gold: 25000000 }, fx: { expP: 5, goldP: 5 } },
+];
+export const giveScore = g => (g.wood || 0) + (g.stone || 0) * 1.2 + (g.gold || 0) / 500;   // 골드는 벌기 쉬워서 낮게
+// 마을 전체 효과 합계 (사건 + 방송 + 다 지은 건물)
+export function worldFx(w, t) {
+  const fx = {}; const add = o => { for (const [k, v] of Object.entries(o)) fx[k] = Math.round(((fx[k] || 0) + v) * 100) / 100; };
+  const e = eventNow(t); if (e) add(e.fx);
+  if (w?.live) add(LIVE_FX);
+  for (let i = 0; i < Math.min(w?.lv || 0, VILLAGE.length); i++) add(VILLAGE[i].fx);
+  return fx;
+}
