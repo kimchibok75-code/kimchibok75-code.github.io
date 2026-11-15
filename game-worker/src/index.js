@@ -1,6 +1,6 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, EYES, MW, MH, T, STATS, SLOTS, WTYPES, TIERS, HATS, POTS, FIELDS, BAG_MAX, ENH_COST, ENH_RATE, HUNT, spentPoints, itemName } from '../../assets/js/game-rules.js';
+import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, EYES, MW, MH, T, STATS, SLOTS, WTYPES, TIERS, HATS, POTS, FIELDS, BAG_MAX, ENH_COST, ENH_RATE, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, FISH_GRADES, rollFish } from '../../assets/js/game-rules.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
 
@@ -41,8 +41,10 @@ async function route(req, env, url) {
   if (m === 'POST' && p === '/api/logout') { await env.DB.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(s.tokenHash).run(); return json({ ok: true }); }
   if (m === 'POST' && p === '/api/character') return saveLook(req, env, s.user);
   if (m === 'POST' && p === '/api/move') return saveMove(req, env, s.user);
+  if (m === 'GET' && p === '/api/fish/rank') return fishRank(env, s.user);
+  if (m === 'POST' && p === '/api/fish/reel') return fishReel(req, env, s.user);
   const g = GAME[p];
-  if (m === 'POST' && g) { const b = await readBody(req); return play(env, s.user, (c, at, out) => g(c, b, at, out)); }
+  if (m === 'POST' && g) { const b = await readBody(req); return play(env, s.user, (c, at, out) => g(c, b, at, out, env, s.user)); }
   if (m === 'POST' && p === '/api/password') return changePw(req, env, s);
   if (m === 'POST' && p === '/api/recovery-code') return newRecovery(req, env, s.user);
   fail(404, '없는 주소예요');
@@ -159,7 +161,7 @@ function toChar(r) {
   return { face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, intro: r.intro, title: r.title, x: r.x, y: r.y, lv: r.lv, exp: r.exp, gold: r.gold,
     str: r.s_str, dex: r.s_dex, int: r.s_int, luk: r.s_luk, points: r.points, hp: r.hp, hpAt: r.hp_at,
     equip: JSON.parse(r.equip), bag: JSON.parse(r.bag), hats: JSON.parse(r.hats), pots: JSON.parse(r.pots), potAt: r.pot_at,
-    hunt: r.hunt ? JSON.parse(r.hunt) : null, bonusDay: r.bonus_day, ver: r.ver };
+    hunt: r.hunt ? JSON.parse(r.hunt) : null, bonusDay: r.bonus_day, jobAt: r.job_at, ver: r.ver };
 }
 function meOut(user, c) {
   const h = c.hunt;
@@ -167,7 +169,8 @@ function meOut(user, c) {
     nick: user.nick, admin: !!user.is_admin,
     char: { face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, intro: c.intro, title: c.title, x: c.x, y: c.y, lv: c.lv, exp: c.exp, gold: c.gold,
       str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
-      hunt: h ? { f: h.f, start: h.start, t: Math.round(h.t), boss: h.boss, kills: h.kills, exp: h.exp, gold: h.gold, drops: h.drops } : null },
+      hunt: h ? { f: h.f, start: h.start, t: Math.round(h.t), boss: h.boss, kills: h.kills, exp: h.exp, gold: h.gold, drops: h.drops } : null,
+      job: c.jobAt ? { left: Math.max(0, Math.ceil((c.jobAt + JOB.sec * 1000 - Date.now()) / 1000)), pay: JOB.pay(c.lv) } : null },
   };
 }
 async function loadMe(env, user) {
@@ -185,12 +188,13 @@ async function play(env, user, fn) {
     } else out.hunt = settle(c, at);
     const res = (await fn(c, at, out)) || {};
     const w = await env.DB.prepare(`UPDATE characters SET title = ?, x = ?, y = ?, lv = ?, exp = ?, gold = ?, s_str = ?, s_dex = ?, s_int = ?, s_luk = ?, points = ?, hp = ?, hp_at = ?,
-        equip = ?, bag = ?, hats = ?, hat = ?, pots = ?, pot_at = ?, hunt = ?, bonus_day = ?, ver = ver + 1, updated_at = ? WHERE user_id = ? AND ver = ?`)
+        equip = ?, bag = ?, hats = ?, hat = ?, pots = ?, pot_at = ?, hunt = ?, bonus_day = ?, job_at = ?, ver = ver + 1, updated_at = ? WHERE user_id = ? AND ver = ?`)
       .bind(c.title, c.x, c.y, c.lv, c.exp, c.gold, c.str, c.dex, c.int, c.luk, c.points, c.hp, c.hpAt, JSON.stringify(c.equip), JSON.stringify(c.bag), JSON.stringify(c.hats), c.hat,
-        JSON.stringify(c.pots), c.potAt, c.hunt ? JSON.stringify(c.hunt) : '', c.bonusDay, at, user.id, c.ver).run();
+        JSON.stringify(c.pots), c.potAt, c.hunt ? JSON.stringify(c.hunt) : '', c.bonusDay, c.jobAt || 0, at, user.id, c.ver).run();
     if (w.meta.changes) {
       if (res.log) await log(env, user.id, res.log[0], res.log[1] || '');
-      delete res.log;
+      if (res.after) await res.after();   // 캐릭터 저장이 끝난 뒤 할 일 (낚시 기록 등)
+      delete res.log; delete res.after;
       return json({ me: meOut(user, c), ...out, ...res });
     }
   }
@@ -206,6 +210,7 @@ function dailyBonus(c, at) {
 const spend = (c, n) => { if (c.gold < n) fail(400, '골드가 부족해요'); c.gold -= n; };
 const findBag = (c, id) => { const i = c.bag.findIndex(it => it.id === String(id)); if (i < 0) fail(400, '가방에 없는 장비예요'); return i; };
 const townOnly = c => { if (c.hunt) fail(400, '사냥 중에는 할 수 없어요. 마을로 돌아온 뒤에 해 주세요'); };
+const notWorking = c => { if (c.jobAt) fail(400, '카페 알바 중이에요. 알바를 끝내거나 그만둔 뒤에 해 주세요'); };
 const sellPrice = it => Math.round(it.price * .3);
 
 // 2단계 기능들: (캐릭터, 보낸 내용, 지금 시각, 사냥 정산 결과) → 캐릭터를 바꾸고, 화면에 알려 줄 것을 돌려줌
@@ -213,6 +218,7 @@ const GAME = {
   // 사냥
   '/api/hunt/start'(c, b, at) {
     if (c.hunt) fail(400, '이미 사냥 중이에요');
+    notWorking(c);
     const fi = Number(b.f); if (!Number.isInteger(fi) || !FIELDS[fi]) fail(400, '없는 사냥터예요');
     if (c.hp < 1) fail(400, '체력이 없어요. 잠깐 쉬었다 가세요');
     startHunt(c, fi, at);
@@ -279,12 +285,11 @@ const GAME = {
     if (it.enh >= 10) fail(400, '이미 최대 강화(+10)예요');
     const cost = TIERS[it.tier].req * ENH_COST[it.enh];
     spend(c, cost);
-    const ok = Math.random() * 100 < ENH_RATE[it.enh];
+    const ok = Math.random() * 100 < enhRate(it.enh, derive(c));   // 운이 높으면 성공 확률 조금 더
     if (ok) it.enh++;   // 실패해도 단계가 떨어지거나 부서지지 않음 (골드만 사라짐)
     return { ok, item: it, log: ['enhance', `${itemName(it)} ${ok ? '성공' : '실패'} -${cost}`] };
   },
-  '/api/reset-stats'(c) {
-    townOnly(c);
+  '/api/reset-stats'(c) {   // 캐릭터창 → 능력치에서 (사냥 중에도 가능)
     const n = spentPoints(c); if (!n) fail(400, '찍은 포인트가 없어요');
     spend(c, c.lv * 100);
     c.points += n; c.str = c.dex = c.int = c.luk = 5; c.hp = Math.min(c.hp, derive(c).maxHp);
@@ -297,6 +302,30 @@ const GAME = {
     if (c.hats.includes(h.id)) fail(400, '이미 가지고 있어요');
     spend(c, h.price); c.hats.push(h.id); c.hat = h.id;
     return { log: ['skin', h.id] };
+  },
+  // 카페 알바: 1분 기다리면 골드
+  '/api/job/start'(c, b, at) {
+    townOnly(c); if (c.jobAt) fail(400, '이미 알바 중이에요');
+    c.jobAt = at;
+  },
+  '/api/job/finish'(c, b, at) {
+    if (!c.jobAt) fail(400, '알바 중이 아니에요');
+    const left = Math.ceil((c.jobAt + JOB.sec * 1000 - at) / 1000);
+    if (left > 0) fail(400, `아직 ${left}초 남았어요`);
+    const pay = JOB.pay(c.lv); c.gold += pay; c.jobAt = 0;
+    return { pay, log: ['job', String(pay)] };
+  },
+  '/api/job/quit'(c) { c.jobAt = 0; },
+  // 낚시: 던질 때 서버가 어떤 물고기가 물지 미리 정해 둠 (화면은 등급에 맞는 미니게임만 받음)
+  async '/api/fish/cast'(c, b, at, out, env, user) {
+    townOnly(c); notWorking(c);
+    const row = await env.DB.prepare('SELECT last_cast FROM fishing WHERE user_id = ?').bind(user.id).first();
+    const left = Math.ceil(((row?.last_cast || 0) + FISHING.cooldown - at) / 1000);
+    if (left > 0) fail(429, `너무 빨라요. ${left}초 뒤에 다시 던질 수 있어요`);
+    const fish = rollFish(derive(c).luk), wait = Math.round(FISHING.waitMin + Math.random() * (FISHING.waitMax - FISHING.waitMin)), gd = FISH_GRADES[fish.grade];
+    const cast = JSON.stringify({ fish, biteAt: at + wait });
+    return { wait, zone: gd.zone, speed: gd.speed, strong: ['rare', 'epic', 'legend'].includes(fish.grade), cooldown: FISHING.cooldown,
+      after: () => env.DB.prepare('INSERT INTO fishing (user_id, bait, last_cast) VALUES (?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET bait = excluded.bait, last_cast = excluded.last_cast').bind(user.id, cast, at).run() };
   },
   // 능력치 찍기 (남은 포인트 안에서)
   '/api/stats'(c, b) {
@@ -353,4 +382,39 @@ async function newRecovery(req, env, user) {
   await env.DB.prepare('UPDATE users SET rec_hash = ?, fail_count = 0 WHERE id = ?').bind(await sha256(normCode(code)), user.id).run();
   await log(env, user.id, 'recovery-code');
   return json({ ok: true, code });
+}
+
+// 낚시: 당기기. 던진 기록을 먼저 지워서(한 번만 쓸 수 있게) 같은 물고기를 두 번 받지 못하게 함
+async function fishReel(req, env, user) {
+  const b = await readBody(req), at = now();
+  // RETURNING은 바뀐 뒤 값(빈칸)을 돌려주므로, 먼저 읽고 → 그 값일 때만 지우기 (동시에 두 번 오면 하나만 성공)
+  const row = await env.DB.prepare('SELECT bait FROM fishing WHERE user_id = ?').bind(user.id).first();
+  if (!row?.bait) fail(400, '먼저 낚싯대를 던져 주세요');
+  const del = await env.DB.prepare("UPDATE fishing SET bait = '' WHERE user_id = ? AND bait = ?").bind(user.id, row.bait).run();
+  if (!del.meta.changes) fail(400, '먼저 낚싯대를 던져 주세요');
+  const { fish, biteAt } = JSON.parse(row.bait);
+  let why = null;
+  if (at < biteAt) why = 'early';                                  // 입질 전에 당김
+  else if (at > biteAt + FISHING.window) why = 'late';             // 너무 늦음
+  else if (!b.hit) why = 'miss';                                   // 타이밍을 못 맞춤
+  if (why) return play(env, user, () => ({ caught: false, why, fish: { i: fish.i, n: fish.n, grade: fish.grade } }));
+  const price = Math.round(fish.price * (b.perfect ? FISHING.perfect : 1)), info = JSON.stringify({ i: fish.i, n: fish.n, grade: fish.grade, len: fish.len, price });
+  return play(env, user, c => {
+    c.gold += price;   // 낚은 물고기는 바로 팔림
+    return { caught: true, fish: { ...fish, price }, perfect: !!b.perfect,
+      after: () => env.DB.prepare(`UPDATE fishing SET count = count + 1, gold = gold + ?,
+          best_price_fish = CASE WHEN ? > best_price THEN ? ELSE best_price_fish END, best_price = MAX(best_price, ?),
+          best_len_fish = CASE WHEN ? > best_len THEN ? ELSE best_len_fish END, best_len = MAX(best_len, ?) WHERE user_id = ?`)
+        .bind(price, price, info, price, fish.len, info, fish.len, user.id).run() };
+  });
+}
+// 낚시 순위: 제일 비싼 물고기 · 제일 큰 물고기 · 제일 많이 낚은 사람 (각 10명)
+async function fishRank(env, user) {
+  const q = (order, where) => env.DB.prepare(`SELECT u.nick, f.count, f.best_price_fish, f.best_len_fish FROM fishing f JOIN users u ON u.id = f.user_id WHERE ${where} AND u.banned = 0 ORDER BY ${order} DESC LIMIT 10`);
+  const [price, len, count, mine] = await env.DB.batch([q('f.best_price', 'f.best_price > 0'), q('f.best_len', 'f.best_len > 0'), q('f.count', 'f.count > 0'),
+    env.DB.prepare('SELECT count, gold, best_price_fish, best_len_fish FROM fishing WHERE user_id = ?').bind(user.id)]);
+  const fish = s => (s ? JSON.parse(s) : null);
+  const rows = r => r.results.map(x => ({ nick: x.nick, count: x.count, price: fish(x.best_price_fish), len: fish(x.best_len_fish) }));
+  const m = mine.results[0];
+  return json({ price: rows(price), len: rows(len), count: rows(count), mine: m ? { count: m.count, gold: m.gold, price: fish(m.best_price_fish), len: fish(m.best_len_fish) } : null, cooldown: FISHING.cooldown });
 }

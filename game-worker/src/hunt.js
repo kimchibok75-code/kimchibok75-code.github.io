@@ -1,25 +1,25 @@
 // 자동 사냥 계산 (기획서 4장). 화면의 전투는 보여 주기용이고, 실제 결과는 여기서 정해짐.
 // 흐른 시간만큼 몬스터를 한 마리씩 잡는 과정을 빠르게 흉내 냄.
-import { FIELDS, MONS, HUNT, POTS, BAG_MAX, derive, expPenalty, addExp, rollDrop, pick, itemName } from '../../assets/js/game-rules.js';
+import { FIELDS, MONS, HUNT, POTS, BAG_MAX, derive, expPenalty, addExp, rollDrop, pick, itemName, biteDmg } from '../../assets/js/game-rules.js';
 
 const MAX_STEPS = 300000;   // 한 번 계산할 때 최대 반복 (안전장치)
 
 // 몬스터 한 마리와 싸우기. 체력·물약은 st에 바로 반영. 쓰러지면 dead=true
 function fight(st, D, mon, boss) {
-  let t = boss ? 0 : 1 + Math.random();           // 다음 몬스터까지 걸어가는 시간
+  let t = boss ? 0 : (1 + Math.random()) / D.spd;  // 다음 몬스터까지 걸어가는 시간 (민첩이 높으면 빠름)
   let hp = mon.hp, nextHit = .4, nextBite = 1.2, steps = 0, healed = 0;
   const bite = boss ? 1.3 : 1.6, regen = D.maxHp * HUNT.huntRegen;
   const heal = () => { st.hp = Math.min(D.maxHp, st.hp + (t - healed) * regen); healed = t; };   // 사냥 중에도 체력이 천천히 참
   while (hp > 0 && steps++ < 20000) {
     if (nextHit <= nextBite) {
       t += nextHit; nextBite -= nextHit; nextHit = D.gap;
-      let dmg = D.atk * (.9 + Math.random() * .2);
+      let dmg = D.hit * (.9 + Math.random() * .2);   // 지팡이는 마력, 나머지는 공격력
       if (Math.random() * 100 < D.sp) dmg *= D.spMul;
       if (Math.random() * 100 < D.crit) dmg *= 1.5;
       hp -= Math.max(1, Math.round(dmg));
     } else {
       t += nextBite; nextHit -= nextBite; nextBite = bite; heal();
-      if (Math.random() * 100 >= D.eva) st.hp -= Math.max(1, Math.round(mon.atk * 100 / (100 + D.def) * (.85 + Math.random() * .3)));
+      if (Math.random() * 100 >= D.eva) st.hp -= biteDmg(mon, D);   // 물리/마법 방어력
       if (st.hp <= D.maxHp * st.potAt / 100) drink(st, D);
       if (st.hp <= 0) return { t, dead: true };
     }

@@ -258,6 +258,40 @@ body.hunting .chat-log { height: 64px; }
 @media (min-width: 761px) { .feed { display: none; } .chatexp { display: none; } }
 @keyframes fade { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .panel, .toast { transition: none; } }
+/* 강화 애니메이션 */
+.anvil { position: relative; height: 96px; display: flex; align-items: flex-end; justify-content: center; gap: 2px; font-size: 44px; margin: 8px 0; }
+.anvil .ham { display: inline-block; transform-origin: 85% 85%; animation: hammer .32s ease-in infinite; }
+.anvil .item { display: inline-block; animation: glow .64s ease-in-out infinite; }
+.anvil.done .ham { animation: none; opacity: 0; }
+.anvil.done .item { animation: none; }
+.anvil.ok .item { animation: pop .45s ease-out; filter: drop-shadow(0 0 10px #ffd166); }
+.anvil.bad .item { animation: shake .4s; filter: grayscale(.6); }
+.spark { position: absolute; left: 50%; top: 40%; font-size: 20px; pointer-events: none; animation: spark .9s ease-out forwards; }
+.enh-result { text-align: center; font-size: 20px; font-weight: 800; min-height: 30px; }
+.enh-result.ok { color: #2f8f45; } .enh-result.bad { color: #7a8597; }
+@keyframes hammer { 0% { transform: rotate(-50deg); } 70% { transform: rotate(18deg); } 100% { transform: rotate(-50deg); } }
+@keyframes glow { 50% { filter: drop-shadow(0 0 8px #ff9b54); transform: translateY(1px); } }
+@keyframes pop { 0% { transform: scale(.5); } 70% { transform: scale(1.25); } 100% { transform: scale(1); } }
+@keyframes shake { 20% { transform: translateX(-7px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+@keyframes spark { to { transform: translate(var(--dx), var(--dy)) scale(.4); opacity: 0; } }
+/* 낚시 미니게임 */
+.fishstage { text-align: center; font-size: 15px; font-weight: 700; min-height: 26px; }
+.water { position: relative; height: 70px; border-radius: 12px; background: linear-gradient(#8fd0ef, #4fa3cf); overflow: hidden; margin: 6px 0; }
+.water .float { position: absolute; left: 50%; top: 22px; font-size: 26px; margin-left: -13px; animation: bob 1.4s ease-in-out infinite; }
+.water.bite .float { animation: bite .14s linear infinite; }
+.water .ripple { position: absolute; left: 50%; top: 46px; width: 60px; height: 10px; margin-left: -30px; border: 2px solid rgba(255,255,255,.7); border-radius: 50%; animation: ripple 1.4s ease-out infinite; }
+@keyframes bob { 50% { transform: translateY(5px); } }
+@keyframes bite { 50% { transform: translateY(12px) rotate(-10deg); } }
+@keyframes ripple { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+.fishbar { position: relative; height: 34px; border-radius: 17px; background: #e6eef5; border: 2px solid #1f2a3a; overflow: hidden; margin: 8px 0; }
+.fishbar .zone { position: absolute; top: 0; bottom: 0; background: #8fdc9a; }
+.fishbar .core { position: absolute; top: 0; bottom: 0; left: 33.3%; width: 33.4%; background: #3fae55; }
+.fishbar .needle { position: absolute; top: -2px; bottom: -2px; width: 5px; margin-left: -2.5px; background: #e8553a; border-radius: 3px; box-shadow: 0 0 0 2px #fff; }
+.pull { width: 100%; font-size: 18px; padding: 14px; }
+.rtabs { display: flex; gap: 6px; margin: 10px 0 6px; }
+.rtabs button { flex: 1; padding: 7px 4px; border-radius: 10px; border: 1px solid var(--line); background: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.rtabs button[aria-pressed="true"] { background: #1f2a3a; color: #fff; }
+.rank .ic { font-weight: 800; font-size: 16px; }
 </style>
 </head>
 <body>
@@ -378,7 +412,8 @@ body.hunting .chat-log { height: 64px; }
         <div class="points"><span>남은 포인트</span><span id="ptsLeft">0</span></div>
         <div class="pane" id="statRows"></div>
         <dl class="derived" id="derived"></dl>
-        <p class="muted">레벨이 오르면 포인트 4개를 받아요. 잘못 찍었으면 대장간에서 초기화할 수 있어요.</p>
+        <button class="btn" id="resetStats" type="button" style="width:100%;margin-top:8px">🔄 능력치 초기화</button>
+        <p class="muted">레벨이 오르면 포인트 4개를 받아요. 잘못 찍었으면 위 버튼으로 초기화할 수 있어요 (골드: 레벨 × 100).</p>
       </div>
       <div class="pane" data-pane="equip" hidden>
         <ul class="ilist" id="equipList"></ul>
@@ -409,6 +444,7 @@ body.hunting .chat-log { height: 64px; }
       <span class="chip" id="placeChip">📍 광장</span>
       <span class="chip hide-m" id="onlineChip">👥 23명</span>
       <span class="chip" id="coinChip">🪙 1,230</span>
+      <span class="chip" id="jobChip" hidden>☕ 알바 1:00</span>
       <span class="spacer"></span>
       <button class="iconbtn" id="fsBtn" aria-label="전체화면" title="전체화면 (Esc로 나가기)">⛶</button>
       <button class="iconbtn" id="setBtn" aria-label="설정">⚙️</button>
@@ -454,7 +490,7 @@ body.hunting .chat-log { height: 64px; }
 
 <script type="module">
 'use strict';
-import { needExp, GRADES, TIERS, WTYPES, SLOTS, STATS, ENH_RATE, ENH_COST, HATS, makeItem, enhMul, itemIcon, itemName, itemDesc, derive as deriveOf, tierFor, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, BAG_MAX, LV_CAP, spentPoints } from './assets/js/game-rules.js?v=__BUILD__';
+import { needExp, GRADES, TIERS, WTYPES, SLOTS, STATS, ENH_RATE, ENH_COST, HATS, makeItem, enhMul, itemIcon, itemName, itemDesc, derive as deriveOf, tierFor, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, BAG_MAX, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES } from './assets/js/game-rules.js?v=__BUILD__';
 const API = 'https://kimchibok-game.kimchibok.workers.dev';
 const LIVE_API = 'https://kimchibok-live.kimchibok.workers.dev/live';
 const $ = s => document.querySelector(s);
@@ -490,7 +526,7 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   ctx.fillStyle = c.face; rr(ctx, -14, hy, 28, 26, 9); ctx.fill(); ctx.stroke();
   // 눈
   ctx.fillStyle = '#1f2a3a'; ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 2; ctx.lineCap = 'round';
-  const ey = hy + 14, eye = c.eyes || 'dot';
+  const ey = hy + 16, eye = c.eyes || 'dot';
   for (const ex of [-6, 6]) {
     if (eye === 'happy') { ctx.beginPath(); ctx.arc(ex, ey + 1.5, 3, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke(); }
     else if (eye === 'sleep') { ctx.beginPath(); ctx.moveTo(ex - 3, ey); ctx.lineTo(ex + 3, ey); ctx.stroke(); }
@@ -832,8 +868,8 @@ function paintHunt(f) {
 }
 function openHuntSelect() {
   openModal(`<h3>⚔️ 사냥터 입구</h3><p>사냥터를 고르면 바로 <b>자동 사냥</b>이 시작돼요. 캐릭터가 알아서 싸우고, 체력이 낮으면 물약을 마셔요.</p>
-    <div class="actions">${FIELDS.map((f, i) => { const tag = me.lv < f.min ? ['bad', '⚠️ 위험'] : me.lv > f.max + 9 ? ['', '경험치 ↓'] : ['good', '추천']; return `<button class="btn field-card" data-f="${i}"><span style="font-size:26px">${f.i}</span><span><b>${f.n}</b><small style="display:block">Lv.${f.min}–${f.max} · ${f.mons.map(k => MONS[k].n).join(', ')}</small></span><span class="tagok ${tag[0]}">${tag[1]}</span></button>`; }).join('')}</div>
-    <p class="muted">물약 ${me.pots.s + me.pots.l + me.pots.xl}개 · 체력 ${me.potAt}% 이하일 때 자동으로 마셔요.<br>화면을 닫아도 <b>최대 8시간</b>까지 계속 사냥해요 (효율 70%). 다시 들어오면 결과를 보여 줘요.</p><button class="close" data-close>닫기</button>`,
+    <div class="actions">${FIELDS.map((f, i) => { const tag = me.lv < f.min ? ['bad', '⚠️ 위험'] : me.lv > f.max + 9 ? ['', '경험치 ↓'] : ['good', '추천']; return `<button class="btn field-card" data-f="${i}"><span style="font-size:26px">${f.i}</span><span><b>${f.n}</b><small style="display:block">Lv.${f.min}–${f.max} · ${f.mons.map(k => (MONS[k].mg ? '🔮' : '') + MONS[k].n).join(', ')}</small></span><span class="tagok ${tag[0]}">${tag[1]}</span></button>`; }).join('')}</div>
+    <p class="muted">🔮 표시는 <b>마법 공격</b> 몬스터예요 (마법 방어력으로 막아요. 지력을 올리면 늘어요).<br>물약 ${me.pots.s + me.pots.l + me.pots.xl}개 · 체력 ${me.potAt}% 이하일 때 자동으로 마셔요.<br>화면을 닫아도 <b>최대 8시간</b>까지 계속 사냥해요 (효율 70%). 다시 들어오면 결과를 보여 줘요.</p><button class="close" data-close>닫기</button>`,
   el => el.querySelector('.actions').addEventListener('click', async e => {
     const i = e.target.closest('[data-f]')?.dataset.f; if (i == null || huntBusy) return; huntBusy = true;
     try { const j = await api('/api/hunt/start', { f: +i }); took(j); closeModal(); closePanel(); sysMsg(`${FIELDS[+i].i} ${FIELDS[+i].n}에 들어왔어요. 자동 사냥 시작!`); logAct(`${FIELDS[+i].n} 사냥 시작`); }
@@ -877,7 +913,7 @@ function updateHunt(dt) {
   const tg = HT.target;
   if (tg) {
     const dx = tg.x - me.x, dy = tg.y - me.y, d = Math.hypot(dx, dy), reach = 24 + tg.d.s * 10;
-    if (d > reach) { me.moving = true; const sp = 125 * dt; me.x += dx / d * Math.min(sp, d - reach + 1); me.y += dy / d * Math.min(sp, d - reach + 1); }
+    if (d > reach) { me.moving = true; const sp = 125 * D.spd * dt; me.x += dx / d * Math.min(sp, d - reach + 1); me.y += dy / d * Math.min(sp, d - reach + 1); }
     else { me.moving = false; HT.atkT -= dt; if (HT.atkT <= 0) { HT.atkT = D.gap; hitMon(tg, D); } }
   } else me.moving = false;
   // 몬스터
@@ -902,7 +938,7 @@ function updateHunt(dt) {
 }
 function hitMon(m, D) {
   me.swing = .18; m.aggro = true; m.hitT = .1;
-  let dmg = D.atk * (.9 + Math.random() * .2), kind = '';
+  let dmg = D.hit * (.9 + Math.random() * .2), kind = '';
   if (Math.random() * 100 < D.sp) { dmg *= D.spMul; kind = 'sp'; }
   if (Math.random() * 100 < D.crit) { dmg *= 1.5; kind = kind || 'crit'; }
   dmg = Math.max(1, Math.round(dmg)); m.hp -= dmg;
@@ -912,7 +948,7 @@ function hitMon(m, D) {
 }
 function hitMe(m, D) {
   if (Math.random() * 100 < D.eva) return floatText(me.x, me.y - 52, '회피', '#9fe0ff');
-  const dmg = Math.max(1, Math.round(m.d.atk * 100 / (100 + D.def) * (.85 + Math.random() * .3)));
+  const dmg = biteDmg(m.d, D);
   me.hp -= dmg; floatText(me.x, me.y - 52, `-${dmg}`, '#ff7b6b');
 }
 function killMon(m, D) {   // 보여 주기용: 진짜 경험치·골드·장비는 서버가 계산해서 30초마다 알려 줌
@@ -1050,7 +1086,10 @@ function openBuilding(b, keep) {
     const P = Object.entries(POTS);
     return openModal(`${sheetHead(b, '체력 회복 음료(물약)를 팔아요. 사냥 중에 체력이 낮아지면 자동으로 마셔요.')}
       <ul class="ilist">${P.map(([k, p]) => row(p.i, `${p.n} <small style="display:inline">(${me.pots[k]}개 있음)</small>`, `${p.d} · ${goldTxt(p.price)}`, [1, 5, 10].map(n => `<button class="mini${n === 5 ? ' main' : ''}" data-x="${k}:${n}" ${me.gold < p.price * n ? 'disabled' : ''}>${n}개</button>`).join(''))).join('')}
+      ${me.job ? row('☕', '알바 중이에요', `남은 시간 ${fmtSec(jobLeft())} · 끝나면 ${goldTxt(me.job.pay)}`, `<button class="mini" data-x="quit">그만두기</button>`) : row('☕', '알바하기', `1분 동안 카페 일을 도와요 · ${goldTxt(JOB.pay(me.lv))} (레벨이 높을수록 많이)`, `<button class="mini main" data-x="job">시작</button>`)}
       ${row('🪑', '창가 자리에서 쉬기', '체력을 전부 회복해요 · 무료 (마을에서는 가만히 있어도 1초에 2%씩 차요)', `<button class="mini" data-x="rest">쉬기</button>`)}</ul><button class="close" data-close>닫기</button>`, el => wire(el, async x => {
+      if (x === 'job') { if (await act('/api/job/start', {})) { closeModal(); say(me, '☕ 알바 중…', 4000); toast('☕ 알바 시작! 1분 뒤에 골드가 들어와요 (마을을 돌아다녀도 돼요)'); } return; }
+      if (x === 'quit') { if (await act('/api/job/quit', {})) { toast('알바를 그만뒀어요'); reopen?.(); } return; }
       if (x === 'rest') { if (await act('/api/rest', {})) { emote(me, '❤️'); toast('푹 쉬었어요. 체력이 가득 찼어요'); reopen?.(); } return; }
       const [k, n] = x.split(':'), j = await act('/api/pots', { k, n: +n });
       if (j) { logAct(`${POTS[k].n} ${n}개 −${POTS[k].price * n}`); toast(`${POTS[k].i} ${n}개 샀어요`); reopen?.(); }
@@ -1074,16 +1113,12 @@ function openBuilding(b, keep) {
     }), keep);
   }
   if (id === 'smith') {
-    const eq = Object.values(me.equip).filter(Boolean), spent = spentPoints(me), resetCost = me.lv * 100;
+    const eq = Object.values(me.equip).filter(Boolean), D = derive();
     return openModal(`${sheetHead(b, '장착한 장비를 강화해요. <b>실패해도 단계가 떨어지거나 부서지지 않아요</b> (골드만 사라져요).')}
-      <ul class="ilist">${eq.map(it => { const max = it.enh >= 10, rate = ENH_RATE[it.enh], cost = TIERS[it.tier].req * ENH_COST[it.enh]; return row(itemIcon(it), itemTag(it), max ? '최대 강화 (+10)' : `+${it.enh} → +${it.enh + 1} · 성공 ${rate}%`, max ? '' : `<button class="mini main" data-x="enh:${it.id}" ${me.gold < cost ? 'disabled' : ''}>${goldTxt(cost)}</button>`); }).join('') || '<li><span></span><span class="muted">장착한 장비가 없어요</span><span></span></li>'}
-      ${row('🔄', '능력치 초기화', `찍은 포인트 ${spent}개를 돌려받아요 · ${goldTxt(resetCost)} (레벨 × 100)`, `<button class="mini" data-x="reset" ${!spent || me.gold < resetCost ? 'disabled' : ''}>초기화</button>`)}</ul>
-      <p class="muted">강화 1단계마다 장비 수치 +8%. 확률: +1 100% · +2 95% · +3 90% · +4 80% · +5 70% · +6 60% · +7 50% · +8 40% · +9 35% · +10 30%</p><button class="close" data-close>닫기</button>`, el => wire(el, async x => {
-      if (x === 'reset') { const j = await act('/api/reset-stats', {}); if (j) { logAct(`능력치 초기화 −${resetCost}`); toast(`포인트 ${j.n}개를 돌려받았어요`); reopen?.(); } return; }
-      const j = await act('/api/enhance', { id: x.split(':')[1] }); if (!j) return;
-      if (j.ok) { emote(me, '🎉'); toast(`✨ 강화 성공! ${itemName(j.item)}`); logAct(`${itemName(j.item)} 강화 성공`); }
-      else { emote(me, '❓'); toast('강화 실패… 단계는 그대로예요 (골드만 사용)'); logAct('강화 실패'); }
-      reopen?.();
+      <ul class="ilist">${eq.map(it => { const max = it.enh >= 10, rate = enhRate(it.enh, D), cost = TIERS[it.tier].req * ENH_COST[it.enh]; return row(itemIcon(it), itemTag(it), max ? '최대 강화 (+10)' : `+${it.enh} → +${it.enh + 1} · 성공 ${+rate.toFixed(2)}%`, max ? '' : `<button class="mini main" data-x="enh:${it.id}" ${me.gold < cost ? 'disabled' : ''}>${goldTxt(cost)}</button>`); }).join('') || '<li><span></span><span class="muted">장착한 장비가 없어요</span><span></span></li>'}
+      </ul>
+      <p class="muted">강화 1단계마다 장비 수치 +8%. 확률: +1 100% · +2 95% · +3 90% · +4 80% · +5 70% · +6 60% · +7 50% · +8 40% · +9 35% · +10 30%. 🍀 운이 높으면 조금 더 잘 붙어요 (지금 +${D.enhB.toFixed(2)}%p). 능력치 초기화는 캐릭터창 → 능력치에서 해요.</p><button class="close" data-close>닫기</button>`, el => wire(el, async x => {
+      doEnhance(x.split(':')[1]);
     }), keep);
   }
   if (id === 'skin') {
@@ -1108,6 +1143,7 @@ async function equipItem(it) { if (await act('/api/equip', { id: it.id })) toast
 async function unequip(slot) { await act('/api/unequip', { slot }); }
 function openSpot(s) {
   if (s.id === 'hunt') return openHuntSelect();
+  if (s.id === 'river') return openFishing();
   if (LATER[s.id]) return laterSheet(s.id, s.icon, s.name);
   const map = {
     river: ['🎣 강가 선착장', '낚시하는 곳. 골드를 조금 벌 수 있어요.', [actBtn('fish', '🎣 낚시하기', '잠깐 기다리면 입질')]],
@@ -1308,8 +1344,10 @@ function renderStats() {
   const D = derive();
   $('#ptsLeft').textContent = me.points;
   $('#statRows').innerHTML = Object.entries(STATS).map(([k, s]) => `<div class="stat"><span><b>${s.i} ${s.n}</b><small>${s.d}</small></span><span class="val">${D[k]}${D.b[k] ? `<em> (+${D.b[k]})</em>` : ''}</span><button class="plus" data-s="${k}" aria-label="${s.n} 올리기" ${me.points ? '' : 'disabled'}>+</button></div>`).join('');
-  const rows = [['공격력', D.atk], ['방어력', D.def], ['최대 체력', D.maxHp.toLocaleString()], ['공격 간격', `${D.gap.toFixed(2)}초`], ['치명타', `${D.crit.toFixed(1)}%`], ['회피', `${D.eva.toFixed(1)}%`], ['필살기 확률', `${D.sp.toFixed(1)}%`], ['필살기 피해', `×${D.spMul.toFixed(2)}`], ['골드 보너스', `+${D.goldB.toFixed(1)}%`], ['드랍 보너스', `+${D.dropB.toFixed(1)}%`]];
+  const rows = [[D.magic ? '공격력' : '공격력 ⚔️', D.atk], [D.magic ? '마력 ⚔️' : '마력', D.mag], ['물리 방어', D.def], ['마법 방어', D.mdef], ['최대 체력', D.maxHp.toLocaleString()], ['공격 간격', `${D.gap.toFixed(2)}초`], ['이동 속도', `${Math.round(D.spd * 100)}%`], ['치명타', `${D.crit.toFixed(1)}%`], ['회피', `${D.eva.toFixed(1)}%`], ['필살기 확률', `${D.sp.toFixed(1)}%`], ['필살기 피해', `×${D.spMul.toFixed(2)}`], ['골드 보너스', `+${D.goldB.toFixed(1)}%`], ['드랍 보너스', `+${D.dropB.toFixed(1)}%`], ['강화 확률', `+${D.enhB.toFixed(2)}%p`]];
   $('#derived').innerHTML = rows.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('');
+  $('#resetStats').textContent = `🔄 능력치 초기화 · ${goldTxt(me.lv * 100)}`; $('#resetStats').disabled = !spentPoints(me);
+  me.speed = 110 * D.spd;   // 민첩 → 이동 속도
 }
 $('#statRows').addEventListener('click', e => { const k = e.target.closest('[data-s]')?.dataset.s; if (k) addStat(k); });
 function renderEquip() {
@@ -1367,6 +1405,7 @@ function applyMe(m) {
   const c = m.char, keepPos = HT && c.hunt;
   Object.assign(me, { name: m.nick, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
     str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp || derive().maxHp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt });
+  me.job = c.job; me.jobEnd = c.job ? Date.now() + c.job.left * 1000 : 0;
   me.hunt = c.hunt; if (!keepPos) { me.path = []; me.moving = false; }
   if ($('#potAt')) setPotAt(me.potAt);
 }
@@ -1428,7 +1467,7 @@ async function checkLive() {
 }
 
 // 2단계 이후에 열리는 곳
-const LATER = { river: '4단계(놀거리)', farm: '4단계(놀거리)', fountain: '4단계(놀거리)', home1: '4단계(집)', home2: '4단계(집)' };
+const LATER = { farm: '4단계(놀거리)', fountain: '4단계(놀거리)', home1: '4단계(집)', home2: '4단계(집)' };
 const LATER_DESC = { cafe: '체력 회복 음료(물약)를 파는 곳', weapon: '검·단검·망치·지팡이를 파는 곳', armor: '모자·갑옷·신발·반지를 파는 곳', smith: '장비 강화(+1~+10)와 능력치 초기화', skin: '겉모습만 바꾸는 스킨을 파는 곳', hunt: '사냥터를 골라 자동 사냥하는 곳', river: '낚시하는 곳', farm: '씨를 심고 수확하는 곳', fountain: '동전을 던지는 분수', home1: '내 집 (언제나 모두에게 공개)', home2: '다른 유저의 집 (언제나 모두에게 공개)' };
 function laterSheet(id, icon, name) {
   openModal(`<h3>${icon} ${name}</h3><p>${LATER_DESC[id]}이에요.</p><p class="muted">🔒 <b>${LATER[id]}</b>에서 열려요. 지금은 2단계(성장) 시험 중이에요.</p><button class="btn main" data-close>알겠어요</button>`);
@@ -1565,6 +1604,133 @@ function enterTown(first) {   // first: 방금 받은 /api/me 결과 (자리 비
   }
   requestAnimationFrame(loop);
 })();
+
+// ───────── 강화: 한 번 누를 때 딱 1단계씩, 망치질 애니메이션 뒤에 결과 ─────────
+const fmtSec = n => `${Math.floor(n / 60)}:${String(Math.max(0, n) % 60).padStart(2, '0')}`;
+async function doEnhance(id) {
+  const it = Object.values(me.equip).find(i => i?.id === id); if (!it || it.enh >= 10) return;
+  const smith = BUILDINGS.find(b => b.id === 'smith'), rate = enhRate(it.enh, derive()), cost = TIERS[it.tier].req * ENH_COST[it.enh];
+  if (me.gold < cost) return toast('골드가 부족해요');
+  openModal(`<h3>⚒️ 강화</h3><p style="text-align:center">${itemTag(it)} <b>+${it.enh} → +${it.enh + 1}</b> · 성공 ${+rate.toFixed(2)}% · ${goldTxt(cost)}</p>
+    <div class="anvil" id="anvil"><span class="ham">🔨</span><span class="item">${itemIcon(it)}</span></div><div class="enh-result" id="enhRes">땅! 땅! 땅!</div><div class="actions" id="enhBtns"></div>`);
+  const [j] = await Promise.all([act('/api/enhance', { id }), new Promise(r => setTimeout(r, 1500))]);   // 결과가 빨리 와도 1.5초는 두드림
+  const an = $('#anvil'), res = $('#enhRes'), btns = $('#enhBtns'); if (!an) return;
+  an.classList.add('done');
+  if (!j) { res.textContent = '강화하지 못했어요'; }
+  else if (j.ok) {
+    an.classList.add('ok'); res.className = 'enh-result ok'; res.textContent = `✨ 성공! ${itemName(j.item)}`;
+    for (let k = 0; k < 10; k++) { const sp = document.createElement('span'); sp.className = 'spark'; sp.textContent = ['✨', '⭐', '🔥'][k % 3]; sp.style.setProperty('--dx', `${Math.cos(k / 10 * 6.28) * 70}px`); sp.style.setProperty('--dy', `${Math.sin(k / 10 * 6.28) * 45}px`); an.appendChild(sp); }
+    emote(me, '🎉'); logAct(`${itemName(j.item)} 강화 성공`);
+  } else { an.classList.add('bad'); res.className = 'enh-result bad'; res.textContent = '💨 실패… 단계는 그대로예요 (골드만 사용)'; emote(me, '❓'); logAct('강화 실패'); }
+  const now = Object.values(me.equip).find(i => i?.id === id), nc = now && now.enh < 10 ? TIERS[now.tier].req * ENH_COST[now.enh] : 0;
+  btns.innerHTML = `${now && now.enh < 10 ? `<button class="btn main" data-x="again" ${me.gold < nc ? 'disabled' : ''}>🔨 한 번 더 (+${now.enh} → +${now.enh + 1})<small>${goldTxt(nc)} · 성공 ${+enhRate(now.enh, derive()).toFixed(2)}%</small></button>` : ''}<button class="btn" data-x="back">대장간으로</button>`;
+  wire(sheet, x => (x === 'again' ? doEnhance(id) : openBuilding(smith)));
+}
+
+// ───────── 능력치 초기화 (캐릭터창 → 능력치) ─────────
+$('#resetStats').onclick = () => {
+  const n = spentPoints(me), cost = me.lv * 100; if (!n) return toast('찍은 포인트가 없어요');
+  openModal(`<h3>🔄 능력치 초기화</h3><p>찍은 포인트 <b>${n}개</b>를 모두 돌려받아요. 힘·민첩·지력·운이 전부 5로 돌아가요.</p><p>비용: <b>${goldTxt(cost)}</b> (레벨 × 100)</p><div class="actions"><button class="btn main" data-x="ok" ${me.gold < cost ? 'disabled' : ''}>초기화하기</button></div><button class="close" data-close>취소</button>`,
+    el => wire(el, async () => { const j = await act('/api/reset-stats', {}); if (j) { closeModal(); toast(`포인트 ${j.n}개를 돌려받았어요`); logAct(`능력치 초기화 −${cost}`); openPanelTab('stat'); } }));
+};
+
+// ───────── 카페 알바 (1분) ─────────
+const jobLeft = () => Math.max(0, Math.ceil((me.jobEnd - Date.now()) / 1000));
+let jobBusy = false;
+setInterval(async () => {
+  const chip = $('#jobChip'); chip.hidden = !me.job; if (!me.job) return;
+  const left = jobLeft(); chip.textContent = left ? `☕ 알바 ${fmtSec(left)}` : '☕ 알바 끝!';
+  if (!left && !jobBusy && token) {
+    jobBusy = true; const j = await act('/api/job/finish', {}); jobBusy = false;
+    if (j) { toast(`☕ 알바 끝! 🪙 +${j.pay.toLocaleString()}`); sysMsg(`☕ 카페 알바를 마쳤어요. 골드 +${j.pay.toLocaleString()}`); logAct(`카페 알바 +${j.pay}`); emote(me, '🎉'); }
+  }
+}, 1000);
+
+// ───────── 낚시터: 순위 + 타이밍 미니게임 ─────────
+const FG = FISH_GRADES, fishTag = f => `${f.i} <b style="color:${FG[f.grade].c}">${FG[f.grade].n} ${esc(f.n)}</b>`;
+const F = { tab: 'price', rank: null, nextAt: 0, phase: 'idle', timer: null };
+async function openFishing() {
+  if (HT) return toast('사냥 중에는 낚시를 할 수 없어요');
+  F.phase = 'idle'; paintFishing();
+  try { F.rank = await api('/api/fish/rank'); } catch (x) { F.rank = { error: x.message }; }
+  if (!modal.hidden && $('#fishSheet')) paintFishing();
+}
+function rankList() {
+  const r = F.rank; if (!r) return '<p class="muted">순위를 불러오는 중…</p>'; if (r.error) return `<p class="muted">${esc(r.error)}</p>`;
+  const list = r[F.tab];
+  if (!list.length) return '<p class="muted">아직 기록이 없어요. 첫 기록의 주인공이 되어 보세요!</p>';
+  return `<ul class="ilist rank">${list.map((x, k) => { const f = F.tab === 'len' ? x.len : x.price; const medal = ['🥇', '🥈', '🥉'][k] || `${k + 1}`;
+    return row(medal, esc(x.nick), F.tab === 'count' ? `낚은 물고기 ${x.count.toLocaleString()}마리` : `${fishTag(f)} · ${f.len}cm · ${goldTxt(f.price)}`, ''); }).join('')}</ul>`;
+}
+function paintFishing() {
+  const m = F.rank?.mine, wait = Math.max(0, Math.ceil((F.nextAt - Date.now()) / 1000));
+  openModal(`<div id="fishSheet"><h3>🎣 강가 낚시터</h3><p>낚싯대를 던지고, 입질이 오면 움직이는 바늘이 <b>초록 칸</b>에 올 때 <b>당기기!</b> (진한 초록이면 완벽, 값 +20%). 낚은 물고기는 바로 팔려요.</p>
+    <div class="water" id="water"><span class="ripple"></span><span class="float">🎈</span></div>
+    <div class="fishstage" id="fishMsg">${F.msg || '물고기 23종 · 일반부터 전설까지. 등급이 높을수록 바늘이 빠르고 칸이 좁아요'}</div>
+    <div id="fishGame"><button class="btn main pull" id="castBtn" ${wait ? 'disabled' : ''}>${wait ? `⏳ ${wait}초 뒤에 다시 던질 수 있어요` : '🎣 낚싯대 던지기'}</button></div>
+    <div class="points" style="background:#fff;border-color:var(--line);margin-top:8px"><span>내 기록</span><span style="font-size:13px">${m ? `${m.count.toLocaleString()}마리 · 번 골드 ${m.gold.toLocaleString()}` : '아직 없음'}</span></div>
+    <div class="rtabs" id="rtabs">${[['price', '💰 제일 비싼'], ['len', '📏 제일 큰'], ['count', '🎣 제일 많이']].map(([k, n]) => `<button type="button" data-t="${k}" aria-pressed="${F.tab === k}">${n}</button>`).join('')}</div>
+    <div id="rankBox">${rankList()}</div><button class="close" data-close>닫기</button></div>`, el => {
+    el.querySelector('#rtabs').onclick = e => { const t = e.target.closest('[data-t]')?.dataset.t; if (!t) return; F.tab = t; el.querySelectorAll('#rtabs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === t)); el.querySelector('#rankBox').innerHTML = rankList(); };
+    el.querySelector('#castBtn').onclick = cast;
+  }, true);
+  F.msg = '';
+  if (wait) { clearTimeout(F.cdT); F.cdT = setTimeout(castCountdown, 500); }
+}
+// 다시 던질 수 있을 때까지 버튼에 남은 초 표시
+function castCountdown() {
+  const b = $('#castBtn'); if (!b || F.phase !== 'idle') return;
+  const w = Math.max(0, Math.ceil((F.nextAt - Date.now()) / 1000));
+  b.disabled = !!w; b.textContent = w ? `⏳ ${w}초 뒤에 다시 던질 수 있어요` : '🎣 낚싯대 던지기';
+  if (w) F.cdT = setTimeout(castCountdown, 500);
+}
+async function cast() {
+  if (F.phase !== 'idle') return; F.phase = 'casting';
+  let j; try { j = await api('/api/fish/cast', {}); took(j); } catch (x) { F.phase = 'idle'; toast(x.message); return; }
+  F.nextAt = Date.now() + j.cooldown; F.phase = 'wait'; F.cast = j;
+  $('#fishMsg').textContent = '찌를 던졌어요… 입질을 기다려요 (지금 당기면 놓쳐요)';
+  $('#fishGame').innerHTML = '<button class="btn pull" id="pullBtn">🪝 당기기!</button>';
+  $('#pullBtn').onclick = pull; say(me, '🎣 …', 2500);
+  F.timer = setTimeout(bite, j.wait);
+}
+function bite() {
+  if (F.phase !== 'wait' || !$('#fishSheet')) return stopFish();
+  F.phase = 'bite'; const c = F.cast;
+  $('#water').classList.add('bite');
+  $('#fishMsg').innerHTML = c.strong ? '<b style="color:#e8553a">❗❗ 강한 입질! 지금!</b>' : '<b style="color:#e8553a">❗ 입질! 지금!</b>';
+  const zl = .08 + Math.random() * (.84 - c.zone);
+  F.zone = [zl, zl + c.zone];
+  $('#fishGame').insertAdjacentHTML('afterbegin', `<div class="fishbar"><div class="zone" style="left:${zl * 100}%;width:${c.zone * 100}%"><div class="core"></div></div><div class="needle" id="needle"></div></div>`);
+  $('#pullBtn').classList.add('main');
+  const t0 = performance.now();
+  F.timer = setInterval(() => {
+    if (!$('#needle')) return stopFish();
+    const t = (performance.now() - t0) / 1000; F.pos = .5 - .5 * Math.cos(t * c.speed * Math.PI * 2);   // 왼쪽↔오른쪽 왕복 (speed = 1초에 몇 번)
+    $('#needle').style.left = `${F.pos * 100}%`;
+    if (t > 3.5) pull(true);   // 너무 늦으면 놓침
+  }, 16);
+}
+function stopFish() { clearTimeout(F.timer); clearInterval(F.timer); F.timer = null; if (F.phase !== 'idle' && F.phase !== 'reeling') { const was = F.phase; F.phase = 'idle'; if (was === 'wait' || was === 'bite') api('/api/fish/reel', { hit: false }).catch(() => {}); } }
+async function pull(late) {
+  if (F.phase !== 'wait' && F.phase !== 'bite') return;
+  const was = F.phase; clearTimeout(F.timer); clearInterval(F.timer); F.phase = 'reeling';
+  const [a, b] = F.zone || [0, 0], w = b - a, hit = was === 'bite' && late !== true && F.pos >= a && F.pos <= b, perfect = hit && F.pos >= a + w / 3 && F.pos <= b - w / 3;
+  let j; try { j = await api('/api/fish/reel', { hit, perfect }); took(j); } catch (x) { F.phase = 'idle'; F.msg = x.message; return paintFishing(); }
+  F.phase = 'idle';
+  if (j.caught) {
+    const f = j.fish; F.msg = `${perfect ? '🌟 완벽! ' : '🎉 '}${fishTag(f)} ${f.len}cm → 바로 팔았어요 ${goldTxt(f.price)}`;
+    emote(me, '🎉'); logAct(`${f.i} ${f.n} ${f.len}cm +${f.price}`);
+    if (['epic', 'legend'].includes(f.grade)) sysMsg(`🎣 ${FG[f.grade].n} 물고기! ${f.n} ${f.len}cm`);
+    try { F.rank = await api('/api/fish/rank'); } catch {}
+  } else {
+    const f = j.fish, tag = ['rare', 'epic', 'legend'].includes(f.grade) ? ` 앗, ${fishTag(f)}였는데…!` : '';
+    F.msg = (j.why === 'early' ? '💨 너무 빨리 당겼어요. 입질이 온 뒤에 당겨요' : j.why === 'late' ? '💨 너무 늦었어요. 물고기가 도망갔어요' : '💨 놓쳤어요. 바늘이 초록 칸에 있을 때 당겨요') + tag;
+    emote(me, '❓');
+  }
+  if ($('#fishSheet') || !modal.hidden) paintFishing();
+}
+addEventListener('keydown', e => { if (e.code === 'Space' && $('#pullBtn') && (F.phase === 'wait' || F.phase === 'bite')) { e.preventDefault(); pull(); } });
+new MutationObserver(() => { if (modal.hidden && F.phase !== 'idle' && F.phase !== 'reeling' && F.phase !== 'casting') stopFish(); }).observe(modal, { attributes: true, attributeFilter: ['hidden'] });
 
 let toastT; function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2600); }
 // 처음 열 때: 로그인 유지 중이면 바로 마을로
