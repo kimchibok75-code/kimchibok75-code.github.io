@@ -1,8 +1,21 @@
 {
-  "updatedAt": 1794683234398,
+  "updatedAt": 1794721712023,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 196,
+      "title": "림월드 다양한 인종형 구울로 만들기",
+      "board": "📋 공략, 팁",
+      "head": null,
+      "author": "뿔베리",
+      "time": 1794712681817,
+      "comments": 0,
+      "likes": 0,
+      "image": true,
+      "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMTVfMTY4/MDAxNzk0Njc0MTUzNzA1.flOM0JkTlrCeAyRq7dMuDO9xy449NoanLDLKD8Rs4pIg.9JkrbuPxuxrpvMOYNbEC2p4ViNrQzYDh7qSgOikTuykg.JPEG/20261114143410_1.jpg",
+      "url": "https://cafe.naver.com/kimchibok/196"
+    },
     {
       "id": 195,
       "title": "림월드 바다 속에서 살아남기라니!!!",
@@ -10,7 +23,7 @@
       "head": null,
       "author": "김치복",
       "time": 1794680592143,
-      "comments": 0,
+      "comments": 2,
       "likes": 0,
       "image": false,
       "thumb": null,
@@ -249,19 +262,6 @@
       "image": false,
       "thumb": null,
       "url": "https://cafe.naver.com/kimchibok/176"
-    },
-    {
-      "id": 175,
-      "title": "변경계능력평가 - Core",
-      "board": "🗺️ 림월드 자유 게시판",
-      "head": null,
-      "author": "뿔베리",
-      "time": 1794123267473,
-      "comments": 2,
-      "likes": 0,
-      "image": true,
-      "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMDhfMjAg/MDAxNzk0MTA3ODE0NTQz.ThedAvIWXT1aIYxDdWIW6VOQDgdgZucLVycPgyBanb8g.87-ekalPy22AXsyne2Jqv-8ar5s_xw1rUrV_vEZQfnYg.PNG/%25EB%25B3%2580%25EA%25B2%25BD%25EA%25B3%2584%25EB%258A%25A5%25EB%25A0%25A5%25ED%258F%2589%25EA%25B0%2580_Core_202611001.png",
-      "url": "https://cafe.naver.com/kimchibok/175"
     }
   ]
 }
