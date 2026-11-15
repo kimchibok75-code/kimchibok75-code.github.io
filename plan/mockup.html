@@ -124,7 +124,6 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; lette
 .chat-log li { line-height: 1.4; overflow-wrap: anywhere; }
 .chat-log b { font-weight: 700; }
 .chat-log .sys { color: var(--kimchi); font-size: 13px; }
-.chat-log .whisper { color: #7a4fc2; }
 .chat-log .tag { font-size: 11px; font-weight: 700; color: var(--ink-soft); margin-right: 4px; }
 .emotes { display: flex; gap: 4px; padding: 0 8px 6px; flex-wrap: wrap; }
 .emotes[hidden] { display: none; }
@@ -158,8 +157,67 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; lette
 .toast { position: fixed; left: 50%; top: calc(64px + env(safe-area-inset-top, 0px)); transform: translate(-50%, -12px); opacity: 0; z-index: 60; background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 12px; font-weight: 700; font-size: 14px; transition: .25s; pointer-events: none; max-width: calc(100% - 32px); text-align: center; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* ───── 성장: 체력·경험치 바, 능력치, 장비 ───── */
+.bars { display: grid; gap: 6px; }
+.bar { position: relative; height: 20px; border: 2px solid var(--ink); border-radius: 999px; background: #fff; overflow: hidden; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--gold); transition: width .2s; }
+.bar.hp i { background: #ef6a50; }
+.bar span { position: relative; display: block; text-align: center; font-size: 12px; font-weight: 700; line-height: 16px; font-variant-numeric: tabular-nums; }
+.lv { font-family: var(--font-display); color: var(--kimchi); margin-right: 5px; }
+.points { display: flex; justify-content: space-between; align-items: center; background: #fff4e0; border: 1px solid #f1d29c; border-radius: 10px; padding: 7px 10px; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat { display: grid; grid-template-columns: minmax(0, 1fr) auto 36px; gap: 8px; align-items: center; padding: 7px 8px 7px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.stat b { font-size: 15px; }
+.stat small { display: block; color: var(--ink-soft); font-size: 12px; }
+.stat .val { font-family: var(--font-display); font-size: 22px; text-align: right; font-variant-numeric: tabular-nums; }
+.stat .val em { font-style: normal; font-family: var(--font-body); font-size: 12px; color: var(--leaf); font-weight: 700; }
+.plus { width: 36px; height: 36px; border: 2px solid var(--ink); border-radius: 10px; background: var(--leaf); color: #fff; font-size: 20px; font-weight: 700; line-height: 1; padding: 0; }
+.plus:disabled { background: var(--paper-2); color: var(--line); border-color: var(--line); cursor: default; }
+.derived { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; font-size: 13px; margin: 0; }
+.derived div { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--line); padding: 4px 0; }
+.derived dt { color: var(--ink-soft); } .derived dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ilist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ilist li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 9px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 14px; }
+.ilist li.locked { opacity: .5; }
+.ilist .ic { font-size: 22px; text-align: center; }
+.ilist .nm { font-weight: 700; overflow-wrap: anywhere; }
+.ilist small { display: block; color: var(--ink-soft); font-size: 12px; font-weight: 400; }
+.ilist .btns { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.mini { border: 2px solid var(--ink); border-radius: 9px; background: #fff; padding: 5px 8px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.mini.main { background: var(--kimchi); color: #fff; }
+.mini:disabled { opacity: .4; cursor: not-allowed; }
+.hats { display: flex; flex-wrap: wrap; gap: 6px; }
+.hats button { border: 2px solid var(--line); border-radius: 10px; background: #fff; padding: 6px 10px; font-size: 14px; font-weight: 700; }
+.hats button[aria-pressed="true"] { border-color: var(--ink); background: #fff4e0; }
+.potset { display: flex; align-items: center; gap: 6px; font-size: 13.5px; flex-wrap: wrap; }
+.potset select, .hb-row select { border: 1px solid var(--line); border-radius: 8px; padding: 3px 4px; background: #fff; font-size: 13px; }
+.field-card { text-align: left; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.field-card small { font-weight: 500; color: var(--ink-soft); }
+.tagok { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--paper-2); white-space: nowrap; }
+.tagok.good { background: #dff3e2; color: #2e7a3a; } .tagok.bad { background: #fde3dd; color: #b8371f; }
+/* 사냥 상황판 */
+.huntbox { position: absolute; right: 10px; top: 60px; width: 264px; background: rgba(251, 252, 247, .96); border: 2px solid var(--ink); border-radius: var(--r); box-shadow: var(--shadow); padding: 12px; display: grid; gap: 8px; font-size: 14px; }
+.hb-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-family: var(--font-display); font-size: 19px; }
+.hb-top span { font-family: var(--font-body); font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.hb-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; font-variant-numeric: tabular-nums; }
+.hb-stats span { display: flex; justify-content: space-between; gap: 4px; }
+.hb-row { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 13px; flex-wrap: wrap; }
+.huntbox .btn { padding: 9px 12px; }
+body.hunting .zoom { display: none; }
+body.hunting .chat-log { height: 64px; }
+
 /* ───── 휴대폰 ───── */
 @media (max-width: 760px) {
+  #fsBtn { display: none; }
+  .peek .minibars { display: grid; gap: 3px; margin-top: 4px; width: min(170px, 100%); }
+  .mbar { display: block; height: 6px; border-radius: 4px; background: var(--paper-2); overflow: hidden; }
+  .mbar i { display: block; height: 100%; width: 0; background: var(--gold); }
+  .mbar.hp i { background: #ef6a50; }
+  .huntbox { left: 10px; right: 10px; top: 56px; width: auto; padding: 8px 10px; gap: 5px; font-size: 13px; }
+  .hb-top { font-size: 16px; }
+  .hb-stats { grid-template-columns: repeat(2, 1fr); gap: 2px 12px; }
+  .huntbox .hb-row.pot { display: none; }   /* 휴대폰: 물약 설정은 캐릭터창 → 가방에서 */
+  .huntbox .btn { padding: 7px 10px; font-size: 14px; }
+  body.hunting .banner { display: none; }
   :root { --dock-h: 62px; }
   .app { grid-template-columns: 1fr; }
   .stage { position: fixed; inset: 0; }
@@ -287,66 +345,86 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; lette
     <button class="peek" id="peek" aria-expanded="false">
       <span class="grip"></span>
       <canvas id="peekCanvas" aria-hidden="true"></canvas>
-      <span class="grow"><strong id="peekName">김복단</strong><small id="peekSub">🏷️ 새내기 주민 · 😊 신남</small></span>
+      <span class="grow"><strong><span class="lv" id="peekLv">Lv.1</span><span id="peekName">김복단</span></strong>
+        <span class="minibars"><span class="mbar hp"><i id="peekHp"></i></span><span class="mbar"><i id="peekExp"></i></span></span></span>
+      <span class="badge" id="peekPts" hidden>+4</span>
       <span class="arrow">▲</span>
     </button>
     <div class="panel-body">
       <div class="me">
         <canvas id="meCanvas" aria-label="내 캐릭터"></canvas>
-        <h2 id="meName">김복단</h2>
-        <div class="row"><span class="badge" id="meTitle">🏷️ 새내기 주민</span>
-          <label class="mood"><span class="sr" hidden>기분</span><select id="moodSel" aria-label="지금 기분">
-            <option value="😊 신남">😊 신남</option><option value="😌 느긋">😌 느긋</option><option value="😴 졸림">😴 졸림</option><option value="🎣 낚시중">🎣 낚시중</option><option value="💬 수다환영">💬 수다환영</option>
-          </select></label></div>
+        <h2><span class="lv" id="meLv">Lv.1</span><span id="meName">김복단</span></h2>
+        <div class="row"><span class="badge" id="meTitle">🏷️ 새내기 주민</span></div>
         <p class="intro" id="meIntro">림월드 좋아하는 김복단이에요</p>
       </div>
+      <div class="bars">
+        <div class="bar hp"><i id="hpFill"></i><span id="hpText">체력</span></div>
+        <div class="bar"><i id="expFill"></i><span id="expText">경험치</span></div>
+      </div>
       <div class="ptabs" role="tablist" id="ptabs">
-        <button role="tab" data-p="bag" aria-selected="true">가방</button>
-        <button role="tab" data-p="style" aria-selected="false">꾸미기</button>
-        <button role="tab" data-p="friends" aria-selected="false">친구</button>
-        <button role="tab" data-p="dex" aria-selected="false">도감</button>
+        <button role="tab" data-p="stat" aria-selected="true">능력치</button>
+        <button role="tab" data-p="equip" aria-selected="false">장비</button>
+        <button role="tab" data-p="skin" aria-selected="false">스킨</button>
+        <button role="tab" data-p="bag" aria-selected="false">가방</button>
       </div>
-      <div class="pane" data-pane="bag">
-        <ul class="items" id="bag"></ul>
-        <h3>최근 일</h3>
-        <ul class="log" id="actLog"></ul>
+      <div class="pane" data-pane="stat">
+        <div class="points"><span>남은 포인트</span><span id="ptsLeft">0</span></div>
+        <div class="pane" id="statRows"></div>
+        <dl class="derived" id="derived"></dl>
+        <p class="muted">레벨이 오르면 포인트 4개를 받아요. 잘못 찍었으면 대장간에서 초기화할 수 있어요.</p>
       </div>
-      <div class="pane" data-pane="style" hidden>
+      <div class="pane" data-pane="equip" hidden>
+        <ul class="ilist" id="equipList"></ul>
+        <p class="muted">무기점·방어구점에서 사거나 사냥터에서 주워요. 강화는 대장간에서 해요.</p>
+      </div>
+      <div class="pane" data-pane="skin" hidden>
         <div class="field"><label>얼굴 색</label><div class="swatches" id="faceSw2"></div></div>
         <div class="field"><label>옷 색</label><div class="swatches" id="bodySw2"></div></div>
-        <p class="muted">모자·머리카락 같은 부품은 다음 단계에서 추가돼요. 옷가게에서 산 옷도 여기에 나와요.</p>
+        <div class="field"><label>머리 장식</label><div class="hats" id="hatList"></div></div>
+        <p class="muted">스킨은 겉모습만 바뀌고 능력치는 없어요. 스킨샵에서 더 살 수 있어요.</p>
       </div>
-      <div class="pane" data-pane="friends" hidden>
-        <ul class="flist" id="friends"></ul>
-        <p class="muted">다른 캐릭터를 누르면 친구 추가, 귓속말, 신고를 할 수 있어요.</p>
-      </div>
-      <div class="pane" data-pane="dex" hidden>
-        <h3>물고기 도감 <span class="muted" id="dexCount"></span></h3>
-        <ul class="items" id="dex"></ul>
-        <p class="muted">강가에서 낚시하면 채워져요.</p>
+      <div class="pane" data-pane="bag" hidden>
+        <div class="points" style="background:#fff;border-color:var(--line)"><span>🪙 골드</span><span id="bagGold">0</span></div>
+        <h3>물약</h3>
+        <ul class="ilist" id="potList"></ul>
+        <label class="potset">사냥 중 자동으로 마시기: 체력 <select id="potAt"><option>30</option><option selected>40</option><option>50</option><option>60</option><option>70</option></select>% 이하</label>
+        <h3>장비 <span class="muted" id="bagCount"></span></h3>
+        <ul class="ilist" id="bagList"></ul>
+        <h3>최근 일</h3>
+        <ul class="log" id="actLog"></ul>
       </div>
     </div>
   </aside>
 
   <main class="stage" id="stage">
-    <canvas id="map" aria-label="치복 타운 지도. 바닥을 누르면 걸어가고, 건물을 누르면 들어가요."></canvas>
+    <canvas id="map" aria-label="치복 타운 지도. 바닥을 누르면 걸어가고, 건물을 누르면 바로 이용해요."></canvas>
     <div class="hud">
       <span class="chip" id="placeChip">📍 광장</span>
       <span class="chip hide-m" id="onlineChip">👥 23명</span>
       <span class="chip" id="coinChip">🪙 1,230</span>
       <span class="chip mock hide-m">목업</span>
       <span class="spacer"></span>
+      <button class="iconbtn" id="fsBtn" aria-label="전체화면" title="전체화면 (Esc로 나가기)">⛶</button>
       <button class="iconbtn" id="setBtn" aria-label="설정">⚙️</button>
     </div>
     <div class="zoom"><button class="iconbtn" id="zIn" aria-label="크게 보기">＋</button><button class="iconbtn" id="zOut" aria-label="작게 보기">－</button></div>
-    <div class="banner" id="liveBanner" hidden>🔴 김치복 방송 중! 광장 전광판 이벤트</div>
+    <div class="banner" id="liveBanner" hidden>🔴 김치복 방송 중! 사냥 경험치 1.5배</div>
+    <section class="huntbox" id="huntBox" hidden aria-label="자동 사냥">
+      <div class="hb-top"><b id="hbField">🌾 바람 들판</b><span id="hbTime">자동 사냥 00:00</span></div>
+      <div class="hb-stats">
+        <span>처치 <b id="hbKills">0</b></span><span>경험치 <b id="hbExp">+0</b></span>
+        <span>골드 <b id="hbGold">+0</b></span><span>아이템 <b id="hbDrops">0</b></span>
+      </div>
+      <div class="hb-row"><span id="hbBoss">👑 보스까지 30:00</span><button class="mini" id="hbBossBtn" type="button">목업: 지금 부르기</button></div>
+      <div class="hb-row pot"><label>🥤 자동 <select id="hbPot"><option>30</option><option selected>40</option><option>50</option><option>60</option><option>70</option></select>%</label><span id="hbPots">물약 5개</span></div>
+      <button class="btn main" id="hbBack" type="button">🏠 마을로 돌아가기</button>
+    </section>
     <ul class="feed" id="feed" aria-hidden="true"></ul>
 
     <section class="chat" id="chat" aria-label="채팅">
       <div class="chat-tabs" role="tablist" id="chatTabs">
         <button role="tab" data-c="near" aria-selected="true">근처</button>
         <button role="tab" data-c="all" aria-selected="false">마을 전체</button>
-        <button role="tab" data-c="whisper" aria-selected="false">귓속말</button>
         <button class="rulesbtn" id="rulesBtn" type="button">채팅 규칙</button>
       </div>
       <ul class="chat-log" id="chatLog" aria-live="polite"></ul>
@@ -410,7 +488,23 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
     else if (eye === 'wow') { ctx.beginPath(); ctx.arc(ex, ey, 3, 0, Math.PI * 2); ctx.lineWidth = 1.6; ctx.stroke(); ctx.lineWidth = 2; }
     else { const blink = !c.still && (Math.sin(t * 1.3 + (c.seed || 0) * 5) > .985); if (blink) { ctx.beginPath(); ctx.moveTo(ex - 2.5, ey); ctx.lineTo(ex + 2.5, ey); ctx.stroke(); } else { ctx.beginPath(); ctx.ellipse(ex, ey, 2.4, 3.2, 0, 0, Math.PI * 2); ctx.fill(); } }
   }
+  if (c.hat && c.hat !== 'none') drawHat(ctx, c.hat, hy, c.face);
+  // 사냥 중에는 손에 무기
+  if (c.weaponI) {
+    ctx.save(); ctx.translate(12, -14 - bob);
+    ctx.rotate(c.swing > 0 ? -1.4 + (1 - c.swing / .18) * 2.2 : .35);
+    ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(c.weaponI, 0, 4); ctx.restore();
+  }
   ctx.restore();
+}
+// 머리 장식 스킨
+function drawHat(ctx, kind, hy, face) {
+  ctx.lineWidth = 1.4; ctx.strokeStyle = 'rgba(31,42,58,.7)';
+  if (kind === 'ribbon') { ctx.fillStyle = '#ff6fa0'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(8, hy + 1); ctx.lineTo(8 + s * 8, hy - 5); ctx.lineTo(8 + s * 8, hy + 6); ctx.closePath(); ctx.fill(); ctx.stroke(); } ctx.beginPath(); ctx.arc(8, hy + 1, 2.6, 0, 7); ctx.fill(); ctx.stroke(); }
+  else if (kind === 'sprout') { ctx.strokeStyle = '#3f8f4c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, hy); ctx.lineTo(0, hy - 7); ctx.stroke(); ctx.fillStyle = '#6cc35a'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(s * 4.5, hy - 8, 5, 2.6, s * -.5, 0, 7); ctx.fill(); } }
+  else if (kind === 'cat') { for (const s of [-1, 1]) { ctx.fillStyle = face; ctx.beginPath(); ctx.moveTo(s * 13, hy + 6); ctx.lineTo(s * 11, hy - 8); ctx.lineTo(s * 3, hy + 1); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#ff9fbf'; ctx.beginPath(); ctx.moveTo(s * 11, hy + 3); ctx.lineTo(s * 10.5, hy - 4); ctx.lineTo(s * 6, hy + 1); ctx.closePath(); ctx.fill(); } }
+  else if (kind === 'straw') { ctx.fillStyle = '#f2d06b'; ctx.beginPath(); ctx.ellipse(0, hy + 3, 21, 5.5, 0, 0, 7); ctx.fill(); ctx.stroke(); rr(ctx, -10, hy - 8, 20, 12, [8, 8, 2, 2]); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#e8553a'; ctx.fillRect(-10, hy, 20, 3); }
+  else if (kind === 'kimchi') { ctx.fillStyle = '#e8553a'; rr(ctx, -14.5, hy + 3, 29, 5, 2); ctx.fill(); ctx.fillStyle = '#7fcf6a'; ctx.beginPath(); ctx.ellipse(-9, hy, 4, 6, -.6, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#f3f7d8'; ctx.beginPath(); ctx.ellipse(-7, hy + 1, 2, 4, -.6, 0, 7); ctx.fill(); }
 }
 function portrait(cv, c, s = 2.6) {
   const dpr = devicePixelRatio || 1, w = cv.clientWidth || 120, h = cv.clientHeight || 140;
@@ -420,18 +514,71 @@ function portrait(cv, c, s = 2.6) {
 }
 
 // ───────── 상태 ─────────
-const me = { name: '김복단', face: FACES[0], body: BODIES[0], eyes: 'dot', intro: '림월드 좋아하는 김복단이에요', title: '🏷️ 새내기 주민', mood: '😊 신남', x: 19.5 * T, y: 19.5 * T, path: [], moving: false, seed: .3, coins: 1230, isNew: false, joinedAt: 0 };
+const me = { name: '김복단', face: FACES[0], body: BODIES[0], eyes: 'dot', intro: '림월드 좋아하는 김복단이에요', title: '🏷️ 새내기 주민', x: 19.5 * T, y: 19.5 * T, path: [], moving: false, seed: .3, isNew: false, joinedAt: 0,
+  lv: 1, exp: 0, gold: 500, str: 5, dex: 5, int: 5, luk: 5, points: 0, hp: 1, hat: 'none', hats: ['none'], pots: { s: 5, l: 0, xl: 0 }, potAt: 40, bag: [], equip: {} };
 const BOTS = [
-  { name: '림린이', face: FACES[1], body: BODIES[2], title: '🏷️ 낚시왕', intro: '물고기 도감 다 채우는 중', mood: '🎣 낚시중' },
-  { name: '랜디신도', face: FACES[3], body: BODIES[3], title: '🏷️ 카페 단골', intro: '랜디 이벤트 좋아해요', mood: '💬 수다환영' },
-  { name: '치즈냥', face: FACES[7], body: BODIES[4], title: '🏷️ 꾸미기 장인', intro: '옷 구경하러 왔어요', mood: '😊 신남' },
-  { name: '개척자K', face: FACES[2], body: BODIES[5], title: '🏷️ 개척지 탐험가', intro: '개척지 매일 가요', mood: '😌 느긋' },
-  { name: '음치복팬', face: FACES[4], body: BODIES[6], title: '🏷️ 새내기 주민', intro: 'KCB 노래 최고', mood: '😊 신남' },
-  { name: '메카노이드', face: FACES[6], body: BODIES[7], title: '🏷️ 광장 지킴이', intro: '광장 벤치가 제 자리', mood: '😴 졸림' },
+  { name: '림린이', face: FACES[1], body: BODIES[2], title: '🏷️ 지팡이 장인', intro: '지력 몰빵 필살기 좋아해요', lv: 18, hat: 'sprout', wt: 'staff', g: 'rare', e: 3 },
+  { name: '랜디신도', face: FACES[3], body: BODIES[3], title: '🏷️ 협곡 정복자', intro: '망치 한 방이 최고', lv: 31, hat: 'none', wt: 'hammer', g: 'epic', e: 5 },
+  { name: '치즈냥', face: FACES[7], body: BODIES[4], title: '🏷️ 꾸미기 장인', intro: '스킨 모으는 중', lv: 9, hat: 'cat', wt: 'dagger', g: 'uncommon', e: 1 },
+  { name: '개척자K', face: FACES[2], body: BODIES[5], title: '🏷️ 공장 탐험가', intro: '전설 장비 하나 있어요', lv: 44, hat: 'straw', wt: 'sword', g: 'legend', e: 7 },
+  { name: '음치복팬', face: FACES[4], body: BODIES[6], title: '🏷️ 새내기 주민', intro: 'KCB 노래 최고', lv: 3, hat: 'ribbon', wt: 'sword', g: 'normal', e: 0 },
+  { name: '메카노이드', face: FACES[6], body: BODIES[7], title: '🏷️ 광장 지킴이', intro: '운 몰빵 실험 중', lv: 26, hat: 'kimchi', wt: 'dagger', g: 'rare', e: 4 },
 ];
-const LINES = ['안녕하세요~', '오늘 9시 방송 하나요?', '낚시 같이 하실 분!', '카페에서 만나요 ☕', 'ㅋㅋㅋㅋ', '새 옷 샀어요 어때요', '500% 상한해제 재밌더라', '치복님 언제 와요?', '텃밭에 뭐 심었어요?', '개척지에서 이상한 거 주웠어요', '여기 벤치 명당이네', '굿밤~'];
+const LINES = ['안녕하세요~', '오늘 9시 방송 하나요?', '숲 늑대 너무 세요ㅠ', '카페에서 물약 사가세요', 'ㅋㅋㅋㅋ', '방금 희귀 떴다!!', '+6 강화 실패했어요…', '치복님 언제 와요?', '운 몰빵 해봤는데 골드 잘 나와요', '협곡 보스 같이 잡아요', '여기 벤치 명당이네', '굿밤~'];
 const FISH = [['🐟', '붕어'], ['🐠', '열대어'], ['🐡', '복어'], ['🦐', '새우'], ['🦀', '꽃게'], ['🐙', '문어'], ['🐢', '거북이'], ['👢', '낡은 장화']];
-const S = { zoom: 1.6, live: false, chatMode: 'near', whisperTo: null, sent: [], warns: 0, muteUntil: 0, coolUntil: 0, lastMsgs: [], dex: new Set(['🐟']), friends: ['림린이', '치즈냥'], blocked: new Set(), log: [] };
+const S = { zoom: 1.6, live: false, chatMode: 'near', sent: [], warns: 0, muteUntil: 0, coolUntil: 0, lastMsgs: [], blocked: new Set(), log: [], barT: 0 };
+
+// ───────── 성장 규칙 (기획서 3장과 같은 숫자) ─────────
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const needExp = L => Math.round(50 * Math.pow(L, 1.6));
+const GRADES = { normal: { n: '일반', c: '#6f7a8a', m: 1, o: 0 }, uncommon: { n: '고급', c: '#2f8f45', m: 1.15, o: 0 }, rare: { n: '희귀', c: '#2f6fd0', m: 1.3, o: 1 }, epic: { n: '영웅', c: '#8a48cc', m: 1.5, o: 2 }, legend: { n: '전설', c: '#e0731c', m: 1.8, o: 3 } };
+const TIERS = [{ n: '들판', req: 1, price: 100 }, { n: '숲', req: 10, price: 900 }, { n: '협곡', req: 25, price: 3500 }, { n: '공장', req: 40, price: 10000 }];
+const WTYPES = { sword: { n: '검', i: '🗡️', gap: 1.0, m: 1 }, dagger: { n: '단검', i: '🔪', gap: .7, m: .7 }, hammer: { n: '망치', i: '🔨', gap: 1.5, m: 1.5 }, staff: { n: '지팡이', i: '🪄', gap: 1.1, m: .95, sp: 1.3 } };
+const SLOTS = { weapon: { n: '무기', i: '🗡️' }, hat: { n: '모자', i: '⛑️' }, armor: { n: '갑옷', i: '🧥' }, shoes: { n: '신발', i: '👢' }, acc: { n: '장신구', i: '💍' } };
+const STATS = { str: { n: '힘', i: '💪', d: '공격력 +2 · 체력 +5' }, dex: { n: '민첩', i: '🏃', d: '공격 속도 +0.5% · 회피 +0.2%' }, int: { n: '지력', i: '🧠', d: '필살기 피해 +2% · 확률 +0.1%' }, luk: { n: '운', i: '🍀', d: '치명타 +0.25% · 드랍·골드 +0.5%' } };
+const BASE = { weapon: [10, 32, 70, 120], hatDef: [2, 6, 13, 22], hatHp: [10, 30, 70, 120], armorDef: [4, 12, 26, 44], armorHp: [20, 60, 140, 240], shoesDef: [1, 4, 9, 15], shoesHp: [5, 20, 45, 80], acc: [2, 5, 9, 14] };
+const PRICE_MUL = { weapon: 1, armor: .9, hat: .6, shoes: .5, acc: .8 };
+const ENH_RATE = [100, 95, 90, 80, 70, 60, 50, 40, 35, 30], ENH_COST = [10, 20, 35, 50, 80, 120, 170, 230, 300, 400];
+const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'ribbon', n: '🎀 리본', price: 300 }, { id: 'sprout', n: '🌱 새싹', price: 500 }, { id: 'cat', n: '🐱 고양이 귀', price: 800 }, { id: 'straw', n: '👒 밀짚모자', price: 1200 }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 2000 }];
+const OPT_N = { str: '힘', dex: '민첩', int: '지력', luk: '운', crit: '치명타', gold: '골드' };
+let itemSeq = 1;
+function makeItem(slot, tier, o = {}) {
+  const g = o.grade || 'normal', it = { id: itemSeq++, slot, tier, grade: g, enh: o.enh || 0, opts: [] };
+  if (slot === 'weapon') { it.wt = o.wt || 'sword'; it.atk = Math.round(BASE.weapon[tier] * WTYPES[it.wt].m); }
+  else if (slot === 'acc') { it.stat = o.stat || pick(Object.keys(STATS)); it.val = BASE.acc[tier]; }
+  else { it.def = BASE[slot + 'Def'][tier]; it.hp = BASE[slot + 'Hp'][tier]; }
+  for (let k = 0; k < GRADES[g].o; k++) it.opts.push(randOpt(tier));
+  it.price = Math.round(TIERS[tier].price * PRICE_MUL[slot] * GRADES[g].m);
+  return it;
+}
+function randOpt(tier) { const r = Math.random(); if (r < .6) return { k: pick(Object.keys(STATS)), v: (2 + Math.floor(Math.random() * 4)) * (tier + 1) }; if (r < .8) return { k: 'crit', v: 1 + Math.floor(Math.random() * 3) }; return { k: 'gold', v: 3 + Math.floor(Math.random() * 6) }; }
+const enhMul = it => GRADES[it.grade].m * (1 + it.enh * .08);
+const itemIcon = it => it.slot === 'weapon' ? WTYPES[it.wt].i : SLOTS[it.slot].i;
+function itemName(it) { const base = it.slot === 'weapon' ? WTYPES[it.wt].n : it.slot === 'acc' ? `${STATS[it.stat].n} 반지` : SLOTS[it.slot].n; return `${TIERS[it.tier].n} ${base}${it.enh ? ` +${it.enh}` : ''}`; }
+const itemTag = it => `<span style="color:${GRADES[it.grade].c}">${itemName(it)}</span>`;
+function itemDesc(it) {
+  const m = enhMul(it), parts = [GRADES[it.grade].n];
+  if (it.slot === 'weapon') parts.push(`공격 ${Math.round(it.atk * m)}`, `간격 ${WTYPES[it.wt].gap}초`, ...(WTYPES[it.wt].sp ? ['필살기 +30%'] : []));
+  else if (it.slot === 'acc') parts.push(`${STATS[it.stat].n} +${Math.round(it.val * m)}`);
+  else parts.push(`방어 ${Math.round(it.def * m)}`, `체력 +${Math.round(it.hp * m)}`);
+  it.opts.forEach(o => parts.push(`${OPT_N[o.k]} +${o.v}${o.k === 'crit' || o.k === 'gold' ? '%' : ''}`));
+  return `${parts.join(' · ')} · Lv.${TIERS[it.tier].req}+`;
+}
+// 능력치 → 전투 수치 (기획서 3-3 계산식)
+function derive(c = me) {
+  const b = { str: 0, dex: 0, int: 0, luk: 0, crit: 0, gold: 0 }; let def = 0, hp = 0;
+  for (const it of Object.values(c.equip)) {
+    if (!it) continue; const m = enhMul(it);
+    if (it.slot === 'acc') b[it.stat] += Math.round(it.val * m); else if (it.slot !== 'weapon') { def += it.def * m; hp += it.hp * m; }
+    it.opts.forEach(o => (b[o.k] += o.v));
+  }
+  const str = c.str + b.str, dex = c.dex + b.dex, int = c.int + b.int, luk = c.luk + b.luk, w = c.equip.weapon, wt = WTYPES[w?.wt || 'sword'];
+  return { b, str, dex, int, luk, atk: Math.round((w ? w.atk * enhMul(w) : 3) + str * 2 + c.lv), def: Math.round(def), maxHp: Math.round(100 + c.lv * 20 + str * 5 + hp),
+    gap: wt.gap / Math.min(2, 1 + dex * .005), crit: Math.min(60, 5 + luk * .25 + b.crit), eva: Math.min(40, dex * .2), sp: 5 + int * .1, spMul: (2 + int * .02) * (wt.sp || 1), goldB: luk * .5 + b.gold, dropB: luk * .5 };
+}
+const tierFor = lv => TIERS.reduce((t, x, i) => (lv >= x.req ? i : t), 0);
+me.equip = { weapon: makeItem('weapon', 0, { wt: 'sword' }), hat: null, armor: null, shoes: null, acc: null };
+me.hp = derive().maxHp;
 
 // ───────── 지도 만들기 ─────────
 const G = 0, PATH = 1, WATER = 2, STONE = 3, SOIL = 4, DOCK = 5, SAND = 6;
@@ -446,14 +593,15 @@ fill(19, 2, 20, MH - 1, PATH);                // 큰길 (세로)
 fill(15, 10, 24, 19, STONE);                  // 광장
 fill(1, 8, 3, 9, DOCK);                       // 낚시 선착장
 fill(29, 23, 37, 27, SOIL);                   // 텃밭
-fill(9, 9, 9, 13, PATH); fill(27, 9, 27, 13, PATH); fill(33, 9, 33, 13, PATH); fill(8, 16, 8, 17, PATH); fill(13, 16, 13, 17, PATH); fill(27, 16, 27, 18, PATH); fill(33, 16, 33, 22, PATH);
+fill(9, 9, 9, 13, PATH); fill(15, 9, 15, 9, PATH); fill(27, 9, 27, 13, PATH); fill(33, 9, 33, 13, PATH); fill(8, 16, 8, 17, PATH); fill(13, 16, 13, 17, PATH); fill(27, 16, 27, 18, PATH); fill(33, 16, 33, 22, PATH);
 for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (tiles[y][x] === WATER) block[y][x] = true;
 
 const BUILDINGS = [
   { id: 'cafe', name: '카페', icon: '☕', x: 7, y: 5, w: 5, h: 4, roof: '#c8553d', wall: '#fff1dc' },
-  { id: 'clothes', name: '옷가게', icon: '👕', x: 25, y: 5, w: 5, h: 4, roof: '#3d7bd9', wall: '#eef4ff' },
-  { id: 'hair', name: '미용실', icon: '💇', x: 31, y: 5, w: 4, h: 4, roof: '#ef7fa6', wall: '#fff0f5' },
-  { id: 'market', name: '시장', icon: '🛒', x: 31, y: 17, w: 5, h: 3, roof: '#e9a23b', wall: '#fff7e6', stripes: true },
+  { id: 'skin', name: '스킨샵', icon: '👕', x: 13, y: 5, w: 4, h: 4, roof: '#ef7fa6', wall: '#fff0f5' },
+  { id: 'weapon', name: '무기점', icon: '⚔️', x: 25, y: 5, w: 5, h: 4, roof: '#3d7bd9', wall: '#eef4ff' },
+  { id: 'armor', name: '방어구점', icon: '🛡️', x: 31, y: 5, w: 5, h: 4, roof: '#56677f', wall: '#eef1f5' },
+  { id: 'smith', name: '대장간', icon: '🔨', x: 31, y: 17, w: 5, h: 3, roof: '#8a4b2a', wall: '#f7ebe0', chimney: true },
   { id: 'station', name: '방송국', icon: '📺', x: 24, y: 19, w: 6, h: 5, roof: '#6c4fc2', wall: '#f3efff', antenna: true },
   { id: 'home1', name: '내 집', icon: '🏠', x: 6, y: 17, w: 4, h: 3, roof: '#4f9d5a', wall: '#f6fbef', mine: true },
   { id: 'home2', name: '림린이네 집', icon: '🏠', x: 11, y: 17, w: 4, h: 3, roof: '#2bb3a6', wall: '#effbf9' },
@@ -464,7 +612,7 @@ const SPOTS = [
   { id: 'board', name: '광장 전광판', icon: '📣', x: 17, y: 10, w: 6, h: 1 },
   { id: 'river', name: '강가 선착장', icon: '🎣', x: 1, y: 8, w: 3, h: 2, walk: true },
   { id: 'farm', name: '텃밭', icon: '🌾', x: 29, y: 23, w: 9, h: 5, walk: true },
-  { id: 'frontier', name: '개척지 가는 길', icon: '🌲', x: 38, y: 13, w: 2, h: 4, walk: true },
+  { id: 'hunt', name: '사냥터 입구', icon: '⚔️', x: 38, y: 13, w: 2, h: 4, walk: true },
 ];
 for (const s of SPOTS) if (!s.walk) for (let y = s.y; y < s.y + s.h; y++) for (let x = s.x; x < s.x + s.w; x++) block[y][x] = true;
 const BENCHES = [{ x: 16, y: 12 }, { x: 23, y: 12 }, { x: 16, y: 18 }, { x: 23, y: 18 }];
@@ -503,16 +651,24 @@ const ground = document.createElement('canvas'); ground.width = MW * T; ground.h
   }
 })();
 
-// ───────── 길 찾기 (칸 단위) ─────────
+// ───────── 길 찾기 (칸 단위, 대각선 포함 8방향 · 모서리는 안 깎음) ─────────
+const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 function findPath(sx, sy, tx, ty) {
   if (tx < 0 || ty < 0 || tx >= MW || ty >= MH || block[ty][tx]) return null;
-  const prev = new Map(), q = [[sx, sy]], key = (x, y) => y * MW + x; prev.set(key(sx, sy), -1);
-  while (q.length) {
-    const [x, y] = q.shift();
-    if (x === tx && y === ty) { const out = []; let k = key(x, y); while (k !== -1) { out.unshift([k % MW, Math.floor(k / MW)]); k = prev.get(k); } return out; }
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-      const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= MW || ny >= MH || block[ny][nx] || prev.has(key(nx, ny))) continue;
-      prev.set(key(nx, ny), key(x, y)); q.push([nx, ny]);
+  const N = MW * MH, g = new Float32Array(N).fill(Infinity), prev = new Int32Array(N).fill(-1), done = new Uint8Array(N);
+  const s = sy * MW + sx, t = ty * MW + tx, h = k => { const dx = Math.abs(k % MW - tx), dy = Math.abs(Math.floor(k / MW) - ty); return Math.max(dx, dy) + .414 * Math.min(dx, dy); };
+  const open = [s]; g[s] = 0;
+  while (open.length) {
+    let bi = 0; for (let i = 1; i < open.length; i++) if (g[open[i]] + h(open[i]) < g[open[bi]] + h(open[bi])) bi = i;
+    const k = open[bi]; open[bi] = open[open.length - 1]; open.pop();
+    if (done[k]) continue; done[k] = 1;
+    if (k === t) { const out = []; let c = k; while (c !== -1) { out.unshift([c % MW, Math.floor(c / MW)]); c = c === s ? -1 : prev[c]; } return out; }
+    const x = k % MW, y = Math.floor(k / MW);
+    for (const [dx, dy] of DIRS) {
+      const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= MW || ny >= MH || block[ny][nx]) continue;
+      if (dx && dy && (block[y][nx] || block[ny][x])) continue;   // 벽 모서리를 비스듬히 통과하지 않기
+      const n = ny * MW + nx, ng = g[k] + (dx && dy ? 1.414 : 1);
+      if (ng < g[n]) { g[n] = ng; prev[n] = k; open.push(n); }
     }
   }
   return null;
@@ -536,7 +692,8 @@ function stepChar(ch, dt) {
 const people = BOTS.map((b, i) => {
   const spots = [[17, 13], [22, 16], [4, 9], [26, 15], [18, 18], [23, 13]];
   const [sx, sy] = spots[i];
-  return { ...b, x: sx * T + T / 2, y: sy * T + T / 2, path: [], seed: i * 1.7, eyes: 'dot', speed: 70 + i * 6, nextMove: 2 + Math.random() * 6, nextTalk: 3 + i * 2.5 + Math.random() * 5, bubble: null, emote: null };
+  const t = tierFor(b.lv), equip = { weapon: makeItem('weapon', t, { wt: b.wt, grade: b.g, enh: b.e }), hat: makeItem('hat', t), armor: makeItem('armor', t, { grade: b.g === 'normal' ? 'normal' : 'uncommon' }), shoes: b.lv > 5 ? makeItem('shoes', t) : null, acc: b.lv > 15 ? makeItem('acc', t, { stat: 'luk' }) : null };
+  return { ...b, equip, x: sx * T + T / 2, y: sy * T + T / 2, path: [], seed: i * 1.7, eyes: 'dot', speed: 70 + i * 6, nextMove: 2 + Math.random() * 6, nextTalk: 3 + i * 2.5 + Math.random() * 5, bubble: null, emote: null };
 });
 function wander(p) {
   for (let k = 0; k < 20; k++) {
@@ -573,7 +730,12 @@ function drawBuilding(b) {
   ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(X - 3, wallTop - 2, Wd + 6, 8);   // 처마 그늘
   ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 2;
   for (let ry = roofTop + 10; ry < wallTop - 6; ry += 10) { ctx.beginPath(); ctx.moveTo(X + 4, ry); ctx.lineTo(X + Wd - 4, ry); ctx.stroke(); }
-  if (b.stripes) { ctx.fillStyle = 'rgba(255,255,255,.55)'; for (let sx = X; sx < X + Wd; sx += 24) ctx.fillRect(sx, wallTop - 4, 12, 10); }
+  if (b.chimney) {
+    ctx.fillStyle = '#6b3d22'; ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 2; ctx.fillRect(X + 18, roofTop - 14, 14, 22); ctx.strokeRect(X + 18, roofTop - 14, 14, 22);
+    const tt = performance.now() / 900; ctx.fillStyle = 'rgba(240,240,240,.75)';
+    for (let k = 0; k < 3; k++) { const p = (tt + k / 3) % 1; ctx.beginPath(); ctx.arc(X + 25 + Math.sin(p * 6) * 4, roofTop - 18 - p * 26, 4 + p * 5, 0, 7); ctx.fill(); }
+    ctx.fillStyle = '#ffb347'; ctx.fillRect(X + Wd - 40, wallTop + 16, 18, 12);   // 화로 불빛
+  }
   if (b.antenna) { ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X + Wd - 26, roofTop + 6); ctx.lineTo(X + Wd - 26, roofTop - 22); ctx.stroke(); ctx.fillStyle = S.live ? '#ff4d4f' : '#e9a23b'; ctx.beginPath(); ctx.arc(X + Wd - 26, roofTop - 24, 4, 0, 7); ctx.fill(); }
   // 간판
   ctx.font = '700 13px "IBM Plex Sans KR", sans-serif'; const label = `${b.icon} ${b.name}`; const tw = ctx.measureText(label).width + 14;
@@ -605,7 +767,7 @@ function drawSpot(s) {
     else { ctx.fillStyle = '#c9f0d2'; ctx.fillText('다음 방송 · 금토일 밤 9시', X + s.w * T / 2, Y - 6); }
   } else {
     // 표지판
-    const x = s.id === 'river' ? 4 * T + 6 : s.id === 'farm' ? (s.x + 4) * T : s.x * T + 6, y = s.id === 'farm' ? s.y * T - 2 : s.id === 'frontier' ? (s.y - .2) * T : (s.y + .2) * T;
+    const x = s.id === 'river' ? 4 * T + 6 : s.id === 'farm' ? (s.x + 4) * T : s.id === 'hunt' ? 36.4 * T : s.x * T + 6, y = s.id === 'farm' ? s.y * T - 2 : s.id === 'hunt' ? (s.y - .2) * T : (s.y + .2) * T;
     ctx.fillStyle = '#7a5332'; ctx.fillRect(x + 12, y + 4, 4, 20);
     ctx.font = '700 12px "IBM Plex Sans KR", sans-serif'; const label = `${s.icon} ${s.name}`; const tw = ctx.measureText(label).width + 12;
     ctx.fillStyle = '#f3e3c3'; ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 1.5; rr(ctx, x + 14 - tw / 2, y - 14, tw, 19, 5); ctx.fill(); ctx.stroke();
@@ -634,29 +796,47 @@ function frame(now) {
   if (!$('#app').hidden) { update(dt, now); render(now); }
   requestAnimationFrame(frame);
 }
+function follow(dt, mw, mh) {
+  const vw = W / S.zoom, vh = H / S.zoom;
+  let tx = me.x, ty = me.y - (innerWidth <= 760 ? 40 : 0) + (HT ? (innerWidth <= 760 ? -H * .12 : H * .14) / S.zoom : 0);   // 사냥 중엔 채팅창에 안 가리게 캐릭터를 조금 위로
+  tx = Math.max(vw / 2, Math.min(mw - vw / 2, tx)); ty = Math.max(vh / 2, Math.min(mh - vh / 2, ty));
+  if (vw > mw) tx = mw / 2; if (vh > mh) ty = mh / 2;
+  cam.x += (tx - cam.x) * Math.min(1, dt * 6); cam.y += (ty - cam.y) * Math.min(1, dt * 6);
+}
 function update(dt, now) {
+  S.barT -= dt; if (S.barT <= 0) { S.barT = .15; syncBars(); }
+  botsTalk(dt);
+  if (HT) { updateHunt(dt, now); follow(dt, HW * T, HH * T); return; }
   stepChar(me, dt);
+  const D = derive(); if (me.hp < D.maxHp) me.hp = Math.min(D.maxHp, me.hp + D.maxHp * .02 * dt);   // 마을에서는 체력이 천천히 참
+  for (const p of people) { stepChar(p, dt); p.nextMove -= dt; if (p.nextMove <= 0 && !p.path.length) { wander(p); p.nextMove = 5 + Math.random() * 9; } }
+  follow(dt, MW * T, MH * T);
+  const tx0 = Math.floor(me.x / T), ty0 = Math.floor(me.y / T);
+  const place = tiles[ty0]?.[tx0] === STONE ? '광장' : tiles[ty0]?.[tx0] === DOCK || tx0 <= 4 ? '강가' : tiles[ty0]?.[tx0] === SOIL ? '텃밭' : tx0 >= 36 ? '사냥터 입구' : '마을 길';
+  setPlace(place);
+}
+function setPlace(place) { if ($('#placeChip').dataset.p !== place) { $('#placeChip').dataset.p = place; $('#placeChip').textContent = `📍 ${place}`; } }
+function botsTalk(dt) {
   for (const p of people) {
-    stepChar(p, dt); p.nextMove -= dt; p.nextTalk -= dt;
-    if (p.nextMove <= 0 && !p.path.length) { wander(p); p.nextMove = 5 + Math.random() * 9; }
+    p.nextTalk -= dt;
     if (p.nextTalk <= 0) {
       p.nextTalk = 9 + Math.random() * 14;
       if (Math.random() < .25) emote(p, ['👋', '❤️', '😂', '🎉', '💤'][Math.floor(Math.random() * 5)]);
-      else { const line = LINES[Math.floor(Math.random() * LINES.length)]; say(p, line); if (!S.blocked.has(p.name)) addChat({ who: p.name, text: line, mode: Math.hypot(p.x - me.x, p.y - me.y) < 9 * T ? '근처' : '전체' }); }
+      else { const line = LINES[Math.floor(Math.random() * LINES.length)]; say(p, line); if (!S.blocked.has(p.name)) addChat({ who: p.name, text: line, mode: !HT && Math.hypot(p.x - me.x, p.y - me.y) < 9 * T ? '근처' : '전체' }); }
     }
   }
-  // 카메라: 내 캐릭터를 부드럽게 따라감
-  const vw = W / S.zoom, vh = H / S.zoom;
-  let tx = me.x, ty = me.y - (innerWidth <= 760 ? 40 : 0);
-  tx = Math.max(vw / 2, Math.min(MW * T - vw / 2, tx)); ty = Math.max(vh / 2, Math.min(MH * T - vh / 2, ty));
-  if (vw > MW * T) tx = MW * T / 2; if (vh > MH * T) ty = MH * T / 2;
-  cam.x += (tx - cam.x) * Math.min(1, dt * 6); cam.y += (ty - cam.y) * Math.min(1, dt * 6);
-  // 지금 있는 곳
-  const tx0 = Math.floor(me.x / T), ty0 = Math.floor(me.y / T);
-  const place = tiles[ty0]?.[tx0] === STONE ? '광장' : tiles[ty0]?.[tx0] === DOCK || tx0 <= 4 ? '강가' : tiles[ty0]?.[tx0] === SOIL ? '텃밭' : tx0 >= 37 ? '개척지 입구' : '마을 길';
-  if ($('#placeChip').dataset.p !== place) { $('#placeChip').dataset.p = place; $('#placeChip').textContent = `📍 ${place}`; }
+}
+// 이름표는 머리 위 (발밑에 두면 아래 칸·물건에 가려짐), 말풍선은 그 위
+function nameTag(c, now) {
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '700 11.5px "IBM Plex Sans KR", sans-serif'; const label = `Lv.${c.lv} ${c.name}`; const tw = ctx.measureText(label).width + 12;
+  ctx.fillStyle = c === me ? 'rgba(232,85,58,.94)' : 'rgba(31,42,58,.76)'; rr(ctx, c.x - tw / 2, c.y - 66, tw, 17, 8.5); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.fillText(label, c.x, c.y - 57.5);
+  if (c.emote && c.emote.until > now) { const k = 1 - (c.emote.until - now) / 2200; ctx.font = '22px sans-serif'; ctx.globalAlpha = Math.min(1, (1 - k) * 3); ctx.fillText(c.emote.e, c.x + tw / 2 + 12, c.y - 60 - k * 14); ctx.globalAlpha = 1; }
+  if (c.bubble && c.bubble.until > now) bubbleAt(c.x, c.y - 68, c.bubble.text, c === me);
 }
 function render(now) {
+  if (HT) return renderHunt(now);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.fillStyle = '#5fb3d9'; ctx.fillRect(0, 0, W, H);
   const z = S.zoom, ox = Math.round(W / 2 - cam.x * z), oy = Math.round(H / 2 - cam.y * z);
@@ -676,16 +856,212 @@ function render(now) {
   const chars = [me, ...people.filter(p => !S.blocked.has(p.name))];
   for (const c of chars) if (vis(c.x, c.y)) list.push({ y: c.y, f: () => drawChar(ctx, c.x, c.y + 6, c, clock + (c.seed || 0)) });
   list.sort((a, b) => a.y - b.y).forEach(o => o.f());
-  // 이름표 · 말풍선 · 이모트 (항상 맨 위)
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  for (const c of chars) {
-    if (!vis(c.x, c.y)) continue;
-    ctx.font = '700 11.5px "IBM Plex Sans KR", sans-serif'; const label = c === me ? `${c.name}` : c.name; const tw = ctx.measureText(label).width + 10;
-    ctx.fillStyle = c === me ? 'rgba(232,85,58,.92)' : 'rgba(31,42,58,.72)'; rr(ctx, c.x - tw / 2, c.y + 10, tw, 16, 8); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.fillText(label, c.x, c.y + 18.5);
-    if (c.emote && c.emote.until > now) { const k = 1 - (c.emote.until - now) / 2200; ctx.font = '22px sans-serif'; ctx.globalAlpha = Math.min(1, (1 - k) * 3); ctx.fillText(c.emote.e, c.x + 16, c.y - 52 - k * 14); ctx.globalAlpha = 1; }
-    if (c.bubble && c.bubble.until > now) bubbleAt(c.x, c.y - 44, c.bubble.text, c === me);
+  for (const c of chars) if (vis(c.x, c.y)) nameTag(c, now);
+}
+
+// ───────── 사냥터 (기획서 4장) ─────────
+// 몬스터: n 이름, lv, hp, atk, exp, gold, c 색, s 크기, f 생김새
+const M = (n, lv, hp, atk, exp, gold, c, s, f) => ({ n, lv, hp, atk, exp, gold, c, s, f });
+const MONS = {
+  rat: M('풀쥐', 1, 30, 4, 6, 3, '#c2ad92', .75, 'ears'), hen: M('성난 닭', 4, 70, 8, 14, 6, '#fff7ea', .85, 'beak'), boar: M('아기 멧돼지', 8, 150, 14, 30, 12, '#a87452', 1, 'snout'),
+  wolf: M('숲 늑대', 12, 260, 22, 48, 18, '#8d97a6', 1, 'ears'), shroom: M('독버섯', 18, 420, 30, 75, 26, '#f3e6cf', .95, 'cap'), vine: M('덩굴 괴물', 23, 640, 42, 110, 35, '#5aa04f', 1.1, 'leaf'),
+  eagle: M('협곡 독수리', 27, 900, 55, 150, 45, '#9b6a3d', 1, 'wing'), turtle: M('돌 거북', 33, 1500, 60, 210, 60, '#a3b07a', 1.1, 'shell'), golem: M('바위 골렘', 38, 2200, 85, 280, 75, '#9a958c', 1.25, 'rock'),
+  drone: M('녹슨 드론', 42, 2800, 110, 360, 95, '#b58a5a', .9, 'bot'), guard: M('경비 로봇', 48, 4000, 140, 470, 120, '#7f8fa3', 1.15, 'bot'), fixbot: M('폭주 수리봇', 53, 5500, 170, 600, 150, '#e0a63a', 1.1, 'bot'),
+};
+const FIELDS = [
+  { id: 'plain', n: '바람 들판', i: '🌾', min: 1, max: 10, tier: 0, mons: ['rat', 'hen', 'boar'], boss: M('왕 멧돼지', 12, 2000, 40, 400, 300, '#7d4f33', 2, 'snout'), g: ['#9ad27f', '#91ca75'], deco: 'flower' },
+  { id: 'forest', n: '깊은 숲', i: '🌲', min: 10, max: 25, tier: 1, mons: ['wolf', 'shroom', 'vine'], boss: M('숲의 거대 곰', 27, 12000, 120, 2500, 1500, '#6b4a33', 2.2, 'ears'), g: ['#5f9e58', '#589651'], deco: 'tree' },
+  { id: 'canyon', n: '바위 협곡', i: '⛰️', min: 25, max: 40, tier: 2, mons: ['eagle', 'turtle', 'golem'], boss: M('협곡의 주인', 42, 50000, 260, 9000, 4000, '#7a746b', 2.3, 'rock'), g: ['#d2b48a', '#c9ab80'], deco: 'rock' },
+  { id: 'factory', n: '고장 난 공장', i: '🏚️', min: 40, max: 55, tier: 3, mons: ['drone', 'guard', 'fixbot'], boss: M('공장장 기계', 57, 160000, 520, 25000, 10000, '#5e6b7d', 2.4, 'bot'), g: ['#a3abb5', '#9aa2ad'], deco: 'pipe' },
+];
+const HW = 26, HH = 18;          // 사냥터 크기 (칸)
+let HT = null;                   // 지금 사냥 중인 상태
+const huntGround = {};
+function paintHunt(f) {
+  if (huntGround[f.id]) return huntGround[f.id];
+  const cvs = document.createElement('canvas'); cvs.width = HW * T; cvs.height = HH * T; const g = cvs.getContext('2d'); seed = 31;
+  for (let y = 0; y < HH; y++) for (let x = 0; x < HW; x++) { g.fillStyle = f.g[(x + y) % 2]; g.fillRect(x * T, y * T, T, T); }
+  for (let i = 0; i < 160; i++) {
+    const x = rnd() * HW * T, y = rnd() * HH * T, edge = x < 2 * T || y < 2 * T || x > (HW - 2) * T || y > (HH - 2) * T;
+    if (f.deco === 'flower') { g.fillStyle = ['#fff', '#ffd166', '#ff8fab'][i % 3]; g.beginPath(); g.arc(x, y, 2.4, 0, 7); g.fill(); if (edge && i % 2) { g.fillStyle = '#e8c55a'; g.fillRect(x, y - 10, 3, 12); g.fillRect(x + 5, y - 8, 3, 10); } }
+    else if (f.deco === 'tree') { if (edge) { g.fillStyle = '#7a5332'; g.fillRect(x - 3, y - 6, 6, 12); g.fillStyle = '#2f7a3f'; g.beginPath(); g.arc(x, y - 16, 15, 0, 7); g.fill(); } else { g.fillStyle = 'rgba(30,80,30,.35)'; g.fillRect(x, y, 2, 6); } }
+    else if (f.deco === 'rock') { g.fillStyle = edge ? '#8d8478' : 'rgba(120,95,70,.35)'; g.beginPath(); g.ellipse(x, y, edge ? 18 : 4, edge ? 12 : 3, 0, 0, 7); g.fill(); }
+    else if (f.deco === 'pipe') { if (edge) { g.fillStyle = '#6b7684'; g.fillRect(x - 20, y - 5, 40, 10); g.fillStyle = '#c8553d'; g.fillRect(x - 3, y - 7, 6, 14); } else { g.strokeStyle = 'rgba(0,0,0,.08)'; g.strokeRect(Math.floor(x / T) * T + .5, Math.floor(y / T) * T + .5, T - 1, T - 1); } }
   }
+  return (huntGround[f.id] = cvs);
+}
+function openHuntSelect() {
+  openModal(`<h3>⚔️ 사냥터 입구</h3><p>사냥터를 고르면 바로 <b>자동 사냥</b>이 시작돼요. 캐릭터가 알아서 싸우고, 체력이 낮으면 물약을 마셔요.</p>
+    <div class="actions">${FIELDS.map((f, i) => { const tag = me.lv < f.min ? ['bad', '⚠️ 위험'] : me.lv > f.max + 9 ? ['', '경험치 ↓'] : ['good', '추천']; return `<button class="btn field-card" data-f="${i}"><span style="font-size:26px">${f.i}</span><span><b>${f.n}</b><small style="display:block">Lv.${f.min}–${f.max} · ${f.mons.map(k => MONS[k].n).join(', ')}</small></span><span class="tagok ${tag[0]}">${tag[1]}</span></button>`; }).join('')}</div>
+    <p class="muted">물약 ${me.pots.s + me.pots.l + me.pots.xl}개 · 체력 ${me.potAt}% 이하일 때 자동으로 마셔요${S.live ? ' · 🔴 지금 방송 중이라 경험치 1.5배!' : ''}</p><button class="close" data-close>닫기</button>`,
+  el => el.querySelector('.actions').addEventListener('click', e => { const i = e.target.closest('[data-f]')?.dataset.f; if (i != null) enterHunt(FIELDS[+i]); }));
+}
+function enterHunt(f) {
+  closeModal(); closePanel(); paintHunt(f);
+  HT = { f, mons: [], floats: [], t0: performance.now(), kills: 0, exp: 0, gold: 0, drops: [], bossLeft: 30 * 60, atkT: .4, potCD: 0, target: null };
+  me.x = HW * T / 2; me.y = HH * T / 2; me.path = []; me.moving = false; cam = { x: me.x, y: me.y };
+  for (let i = 0; i < 8; i++) spawnMon(false);
+  document.body.classList.add('hunting'); $('#huntBox').hidden = false; $('#hbField').textContent = `${f.i} ${f.n}`;
+  setPlace(f.n); sysMsg(`${f.i} ${f.n}에 들어왔어요. 자동 사냥 시작!`); logAct(`${f.n} 사냥 시작`);
+}
+function spawnMon(boss) {
+  const d = boss ? HT.f.boss : MONS[pick(HT.f.mons)];
+  let x, y; for (let k = 0; k < 20; k++) { x = (2.5 + Math.random() * (HW - 5)) * T; y = (2.5 + Math.random() * (HH - 5)) * T; if (Math.hypot(x - me.x, y - me.y) > 5 * T) break; }
+  HT.mons.push({ d, boss, hp: d.hp, x, y, wx: x, wy: y, seed: Math.random() * 6, aggro: false, atkT: 1.2, hitT: 0, dead: false, deadT: 0, wait: Math.random() * 2, moving: false });
+  if (boss) { sysMsg(`👑 보스 ${d.n} 등장!`); toast(`👑 보스 ${d.n} 등장!`); }
+}
+function floatText(x, y, text, color, size = 15, life = 1) { HT.floats.push({ x, y, text, color, size, life, t: 0 }); }
+function updateHunt(dt) {
+  const D = derive(); if (me.hp > D.maxHp) me.hp = D.maxHp;
+  me.swing = Math.max(0, (me.swing || 0) - dt);
+  HT.bossLeft -= dt; if (HT.bossLeft <= 0) { HT.bossLeft = 30 * 60; if (!HT.mons.some(m => m.boss && !m.dead)) spawnMon(true); }
+  // 쓰러진 몬스터는 3초 뒤 다시 나옴
+  for (const m of [...HT.mons]) if (m.dead && m.deadT > 3) { HT.mons.splice(HT.mons.indexOf(m), 1); if (!m.boss) spawnMon(false); }
+  // 목표 고르기: 내가 누른 몬스터 → 아니면 가장 가까운 몬스터
+  const alive = HT.mons.filter(m => !m.dead);
+  if (!HT.target || HT.target.dead) HT.target = alive.reduce((a, m) => (!a || Math.hypot(m.x - me.x, m.y - me.y) < Math.hypot(a.x - me.x, a.y - me.y) ? m : a), null);
+  const tg = HT.target;
+  if (tg) {
+    const dx = tg.x - me.x, dy = tg.y - me.y, d = Math.hypot(dx, dy), reach = 24 + tg.d.s * 10;
+    if (d > reach) { me.moving = true; const sp = 125 * dt; me.x += dx / d * Math.min(sp, d - reach + 1); me.y += dy / d * Math.min(sp, d - reach + 1); }
+    else { me.moving = false; HT.atkT -= dt; if (HT.atkT <= 0) { HT.atkT = D.gap; hitMon(tg, D); } }
+  } else me.moving = false;
+  // 몬스터
+  for (const m of HT.mons) {
+    if (m.dead) { m.deadT += dt; continue; }
+    m.hitT -= dt;
+    const dx = me.x - m.x, dy = me.y - m.y, d = Math.hypot(dx, dy);
+    if (!m.aggro && d < 2.2 * T && m.d.lv >= me.lv - 3) m.aggro = true;   // 가까이 가면 덤빔 (나보다 훨씬 약한 몬스터는 가만히)
+    if (m.aggro) {
+      if (d > 26 + m.d.s * 10) { m.moving = true; m.x += dx / d * 55 * dt; m.y += dy / d * 55 * dt; }
+      else { m.moving = false; m.atkT -= dt; if (m.atkT <= 0) { m.atkT = m.boss ? 1.3 : 1.6; hitMe(m, D); } }
+    } else {
+      m.wait -= dt;
+      if (m.wait <= 0) { m.wait = 1.5 + Math.random() * 3; m.wx = Math.max(2 * T, Math.min((HW - 2) * T, m.x + (Math.random() - .5) * 4 * T)); m.wy = Math.max(2 * T, Math.min((HH - 2) * T, m.y + (Math.random() - .5) * 4 * T)); }
+      const wx = m.wx - m.x, wy = m.wy - m.y, wd = Math.hypot(wx, wy); m.moving = wd > 2; if (m.moving) { m.x += wx / wd * 28 * dt; m.y += wy / wd * 28 * dt; }
+    }
+  }
+  // 물약 자동
+  HT.potCD -= dt; if (me.hp <= D.maxHp * me.potAt / 100 && HT.potCD <= 0) usePotion(D);
+  for (const f of HT.floats) f.t += dt; HT.floats = HT.floats.filter(f => f.t < f.life);
+  if (me.hp <= 0) die();
+}
+function hitMon(m, D) {
+  me.swing = .18; m.aggro = true; m.hitT = .1;
+  let dmg = D.atk * (.9 + Math.random() * .2), kind = '';
+  if (Math.random() * 100 < D.sp) { dmg *= D.spMul; kind = 'sp'; }
+  if (Math.random() * 100 < D.crit) { dmg *= 1.5; kind = kind || 'crit'; }
+  dmg = Math.max(1, Math.round(dmg)); m.hp -= dmg;
+  const top = m.y - 34 * m.d.s;
+  if (kind === 'sp') floatText(m.x, top, `필살! ${dmg}`, '#c99bff', 18); else if (kind === 'crit') floatText(m.x, top, `${dmg}!`, '#ffd166', 18); else floatText(m.x, top, `${dmg}`, '#fff');
+  if (m.hp <= 0) killMon(m, D);
+}
+function hitMe(m, D) {
+  if (Math.random() * 100 < D.eva) return floatText(me.x, me.y - 52, '회피', '#9fe0ff');
+  const dmg = Math.max(1, Math.round(m.d.atk * 100 / (100 + D.def) * (.85 + Math.random() * .3)));
+  me.hp -= dmg; floatText(me.x, me.y - 52, `-${dmg}`, '#ff7b6b');
+}
+function killMon(m, D) {
+  m.dead = true; m.deadT = 0; m.hp = 0; HT.kills++; if (HT.target === m) HT.target = null;
+  const diff = me.lv - m.d.lv, pen = diff >= 10 ? Math.max(.2, 1 - (diff - 9) * .1) : 1;   // 너무 약한 몬스터는 경험치 줄어듦
+  const e = Math.max(1, Math.round(m.d.exp * pen * (S.live ? 1.5 : 1)));
+  const g = Math.max(1, Math.round(m.d.gold * (1 + D.goldB / 100) * (.8 + Math.random() * .4)));
+  HT.exp += e; HT.gold += g; me.gold += g;
+  floatText(m.x, m.y - 14, `+${e} EXP  🪙${g}`, '#ffe9a8', 13, 1.3);
+  rollDrop(m, D); gainExp(e);
+}
+function rollDrop(m, D) {
+  const lb = 1 + D.dropB / 100;
+  if (!m.boss && Math.random() * 100 >= 6 * lb) return;   // 기본 6% (운으로 늘어남), 보스는 항상
+  const bm = m.boss ? 10 : 1, r = Math.random() * 100;
+  const grade = r < .1 * lb * bm ? 'legend' : r < 1 * lb * bm ? 'epic' : r < 5 * lb * bm ? 'rare' : r < 20 * lb * bm ? 'uncommon' : 'normal';
+  const it = makeItem(pick(Object.keys(SLOTS)), HT.f.tier, { grade, wt: pick(Object.keys(WTYPES)) });
+  me.bag.push(it); HT.drops.push(it); renderBag();
+  floatText(m.x, m.y - 30, `${itemIcon(it)} ${GRADES[grade].n}!`, GRADES[grade].c === '#6f7a8a' ? '#e6ebf2' : GRADES[grade].c, 15, 1.6);
+  if (grade !== 'normal' && grade !== 'uncommon') { toast(`✨ ${GRADES[grade].n} 장비! ${itemName(it)}`); sysMsg(`✨ ${GRADES[grade].n} 장비 획득: ${itemName(it)}`); }
+}
+function usePotion(D) {
+  const miss = D.maxHp - me.hp, p = me.pots;
+  const k = miss >= 200 && p.l ? 'l' : p.s ? 's' : p.l ? 'l' : p.xl ? 'xl' : null;
+  if (!k) { if (!HT.noPot) { HT.noPot = true; sysMsg('물약이 다 떨어졌어요! 카페에서 살 수 있어요'); } return; }
+  p[k]--; const heal = k === 's' ? 50 : k === 'l' ? 200 : Math.round(D.maxHp * .5);
+  me.hp = Math.min(D.maxHp, me.hp + heal); HT.potCD = 1; floatText(me.x, me.y - 72, `🥤 +${heal}`, '#8af0a0', 15); renderBag();
+}
+function huntSummary() {
+  const sec = Math.floor((performance.now() - HT.t0) / 1000);
+  return `<table class="ruletable"><tbody><tr><td>사냥터</td><td>${HT.f.i} ${HT.f.n}</td></tr><tr><td>시간</td><td>${Math.floor(sec / 60)}분 ${sec % 60}초</td></tr><tr><td>처치</td><td>${HT.kills}마리</td></tr><tr><td>경험치</td><td>+${HT.exp.toLocaleString()}</td></tr><tr><td>골드</td><td>+${HT.gold.toLocaleString()}</td></tr>
+    <tr><td>아이템</td><td>${HT.drops.length ? HT.drops.map(it => `${itemIcon(it)} <b>${itemTag(it)}</b>`).join('<br>') : '없음'}</td></tr></tbody></table>`;
+}
+function leaveHunt() {
+  logAct(`${HT.f.n} 사냥: ${HT.kills}마리, +${HT.exp} EXP, 🪙+${HT.gold}`);
+  document.body.classList.remove('hunting'); $('#huntBox').hidden = true;
+  HT = null; me.x = 36.5 * T; me.y = 14.5 * T; me.path = []; me.moving = false; me.swing = 0; cam = { x: me.x, y: me.y }; syncBars();
+}
+function die() {
+  const lost = Math.floor(HT.gold * .1); me.gold -= lost; const sum = huntSummary();
+  leaveHunt(); me.hp = Math.round(derive().maxHp * .3); emote(me, '💤');
+  openModal(`<h3>😵 쓰러졌어요</h3><p>마을로 돌아왔어요. 이번 사냥에서 번 골드의 10% (🪙 ${lost})만 잃었어요. 경험치와 장비는 그대로예요.</p>${sum}<p class="muted">마을에 있으면 체력이 천천히 차요. 카페에서 쉬면 바로 회복!</p><button class="btn main" data-close>알겠어요</button>`);
+}
+$('#hbBack').onclick = () => { const sum = huntSummary(); leaveHunt(); openModal(`<h3>🏠 마을로 돌아왔어요</h3>${sum}<button class="btn main" data-close>확인</button>`); };
+$('#hbBossBtn').onclick = () => { if (HT) HT.bossLeft = 0; };
+// 몬스터 그리기 (둥근 몸 + 눈, 종류마다 귀·부리·버섯갓 등)
+function drawMon(m, t) {
+  const d = m.d, s = d.s;
+  ctx.save(); ctx.translate(m.x, m.y); ctx.scale(s, s);
+  if (m.dead) ctx.globalAlpha = Math.max(0, 1 - m.deadT / .5);
+  const hop = m.moving ? Math.abs(Math.sin(t * 9 + m.seed)) * 3 : Math.sin(t * 2 + m.seed) * .8, by = -26 - hop;
+  ctx.fillStyle = 'rgba(31,42,58,.2)'; ctx.beginPath(); ctx.ellipse(0, 0, 14, 4, 0, 0, 7); ctx.fill();
+  const body = m.hitT > 0 ? '#ffffff' : d.c; ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 1.6; ctx.fillStyle = body;
+  if (d.f === 'ears' || d.f === 'snout') for (const k of [-1, 1]) { ctx.beginPath(); ctx.moveTo(k * 12, by + 6); ctx.lineTo(k * 9, by - 7); ctx.lineTo(k * 3, by + 2); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+  if (d.f === 'wing') for (const k of [-1, 1]) { ctx.beginPath(); ctx.moveTo(k * 10, by + 8); ctx.lineTo(k * (24 + Math.sin(t * 12 + m.seed) * 3), by + 2); ctx.lineTo(k * 12, by + 18); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+  if (d.f === 'cap') { ctx.fillStyle = body; rr(ctx, -8, by + 6, 16, 20, 5); ctx.fill(); ctx.stroke(); }
+  else if (d.f === 'bot') { rr(ctx, -13, by, 26, 24, 4); ctx.fill(); ctx.stroke(); }
+  else { rr(ctx, -14, by, 28, 25, 11); ctx.fill(); ctx.stroke(); }
+  if (d.f === 'cap') { ctx.fillStyle = m.hitT > 0 ? '#fff' : '#d9473a'; ctx.beginPath(); ctx.ellipse(0, by + 8, 18, 12, 0, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#fff'; for (const [x, y] of [[-8, 2], [3, -1], [10, 4]]) { ctx.beginPath(); ctx.arc(x, by + y, 2.2, 0, 7); ctx.fill(); } }
+  if (d.f === 'shell') { ctx.fillStyle = '#5c7a45'; ctx.beginPath(); ctx.ellipse(0, by + 6, 15, 9, 0, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+  if (d.f === 'rock') { ctx.strokeStyle = 'rgba(31,42,58,.45)'; ctx.beginPath(); ctx.moveTo(-8, by + 3); ctx.lineTo(-3, by + 9); ctx.lineTo(-6, by + 15); ctx.moveTo(7, by + 5); ctx.lineTo(10, by + 12); ctx.stroke(); ctx.strokeStyle = '#1f2a3a'; }
+  if (d.f === 'leaf') { ctx.fillStyle = '#3f8f4c'; ctx.beginPath(); ctx.ellipse(-4, by - 3, 4, 8, -.5, 0, 7); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.ellipse(5, by - 2, 3.5, 7, .5, 0, 7); ctx.fill(); ctx.stroke(); }
+  if (d.f === 'beak' || d.f === 'wing') { ctx.fillStyle = '#f0a43a'; ctx.beginPath(); ctx.moveTo(-3, by + 15); ctx.lineTo(3, by + 15); ctx.lineTo(0, by + 21); ctx.closePath(); ctx.fill(); ctx.stroke(); if (d.f === 'beak') { ctx.fillStyle = '#e8553a'; ctx.beginPath(); ctx.arc(-3, by - 1, 3, 0, 7); ctx.arc(2, by - 2, 3.4, 0, 7); ctx.fill(); } }
+  if (d.f === 'snout') { ctx.fillStyle = '#e9a0a0'; rr(ctx, -5, by + 14, 10, 7, 3); ctx.fill(); ctx.stroke(); }
+  if (d.f === 'bot') { ctx.strokeStyle = '#1f2a3a'; ctx.beginPath(); ctx.moveTo(0, by); ctx.lineTo(0, by - 8); ctx.stroke(); ctx.fillStyle = Math.sin(t * 6) > 0 ? '#ff4d4f' : '#ffd166'; ctx.beginPath(); ctx.arc(0, by - 9, 2.6, 0, 7); ctx.fill(); }
+  // 눈 (화나면 눈썹)
+  const ey = d.f === 'cap' ? by + 14 : by + 10;
+  ctx.fillStyle = d.f === 'bot' ? '#4fe0ff' : '#1f2a3a';
+  for (const k of [-5, 5]) { if (d.f === 'bot') ctx.fillRect(k - 2.5, ey - 2, 5, 4); else { ctx.beginPath(); ctx.ellipse(k, ey, 2.2, 2.8, 0, 0, 7); ctx.fill(); } }
+  if (m.aggro) { ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(-8, ey - 6); ctx.lineTo(-2, ey - 4); ctx.moveTo(8, ey - 6); ctx.lineTo(2, ey - 4); ctx.stroke(); }
+  ctx.restore();
+}
+function renderHunt(now) {
+  const f = HT.f;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = f.g[1]; ctx.fillRect(0, 0, W, H);
+  const z = S.zoom, ox = Math.round(W / 2 - cam.x * z), oy = Math.round(H / 2 - cam.y * z);
+  ctx.setTransform(DPR * z, 0, 0, DPR * z, ox * DPR, oy * DPR);
+  ctx.drawImage(huntGround[f.id], 0, 0);
+  if (HT.target && !HT.target.dead) { const m = HT.target; ctx.strokeStyle = 'rgba(232,85,58,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(m.x, m.y + 2, 16 * m.d.s, 5 * m.d.s, 0, 0, 7); ctx.stroke(); }
+  const hero = { ...me, weaponI: me.equip.weapon ? WTYPES[me.equip.weapon.wt].i : '✊' };
+  const list = HT.mons.map(m => ({ y: m.y, f: () => drawMon(m, clock) }));
+  list.push({ y: me.y, f: () => drawChar(ctx, me.x, me.y + 6, hero, clock) });
+  list.sort((a, b) => a.y - b.y).forEach(o => o.f());
+  // 몬스터 체력 바 · 이름
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const m of HT.mons) {
+    if (m.dead) continue;
+    const top = m.y - 36 * m.d.s - 8, w = 34 * Math.min(1.6, m.d.s);
+    if (m.hp < m.d.hp || m.boss || m === HT.target) {
+      ctx.fillStyle = 'rgba(31,42,58,.75)'; rr(ctx, m.x - w / 2 - 1, top - 1, w + 2, 6, 3); ctx.fill();
+      ctx.fillStyle = m.boss ? '#ffb020' : '#ef6a50'; rr(ctx, m.x - w / 2, top, w * Math.max(0, m.hp / m.d.hp), 4, 2); ctx.fill();
+      ctx.font = `700 ${m.boss ? 13 : 10.5}px "IBM Plex Sans KR", sans-serif`; ctx.fillStyle = '#fff'; ctx.strokeStyle = 'rgba(31,42,58,.8)'; ctx.lineWidth = 3;
+      const label = `${m.boss ? '👑 ' : ''}Lv.${m.d.lv} ${m.d.n}`; ctx.strokeText(label, m.x, top - 9); ctx.fillText(label, m.x, top - 9);
+    }
+  }
+  nameTag(me, now);
+  // 떠오르는 숫자
+  for (const t of HT.floats) {
+    const k = t.t / t.life; ctx.globalAlpha = Math.min(1, (1 - k) * 2.5);
+    ctx.font = `800 ${t.size}px "IBM Plex Sans KR", sans-serif`; ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(31,42,58,.85)'; ctx.fillStyle = t.color;
+    const y = t.y - k * 30; ctx.strokeText(t.text, t.x, y); ctx.fillText(t.text, t.x, y);
+  }
+  ctx.globalAlpha = 1;
 }
 requestAnimationFrame(frame);
 
@@ -704,99 +1080,155 @@ $('#zIn').onclick = () => setZoom(S.zoom * 1.2); $('#zOut').onclick = () => setZ
 function tap(sx, sy) {
   closePanel();
   const w = toWorld(sx, sy);
+  // 사냥 중: 몬스터를 누르면 그 몬스터부터 공격
+  if (HT) { const m = HT.mons.filter(m => !m.dead).find(m => Math.abs(w.x - m.x) < 20 * m.d.s && w.y > m.y - 40 * m.d.s && w.y < m.y + 8); if (m) HT.target = m; return; }
   // 사람
-  const hit = people.filter(p => !S.blocked.has(p.name)).find(p => Math.abs(w.x - p.x) < 16 && w.y > p.y - 48 && w.y < p.y + 26);
+  const hit = people.filter(p => !S.blocked.has(p.name)).find(p => Math.abs(w.x - p.x) < 16 && w.y > p.y - 66 && w.y < p.y + 10);
   if (hit) return openProfile(hit);
-  if (Math.abs(w.x - me.x) < 16 && w.y > me.y - 48 && w.y < me.y + 10) { openPanelTab('style'); return; }
-  // 건물 (지붕 + 앞벽 영역)
+  if (Math.abs(w.x - me.x) < 16 && w.y > me.y - 66 && w.y < me.y + 10) { openPanelTab('stat'); return; }
+  // 건물: 누르면 바로 이용 (입구까지 안 걸어감)
   const b = BUILDINGS.find(b => w.x > b.x * T && w.x < (b.x + b.w) * T && w.y > (b.y - .7) * T && w.y < (b.y + b.h) * T);
-  if (b) return walkTo(me, b.door.x, b.door.y, () => openBuilding(b)) || toast('거기까지 가는 길이 없어요');
-  const s = SPOTS.find(s => w.x > s.x * T && w.x < (s.x + s.w) * T && w.y > (s.y - (s.id === 'board' ? 1 : .3)) * T && w.y < (s.y + s.h) * T);
-  if (s) {
-    const near = s.id === 'river' ? [3, 9] : s.id === 'farm' ? [31, 22] : s.id === 'frontier' ? [38, 14] : s.id === 'board' ? [19, 12] : [19, 18];
-    return walkTo(me, near[0], near[1], () => openSpot(s)) || openSpot(s);
-  }
+  if (b) return openBuilding(b);
+  const s = SPOTS.find(s => w.x > (s.id === 'hunt' ? 35.5 : s.x) * T && w.x < (s.x + s.w) * T && w.y > (s.y - (s.id === 'board' ? 1 : .6)) * T && w.y < (s.y + s.h) * T);
+  if (s) return openSpot(s);
   const tx = Math.floor(w.x / T), ty = Math.floor(w.y / T);
   if (!walkTo(me, tx, ty)) toast(tiles[ty]?.[tx] === WATER ? '물에는 들어갈 수 없어요' : '거기는 갈 수 없어요');
 }
 
 // ───────── 모달 ─────────
 const modal = $('#modal'), sheet = $('#sheet');
-function openModal(html, onReady) { sheet.innerHTML = html; modal.hidden = false; onReady?.(sheet); sheet.querySelector('button, input')?.focus({ preventScroll: true }); }
-function closeModal() { modal.hidden = true; sheet.innerHTML = ''; }
+let reopen = null;   // 지금 열린 가게 화면 (사고 나서 다시 그리기용)
+function openModal(html, onReady, keep) { const st = keep ? sheet.scrollTop : 0; sheet.innerHTML = html; modal.hidden = false; onReady?.(sheet); if (keep) sheet.scrollTop = st; else sheet.querySelector('button, input')?.focus({ preventScroll: true }); }
+function closeModal() { modal.hidden = true; sheet.innerHTML = ''; reopen = null; }
 modal.addEventListener('click', e => { if (e.target === modal || e.target.closest('[data-close]')) closeModal(); });
 addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
 const actBtn = (id, label, cost) => `<button class="btn" data-a="${id}">${label}${cost ? `<small>${cost}</small>` : ''}</button>`;
+const goldTxt = n => `🪙 ${n.toLocaleString()}`;
+const row = (ic, name, desc, btns, locked) => `<li${locked ? ' class="locked"' : ''}><span class="ic">${ic}</span><span><span class="nm">${name}</span><small>${desc}</small></span><span class="btns">${btns}</span></li>`;
+function sheetHead(b, desc) { return `<h3>${b.icon} ${b.name}</h3><p>${desc}</p><div class="points" style="background:#fff;border-color:var(--line)"><span>내 골드</span><span>${goldTxt(me.gold)}</span></div>`; }
+function wire(el, fn) { el.addEventListener('click', e => { const t = e.target.closest('[data-x]'); if (t && !t.disabled) fn(t.dataset.x, t); }); }
+function spend(n) { if (me.gold < n) { toast('골드가 부족해요'); return false; } me.gold -= n; syncBars(); return true; }
 
-function openBuilding(b) {
+function openBuilding(b, keep) {
+  reopen = () => openBuilding(b, true);
+  const id = b.id;
+  if (id === 'cafe') {
+    const P = [['s', '🥤', '작은 음료', '체력 +50', 20], ['l', '🧋', '큰 음료', '체력 +200', 70], ['xl', '🍹', '특대 음료', '최대 체력의 50%', 200]];
+    return openModal(`${sheetHead(b, '체력 회복 음료(물약)를 팔아요. 사냥 중에 체력이 낮아지면 자동으로 마셔요.')}
+      <ul class="ilist">${P.map(([k, ic, n, d, p]) => row(ic, `${n} <small style="display:inline">(${me.pots[k]}개 있음)</small>`, `${d} · ${goldTxt(p)}`, `<button class="mini" data-x="${k}:1" ${me.gold < p ? 'disabled' : ''}>1개</button><button class="mini main" data-x="${k}:5" ${me.gold < p * 5 ? 'disabled' : ''}>5개</button>`)).join('')}
+      ${row('🪑', '창가 자리에서 쉬기', '체력을 전부 회복해요 · 무료', `<button class="mini" data-x="rest">쉬기</button>`)}</ul><button class="close" data-close>닫기</button>`, el => wire(el, x => {
+      if (x === 'rest') { me.hp = derive().maxHp; emote(me, '❤️'); toast('푹 쉬었어요. 체력이 가득 찼어요'); return reopen(); }
+      const [k, n] = x.split(':'), price = P.find(p => p[0] === k)[4] * n; if (!spend(price)) return;
+      me.pots[k] += +n; logAct(`${P.find(p => p[0] === k)[2]} ${n}개 −${price}`); toast(`${P.find(p => p[0] === k)[1]} ${n}개 샀어요`); renderBag(); reopen();
+    }), keep);
+  }
+  if (id === 'weapon' || id === 'armor') {
+    const t = tierFor(me.lv), tiers = [t, t + 1].filter(x => x < TIERS.length);
+    const goods = tiers.flatMap(ti => id === 'weapon' ? Object.keys(WTYPES).map(wt => makeItem('weapon', ti, { wt }))
+      : [makeItem('hat', ti), makeItem('armor', ti), makeItem('shoes', ti), ...Object.keys(STATS).map(stat => makeItem('acc', ti, { stat }))]);
+    const sell = me.bag.length ? `<h3 style="margin:4px 0 0">팔기 (산 값의 30%)</h3><ul class="ilist">${me.bag.map(it => row(itemIcon(it), itemTag(it), itemDesc(it), `<button class="mini" data-x="sell:${it.id}">${goldTxt(Math.round(it.price * .3))}</button>`)).join('')}</ul>` : '';
+    return openModal(`${sheetHead(b, id === 'weapon' ? '검·단검·망치·지팡이를 팔아요. 사면 바로 장착하고, 쓰던 건 가방으로 가요.' : '모자·갑옷·신발·반지를 팔아요. 사면 바로 장착하고, 쓰던 건 가방으로 가요.')}
+      <ul class="ilist">${goods.map((it, i) => { const lock = me.lv < TIERS[it.tier].req; return row(itemIcon(it), itemName(it), itemDesc(it), lock ? `<span class="tagok">Lv.${TIERS[it.tier].req}</span>` : `<button class="mini main" data-x="buy:${i}" ${me.gold < it.price ? 'disabled' : ''}>${goldTxt(it.price)}</button>`, lock); }).join('')}</ul>
+      ${sell}<button class="close" data-close>닫기</button>`, el => wire(el, x => {
+      const [a, v] = x.split(':');
+      if (a === 'buy') { const it = goods[+v]; if (!spend(it.price)) return; it.id = itemSeq++; equipItem(it, true); logAct(`${itemName(it)} 구입 −${it.price}`); toast(`${itemIcon(it)} ${itemName(it)} 장착!`); }
+      if (a === 'sell') { const it = me.bag.find(i => i.id === +v); if (!it) return; me.bag.splice(me.bag.indexOf(it), 1); const g = Math.round(it.price * .3); me.gold += g; logAct(`${itemName(it)} 판매 +${g}`); toast(`🪙 ${g} 받았어요`); }
+      syncMe(); reopen();
+    }), keep);
+  }
+  if (id === 'smith') {
+    const eq = Object.values(me.equip).filter(Boolean), spent = me.str + me.dex + me.int + me.luk - 20, resetCost = me.lv * 100;
+    return openModal(`${sheetHead(b, '장착한 장비를 강화해요. <b>실패해도 단계가 떨어지거나 부서지지 않아요</b> (골드만 사라져요).')}
+      <ul class="ilist">${eq.map(it => { const max = it.enh >= 10, rate = ENH_RATE[it.enh], cost = TIERS[it.tier].req * ENH_COST[it.enh]; return row(itemIcon(it), itemTag(it), max ? '최대 강화 (+10)' : `+${it.enh} → +${it.enh + 1} · 성공 ${rate}%`, max ? '' : `<button class="mini main" data-x="enh:${it.id}" ${me.gold < cost ? 'disabled' : ''}>${goldTxt(cost)}</button>`); }).join('') || '<li><span></span><span class="muted">장착한 장비가 없어요</span><span></span></li>'}
+      ${row('🔄', '능력치 초기화', `찍은 포인트 ${spent}개를 돌려받아요 · ${goldTxt(resetCost)} (레벨 × 100)`, `<button class="mini" data-x="reset" ${!spent || me.gold < resetCost ? 'disabled' : ''}>초기화</button>`)}</ul>
+      <p class="muted">강화 1단계마다 장비 수치 +8%. 확률: +1 100% · +2 95% · +3 90% · +4 80% · +5 70% · +6 60% · +7 50% · +8 40% · +9 35% · +10 30%</p><button class="close" data-close>닫기</button>`, el => wire(el, x => {
+      if (x === 'reset') { if (!spend(resetCost)) return; me.points += spent; me.str = me.dex = me.int = me.luk = 5; logAct(`능력치 초기화 −${resetCost}`); toast(`포인트 ${spent}개를 돌려받았어요`); syncMe(); return reopen(); }
+      const it = eq.find(i => i.id === +x.split(':')[1]); const cost = TIERS[it.tier].req * ENH_COST[it.enh]; if (!spend(cost)) return;
+      if (Math.random() * 100 < ENH_RATE[it.enh]) { it.enh++; emote(me, '🎉'); toast(`✨ 강화 성공! ${itemName(it)}`); logAct(`${itemName(it)} 강화 성공 −${cost}`); }
+      else { emote(me, '❓'); toast('강화 실패… 단계는 그대로예요 (골드만 사용)'); logAct(`강화 실패 −${cost}`); }
+      syncMe(); reopen();
+    }), keep);
+  }
+  if (id === 'skin') {
+    return openModal(`${sheetHead(b, '겉모습만 바꾸는 스킨을 팔아요. 능력치는 없고, <b>현금 결제도 없어요.</b>')}
+      <ul class="ilist">${HATS.filter(h => h.id !== 'none').map(h => { const own = me.hats.includes(h.id), on = me.hat === h.id; return row(h.n.split(' ')[0], h.n.slice(h.n.indexOf(' ') + 1), own ? (on ? '쓰고 있어요' : '가지고 있어요') : `머리 장식 · ${goldTxt(h.price)}`, own ? `<button class="mini" data-x="wear:${h.id}">${on ? '벗기' : '쓰기'}</button>` : `<button class="mini main" data-x="buy:${h.id}" ${me.gold < h.price ? 'disabled' : ''}>${goldTxt(h.price)}</button>`); }).join('')}</ul>
+      <p class="muted">옷 무늬·무기 모양 스킨, 레벨 보상·방송 한정 스킨은 2단계에서 추가돼요.</p><button class="close" data-close>닫기</button>`, el => wire(el, x => {
+      const [a, h] = x.split(':'), hat = HATS.find(k => k.id === h);
+      if (a === 'buy') { if (!spend(hat.price)) return; me.hats.push(h); me.hat = h; logAct(`${hat.n} 구입 −${hat.price}`); toast(`${hat.n} 샀어요!`); emote(me, '❤️'); }
+      if (a === 'wear') me.hat = me.hat === h ? 'none' : h;
+      syncMe(); reopen();
+    }), keep);
+  }
   const acts = {
-    cafe: [actBtn('drink', '☕ 음료 마시기', '🪙 30 · 기분 좋아짐'), actBtn('sit', '🪑 창가 자리에 앉기', '옆에 누가 앉으면 나란히')],
-    clothes: [actBtn('style', '👕 옷 고르기', '꾸미기 열기'), actBtn('soon', '🛍️ 새 옷 구경', '다음 단계')],
-    hair: [actBtn('style', '💇 얼굴·옷 색 바꾸기', '꾸미기 열기'), actBtn('soon', '✂️ 머리 모양 바꾸기', '다음 단계')],
-    market: [actBtn('trade', '🔁 아이템 교환하기', '다른 유저와 1:1'), actBtn('soon', '🧺 구경하기', '다음 단계')],
-    station: [actBtn('live', S.live ? '📺 방송 이벤트 끄기 (미리보기)' : '📺 방송 이벤트 미리보기', '김치복 방송 중일 때'), actBtn('soon', '🎤 방송국 안 구경', '다음 단계')],
-    home1: [actBtn('home', '🏠 들어가기', '가구 배치 · 친구 초대'), actBtn('lock', '🔒 공개 설정', '잠금 / 친구만 / 모두')],
-    home2: [actBtn('knock', '🚪 노크하기', '림린이에게 알림')],
-  }[b.id] || [];
-  const desc = {
-    cafe: '앉아서 수다 떨기 좋은 곳. 마을 사람들이 제일 자주 모여요.', clothes: '캐릭터 옷을 사고 갈아입는 곳.', hair: '얼굴 색과 머리 모양을 바꾸는 곳.',
-    market: '유저끼리 아이템을 바꾸는 곳.', station: '김치복 테마 장소. 방송 중이면 마을 전체에 이벤트가 열려요.', home1: '김복단님의 집. 가구를 놓고 친구를 초대할 수 있어요.', home2: '다른 유저의 집. 주인이 "모두 공개"로 해 두면 들어갈 수 있어요.',
-  }[b.id];
-  const here = people.filter(p => Math.hypot(p.x - b.door.x * T, p.y - b.door.y * T) < 6 * T).map(p => p.name);
-  openModal(`<h3>${b.icon} ${b.name}</h3><p>${desc}</p>${here.length ? `<p class="muted">근처에 있는 사람: ${here.join(', ')}</p>` : ''}<div class="actions">${acts.join('')}</div><button class="close" data-close>닫기</button>`, el => el.querySelector('.actions').addEventListener('click', e => { const a = e.target.closest('[data-a]')?.dataset.a; if (a) doAct(a); }));
+    station: [actBtn('live', S.live ? '📺 방송 이벤트 끄기 (미리보기)' : '📺 방송 이벤트 미리보기', '방송 중엔 사냥 경험치 1.5배'), actBtn('soon', '🎤 방송국 안 구경', '다음 단계')],
+    home1: [actBtn('home', '🏠 들어가기', '가구 배치 (4단계)')],
+    home2: [actBtn('visit', '🚪 구경하러 들어가기', '집은 언제나 모두 공개')],
+  }[id] || [];
+  const desc = { station: '김치복 테마 장소. 방송 중이면 마을 전체에 이벤트가 열려요.', home1: '내 집이에요. 집은 <b>언제나 모두에게 공개</b>라서 누구나 구경 올 수 있어요.', home2: '림린이님의 집. 주인이 없어도 언제나 들어가서 구경할 수 있어요.' }[id];
+  openModal(`<h3>${b.icon} ${b.name}</h3><p>${desc}</p><div class="actions">${acts.join('')}</div><button class="close" data-close>닫기</button>`, el => el.querySelector('.actions').addEventListener('click', e => { const a = e.target.closest('[data-a]')?.dataset.a; if (a) doAct(a); }));
 }
+function equipItem(it, fromShop) {
+  if (me.lv < TIERS[it.tier].req) return toast(`Lv.${TIERS[it.tier].req}부터 낄 수 있어요`);
+  const old = me.equip[it.slot]; if (!fromShop) me.bag.splice(me.bag.indexOf(it), 1);
+  me.equip[it.slot] = it; if (old) me.bag.push(old);
+  me.hp = Math.min(me.hp, derive().maxHp); syncMe();
+}
+function unequip(slot) { const it = me.equip[slot]; if (!it) return; me.equip[slot] = null; me.bag.push(it); me.hp = Math.min(me.hp, derive().maxHp); syncMe(); }
 function openSpot(s) {
+  if (s.id === 'hunt') return openHuntSelect();
   const map = {
-    river: ['🎣 강가 선착장', '낚시하는 곳. 잡은 물고기는 도감에 모여요.', [actBtn('fish', '🎣 낚시하기', '잠깐 기다리면 입질')]],
+    river: ['🎣 강가 선착장', '낚시하는 곳. 골드를 조금 벌 수 있어요.', [actBtn('fish', '🎣 낚시하기', '잠깐 기다리면 입질')]],
     farm: ['🌾 텃밭', '씨를 심고 시간이 지나면 수확해요.', [actBtn('plant', '🌱 씨 심기', '🪙 10'), actBtn('harvest', '🧺 수확하기', '다 자란 것만')]],
-    frontier: ['🌲 개척지 가는 길', '마을 밖 숲. 돌아다니면 가끔 이상한 일이 생겨요.', [actBtn('explore', '🧭 탐험하기', '랜덤 사건')]],
-    board: ['📣 광장 전광판', S.live ? '지금 김치복 생방송 중이에요!' : '김치복 방송 일정과 공지가 나오는 전광판.', [actBtn('live', S.live ? '방송 이벤트 끄기 (미리보기)' : '방송 중 이벤트 미리보기', '목업 전용')]],
+    board: ['📣 광장 전광판', S.live ? '지금 김치복 생방송 중이에요! 사냥 경험치 1.5배' : '김치복 방송 일정과 공지가 나오는 전광판.', [actBtn('live', S.live ? '방송 이벤트 끄기 (미리보기)' : '방송 중 이벤트 미리보기', '목업 전용')]],
     fountain: ['⛲ 분수', '광장 한가운데 분수. 동전을 던지면…?', [actBtn('coin', '🪙 동전 던지기', '🪙 1')]],
   }[s.id];
   openModal(`<h3>${map[0]}</h3><p>${map[1]}</p><div class="actions">${map[2].join('')}</div><button class="close" data-close>닫기</button>`, el => el.querySelector('.actions').addEventListener('click', e => { const a = e.target.closest('[data-a]')?.dataset.a; if (a) doAct(a); }));
 }
-function addCoins(n) { me.coins += n; $('#coinChip').textContent = `🪙 ${me.coins.toLocaleString()}`; }
-function logAct(t) { S.log.unshift(t); S.log = S.log.slice(0, 6); $('#actLog').innerHTML = S.log.map(l => `<li>· ${l}</li>`).join(''); }
+function addGold(n) { me.gold += n; syncBars(); }
+function gainExp(n) {
+  me.exp += n; let up = 0;
+  while (me.lv < 100 && me.exp >= needExp(me.lv)) { me.exp -= needExp(me.lv); me.lv++; me.points += 4; up++; }
+  if (up) {
+    me.hp = derive().maxHp; emote(me, '🎉');
+    if (HT) floatText(me.x, me.y - 90, 'LEVEL UP!', '#ffd166', 22, 1.8);
+    toast(`🎉 레벨 ${me.lv}! 능력치 포인트 +${up * 4}`); sysMsg(`레벨 ${me.lv} 달성! 캐릭터창 → 능력치에서 포인트를 찍어 보세요`); logAct(`레벨 ${me.lv} 달성`);
+    if (me.lv % 10 === 0) { me.title = `🏷️ Lv.${me.lv} 달성`; toast(`🏷️ 칭호 "Lv.${me.lv} 달성"을 받았어요`); }
+    syncMe();
+  }
+}
+function logAct(t) { S.log.unshift(t); S.log = S.log.slice(0, 6); $('#actLog').innerHTML = S.log.map(l => `<li>· ${esc(l)}</li>`).join(''); }
 function doAct(a) {
   closeModal();
-  if (a === 'drink') { if (me.coins < 30) return toast('코인이 부족해요'); addCoins(-30); emote(me, '❤️'); setMood('😊 신남'); logAct('카페에서 음료 마심 −30'); toast('맛있다! 기분이 좋아졌어요'); }
-  else if (a === 'sit' || a === 'soon') toast('다음 단계에서 만들 기능이에요');
-  else if (a === 'style') openPanelTab('style');
-  else if (a === 'trade') toast('교환할 사람을 누르고 "교환하기"를 고르는 방식이에요 (다음 단계)');
+  if (a === 'soon') toast('다음 단계에서 만들 기능이에요');
   else if (a === 'live') setLive(!S.live);
-  else if (a === 'home') toast('내 집 안 화면은 다음 단계에서 만들어요');
-  else if (a === 'lock') toast('내 집 공개: 지금은 "친구만"');
-  else if (a === 'knock') { toast('똑똑! 림린이에게 알림을 보냈어요'); const r = people[0]; setTimeout(() => { say(r, '앗 지금 강가에 있어요!'); addChat({ who: r.name, text: '앗 지금 강가에 있어요!', mode: '귓속말', whisper: true }); }, 1400); }
+  else if (a === 'home') toast('내 집 안 화면은 4단계에서 만들어요');
+  else if (a === 'visit') toast('림린이님 집에 들어왔어요 (집 안 화면은 4단계). 주인이 없어도 언제나 구경 가능');
   else if (a === 'fish') {
-    setMood('🎣 낚시중'); say(me, '…', 2000); toast('찌를 던졌어요…');
-    setTimeout(() => { const [e, n] = FISH[Math.floor(Math.random() * FISH.length)]; const isNew = !S.dex.has(e); S.dex.add(e); const c = n === '낡은 장화' ? 0 : 15 + Math.floor(Math.random() * 30); addCoins(c); emote(me, n === '낡은 장화' ? '❓' : '🎉'); renderDex(); renderBag(); logAct(`${e} ${n} 낚음${c ? ` +${c}` : ''}`); toast(`${e} ${n}을(를) 낚았어요!${isNew ? ' (도감 새로 등록)' : ''}${c ? ` 🪙 +${c}` : ''}`); }, 1800);
+    say(me, '…', 2000); toast('찌를 던졌어요…');
+    setTimeout(() => { const [e, n] = pick(FISH); const c = n === '낡은 장화' ? 0 : 15 + Math.floor(Math.random() * 30); addGold(c); emote(me, c ? '🎉' : '❓'); logAct(`${e} ${n} 낚음${c ? ` +${c}` : ''}`); toast(`${e} ${n}을(를) 낚았어요!${c ? ` 🪙 +${c}` : ''}`); }, 1800);
   }
-  else if (a === 'plant') { if (me.coins < 10) return toast('코인이 부족해요'); addCoins(-10); logAct('텃밭에 씨 심음 −10'); toast('🌱 씨를 심었어요. 실제 게임에서는 몇 시간 뒤에 자라요'); }
-  else if (a === 'harvest') { addCoins(40); logAct('🥬 배추 수확 +40'); toast('🥬 배추를 수확했어요! 🪙 +40'); emote(me, '🎉'); }
-  else if (a === 'explore') { const ev = ['낡은 상자를 발견했다. 안에 🪙 25가 들어 있었다!', '멀리서 이상한 기계 소리가 들린다… 일단 돌아가자.', '야생 토끼가 따라온다. 귀엽다.', '버려진 캠프에서 🧶 천 조각을 주웠다.', '갑자기 비가 쏟아졌다. 흠뻑 젖었다.']; const pick = ev[Math.floor(Math.random() * ev.length)]; if (pick.includes('25')) addCoins(25); logAct('개척지 탐험'); openModal(`<h3>🧭 개척지 사건</h3><p>${pick}</p><button class="btn main" data-close>마을로 돌아가기</button>`); }
-  else if (a === 'coin') { if (me.coins < 1) return; addCoins(-1); toast(Math.random() < .2 ? '✨ 소원이 이루어질 것 같은 기분!' : '퐁당! 아무 일도 없었다'); }
+  else if (a === 'plant') { if (!spend(10)) return; logAct('텃밭에 씨 심음 −10'); toast('🌱 씨를 심었어요. 실제 게임에서는 몇 시간 뒤에 자라요'); }
+  else if (a === 'harvest') { addGold(40); logAct('🥬 배추 수확 +40'); toast('🥬 배추를 수확했어요! 🪙 +40'); emote(me, '🎉'); }
+  else if (a === 'coin') { if (!spend(1)) return; toast(Math.random() < .2 ? '✨ 소원이 이루어질 것 같은 기분!' : '퐁당! 아무 일도 없었다'); }
 }
-function setLive(on) { S.live = on; $('#liveBanner').hidden = !on; toast(on ? '방송 중 이벤트 미리보기: 전광판과 방송국 안테나가 켜졌어요' : '방송 이벤트 미리보기를 껐어요'); if (on) people.forEach((p, i) => setTimeout(() => { walkTo(p, 16 + (i % 4) * 2, 11 + Math.floor(i / 4)); emote(p, '🎉'); }, i * 300)); }
+function setLive(on) { S.live = on; $('#liveBanner').hidden = !on; toast(on ? '방송 중 이벤트 미리보기: 전광판이 켜지고 사냥 경험치 1.5배' : '방송 이벤트 미리보기를 껐어요'); if (on) people.forEach((p, i) => setTimeout(() => { walkTo(p, 16 + (i % 4) * 2, 11 + Math.floor(i / 4)); emote(p, '🎉'); }, i * 300)); }
 
-// ───────── 프로필 카드 · 신고 ─────────
+// ───────── 프로필 카드 · 신고 (귓속말·친구·선물·거래 없음) ─────────
 function openProfile(p) {
-  const fr = S.friends.includes(p.name);
-  openModal(`<div class="prof"><canvas id="profCv"></canvas><div><h3>${p.name}</h3><div class="row" style="justify-content:flex-start"><span class="badge">${p.title}</span><span class="badge">${p.mood}</span></div><p class="muted" style="margin-top:6px">${p.intro}</p></div></div>
+  const gear = Object.values(p.equip).filter(Boolean);
+  openModal(`<div class="prof"><canvas id="profCv"></canvas><div><h3><span class="lv">Lv.${p.lv}</span>${p.name}</h3><div class="row" style="justify-content:flex-start"><span class="badge">${p.title}</span></div><p class="muted" style="margin-top:6px">${p.intro}</p></div></div>
+    <ul class="ilist">${gear.map(it => row(itemIcon(it), itemTag(it), itemDesc(it), '')).join('')}</ul>
     <div class="actions">
-      <button class="btn" data-p="friend">${fr ? '✓ 친구예요' : '➕ 친구 추가'}<small>${fr ? '어디 있는지 보여요' : ''}</small></button>
-      <button class="btn" data-p="whisper">🤫 귓속말 보내기</button>
+      <button class="btn" data-p="home">🏠 집 구경 가기<small>집은 언제나 모두 공개</small></button>
       <button class="btn" data-p="wave">👋 손 흔들어 인사</button>
-      <button class="btn" data-p="gift">🎁 선물 주기<small>가방에서 고르기</small></button>
       <button class="btn" data-p="block">🙈 차단하기<small>말과 캐릭터가 안 보여요</small></button>
       <button class="btn" data-p="report" style="color:var(--kimchi)">🚨 신고하기</button>
     </div><button class="close" data-close>닫기</button>`, el => {
     portrait(el.querySelector('#profCv'), p, 2.1);
     el.querySelector('.actions').addEventListener('click', e => {
       const a = e.target.closest('[data-p]')?.dataset.p; if (!a) return;
-      if (a === 'friend') { if (!fr) { S.friends.push(p.name); renderFriends(); toast(`${p.name}님을 친구로 추가했어요`); } closeModal(); }
-      else if (a === 'whisper') { closeModal(); setChatMode('whisper', p.name); $('#chatIn').focus(); }
+      if (a === 'home') { closeModal(); toast(`${p.name}님 집으로 이동했어요 (집 안 화면은 4단계)`); }
       else if (a === 'wave') { closeModal(); emote(me, '👋'); setTimeout(() => emote(p, '👋'), 700); }
-      else if (a === 'gift') { closeModal(); toast('🎁 선물 주기는 다음 단계에서 만들어요'); }
       else if (a === 'block') { S.blocked.add(p.name); closeModal(); toast(`${p.name}님을 차단했어요. 설정에서 풀 수 있어요`); }
       else if (a === 'report') openReport(p);
     });
@@ -812,8 +1244,16 @@ function openReport(p) {
 }
 
 // ───────── 채팅 + 규칙 ─────────
-const BAD_SOFT = ['바보', '멍청', '찐따', '닥쳐', 'ㅂㅅ', 'ㅅㅂ', '시발', '씨발', '병신', '좆', 'fuck', 'shit'];   // *** 로 가림
-const BAD_HARD = ['니애미', '느금', '패드립'];                                                                      // 아예 안 보내지고 경고 (목업용 예시)
+// 금칙어 (plan/chat-banwords.txt). soft = ***로 가림 / hard = 안 보내지고 경고 / ambig = 평범한 말에도 들어 있어서 앞뒤를 보고 판단
+// 실제 게임에서는 이 목록이 서버에만 있어요 (화면 코드에 안 보임)
+const BAD = {"soft": ["씨발", "시발", "쉬발", "싀발", "쓰발", "스발", "쒸발", "쓔발", "슈발", "쑤발", "쑈발", "씨바", "쉬바", "싀바", "쓰바", "슈바", "쒸바", "씨빨", "시빨", "쉬빨", "싀빨", "쓰빨", "스빨", "쒸빨", "쓔빨", "슈빨", "쑤빨", "씨벌", "시벌", "쉬벌", "싀벌", "쓰벌", "스벌", "슈벌", "쒸벌", "씨펄", "시펄", "쉬펄", "쓰펄", "스펄", "슈펄", "씨팔", "시팔", "쉬팔", "쓰팔", "스팔", "슈팔", "쒸팔", "씨뻘", "시뻘", "쉬뻘", "씨붤", "시붤", "씨부랄", "시부랄", "씨부럴", "시부럴", "씨부레", "시부레", "씨부렁", "시부렁", "씨부엉", "시부엉", "씨부리", "시부리", "쉬방", "쓰방", "쒸방", "씨봉", "쉬봉", "씨발련", "시발련", "씨발놈", "시발놈", "씨발년", "시발년", "씨발새끼", "시발새끼", "씨발럼", "시발럼", "씨발롬", "시발롬", "씨발것", "시발것", "씨발꺼", "시발꺼", "씨바새끼", "시바새끼", "시벌탱", "씨벌탱", "시부랄탱", "씨부랄탱", "시팔탱", "씨팔탱", "씨발탱", "씨발탱이", "시발탱이", "시발넘", "씨발넘", "시벌넘", "씨벌넘", "씹발", "씹벌", "씹팔", "씹펄", "씹바", "씹빨", "씨이발", "시이발", "씨이이발", "시이이발", "씨뱔", "시뱔", "씨뺠", "시뺠", "씨뽈", "시뽈", "시부랄놈", "씨부랄놈", "개새끼", "개색기", "개색끼", "개세끼", "개세키", "개쉐끼", "개쉐키", "개쉑끼", "개시끼", "개쉐리", "개쌔끼", "개쌔키", "개샛기", "개샛끼", "개잡놈", "개잡년", "개좆", "개씨발", "개시발", "개씹", "개병신", "개븅신", "개빙신", "개쌍놈", "개쌍년", "개새꺄", "개새캬", "병신", "븅신", "빙신", "뱅신", "벵신", "뵹신", "뿅신", "붕신", "뼝신", "병씬", "븅씬", "빙씬", "병싄", "병시나", "병시니", "병쉰", "븅쉰", "빙쉰", "븅진", "빙진", "병딱", "븅딱", "빙딱", "병시이인", "병시인", "병시니깐", "병신새끼", "븅신새끼", "빙신새끼", "병신년", "븅신년", "빙신년", "병신놈", "븅신놈", "빙신놈", "병신련", "븅신련", "빙신련", "좆", "좃", "졷", "죶", "죳", "좉", "좊", "좝", "좟", "좆나", "좃나", "존나", "젼나", "젼니", "존니", "존내", "존누", "좆같", "좃같", "좇같", "졷같", "좆가튼", "좃가튼", "좆가타", "좃가타", "좆같아", "좆같네", "좆같다", "좆같음", "좆같은", "좆같이", "좆까", "좃까", "좆까라", "좃까라", "좆까고", "좆까네", "좆까는", "좆까세요", "좆까셈", "좆까렴", "좆망", "좃망", "좆망겜", "좆밥", "좃밥", "좆빱", "좃빱", "좆나게", "좆나리", "좆도", "좃도", "좆만", "좃만", "좆만한", "좆만이", "좆만아", "좆새끼", "좆같은새끼", "좆같은놈", "좆같은년", "좆털", "좆물", "좆대가리", "좆잡고", "좆빠", "좆빠는", "좆박", "씹새끼", "씹색끼", "씹색기", "씹세끼", "씹세키", "씹쉐끼", "씹쉐키", "씹쌔끼", "씹쌔키", "씹년", "씹놈", "씹넘", "씹련", "씹럼", "씹롬", "씹창", "씹창남", "씹창났다", "씹창났네", "씹까", "씹까라", "씹같네", "씹같다", "씹같은", "씹같아", "씹질", "씹물", "씹자지", "씹보지", "씹빠", "씹빨아", "씹지랄", "씹쌔", "지랄", "지럴", "지롤", "지룰", "지랄염병", "지랄병", "지랄하네", "지랄하냐", "지랄한다", "지랄마", "지랄하지마", "지랄떠네", "지랄맞네", "지랄맞다", "지랄났네", "지랄났냐", "지럴병", "지롤병", "지럴하네", "지롤하네", "쥐랄", "쥐럴", "쥐롤", "쥐룰", "쥘알", "쥘랄", "쥘럴", "쥐랄병", "쥐랄하네", "쟈랄", "졀랄", "쌍놈의새끼", "쌍년의새끼", "보쥐", "보즤", "보쥐이", "보지년", "보지련", "보짓물", "보지물", "보빨", "보빨러", "보빨남", "보빨충", "자쥐", "자즤", "자쥐이", "자지털", "자지물", "고추빨", "고추물", "고추빨아", "꼬치빨아", "꼬추빨아", "입에싸", "얼굴에싸", "입싸", "노콘", "콘돔없이", "섹스", "쎅스", "쌕스", "쎅쓰", "섹쓰", "쎅수", "섹수", "쎽스", "색스", "색쓰", "쌕쓰", "쌕쑤", "쎅쑤", "쎾스", "셋스", "색수", "항문섹스", "애널섹스", "오럴섹스", "펠라치오", "커닐링구스", "딥스로트", "핸드잡", "풋잡", "블로우잡", "딸딸이", "딸치기", "딸쳐", "딸치다", "딸감", "딸잡이", "자위질", "오나니", "오나홀", "딜도", "야동", "야설", "야짤", "야겜", "포르노", "포르노영상", "포르노사이트", "벗방", "벗짤", "노출방송", "가슴까", "젖탱이", "젖통", "빨통", "빨가슴", "엉덩이까", "섹드립", "섹파", "섹파트너", "창녀", "창년", "챙녀", "챙년", "창놈", "걸레년", "걸레같은년", "걸레같은놈", "먹버", "발정남", "발정녀", "발정났다", "풀발기", "꼴린다", "꼴릿", "꼴림", "꼴리네", "꼴리냐", "음탕한년", "음탕한놈", "발빨아", "아가리닥쳐", "아갈닥쳐", "주둥이닥쳐", "입쳐닫아", "쳐꺼져", "뒤져라", "뒤지고싶냐", "뒤질래", "뒤질거냐", "뒤졌으면", "죽어버려", "죽어버렸으면", "염병", "염병하네", "염병한다", "염병떨고", "옘병", "옘병하네", "엠병", "엠병하네", "썅", "썅년", "썅놈", "썅넘", "썅련", "쌍년", "쌍놈", "쌍넘", "쌍련", "썅것", "썅노무", "썅놈의", "미친놈", "미친년", "미친새끼", "미친색기", "미친색끼", "미친병신", "미친븅신", "미친넘", "미친련", "미친놈아", "미친년아", "장애새끼", "장애년", "장애놈", "장애충", "장애있냐", "장애냐", "저능아새끼", "저능아년", "저능아놈", "쓰레기새끼", "쓰레기년", "쓰레기놈", "벌레새끼", "벌레년", "벌레놈", "기생충새끼", "기생충년", "기생충놈", "구더기새끼", "역겨운새끼", "역겨운년", "역겨운놈", "씹극혐", "ㅅㅂ", "ㅆㅂ", "ㅅㅍ", "ㅆㅍ", "ㅅㅂㄹ", "ㅆㅂㄹ", "ㅅㅂㄴ", "ㅆㅂㄴ", "ㅅㅂㅅㄲ", "ㅆㅂㅅㄲ", "ㅂㅅ", "ㅄ", "ㅂㅅㄴ", "ㅂㅅㅅㄲ", "ㅂㅅㄲ", "ㅈㄹ", "ㅈㄴ", "ㅈㄲㄹ", "ㄱㅅㄲ", "ㄱㅅㄱ", "ㄱㅆㄲ", "ㄱㅂㅅ", "ㄱㅈㄹ", "ㄱㅆㅂ", "ㄱㅅㅂ", "ㄱㅆㅍ", "ㅁㅊㅅㄲ", "ㅆㅅㄲ", "ㅆㅂㅅㅋ"], "hard": ["좆박아", "느금마", "느그엄마", "느그애미", "느그어미", "느금", "느금마창녀", "니엄마뒤짐", "니엄마죽음", "니애미뒤짐", "니애미죽음", "니엄마창녀", "니애미창녀", "니애미보지", "니엄마보지", "니엄마걸레", "니애미걸레", "니애미없냐", "니엄마없냐", "애미없냐", "에미없냐", "애비없냐", "애미뒤진", "에미뒤진", "애비뒤진", "부모뒤진", "엄마뒤진", "아빠뒤진", "애미뒤졌냐", "에미뒤졌냐", "애비뒤졌냐", "부모뒤졌냐", "고아새끼", "고아년", "고아놈", "호로새끼", "호로자식", "호로잡놈", "호로잡년", "후레자식", "후레새끼", "후레년", "후레놈", "애미터진", "에미터진", "애비터진", "엄마터진", "부모터진", "애미리스", "에미리스", "애비리스", "엄마리스", "애미뒤", "에미뒤", "애비뒤", "엄뒤", "앰뒤", "엠뒤", "애뒤", "에뒤", "애미창년", "에미창년", "정액먹어", "정액싸", "정액발사", "사정시켜", "질싸", "질내사정", "질외사정", "안에싸줘", "떡치자", "떡치기", "떡쳐", "떡치고", "떡칠래", "떡치고싶다", "야스하자", "야쑤하자", "가슴보여줘", "가슴보여", "찌찌보여줘", "엉덩이보여줘", "팬티보여줘", "속옷보여줘", "팬티벗어", "옷벗어", "벗어봐", "벗어라", "벗고와", "다벗어", "몸매보여줘", "몸캠하자", "영통야스", "폰섹", "폰섹스", "조건만남", "조건녀", "조건남", "성매매", "성매수", "성판매", "매춘부", "육변기", "성노예", "강간해", "강간한다", "강간하고싶다", "박아줘", "박아버려", "박아줄게", "박히고싶다", "쑤셔넣어", "쑤셔줄게", "빨아줘", "핥아줘", "핥고싶다", "허벅지핥아", "발핥아", "겨드랑이핥아", "죽이고싶다", "죽여버린다", "죽여줄게", "죽여버릴거야", "살인해버린다", "패죽인다", "패죽일", "쳐죽인다", "쳐죽일", "때려죽인다", "때려죽일", "찢어죽인다", "찢어죽일", "목따버린다", "대가리깨버린다", "머리깨버린다", "눈깔뽑아", "눈깔뽑는다", "니미럴", "니미랄", "니미럴씨발", "니미씹", "니미좆", "니미럴놈", "니미랄놈", "ㄴㄱㅁ", "ㄴㅇㅁ", "ㄴㄱㅇㅁ", "ㄴㄱㅇㅂ", "ㅇㅁㄷㅈ", "ㅇㅂㄷㅈ", "ㅇㅁㄹㅅ", "ㅇㅁㅌㅈ", "ㅇㅂㅌㅈ"], "ambig": ["보지", "보짓", "자지", "자짓", "시바", "스바", "시방", "씨방", "시봉", "병진", "좇", "사정해", "사정하자", "안에싸", "밖에싸", "얼싸", "배싸", "속싸", "야사", "포노", "죽어라", "니미", "존네", "따먹", "따먹어", "따먹고", "따먹자", "꼴려", "개시키"]};
+BAD.soft.push('fuck', 'shit', '닥쳐', '찐따'); BAD.hard.push('니애미', '니엄마', '느그애비');
+// 금칙어가 안에 들어 있어도 평범한 단어
+const ALLOW = ['시바견', '시바이누', '땅따먹기', '따먹기', '사정이', '사정상', '사정을', '사정은', '사정해주', '사정해서', '사정하자면', '얼싸안', '얼싸좋', '배싸움', '속싸개', '시방서', '병진년', '꿈을좇', '좇아', '좇는', '좇던', '좇으', '보지않', '보지못', '보지마', '보지말', '자지마', '자지말', '자지않', '자지못'];
+// 문맥 단어 바로 뒤가 이 글자면 평범한 말 (보지마세요, 보지도, 보지는, 자지요…)
+const AMBIG_NEXT = /^[마말않못도는만요며고네나니죠지롱말]/;
+// 문맥 단어 바로 앞이 이 글자면 평범한 말 (안 보지, 해보지, 가보지, 와보지…)
+const AMBIG_PREV = /[안못잘해가와봐서려어아워져다]$/;
 const ALLOW_LINKS = ['youtube.com/@김치복', 'youtube.com', 'youtu.be', 'chzzk.naver.com', 'cafe.naver.com/kimchibok', 'discord.com/channels/1197441179197915136'];
 const LINK_RE = /(https?:\/\/\S+|www\.\S+|\b[\w-]+\.(com|net|kr|io|gg|me|co|org|xyz|ly)\b\S*)/ig;
 const WARN_RESET = '경고는 7일 지나면 하나씩 사라져요';
@@ -822,11 +1262,37 @@ function normalize(text) {   // 띄어쓰기·특수문자·숫자를 빼고 비
   [...text].forEach((ch, i) => { if (/[\p{L}]/u.test(ch)) { keep.push(ch.toLowerCase()); idx.push(i); } });
   return { s: keep.join(''), idx };
 }
-function maskBad(text) {
-  const chars = [...text]; const { s, idx } = normalize(text); let hit = false;
-  for (const w of BAD_SOFT) { let from = 0, k; while ((k = s.indexOf(w, from)) !== -1) { hit = true; for (let j = idx[k]; j <= idx[k + w.length - 1]; j++) chars[j] = '*'; from = k + w.length; } }
-  return { text: chars.join(''), hit };
+// 금칙어 검사
+// 1) 띄어쓰기·기호를 빼고 붙여서 검사 → "씨 발", "시.발"도 잡음
+// 2) 단, 띄어쓰기를 넘어 걸친 경우는 "한 글자씩 띄운 것"일 때만 잡음 → "이 병 신기해"는 통과
+// 3) 문맥 단어(보지·자지·시바 등)는 한 단어 안에서만, 앞뒤 글자를 보고 판단 → "보지 마세요"는 통과
+function scanBad(text) {
+  const chars = [...text], s = [], idx = [], wid = []; let w = 0;
+  chars.forEach((ch, i) => { if (/\s/.test(ch)) { if (wid.length && wid[wid.length - 1] === w) w++; return; } if (/\p{L}/u.test(ch)) { s.push(ch.toLowerCase()); idx.push(i); wid.push(w); } });
+  const str = s.join(''), first = {}, last = {};
+  wid.forEach((x, k) => { if (first[x] === undefined) first[x] = k; last[x] = k; });
+  const prot = new Uint8Array(s.length);
+  const findAll = word => { const r = []; let k = str.indexOf(word); while (k !== -1) { r.push(k); k = str.indexOf(word, k + 1); } return r; };
+  for (const a of ALLOW) for (const k of findAll(a)) for (let j = k; j < k + a.length; j++) prot[j] = 1;
+  const ok = (k, len, ambig) => {
+    const e = k + len - 1;
+    for (let j = k; j <= e; j++) if (prot[j]) return false;
+    if (wid[k] !== wid[e]) {
+      if (ambig) return false;
+      if (first[wid[k]] !== k) return false;              // 앞 단어는 통째로 들어가야 함
+      if (last[wid[e]] !== e && len < 3) return false;    // 짧은 말인데 뒷 단어가 이어지면 평범한 말
+    }
+    if (ambig && (AMBIG_NEXT.test(str[e + 1] || '') || AMBIG_PREV.test(str[k - 1] || ''))) return false;
+    return true;
+  };
+  let hit = false, hard = false;
+  const mask = (k, len) => { hit = true; for (let j = idx[k]; j <= idx[k + len - 1]; j++) if (!/\s/.test(chars[j])) chars[j] = '*'; };
+  for (const word of BAD.hard) for (const k of findAll(word)) if (ok(k, word.length, false)) hard = true;
+  for (const word of BAD.soft) for (const k of findAll(word)) if (ok(k, word.length, false)) mask(k, word.length);
+  for (const word of BAD.ambig) for (const k of findAll(word)) if (ok(k, word.length, true)) mask(k, word.length);
+  return { text: chars.join(''), hit: hit || hard, hard };
 }
+const maskBad = scanBad;
 function filterMessage(raw) {
   let text = raw.trim().replace(/\s+/g, ' ');
   const notes = [];
@@ -834,8 +1300,7 @@ function filterMessage(raw) {
   if ([...text].length > 60) return { ok: false, why: '한 번에 60글자까지 보낼 수 있어요' };
   // 같은 글자 10번 넘게 반복 → 10개로
   const before = text; text = text.replace(/(.)\1{10,}/gu, (m, c) => c.repeat(10)); if (text !== before) notes.push('반복 글자를 10개로 줄였어요');
-  const { s } = normalize(text);
-  if (BAD_HARD.some(w => s.includes(w))) { S.warns++; return { ok: false, warn: true, why: `아주 심한 말은 보낼 수 없어요. 경고 ${S.warns}/3` }; }
+  if (scanBad(text).hard) { S.warns++; return { ok: false, warn: true, why: `아주 심한 말은 보낼 수 없어요. 경고 ${S.warns}/3` }; }
   // 링크
   let linkBlocked = false;
   text = text.replace(LINK_RE, m => { if (ALLOW_LINKS.some(a => m.toLowerCase().includes(a.toLowerCase()))) return m; linkBlocked = true; return ''; });
@@ -860,8 +1325,7 @@ function trySend(raw) {
   const recent = S.lastMsgs.slice(-2);
   if (recent.length === 2 && recent.every(x => x === r.text)) return sysMsg('같은 말을 3번 연속 보낼 수 없어요');
   S.lastMsgs.push(r.text); S.lastMsgs = S.lastMsgs.slice(-5); S.sent.push(now);
-  if (S.chatMode === 'whisper') { if (!S.whisperTo) return sysMsg('귓속말 상대를 먼저 골라 주세요 (캐릭터를 누르고 "귓속말")'); addChat({ who: `나 → ${S.whisperTo}`, text: r.text, mode: '귓속말', whisper: true }); }
-  else { say(me, r.text); addChat({ who: me.name, text: r.text, mode: S.chatMode === 'all' ? '전체' : '근처', mine: true }); }
+  { say(me, r.text); addChat({ who: me.name, text: r.text, mode: S.chatMode === 'all' ? '전체' : '근처', mine: true }); }
   r.notes.forEach(n => sysMsg(n));
   return true;
 }
@@ -869,15 +1333,15 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 function addChat(m) {
   const li = document.createElement('li');
   if (m.sys) { li.className = 'sys'; li.textContent = `⚠️ ${m.text}`; }
-  else { if (m.whisper) li.className = 'whisper'; li.innerHTML = `<span class="tag">${m.mode}</span><b>${esc(m.who)}</b> ${esc(m.text)}`; }
+  else { li.innerHTML = `<span class="tag">${m.mode}</span><b>${esc(m.who)}</b> ${esc(m.text)}`; }
   const log = $('#chatLog'); log.append(li); while (log.children.length > 80) log.firstChild.remove(); log.scrollTop = log.scrollHeight;
   const f = $('#feed'); const fl = li.cloneNode(true); f.append(fl); while (f.children.length > 4) f.firstChild.remove(); setTimeout(() => fl.remove(), 6000);
 }
 function sysMsg(t) { addChat({ sys: true, text: t }); return false; }
-function setChatMode(mode, to) {
-  S.chatMode = mode; if (to) S.whisperTo = to;
+function setChatMode(mode) {
+  S.chatMode = mode;
   $$('#chatTabs [data-c]').forEach(b => b.setAttribute('aria-selected', b.dataset.c === mode));
-  $('#chatIn').placeholder = mode === 'all' ? '마을 전체에 말하기' : mode === 'whisper' ? (S.whisperTo ? `${S.whisperTo}님에게 귓속말` : '귓속말 상대를 먼저 고르세요') : '근처 사람에게 말하기';
+  $('#chatIn').placeholder = mode === 'all' ? '마을 전체에 말하기' : '근처 사람에게 말하기';
 }
 $('#chatTabs').addEventListener('click', e => { const c = e.target.closest('[data-c]')?.dataset.c; if (c) setChatMode(c); });
 $('#chatIn').addEventListener('input', e => { const n = [...e.target.value].length; $('#chatCount').textContent = `${n}/60`; $('#chatCount').classList.toggle('full', n >= 60); $('#chatCount').classList.toggle('near', n >= 45); });
@@ -891,46 +1355,91 @@ $('#rulesBtn').onclick = () => openModal(`<h3>💬 채팅 규칙</h3><div style=
   <tr><td>금지어</td><td>욕설·비하는 ***로 가려요. 아주 심한 말은 안 보내지고 경고</td></tr><tr><td>경고</td><td>3번 → 10분, 또 3번 → 1시간, 또 3번 → 24시간 채팅 금지</td></tr>
   <tr><td>링크</td><td>인터넷 주소 금지 (김치복 공식 링크만 가능)</td></tr><tr><td>개인정보</td><td>전화번호·이메일은 자동으로 가려요</td></tr>
   <tr><td>새 계정</td><td>가입 후 10분은 근처 대화만</td></tr><tr><td>신고</td><td>김치복님이 직접 확인하고 처리해요</td></tr></tbody></table></div>
-  <p class="muted">시험해 보기: "ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ", "바 보", "010-1234-5678", "www.abc.com" 을 보내 보세요.</p><button class="btn main" data-close>알겠어요</button>`);
+  <p class="muted">시험해 보기: "ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ", "씨 발", "보지 마세요"(통과), "다시 바다"(통과), "010-1234-5678", "www.abc.com" 을 보내 보세요.</p><button class="btn main" data-close>알겠어요</button>`);
 
-// ───────── 캐릭터창 ─────────
-function setMood(m) { me.mood = m; $('#moodSel').value = m; syncMe(); }
-$('#moodSel').onchange = e => { me.mood = e.target.value; syncMe(); };
+// ───────── 캐릭터창: 능력치 · 장비 · 스킨 · 가방 ─────────
 function syncMe() {
   $('#meName').textContent = me.name; $('#peekName').textContent = me.name; $('#meTitle').textContent = me.title; $('#meIntro').textContent = me.intro;
-  $('#peekSub').textContent = `${me.title} · ${me.mood}`;
+  $('#meLv').textContent = `Lv.${me.lv}`; $('#peekLv').textContent = `Lv.${me.lv}`;
   portrait($('#meCanvas'), me, 3); portrait($('#peekCanvas'), me, .82);
+  renderStats(); renderEquip(); renderSkins(); renderBag(); syncBars();
 }
+// 자주 바뀌는 숫자 (체력·경험치·골드·사냥 상황)
+function syncBars() {
+  const D = derive(), hp = Math.max(0, Math.round(me.hp)), need = needExp(me.lv), pe = Math.min(100, me.exp / need * 100);
+  $('#hpFill').style.width = `${hp / D.maxHp * 100}%`; $('#hpText').textContent = `체력 ${hp.toLocaleString()} / ${D.maxHp.toLocaleString()}`;
+  $('#expFill').style.width = `${pe}%`; $('#expText').textContent = `경험치 ${me.exp.toLocaleString()} / ${need.toLocaleString()} (${pe.toFixed(1)}%)`;
+  $('#peekHp').style.width = `${hp / D.maxHp * 100}%`; $('#peekExp').style.width = `${pe}%`;
+  $('#peekPts').hidden = !me.points; $('#peekPts').textContent = `+${me.points}`;
+  $('#coinChip').textContent = goldTxt(me.gold); $('#bagGold').textContent = me.gold.toLocaleString();
+  if ($('#ptsLeft').textContent !== String(me.points)) renderStats();
+  if (HT) {
+    const sec = Math.floor((performance.now() - HT.t0) / 1000), b = Math.max(0, Math.ceil(HT.bossLeft)), boss = HT.mons.find(m => m.boss && !m.dead);
+    $('#hbTime').textContent = `자동 사냥 ${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+    $('#hbKills').textContent = HT.kills; $('#hbExp').textContent = `+${HT.exp.toLocaleString()}`; $('#hbGold').textContent = `+${HT.gold.toLocaleString()}`; $('#hbDrops').textContent = HT.drops.length;
+    $('#hbBoss').textContent = boss ? `👑 ${boss.d.n} 등장 중!` : `👑 보스까지 ${Math.floor(b / 60)}:${String(b % 60).padStart(2, '0')}`;
+    $('#hbPots').textContent = `🥤 ${me.pots.s} · 🧋 ${me.pots.l} · 🍹 ${me.pots.xl}`;
+  }
+}
+function renderStats() {
+  const D = derive();
+  $('#ptsLeft').textContent = me.points;
+  $('#statRows').innerHTML = Object.entries(STATS).map(([k, s]) => `<div class="stat"><span><b>${s.i} ${s.n}</b><small>${s.d}</small></span><span class="val">${D[k]}${D.b[k] ? `<em> (+${D.b[k]})</em>` : ''}</span><button class="plus" data-s="${k}" aria-label="${s.n} 올리기" ${me.points ? '' : 'disabled'}>+</button></div>`).join('');
+  const rows = [['공격력', D.atk], ['방어력', D.def], ['최대 체력', D.maxHp.toLocaleString()], ['공격 간격', `${D.gap.toFixed(2)}초`], ['치명타', `${D.crit.toFixed(1)}%`], ['회피', `${D.eva.toFixed(1)}%`], ['필살기 확률', `${D.sp.toFixed(1)}%`], ['필살기 피해', `×${D.spMul.toFixed(2)}`], ['골드 보너스', `+${D.goldB.toFixed(1)}%`], ['드랍 보너스', `+${D.dropB.toFixed(1)}%`]];
+  $('#derived').innerHTML = rows.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('');
+}
+$('#statRows').addEventListener('click', e => { const k = e.target.closest('[data-s]')?.dataset.s; if (!k || !me.points) return; me[k]++; me.points--; renderStats(); syncBars(); });
+function renderEquip() {
+  $('#equipList').innerHTML = Object.entries(SLOTS).map(([k, s]) => { const it = me.equip[k]; return it ? row(itemIcon(it), itemTag(it), `<b class="slotname">${s.n}</b> · ${itemDesc(it)}`, `<button class="mini" data-u="${k}">빼기</button>`) : row(s.i, `<span class="muted">비어 있음</span>`, `<b class="slotname">${s.n}</b>`, '', true); }).join('');
+}
+$('#equipList').addEventListener('click', e => { const k = e.target.closest('[data-u]')?.dataset.u; if (k) unequip(k); });
+function renderSkins() {
+  $('#hatList').innerHTML = HATS.filter(h => me.hats.includes(h.id)).map(h => `<button type="button" data-h="${h.id}" aria-pressed="${me.hat === h.id}">${h.n}</button>`).join('');
+}
+$('#hatList').addEventListener('click', e => { const h = e.target.closest('[data-h]')?.dataset.h; if (h) { me.hat = h; syncMe(); } });
 function swatches(el, list, key, after) {
   el.innerHTML = list.map(c => `<button type="button" style="background:${c}" aria-label="색 ${c}" aria-pressed="${me[key] === c}" data-c="${c}"></button>`).join('');
-  el.onclick = e => { const c = e.target.closest('[data-c]')?.dataset.c; if (!c) return; me[key] = c; $$(`[data-sw="${key}"] button, #${el.id} button`).forEach(b => b.setAttribute('aria-pressed', b.dataset.c === c)); after(); };
+  el.onclick = e => { const c = e.target.closest('[data-c]')?.dataset.c; if (!c) return; me[key] = c; $$(`#${el.id} button`).forEach(b => b.setAttribute('aria-pressed', b.dataset.c === c)); after(); };
 }
 function renderBag() {
-  const items = [['🪙', me.coins], ['🎣', 1], ['🌱', 3], ['🧶', 1], ...[...S.dex].filter(e => e !== '👢').map(e => [e, 1])];
-  $('#bag').innerHTML = items.slice(0, 12).map(([e, n]) => `<li title="${e}">${e}<small>${n > 999 ? Math.floor(n / 1000) + 'k' : n}</small></li>`).join('');
+  const P = [['s', '🥤', '작은 음료', '체력 +50'], ['l', '🧋', '큰 음료', '체력 +200'], ['xl', '🍹', '특대 음료', '최대 체력의 50%']];
+  $('#potList').innerHTML = P.map(([k, ic, n, d]) => row(ic, `${n} × ${me.pots[k]}`, d, '')).join('');
+  $('#bagCount').textContent = `${me.bag.length}개`;
+  $('#bagList').innerHTML = me.bag.length ? me.bag.map(it => row(itemIcon(it), itemTag(it), itemDesc(it), `<button class="mini main" data-e="${it.id}" ${me.lv < TIERS[it.tier].req ? 'disabled' : ''}>장착</button>`)).join('') : '<li><span></span><span class="muted">사냥터에서 주운 장비가 여기에 모여요. 팔기는 무기점·방어구점에서.</span><span></span></li>';
 }
-function renderDex() { $('#dex').innerHTML = FISH.map(([e, n]) => `<li title="${S.dex.has(e) ? n : '아직 못 잡음'}">${S.dex.has(e) ? e : '❔'}</li>`).join(''); $('#dexCount').textContent = `${S.dex.size}/${FISH.length}`; }
-function renderFriends() {
-  $('#friends').innerHTML = S.friends.map(n => { const p = people.find(x => x.name === n); return `<li><span class="dot"></span><b>${n}</b><span class="where">${p ? '접속 중' : '오프라인'}</span></li>`; }).join('') + `<li><span class="dot off"></span><b>풀치복팬</b><span class="where">3시간 전</span></li>`;
-}
+$('#bagList').addEventListener('click', e => { const id = e.target.closest('[data-e]')?.dataset.e; if (!id) return; const it = me.bag.find(i => i.id === +id); if (it) { equipItem(it); toast(`${itemIcon(it)} ${itemName(it)} 장착!`); } });
+function setPotAt(v) { me.potAt = +v; $('#potAt').value = v; $('#hbPot').value = v; }
+$('#potAt').onchange = e => setPotAt(e.target.value); $('#hbPot').onchange = e => setPotAt(e.target.value);
 $('#ptabs').addEventListener('click', e => { const p = e.target.closest('[data-p]')?.dataset.p; if (p) showTab(p); });
-function showTab(p) { $$('#ptabs [data-p]').forEach(b => b.setAttribute('aria-selected', b.dataset.p === p)); $$('.pane').forEach(el => (el.hidden = el.dataset.pane !== p)); }
+function showTab(p) { $$('#ptabs [data-p]').forEach(b => b.setAttribute('aria-selected', b.dataset.p === p)); $$('.panel-body > .pane').forEach(el => (el.hidden = el.dataset.pane !== p)); }
 function openPanelTab(p) { showTab(p); if (innerWidth <= 760) { $('#panel').classList.add('open'); $('#peek').setAttribute('aria-expanded', 'true'); } }
 function closePanel() { $('#panel').classList.remove('open'); $('#peek').setAttribute('aria-expanded', 'false'); $('#chat').classList.remove('expanded'); $('#emotes').hidden = true; }
 $('#peek').onclick = () => { const o = $('#panel').classList.toggle('open'); $('#peek').setAttribute('aria-expanded', o); };
 
+// PC 전체화면 (Esc로 나가기)
+$('#fsBtn').onclick = () => {
+  if (document.fullscreenElement) return document.exitFullscreen?.();
+  const p = document.documentElement.requestFullscreen?.();
+  if (!p) return toast('이 브라우저는 전체화면을 지원하지 않아요');
+  p.catch(() => toast('이 미리보기 창에서는 전체화면이 막혀 있어요. 실제 사이트에서는 돼요'));
+};
+document.addEventListener('fullscreenchange', () => { const on = !!document.fullscreenElement; $('#fsBtn').textContent = on ? '🗗' : '⛶'; $('#fsBtn').setAttribute('aria-label', on ? '전체화면 끄기' : '전체화면'); });
+
 $('#setBtn').onclick = () => openModal(`<h3>⚙️ 설정</h3><div class="actions">
-  ${actBtn('pw', '🔑 비밀번호 바꾸기')}${actBtn('code', '🧾 복구 코드 새로 받기', '지금 비밀번호 필요')}${actBtn('live', S.live ? '📺 방송 이벤트 미리보기 끄기' : '📺 방송 이벤트 미리보기', '목업 전용')}
-  ${actBtn('unblock', `🙈 차단 목록 (${S.blocked.size}명)`, S.blocked.size ? '모두 풀기' : '')}${actBtn('out', '🚪 로그아웃')}</div><button class="close" data-close>닫기</button>`, el => el.querySelector('.actions').addEventListener('click', e => {
+  ${actBtn('pw', '🔑 비밀번호 바꾸기')}${actBtn('code', '🧾 복구 코드 새로 받기', '지금 비밀번호 필요')}
+  ${actBtn('unblock', `🙈 차단 목록 (${S.blocked.size}명)`, S.blocked.size ? '모두 풀기' : '')}
+  ${actBtn('live', S.live ? '📺 방송 이벤트 미리보기 끄기' : '📺 방송 이벤트 미리보기', '목업 전용')}${actBtn('xp', '🧪 경험치 +2,000', '목업 전용')}${actBtn('gold', '🧪 골드 +5,000', '목업 전용')}
+  ${actBtn('out', '🚪 로그아웃')}</div><button class="close" data-close>닫기</button>`, el => el.querySelector('.actions').addEventListener('click', e => {
   const a = e.target.closest('[data-a]')?.dataset.a; if (!a) return;
   if (a === 'live') return doAct('live');
   closeModal();
-  if (a === 'pw') toast('지금 비밀번호 → 새 비밀번호 입력 화면 (다음 단계)');
+  if (a === 'pw') toast('지금 비밀번호 → 새 비밀번호 입력 화면 (1단계에서 만들어요)');
   if (a === 'code') { $('#codeBox').textContent = newCode(); openModal(`<h3>🧾 새 복구 코드</h3><p class="muted">예전 코드는 이제 못 써요. 새 코드를 저장하세요.</p><div class="code-box">${$('#codeBox').textContent}</div><button class="btn main" data-close>저장했어요</button>`); }
   if (a === 'unblock') { S.blocked.clear(); toast('차단을 모두 풀었어요'); }
-  if (a === 'out') { $('#app').hidden = true; $('#gate').hidden = false; showAuth('login'); }
+  if (a === 'xp') gainExp(2000);
+  if (a === 'gold') { addGold(5000); toast('🪙 +5,000'); }
+  if (a === 'out') { if (HT) leaveHunt(); $('#app').hidden = true; $('#gate').hidden = false; showAuth('login'); }
 }));
-
 // ───────── 로그인 · 가입 ─────────
 const COMMON = ['password1', 'qwer1234', 'abc12345', 'asdf1234', 'qwerty123', '1q2w3e4r', 'zxcv1234', 'iloveyou1', 'password123', 'a1234567'];
 const NICK_BAN = ['김치복', '치복', '관리자', '운영자', '운영진', 'admin', 'gm'];
@@ -994,10 +1503,10 @@ $('#makeDone').onclick = () => { me.intro = $('#introIn').value.trim() || '안�
 function enterTown() {
   $('#gate').hidden = true; $('#app').hidden = false;
   requestAnimationFrame(() => {
-    resize(); syncMe(); renderBag(); renderDex(); renderFriends();
+    resize(); me.hp = Math.min(me.hp, derive().maxHp); syncMe();
     swatches($('#faceSw2'), FACES, 'face', syncMe); swatches($('#bodySw2'), BODIES, 'body', syncMe);
     cam = { x: me.x, y: me.y };
-    if (!S.greeted) { S.greeted = true; addChat({ sys: true, text: '치복 타운에 온 걸 환영해요! 바닥을 누르면 걸어가고, 건물이나 사람을 누르면 할 수 있는 게 나와요' }); logAct('치복 타운 도착'); if (me.isNew) addChat({ sys: true, text: '새 계정은 10분 동안 근처 대화만 할 수 있어요' }); }
+    if (!S.greeted) { S.greeted = true; addChat({ sys: true, text: '치복 타운에 온 걸 환영해요! 바닥을 누르면 걸어가고(대각선도 OK), 건물을 누르면 바로 이용해요. 오른쪽 끝 ⚔️ 사냥터 입구에서 자동 사냥!' }); logAct('치복 타운 도착'); if (me.isNew) addChat({ sys: true, text: '새 계정은 10분 동안 근처 대화만 할 수 있어요' }); }
     setTimeout(() => { say(people[5], `${me.name}님 어서 와요!`); emote(people[2], '👋'); }, 900);
   });
 }
