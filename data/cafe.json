@@ -1,8 +1,21 @@
 {
-  "updatedAt": 1794721712023,
+  "updatedAt": 1794762006811,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 197,
+      "title": "안녕하세요 반갑습니다",
+      "board": "🍀 가입 인사",
+      "head": null,
+      "author": "진다희",
+      "time": 1794755119557,
+      "comments": 0,
+      "likes": 0,
+      "image": false,
+      "thumb": null,
+      "url": "https://cafe.naver.com/kimchibok/197"
+    },
     {
       "id": 196,
       "title": "림월드 다양한 인종형 구울로 만들기",
@@ -10,7 +23,7 @@
       "head": null,
       "author": "뿔베리",
       "time": 1794712681817,
-      "comments": 0,
+      "comments": 2,
       "likes": 0,
       "image": true,
       "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMTVfMTY4/MDAxNzk0Njc0MTUzNzA1.flOM0JkTlrCeAyRq7dMuDO9xy449NoanLDLKD8Rs4pIg.9JkrbuPxuxrpvMOYNbEC2p4ViNrQzYDh7qSgOikTuykg.JPEG/20261114143410_1.jpg",
@@ -249,19 +262,6 @@
       "image": false,
       "thumb": null,
       "url": "https://cafe.naver.com/kimchibok/177"
-    },
-    {
-      "id": 176,
-      "title": "림월드 몇촌부터 근친 패널티 받나요",
-      "board": "🗺️ 림월드 자유 게시판",
-      "head": null,
-      "author": "화이트블록",
-      "time": 1794126518120,
-      "comments": 2,
-      "likes": 0,
-      "image": false,
-      "thumb": null,
-      "url": "https://cafe.naver.com/kimchibok/176"
     }
   ]
 }
