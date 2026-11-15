@@ -45,8 +45,9 @@
     },
     "3835737267": {
       "src": "Realistic Rain is a performance conscious visual overhaul of the rain and lighting, Rain now causes puddles to form, brief rain will hardly create any puddles, heavy rain will saturate the ground.",
-      "ko": "Realistic Rain은 성능을 고려한 비와 조명의 시각적 정밀 검사입니다.",
-      "at": 1794569943612
+      "full": "Realistic Rain은 성능을 고려한 비와 조명의 시각적 정밀 검사입니다. 이제 Rain은 웅덩이를 형성하고, 짧은 비는 거의 웅덩이를 만들지 않으며, 폭우는 땅을 포화시킵니다.",
+      "ko": "Realistic Rain은 성능을 고려한 비와 조명의 시각적 정밀 검사입니다. 이제 Rain은 웅덩이를 형성하고, 짧은 비는 거의 웅덩이를 만들지 않으며, 폭우는 땅을 포화시킵니다.",
+      "at": 1794703027501
     },
     "3835938747": {
       "src": "Adds more shader-based lighting effects to the game. Every effect is drawn by a custom shader with minimal performance cost, and each one can be toggled and fine-tuned individually in the settings.",
