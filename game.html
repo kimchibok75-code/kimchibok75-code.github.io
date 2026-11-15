@@ -149,6 +149,12 @@ body.hunting .side { display: none; }
 /* 모달 / 시트 */
 .modal { position: fixed; inset: 0; z-index: 40; background: rgba(31, 42, 58, .38); display: grid; place-items: center; padding: 16px; }
 .modal[hidden] { display: none; }
+.away[hidden] { display: none; }
+.away { position: fixed; inset: 0; z-index: 90; background: rgba(31, 42, 58, .72); display: grid; place-items: center; padding: 16px; }
+.away-card { width: min(360px, 100%); background: var(--paper); border: 2px solid var(--ink); border-radius: 18px; box-shadow: 0 5px 0 var(--ink); padding: 22px 18px 18px; display: grid; gap: 12px; text-align: center; }
+.away-card h2 { margin: 0; font-size: 22px; } .away-card p { margin: 0; line-height: 1.6; color: var(--ink-soft); }
+.away-ic { font-size: 38px; }
+.away-card .btn { justify-content: center; text-align: center; }
 .sheet { width: min(380px, 100%); background: var(--paper); border: 2px solid var(--ink); border-radius: 18px; box-shadow: 0 5px 0 var(--ink); padding: 18px; display: grid; gap: 12px; max-height: calc(100% - 20px); overflow-y: auto; }
 .sheet h3 { margin: 0; font-size: 22px; display: flex; align-items: center; gap: 8px; }
 .sheet p { margin: 0; line-height: 1.55; }
@@ -521,6 +527,10 @@ body.hunting .chat-log { height: 64px; }
 </div>
 
 <!-- 모달 -->
+<div class="away" id="away" hidden role="alertdialog" aria-modal="true" aria-labelledby="awayT">
+    <div class="away-card"><div class="away-ic" aria-hidden="true">📱💻</div><h2 id="awayT"></h2><p></p>
+      <button class="btn main" id="awayGo" type="button">여기서 이어서 하기</button><button class="btn" id="awayNo" type="button">아니요</button></div>
+  </div>
 <div class="modal" id="modal" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
@@ -969,7 +979,7 @@ function bubbleAt(x, y, text, mine) {
 let last = performance.now(), clock = 0;
 function frame(now) {
   const dt = Math.min(.05, (now - last) / 1000); last = now; clock += dt;
-  if (!$('#app').hidden) { update(dt, now); render(now); drawStick(); }
+  if (!$('#app').hidden && !S.away) { update(dt, now); render(now); drawStick(); }
   requestAnimationFrame(frame);
 }
 function follow(dt, mw, mh) {
@@ -1082,7 +1092,7 @@ async function huntDie() {
   catch (x) { toast(x.message); if (HT) { HT.dying = false; me.hp = 1; } }
 }
 async function huntSync() {
-  if (!HT || HT.dying || huntBusy || document.visibilityState === 'hidden') return;
+  if (!HT || HT.dying || huntBusy || S.away || document.visibilityState === 'hidden') return;
   try { took(await api('/api/hunt/sync', {})); } catch (x) { if (x.status === 401) location.reload(); }
 }
 function spawnMon(boss) {
@@ -1751,7 +1761,7 @@ async function act(path, body) {
 // 위치 저장: 멈췄을 때 (너무 자주는 안 보냄)
 let lastSaved = '', moveT = null;
 function savePos(now) {
-  if (!token || $('#app').hidden) return;
+  if (!token || $('#app').hidden || S.away) return;
   const k = `${Math.round(me.x)},${Math.round(me.y)}`; if (k === lastSaved) return;
   clearTimeout(moveT);
   const send = () => { lastSaved = k; api('/api/move', { x: me.x, y: me.y }, { keepalive: true }).catch(() => (lastSaved = '')); };
@@ -1994,7 +2004,9 @@ function roamTick(dt) {
 
 // ───────── 실시간 마을 (3단계): 다른 사람 보기 · 채팅 · 이모트 ─────────
 // 위치는 "어디서 어디로 걷기 시작"만 보내고, 길은 각자 화면이 똑같이 계산해요 (주고받는 양이 아주 적음)
-const NET = { ws: null, ch: 1, tries: 0, want: false, ready: false, me: 0, full: 0, pingT: null, sig: '', lookT: null };
+const NET = { ws: null, ch: 1, tries: 0, want: false, ready: false, me: 0, full: 0, pingT: null, sig: '', lookT: null, take: false };
+const DEV = (() => { try { let d = localStorage.getItem('cbt-dev'); if (!d) { d = Math.random().toString(36).slice(2, 12); localStorage.setItem('cbt-dev', d); } return d; } catch { return 'x' + Math.random().toString(36).slice(2, 10); } })();
+const KIND = matchMedia('(pointer: coarse)').matches || innerWidth <= 760 ? 'mobile' : 'pc', KIND_N = { pc: 'PC', mobile: '휴대폰' };
 const WS_URL = API.replace(/^http/, 'ws') + '/ws';
 function setOnline() { $('#onlineChip').textContent = NET.ready ? `👥 ${people.length + 1}명 · 마을 ${NET.ch}` : '👥 연결 중…'; }
 function netConnect() {
@@ -2002,18 +2014,30 @@ function netConnect() {
   NET.want = true;
   let ws; try { ws = new WebSocket(`${WS_URL}?ch=${NET.ch}`); } catch { return netRetry(); }
   NET.ws = ws; setOnline();
-  ws.onopen = () => { ws.send(JSON.stringify({ t: 'auth', token })); clearInterval(NET.pingT); NET.pingT = setInterval(() => { if (ws.readyState === 1) ws.send('ping'); }, 25e3); };
+  ws.onopen = () => { ws.send(JSON.stringify({ t: 'auth', token, dev: DEV, kind: KIND, take: NET.take })); clearInterval(NET.pingT); NET.pingT = setInterval(() => { if (ws.readyState === 1) ws.send('ping'); }, 25e3); };
   ws.onmessage = e => { if (e.data === 'pong') return; let m; try { m = JSON.parse(e.data); } catch { return; } onNet(m); };
   ws.onclose = e => {
     clearInterval(NET.pingT); if (NET.ws === ws) NET.ws = null;
     NET.ready = false; people = []; setOnline();
     if (!NET.want) return;
     if (e.code === 4001) { NET.full++; NET.ch = NET.ch % 3 + 1; if (NET.full < 3) return netConnect(); NET.full = 0; sysMsg('마을이 꽉 찼어요. 잠시 뒤에 다시 들어가 볼게요'); }
-    else if (e.code === 4002) { NET.want = false; return sysMsg('다른 곳(다른 탭·기기)에서 들어와서 여기는 연결을 끊었어요. 새로고침하면 다시 들어와요'); }
+    else if (e.code === 4002) { NET.want = false; return showAway('dup'); }
+    else if (e.code === 4009) { NET.want = false; return showAway('busy', NET.busyKind); }
     else if (e.code === 4003 || e.code === 4401) { NET.want = false; return; }
     netRetry();
   };
 }
+// 다른 기기와 겹칠 때: busy = 다른 기기에서 하는 중(여기서 이어서 할지 물어봄), dup = 다른 기기가 이어받아서 여기는 끊김
+function showAway(why, kind) {
+  S.away = true; clearTimeout(moveT); closeModal(); closePanel(); STEER.key.clear(); STEER.drag = null;
+  const el = $('#away'), other = KIND_N[kind] || '다른 기기';
+  el.querySelector('h2').textContent = why === 'busy' ? `${other}에서 이미 접속 중이에요` : '다른 기기에서 이어서 하고 있어요';
+  el.querySelector('p').textContent = why === 'busy' ? `${other}의 접속을 끊고 여기(${KIND_N[KIND]})에서 이어서 할까요? 사냥·골드·위치는 그대로 이어져요.` : `다른 기기에서 접속해서 여기(${KIND_N[KIND]})는 연결을 끊었어요. 여기서 다시 하려면 아래 버튼을 눌러 주세요.`;
+  $('#awayNo').hidden = why !== 'busy'; el.hidden = false; $('#awayGo').focus();
+}
+function takeOver() { $('#away').hidden = true; S.away = false; NET.take = true; NET.tries = 0; netConnect(); }
+$('#awayGo').onclick = takeOver;
+$('#awayNo').onclick = () => showAway('wait');
 function netRetry() { const d = Math.min(30e3, 1000 * 2 ** NET.tries++); setTimeout(() => { if (NET.want && !NET.ws) netConnect(); }, d); }
 function netSend(o) { if (!NET.ready || NET.ws?.readyState !== 1) return false; NET.ws.send(JSON.stringify(o)); return true; }
 function netClose() { NET.want = false; NET.ready = false; try { NET.ws?.close(); } catch {} NET.ws = null; people = []; }
@@ -2025,7 +2049,9 @@ function netMove(p, m) {
   if (!tp && !walkTo(p, Math.floor(m.tx / T), Math.floor(m.ty / T))) { p.x = m.tx; p.y = m.ty; p.path = []; }
 }
 function onNet(m) {
+  if (m.t === 'busy') { NET.busyKind = m.kind; return; }
   if (m.t === 'hi') {
+    if (NET.take) { NET.take = false; api('/api/me').then(j => { took(j); me.path = []; me.moving = false; cam = { x: me.x, y: me.y }; }).catch(() => {}); }   // 다른 기기에서 하던 걸 이어받음
     Object.assign(NET, { ready: true, me: m.id, ch: m.ch, tries: 0, full: 0 });
     people = m.list.filter(d => d.id !== m.id).map(d => { const p = mkPerson(d); if (d.sit >= 0) sitDown(p, d.sit); return p; });
     if (me.sit >= 0) netSend({ t: 'sit', b: me.sit });

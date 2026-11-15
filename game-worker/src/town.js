@@ -38,6 +38,10 @@ export class Town extends DurableObject {
   async fetch(req) {
     const url = new URL(req.url);
     if (url.pathname === '/admin') return this.admin(await req.json());
+    if (url.pathname === '/has') {   // 다른 채널에서 물어봄: 이 사람이 여기 접속해 있나? (어느 기기인지)
+      const id = Number(url.searchParams.get('id')), w = this.members().find(w => this.info(w).id === id);
+      return Response.json(w ? { dev: this.info(w).dev, kind: this.info(w).kind } : null);
+    }
     const pair = new WebSocketPair(), [client, server] = Object.values(pair);
     this.ctx.acceptWebSocket(server);
     this.save(server, { pending: true, room: Number(url.searchParams.get('ch')) || 1, at: now() });   // 첫 메시지로 로그인 확인
@@ -45,7 +49,7 @@ export class Town extends DurableObject {
   }
 
   // 첫 메시지 {t:'auth', token}: 로그인 확인 → 방에 들어감
-  async join(ws, a, token) {
+  async join(ws, a, token, m = {}) {
     const DB = this.env.DB;
     if (!/^[\w-]{20,}$/.test(String(token || ''))) return ws.close(4401, 'auth');
     const u = await DB.prepare('SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?').bind(await sha256(token), now()).first();
@@ -53,11 +57,15 @@ export class Town extends DurableObject {
     const c = await DB.prepare('SELECT * FROM characters WHERE user_id = ?').bind(u.id).first();
     if (!c) return ws.close(4401, 'auth');
     const rep = await DB.prepare('SELECT COUNT(DISTINCT reporter_id) AS n FROM reports WHERE target_id = ? AND done = 0').bind(u.id).first();
-    // 같은 사람이 다른 탭·기기에서 또 들어오면 예전 연결은 닫음
+    // 같은 사람이 이미 접속해 있으면: 같은 기기(새로고침 등)는 바로 바꿔 줌, 다른 기기는 먼저 물어봄 (take: "여기서 이어서 하기"를 누름)
+    const dev = String(m.dev || '').slice(0, 40), kind = m.kind === 'mobile' ? 'mobile' : 'pc';
+    const here = this.members(ws).map(w => this.info(w)).find(b => b.id === u.id), far = here ? null : await this.elsewhere(u.id, a.room), old = here || far;
+    if (old && old.dev !== dev && !m.take) { this.send(ws, { t: 'busy', kind: old.kind || 'pc' }); return ws.close(4009, 'busy'); }
+    if (far) await toRooms(this.env, { act: 'dup', id: u.id }, a.room);
     for (const w of this.members(ws)) { const b = this.info(w); if (b.id === u.id) { b.gone = true; b.dup = true; this.save(w, b); this.send(w, { t: 'dup' }); try { w.close(4002, 'dup'); } catch {} this.all({ t: 'leave', id: u.id }, w); } }
     const others = this.members(ws);
     if (others.length >= MAX) { this.send(ws, { t: 'full' }); return ws.close(4001, 'full'); }
-    Object.assign(a, { pending: false, id: u.id, n: u.nick, adm: !!u.is_admin, joined: u.created_at, mute: u.mute_until || 0, limited: (rep?.n || 0) >= 3,
+    Object.assign(a, { pending: false, dev, kind, id: u.id, n: u.nick, adm: !!u.is_admin, joined: u.created_at, mute: u.mute_until || 0, limited: (rep?.n || 0) >= 3,
       look: lookRow(c), x: c.x, y: c.y, tx: c.x, ty: c.y, hunt: !!c.hunt, sit: -1, sent: [], last: [], cool: 0, lookAt: 0, emoAt: 0 });
     this.save(ws, a);
     this.send(ws, { t: 'hi', id: a.id, ch: a.room, list: others.map(w => this.pub(this.info(w))) });
@@ -68,7 +76,7 @@ export class Town extends DurableObject {
     if (typeof msg !== 'string' || msg.length > 600) return;
     let m; try { m = JSON.parse(msg); } catch { return; }
     const a = this.info(ws);
-    if (a.pending) return m.t === 'auth' ? this.join(ws, a, m.token) : ws.close(4401, 'auth');
+    if (a.pending) return m.t === 'auth' ? this.join(ws, a, m.token, m) : ws.close(4401, 'auth');
     if (!a.id || a.gone) return;
     const t = now(), num = (v, max) => Number.isFinite(v) && v >= 0 && v <= max;
     if (m.t === 'go') {   // 걷기 시작 (x,y → tx,ty). 순간 이동은 tx=x
@@ -158,11 +166,20 @@ export class Town extends DurableObject {
     }
     sys('관리자 명령어: /공지 내용 · /조용 닉네임 10분 · /내보내기 닉네임');
   }
+  // 다른 채널에 같은 사람이 접속해 있는지 (있으면 {dev, kind})
+  async elsewhere(id, skip) {
+    for (let ch = 1; ch <= MAX_CH; ch++) {
+      if (ch === skip) continue;
+      try { const r = await this.env.TOWN.get(this.env.TOWN.idFromName('town-' + ch)).fetch('https://town/has?id=' + id); const j = await r.json(); if (j) return j; } catch {}
+    }
+    return null;
+  }
   // 관리자 기능 (서버 안에서만 부름)
   async admin(b) {
     if (b.act === 'notice') this.all({ t: 'notice', text: b.text });
     for (const w of this.members()) {
       const a = this.info(w); if (a.id !== b.id) continue;
+      if (b.act === 'dup') { a.gone = true; a.dup = true; this.save(w, a); this.send(w, { t: 'dup' }); try { w.close(4002, 'dup'); } catch {} this.all({ t: 'leave', id: a.id }, w); }
       if (b.act === 'kick') { a.gone = true; this.save(w, a); this.send(w, { t: 'kick', why: b.why || '관리자가 마을에서 내보냈어요' }); try { w.close(4003, 'kick'); } catch {} this.all({ t: 'leave', id: a.id }, w); }
       if (b.act === 'mute') { a.mute = b.until; this.save(w, a); this.send(w, { t: 'sys', text: b.until > now() ? `관리자가 채팅을 막았어요 (남은 시간 ${left(b.until - now())})` : '채팅 금지가 풀렸어요' }); }
       if (b.act === 'limit') { a.limited = !!b.on; this.save(w, a); }
