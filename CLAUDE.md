@@ -105,7 +105,7 @@
 - 게임 화면: `game.html` (https://kimchibok75-code.github.io/game.html). **메뉴에 링크 안 걸음**, 검색 제외(noindex). 첫 공개는 3단계
   - 목업을 복사해서 만듦. 이제부터는 game.html이 진짜, 목업은 기획용
   - 1단계에서 되는 것: 가입(복구 코드) · 로그인(30일 유지) · 비밀번호 찾기 · 비밀번호/복구 코드 바꾸기 · 캐릭터 만들기 · 마을 걷기 · **위치·겉모습·소개 서버 저장** · 능력치 찍기(포인트가 있을 때)
-  - 잠긴 것: 채팅(3단계), 텃밭·분수·집(4단계). `LATER` 목록으로 잠금 (가게·사냥터는 2단계에서 열림)
+  - 잠긴 것: 텃밭·분수·집(4단계). `LATER` 목록으로 잠금 (가게·사냥터는 2단계에서 열림)
   - 방송국·전광판은 실제 방송 상태(kimchibok-live의 `/live`)를 1분마다 읽음
 - 공용 규칙: `assets/js/game-rules.js` — 숫자·계산식. 화면(game.html)과 서버가 **같은 파일**을 씀
 - 서버: Cloudflare Worker **`kimchibok-game`** (`game-worker/` 폴더)
@@ -151,8 +151,23 @@
 - 화면에서 체력 0 → 바로 마을 (`/api/hunt/leave {died:true}`, 손해는 서버가 똑같이 10%)
 - 휴대폰: 아래 창의 캐릭터 그림 없앰, 채팅 입력줄이 좁은 화면에서 넘치던 것 고침 (`.chat`에 `grid-template-columns: minmax(0,1fr)`)
 
-### 다음: 3단계 (같이 놀기) ← 첫 공개
-- 다른 유저 실시간 표시, 말풍선 채팅 + 금칙어 검사(`filter.js`), 이모트, 프로필 카드, 차단·신고, 관리자 화면(임시 비밀번호 발급 포함)
+### 3단계 (같이 놀기) — 2026-11-15 배포, 테스트 통과
+- 실시간 방: Durable Object **`Town`** (`game-worker/src/town.js`). 채널 `town-1`~`town-3`, 채널마다 50명. 꽉 차면 다음 채널로
+  - 주소: `wss://kimchibok-game.kimchibok.workers.dev/ws?ch=1`. 접속 뒤 첫 메시지 `{t:'auth', token}`으로 로그인 확인 (토큰을 주소에 안 넣음)
+  - 위치는 **걷기 시작할 때 한 번만** `{t:'go', x, y, tx, ty}` 보냄. 길은 각 화면이 같은 `findPath`로 계산 → 메시지가 아주 적음 (무료 한도 아끼기)
+  - 그 밖: `say`(채팅), `emo`(이모트), `look`(겉모습 바뀜 → 서버가 D1에서 다시 읽음), `hunt`(사냥 중이면 마을에서 안 보임)
+  - 같은 계정이 또 들어오면 예전 연결은 닫힘(4002). 내보내기 4003
+- 채팅 규칙(기획서 8-1)은 전부 서버에서: `chat.js`(글자 수·반복 글자·링크·개인정보·금칙어) + `town.js`(1초 1번, 10초 5번 → 30초 쉼, 같은 말 3번, 새 계정 10분 근처만, 경고 3/6/9번 → 10분/1시간/24시간)
+  - 근처 = 9칸 안. 채팅 기록 D1 `chat_log` 30일 보관
+- 차단 `/api/block`(D1 `blocks`), 신고 `/api/report`(최근 채팅 20줄 첨부, D1 `reports`). 서로 다른 3명 넘게 신고 → 처리 전까지 근처 대화만
+- **관리자 화면**: 설정 → 🛡️ 관리자 화면 (`users.is_admin = 1`인 계정만). 신고함 · 채팅 기록 검색 · 사람 찾기(임시 비밀번호 발급, 채팅 금지, 내보내기, 영구 차단) · 공지
+  - 채팅 명령어: `/공지 내용`, `/조용 닉네임 10분`, `/내보내기 닉네임`
+  - 관리자 지정: `game-worker` 폴더에서 `npx --yes wrangler@4 d1 execute kimchibok-game --remote --command "UPDATE users SET is_admin = 1 WHERE nick = '닉네임'"`
+- 표 추가: `migrations/0005_social.sql` (users.mute_until, chat_log, warnings, blocks, reports)
+- 시험 방법: node 스크립트로 두 번째 사람을 만들어 `new WebSocket(url, { headers: { origin } })`로 접속 (node 22 이상)
+
+### 다음: 4단계 (집과 놀거리)
+- 집 꾸미기(전체 공개), 텃밭·분수·도감
 
 ## 남은 일 / 확인할 것
 - **실제 생방송 때 확인하기**: 2026-11-14(토) 밤 9시 방송이 첫 실전 테스트

@@ -3,6 +3,8 @@
 import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, EYES, MW, MH, T, STATS, SLOTS, WTYPES, TIERS, HATS, EYE_SKINS, POTS, FIELDS, BAG_MAX, ENH_COST, ENH_RATE, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, FISH_GRADES, rollFish } from '../../assets/js/game-rules.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
+import { Town, MAX_CH, toRooms, lookRow } from './town.js';
+export { Town };
 
 const ORIGINS = ['https://kimchibok75-code.github.io', 'http://localhost:5173', 'http://127.0.0.1:5173'];
 const PBKDF2_ITER = 30000;            // 비밀번호 해시 반복 횟수 (무료 요금제 CPU 한도 안에서)
@@ -19,6 +21,13 @@ export default {
     const origin = req.headers.get('Origin') || '';
     const cors = { 'Access-Control-Allow-Origin': ORIGINS.includes(origin) ? origin : ORIGINS[0], 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Max-Age': '86400', Vary: 'Origin' };
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+    // 실시간 마을 (WebSocket): 로그인 확인은 방(Durable Object)이 첫 메시지로 함
+    if (new URL(req.url).pathname === '/ws') {
+      if (req.headers.get('Upgrade') !== 'websocket') return new Response('websocket only', { status: 426 });
+      if (!ORIGINS.includes(origin)) return new Response('forbidden', { status: 403 });
+      const ch = Math.min(MAX_CH, Math.max(1, parseInt(new URL(req.url).searchParams.get('ch')) || 1));
+      return env.TOWN.get(env.TOWN.idFromName('town-' + ch)).fetch(req);
+    }
     let res;
     try { res = await route(req, env, new URL(req.url)); }
     catch (e) {
@@ -32,7 +41,7 @@ export default {
 
 async function route(req, env, url) {
   const p = url.pathname, m = req.method;
-  if (p === '/' || p === '/api/health') return json({ ok: true, name: '치복 타운 서버', stage: 2 });
+  if (p === '/' || p === '/api/health') return json({ ok: true, name: '치복 타운 서버', stage: 3 });
   if (m === 'POST' && p === '/api/signup') return signup(req, env);
   if (m === 'POST' && p === '/api/login') return login(req, env);
   if (m === 'POST' && p === '/api/recover') return recover(req, env);
@@ -43,6 +52,10 @@ async function route(req, env, url) {
   if (m === 'POST' && p === '/api/move') return saveMove(req, env, s.user);
   if (m === 'GET' && p === '/api/fish/rank') return fishRank(env, s.user);
   if (m === 'POST' && p === '/api/fish/reel') return fishReel(req, env, s.user);
+  if (p.startsWith('/api/admin/')) return admin(p, m, req, env, s.user, url);
+  if (m === 'GET' && p === '/api/blocks') return json({ blocks: (await env.DB.prepare('SELECT b.target_id AS id, u.nick FROM blocks b JOIN users u ON u.id = b.target_id WHERE b.user_id = ?').bind(s.user.id).all()).results });
+  if (m === 'POST' && p === '/api/block') return block(req, env, s.user);
+  if (m === 'POST' && p === '/api/report') return report(req, env, s.user);
   const g = GAME[p];
   if (m === 'POST' && g) { const b = await readBody(req); return play(env, s.user, (c, at, out) => g(c, b, at, out, env, s.user)); }
   if (m === 'POST' && p === '/api/password') return changePw(req, env, s);
@@ -432,4 +445,92 @@ async function fishRank(env, user) {
   const rows = r => r.results.map(x => ({ nick: x.nick, count: x.count, price: fish(x.best_price_fish), len: fish(x.best_len_fish) }));
   const m = mine.results[0];
   return json({ price: rows(price), len: rows(len), count: rows(count), mine: m ? { count: m.count, gold: m.gold, price: fish(m.best_price_fish), len: fish(m.best_len_fish) } : null, cooldown: FISHING.cooldown });
+}
+
+// ───────── 3단계: 차단 · 신고 · 관리자 ─────────
+async function block(req, env, user) {
+  const b = await readBody(req), id = Number(b.id);
+  if (!Number.isInteger(id) || id === user.id) fail(400, '잘못된 요청이에요');
+  if (b.off) await env.DB.prepare('DELETE FROM blocks WHERE user_id = ? AND target_id = ?').bind(user.id, id).run();
+  else {
+    const n = (await env.DB.prepare('SELECT COUNT(*) AS n FROM blocks WHERE user_id = ?').bind(user.id).first()).n;
+    if (n >= 200) fail(400, '차단은 200명까지예요');
+    await env.DB.prepare('INSERT OR IGNORE INTO blocks (user_id, target_id, at) VALUES (?, ?, ?)').bind(user.id, id, now()).run();
+  }
+  return json({ ok: true });
+}
+const REASONS = ['욕설·비하', '도배', '불쾌한 행동', '사칭', '기타'];
+async function report(req, env, user) {
+  const b = await readBody(req), id = Number(b.id), t = now();
+  if (!Number.isInteger(id) || id === user.id || !REASONS.includes(b.reason)) fail(400, '잘못된 요청이에요');
+  const target = await env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(id).first(); if (!target) fail(404, '없는 사람이에요');
+  if (await env.DB.prepare('SELECT id FROM reports WHERE reporter_id = ? AND target_id = ? AND at > ?').bind(user.id, id, t - DAY).first()) fail(400, '이미 신고했어요. 김치복님이 확인할 거예요');
+  if ((await env.DB.prepare('SELECT COUNT(*) AS n FROM reports WHERE reporter_id = ? AND at > ?').bind(user.id, t - DAY).first()).n >= 10) fail(429, '오늘은 신고를 너무 많이 했어요');
+  const lines = (await env.DB.prepare('SELECT ch, text, at FROM chat_log WHERE user_id = ? ORDER BY at DESC LIMIT 20').bind(id).all()).results.reverse();
+  await env.DB.prepare('INSERT INTO reports (reporter_id, target_id, reason, lines, at) VALUES (?, ?, ?, ?, ?)').bind(user.id, id, b.reason, JSON.stringify(lines), t).run();
+  // 서로 다른 3명 이상이 신고하면 확인 전까지 근처 대화만
+  const n = (await env.DB.prepare('SELECT COUNT(DISTINCT reporter_id) AS n FROM reports WHERE target_id = ? AND done = 0').bind(id).first()).n;
+  if (n >= 3) await toRooms(env, { act: 'limit', id, on: true });
+  return json({ ok: true });
+}
+// 관리자 화면 (김치복님): 신고함 · 채팅 기록 · 사람 찾기(임시 비밀번호·채팅 금지·내보내기·영구 차단) · 공지
+async function admin(p, m, req, env, user, url) {
+  if (!user.is_admin) fail(403, '관리자만 쓸 수 있어요');
+  const DB = env.DB, t = now(), q = k => url.searchParams.get(k) || '';
+  const body = m === 'POST' ? await readBody(req) : {}, id = Number(body.id);
+  const userOf = async uid => { const u = await DB.prepare('SELECT id, nick FROM users WHERE id = ?').bind(uid).first(); if (!u) fail(404, '없는 사람이에요'); return u; };
+  const done = async (kind, detail) => DB.prepare('INSERT INTO activity (user_id, kind, detail, at) VALUES (?, ?, ?, ?)').bind(user.id, 'admin-' + kind, detail, t).run();
+  if (m === 'GET' && p === '/api/admin/reports') {
+    const rows = (await DB.prepare(`SELECT r.*, a.nick AS reporter, b.nick AS target FROM reports r JOIN users a ON a.id = r.reporter_id JOIN users b ON b.id = r.target_id
+      WHERE r.done = ? ORDER BY r.at DESC LIMIT 100`).bind(q('done') === '1' ? 1 : 0).all()).results;
+    return json({ reports: rows.map(r => ({ ...r, lines: JSON.parse(r.lines) })) });
+  }
+  if (m === 'POST' && p === '/api/admin/report-done') {
+    const r = await DB.prepare('SELECT target_id FROM reports WHERE id = ?').bind(id).first(); if (!r) fail(404, '없는 신고예요');
+    await DB.prepare('UPDATE reports SET done = 1, note = ? WHERE target_id = ? AND done = 0').bind(String(body.note || '').slice(0, 100), r.target_id).run();
+    await toRooms(env, { act: 'limit', id: r.target_id, on: false });
+    await done('report', String(r.target_id)); return json({ ok: true });
+  }
+  if (m === 'GET' && p === '/api/admin/chat') {
+    const nick = q('nick').toLowerCase(), text = q('q');
+    const u = nick ? await DB.prepare('SELECT id FROM users WHERE nick_key = ?').bind(nick).first() : null;
+    if (nick && !u) return json({ lines: [] });
+    const rows = (await DB.prepare(`SELECT nick, ch, text, at FROM chat_log WHERE (? = 0 OR user_id = ?) AND (? = '' OR text LIKE ?) ORDER BY at DESC LIMIT 200`)
+      .bind(u ? 1 : 0, u?.id || 0, text, `%${text}%`).all()).results;
+    return json({ lines: rows });
+  }
+  if (m === 'GET' && p === '/api/admin/user') {
+    const u = await DB.prepare('SELECT u.id, u.nick, u.created_at, u.last_login, u.banned, u.mute_until, u.is_admin, c.lv FROM users u LEFT JOIN characters c ON c.user_id = u.id WHERE u.nick_key = ?').bind(q('nick').toLowerCase()).first();
+    if (!u) fail(404, '그 닉네임은 없어요');
+    const w = await DB.prepare('SELECT COUNT(*) AS n FROM warnings WHERE user_id = ? AND at > ?').bind(u.id, t - 7 * DAY).first();
+    const r = await DB.prepare('SELECT COUNT(*) AS n FROM reports WHERE target_id = ? AND done = 0').bind(u.id).first();
+    return json({ user: { ...u, warns: w.n, reports: r.n } });
+  }
+  if (m === 'POST' && p === '/api/admin/temp-pw') {   // 비밀번호·복구 코드를 다 잊은 사람에게 임시 비밀번호
+    const u = await userOf(id), abc = 'abcdefghjkmnpqrstuvwxyz', dig = '23456789', r = crypto.getRandomValues(new Uint8Array(8));
+    const pw = 'cb' + [...r.slice(0, 5)].map(x => abc[x % abc.length]).join('') + [...r.slice(5)].map(x => dig[x % dig.length]).join('');
+    const salt = randB64(16);
+    await DB.batch([
+      DB.prepare('UPDATE users SET pw_hash = ?, pw_salt = ?, pw_iter = ?, fail_count = 0, lock_until = 0 WHERE id = ?').bind(await pbkdf2(pw, salt, PBKDF2_ITER), salt, PBKDF2_ITER, u.id),
+      DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(u.id),
+    ]);
+    await done('temp-pw', u.nick); return json({ pw, nick: u.nick });
+  }
+  if (m === 'POST' && p === '/api/admin/mute') {
+    const u = await userOf(id), min = Math.max(0, Math.min(10080, Number(body.min) || 0)), until = min ? t + min * 60e3 : 0;
+    await DB.prepare('UPDATE users SET mute_until = ? WHERE id = ?').bind(until, u.id).run();
+    await toRooms(env, { act: 'mute', id: u.id, until }); await done('mute', `${u.nick} ${min}`); return json({ ok: true, until });
+  }
+  if (m === 'POST' && p === '/api/admin/kick') { const u = await userOf(id); await toRooms(env, { act: 'kick', id: u.id }); await done('kick', u.nick); return json({ ok: true }); }
+  if (m === 'POST' && p === '/api/admin/ban') {
+    const u = await userOf(id), on = !!body.on; if (u.id === user.id) fail(400, '자기 자신은 막을 수 없어요');
+    await DB.prepare('UPDATE users SET banned = ? WHERE id = ?').bind(on ? 1 : 0, u.id).run();
+    if (on) { await DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(u.id).run(); await toRooms(env, { act: 'kick', id: u.id, why: '이용이 정지됐어요' }); }
+    await done('ban', `${u.nick} ${on}`); return json({ ok: true });
+  }
+  if (m === 'POST' && p === '/api/admin/notice') {
+    const text = String(body.text || '').trim().slice(0, 100); if (!text) fail(400, '공지 내용을 써 주세요');
+    await toRooms(env, { act: 'notice', text }); await done('notice', text); return json({ ok: true });
+  }
+  fail(404, '없는 주소예요');
 }

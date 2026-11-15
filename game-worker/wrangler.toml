@@ -13,3 +13,12 @@ migrations_dir = "migrations"
 
 [observability]
 enabled = true
+
+# 실시간 마을 방 (3단계). 무료 요금제는 SQLite 방식 Durable Object만 됨
+[[durable_objects.bindings]]
+name = "TOWN"
+class_name = "Town"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Town"]
