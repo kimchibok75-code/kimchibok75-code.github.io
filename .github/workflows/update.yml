@@ -91,6 +91,8 @@ jobs:
           ref: main
       - name: 캐시 무효화용 버전 번호 넣기
         run: sed -i "s/__BUILD__/${GITHUB_SHA::8}/g" index.html mods.html weekly.html schedule.html community.html
+      - name: 기획 문서(plan 폴더)는 사이트에 안 올림
+        run: rm -rf plan
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
