@@ -11,6 +11,9 @@ export const MAX_LV = 100;
 export const START_GOLD = 500;
 export const POINTS_PER_LV = 4;
 
+// ───────── 활 · 원거리 밸런스 (시험 계산으로 맞춘 값) ─────────
+export const MELEE_K = 2.6, STAFF_K = 1.6, STAFF_SP = 1, BOW_DEX = 1.3, BOW_GAP = 1.1, BOW_M = .9, FAR_LEAD = .8, FAR_WALK = .75;
+
 // ───────── 닉네임 · 비밀번호 규칙 (기획서 7-1) ─────────
 // 김치복님 본인 계정 이름은 정확히 이 이름만 가입 가능 (한 번 가입되면 다른 사람은 못 씀)
 export const OWNER_NICK = '김치복';
@@ -30,9 +33,14 @@ export const pick = a => a[Math.floor(Math.random() * a.length)];
 export const needExp = L => Math.round(50 * Math.pow(L, 2));
 export const GRADES = { normal: { n: '일반', c: '#6f7a8a', m: 1, o: 0 }, uncommon: { n: '고급', c: '#2f8f45', m: 1.15, o: 0 }, rare: { n: '희귀', c: '#2f6fd0', m: 1.3, o: 1 }, epic: { n: '영웅', c: '#8a48cc', m: 1.5, o: 2 }, legend: { n: '전설', c: '#e0731c', m: 1.8, o: 3 } };
 export const TIERS = [{ n: '들판', req: 1, price: 100 }, { n: '숲', req: 10, price: 900 }, { n: '협곡', req: 25, price: 3500 }, { n: '공장', req: 40, price: 10000 }];
-export const WTYPES = { sword: { n: '검', i: '🗡️', gap: 1.0, m: 1 }, dagger: { n: '단검', i: '🔪', gap: .7, m: .7 }, hammer: { n: '망치', i: '🔨', gap: 1.5, m: 1.5 }, staff: { n: '지팡이', i: '🪄', gap: 1.1, m: .95, sp: 1.3 } };
+// 무기 종류. st: 공격력을 올려 주는 능력치, far: 원거리 (몬스터가 다가오는 동안 먼저 때림)
+// 근접(검·단검·망치)은 힘, 지팡이는 지력(마법), 활은 민첩 (화살은 필요 없음)
+export const WTYPES = { sword: { n: '검', i: '🗡️', gap: 1.0, m: 1, st: 'str', k: MELEE_K }, dagger: { n: '단검', i: '🔪', gap: .7, m: .7, st: 'str', k: MELEE_K }, hammer: { n: '망치', i: '🔨', gap: 1.5, m: 1.5, st: 'str', k: MELEE_K },
+  staff: { n: '지팡이', i: '🪄', gap: 1.1, m: .95, sp: STAFF_SP, st: 'int', far: true, k: STAFF_K }, bow: { n: '활', i: '🏹', gap: BOW_GAP, m: BOW_M, st: 'dex', far: true, k: BOW_DEX } };
+// 원거리 무기: 몬스터가 다가오는 시간(초)만큼 먼저 공격, 걸어가는 시간도 줄어듦 (FAR.walk 배)
+export const FAR = { lead: FAR_LEAD, walk: FAR_WALK };
 export const SLOTS = { weapon: { n: '무기', i: '🗡️' }, hat: { n: '모자', i: '⛑️' }, armor: { n: '갑옷', i: '🧥' }, shoes: { n: '신발', i: '👢' }, acc: { n: '장신구', i: '💍' } };
-export const STATS = { str: { n: '힘', i: '💪', d: '공격력 +2 · 체력 +5 · 물리 방어 +0.5' }, dex: { n: '민첩', i: '🏃', d: '공격 속도 +0.5% · 회피 +0.2% · 이동 속도 +0.3%' }, int: { n: '지력', i: '🧠', d: '마력 +2 · 마법 방어 +0.5 · 필살기 피해 +2% · 확률 +0.1%' }, luk: { n: '운', i: '🍀', d: '치명타 +0.25% · 드랍 +0.5% · 골드 +1% · 강화 성공 +0.05%p' } };
+export const STATS = { str: { n: '힘', i: '💪', d: `검·단검·망치 공격력 +${MELEE_K} · 체력 +5 · 물리 방어 +0.5` }, dex: { n: '민첩', i: '🏃', d: `활 공격력 +${BOW_DEX} · 공격 속도 +0.5% · 회피 +0.2% · 이동 속도 +0.3%` }, int: { n: '지력', i: '🧠', d: `지팡이 마력 +${STAFF_K} · 마법 방어 +0.5 · 필살기 피해 +2% · 확률 +0.1%` }, luk: { n: '운', i: '🍀', d: '치명타 +0.25% · 드랍 +0.5% · 골드 +1% · 강화 성공 +0.05%p' } };
 export const BASE = { weapon: [10, 32, 70, 120], hatDef: [2, 6, 13, 22], hatHp: [10, 30, 70, 120], armorDef: [4, 12, 26, 44], armorHp: [20, 60, 140, 240], shoesDef: [1, 4, 9, 15], shoesHp: [5, 20, 45, 80], acc: [2, 5, 9, 14] };
 export const PRICE_MUL = { weapon: 1, armor: .9, hat: .6, shoes: .5, acc: .8 };
 export const ENH_RATE = [100, 95, 90, 80, 70, 60, 50, 40, 35, 30];
@@ -61,7 +69,7 @@ export const itemIcon = it => it.slot === 'weapon' ? WTYPES[it.wt].i : SLOTS[it.
 export function itemName(it) { const base = it.slot === 'weapon' ? WTYPES[it.wt].n : it.slot === 'acc' ? `${STATS[it.stat].n} 반지` : SLOTS[it.slot].n; return `${TIERS[it.tier].n} ${base}${it.enh ? ` +${it.enh}` : ''}`; }
 export function itemDesc(it) {
   const m = enhMul(it), parts = [GRADES[it.grade].n];
-  if (it.slot === 'weapon') parts.push(`${it.wt === 'staff' ? '마력' : '공격'} ${Math.round(it.atk * m)}`, `간격 ${WTYPES[it.wt].gap}초`, ...(WTYPES[it.wt].sp ? ['필살기 +30%'] : []));
+  if (it.slot === 'weapon') parts.push(`${it.wt === 'staff' ? '마력' : '공격'} ${Math.round(it.atk * m)}`, `간격 ${WTYPES[it.wt].gap}초`, ...(WTYPES[it.wt].far ? ['원거리'] : []), ...(WTYPES[it.wt].sp ? ['필살기 +30%'] : []));
   else if (it.slot === 'acc') parts.push(`${STATS[it.stat].n} +${Math.round(it.val * m)}`);
   else parts.push(`방어 ${Math.round(it.def * m)}`, `체력 +${Math.round(it.hp * m)}`);
   it.opts.forEach(o => parts.push(`${OPT_N[o.k]} +${o.v}${o.k === 'crit' || o.k === 'gold' ? '%' : ''}`));
@@ -75,11 +83,12 @@ export function derive(c) {
     if (it.slot === 'acc') b[it.stat] += Math.round(it.val * m); else if (it.slot !== 'weapon') { def += it.def * m; hp += it.hp * m; }
     it.opts.forEach(o => (b[o.k] += o.v));
   }
-  const str = c.str + b.str, dex = c.dex + b.dex, int = c.int + b.int, luk = c.luk + b.luk, w = c.equip?.weapon, wt = WTYPES[w?.wt || 'sword'], staff = w?.wt === 'staff';
+  const str = c.str + b.str, dex = c.dex + b.dex, int = c.int + b.int, luk = c.luk + b.luk, w = c.equip?.weapon, wt = WTYPES[w?.wt || 'sword'], staff = wt.st === 'int', bow = wt.st === 'dex';
   const wAtk = w ? w.atk * enhMul(w) : 3;
-  // 공격력(힘)은 검·단검·망치, 마력(지력)은 지팡이가 씀. 기본 공격 피해 = hit
-  const atk = Math.round((staff ? 3 : wAtk) + str * 2 + c.lv), mag = Math.round((staff ? wAtk : 0) + int * 2 + c.lv);
-  return { b, str, dex, int, luk, atk, mag, hit: staff ? mag : atk, magic: staff,
+  // 공격력: 검·단검·망치는 힘, 활은 민첩. 마력: 지팡이는 지력. 기본 공격 피해 = hit
+  // 능력치·레벨에서 오는 피해는 공격 간격만큼 곱함 → 느린 무기는 한 방이 세고, 빠른 무기는 약하게 여러 번 (초당 피해는 비슷)
+  const atk = Math.round((staff ? 3 : wAtk) + ((bow ? dex * wt.k : str * (staff ? 2 : wt.k)) + c.lv) * (staff ? 1 : wt.gap)), mag = Math.round((staff ? wAtk : 0) + (int * (staff ? wt.k : 2) + c.lv) * (staff ? wt.gap : 1));
+  return { b, str, dex, int, luk, atk, mag, hit: staff ? mag : atk, magic: staff, far: !!wt.far, wt: w?.wt || 'sword',
     def: Math.round(def + str * .5), mdef: Math.round(def * .5 + int * .5), maxHp: Math.round(100 + c.lv * 20 + str * 5 + hp),
     gap: wt.gap / Math.min(2, 1 + dex * .005), spd: Math.min(1.6, 1 + dex * .003), crit: Math.min(60, 5 + luk * .25 + b.crit), eva: Math.min(40, dex * .2), sp: 5 + int * .1, spMul: (2 + int * .02) * (wt.sp || 1), goldB: luk + b.gold, dropB: luk * .5, enhB: Math.min(10, luk * .05) };
 }

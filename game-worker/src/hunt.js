@@ -1,13 +1,13 @@
 // 자동 사냥 계산 (기획서 4장). 화면의 전투는 보여 주기용이고, 실제 결과는 여기서 정해짐.
 // 흐른 시간만큼 몬스터를 한 마리씩 잡는 과정을 빠르게 흉내 냄.
-import { FIELDS, MONS, HUNT, POTS, BAG_MAX, derive, expPenalty, addExp, rollDrop, pick, itemName, biteDmg } from '../../assets/js/game-rules.js';
+import { FIELDS, MONS, HUNT, POTS, BAG_MAX, FAR, derive, expPenalty, addExp, rollDrop, pick, itemName, biteDmg } from '../../assets/js/game-rules.js';
 
 const MAX_STEPS = 300000;   // 한 번 계산할 때 최대 반복 (안전장치)
 
 // 몬스터 한 마리와 싸우기. 체력·물약은 st에 바로 반영. 쓰러지면 dead=true
 function fight(st, D, mon, boss) {
-  let t = boss ? 0 : (1 + Math.random()) / D.spd;  // 다음 몬스터까지 걸어가는 시간 (민첩이 높으면 빠름)
-  let hp = mon.hp, nextHit = .4, nextBite = 1.2, steps = 0, healed = 0;
+  let t = boss ? 0 : (1 + Math.random()) / D.spd * (D.far ? FAR.walk : 1);  // 다음 몬스터까지 걸어가는 시간 (민첩이 높으면 빠름, 원거리는 멀리서 쏘니 덜 걸음)
+  let hp = mon.hp, nextHit = .4, nextBite = 1.2 + (D.far ? FAR.lead : 0), steps = 0, healed = 0;   // 원거리: 몬스터가 다가오는 동안 먼저 공격
   const bite = boss ? 1.3 : 1.6, regen = D.maxHp * HUNT.huntRegen;
   const heal = () => { st.hp = Math.min(D.maxHp, st.hp + (t - healed) * regen); healed = t; };   // 사냥 중에도 체력이 천천히 참
   while (hp > 0 && steps++ < 20000) {
