@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1794768409332,
+  "updatedAt": 1794775448657,
   "source": "https://steamcommunity.com/workshop/browse/?appid=294100&section=readytouseitems&days=7",
   "items": [
     {
@@ -8,10 +8,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836076384",
       "title": "Anomaly Mutations Expanded",
       "preview": "https://images.steamusercontent.com/ugc/14261674108204357317/7E7CC4DB9306E967F64D86CFE92A1536538B194F/",
-      "subs": 8259,
-      "current": 7711,
-      "favorited": 1109,
-      "views": 32155,
+      "subs": 8363,
+      "current": 7803,
+      "favorited": 1120,
+      "views": 32497,
       "tags": [
         "Mod",
         "1.6",
@@ -22,7 +22,7 @@
       "size": 29499648,
       "collection": false,
       "summary": "Disclaimer This is my first mod, well, ever. I always wanted to make a Rimworld mod so this is my attempt at adding content I felt was missing from the Anomaly DLC. I've tried balancing these mutations around Vanilla val",
-      "prevRank": 2,
+      "prevRank": 1,
       "ko": "이 모드는 Anomaly DLC에 추가된 \"돌연변이\" 시스템의 공백을 메우는 것을 목표로 하며, 현재 기본 Anomaly Entities를 따라 설계된 총 48개의 새로운 돌연변이를 추가합니다."
     },
     {
@@ -31,10 +31,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837808326",
       "title": "Supply Shelf",
       "preview": "https://images.steamusercontent.com/ugc/14471707077254728827/8049B12204A704E4E24CC450B8DFDD66618F7D8B/",
-      "subs": 6184,
-      "current": 5860,
-      "favorited": 660,
-      "views": 19296,
+      "subs": 6325,
+      "current": 5993,
+      "favorited": 669,
+      "views": 19698,
       "tags": [
         "Mod",
         "1.7",
@@ -45,7 +45,7 @@
       "size": 927552,
       "collection": false,
       "summary": "Supply Shelf Adds two buildings, the supply shelf and the multi-link supply shelf . A workbench linked to a shelf uses the ingredients stored in it directly when working bills. Colonists and mechanoids no longer haul the",
-      "prevRank": 3,
+      "prevRank": 2,
       "ko": "두 개의 건물, 보급 선반과 다중 링크 보급 선반을 추가합니다. 선반과 연결된 작업대는 그 안에 저장된 재료를 바로 청구서 작업 시 활용한다."
     },
     {
@@ -54,10 +54,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839642536",
       "title": "SQUISHY Melee",
       "preview": "https://images.steamusercontent.com/ugc/10794798281109748820/43C158FAE832AC939AE5CE8EB9B385380D32363E/",
-      "subs": 5588,
-      "current": 5314,
-      "favorited": 740,
-      "views": 13482,
+      "subs": 5903,
+      "current": 5605,
+      "favorited": 771,
+      "views": 14302,
       "tags": [
         "Mod",
         "1.7"
@@ -67,7 +67,7 @@
       "size": 1253958,
       "collection": false,
       "summary": "Introducing Squishy Melee This mod is an add-on for SQUISHY Ranged that adds melee combat animations. Squishy Melee does not affect combat balance. It only adds visual effects. Recommended *PAWN DEPTH ORDER I created thi",
-      "prevRank": 4,
+      "prevRank": 3,
       "ko": "이 모드는 근접 전투 애니메이션을 추가하는 SQUISHY Ranged의 추가 기능입니다."
     },
     {
@@ -76,10 +76,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839580086",
       "title": "PAWN DEPTH ORDER",
       "preview": "https://images.steamusercontent.com/ugc/13391398177189960626/E5C8828C7E874F3A82BE1B555BFBD77FC6D4B13B/",
-      "subs": 3150,
-      "current": 3025,
-      "favorited": 302,
-      "views": 5435,
+      "subs": 3387,
+      "current": 3248,
+      "favorited": 323,
+      "views": 5821,
       "tags": [
         "Mod",
         "1.7"
@@ -89,7 +89,7 @@
       "size": 226623,
       "collection": false,
       "summary": "PAWN DEPTH ORDER 폰들이 앞뒤로 겹쳐 있을 때, 뒤에 있는 폰이 앞에 있는 폰에 가려지도록 그리는 순서를 자동으로 조정합니다. 무기, 손, 방패도 해당 폰에 귀속되며 함께 가려지고 정렬됩니다. When pawns overlap, their draw order is automatically adjusted so that pawns behind others are properly o",
-      "prevRank": 1,
+      "prevRank": 4,
       "ko": "폰들이 앞뒤로 겹쳐 있을 때, 뒤에 있는 폰이 앞에 있는 폰에 가려지도록 그리는 순서를 자동으로 조정합니다."
     },
     {
@@ -98,10 +98,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836765380",
       "title": "Cherokee Sling - Vehicle and Container Airlift",
       "preview": "https://images.steamusercontent.com/ugc/16776818813964644570/EA8EBB69E0ACE2E9B9EEB4594A5177017FF32C21/",
-      "subs": 4883,
-      "current": 4586,
-      "favorited": 661,
-      "views": 12552,
+      "subs": 4934,
+      "current": 4624,
+      "favorited": 665,
+      "views": 12678,
       "tags": [
         "Mod",
         "1.7",
@@ -121,10 +121,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837063832",
       "title": "Seamless Pockets",
       "preview": "https://images.steamusercontent.com/ugc/11610367328486528479/BA821761713939E81E69C50A956EE8A56EBAC3D6/",
-      "subs": 4018,
-      "current": 3780,
-      "favorited": 738,
-      "views": 13693,
+      "subs": 4105,
+      "current": 3867,
+      "favorited": 751,
+      "views": 13998,
       "tags": [
         "Mod",
         "1.7",
@@ -140,37 +140,14 @@
     },
     {
       "rank": 7,
-      "id": "3837906824",
-      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837906824",
-      "title": "Wayward Biomes: Tangled Hollows",
-      "preview": "https://images.steamusercontent.com/ugc/9617940594054675953/E0B5CAA5143193FEBE472BC1CB1DD27AF12F5D87/",
-      "subs": 1168,
-      "current": 1109,
-      "favorited": 152,
-      "views": 5071,
-      "tags": [
-        "Mod",
-        "1.7",
-        "1.6"
-      ],
-      "created": 1794410400000,
-      "updated": 1794696325000,
-      "size": 18544534,
-      "collection": false,
-      "summary": "The remnants of an ancient, colossal forest dotted with the hollow trunks of the enormous trees that once grew here. Though the soil is poor, this overgrown forest is still crowded with giant flowers and fungi. This fair",
-      "prevRank": 8,
-      "ko": "고대의 거대한 숲의 잔해에는 한때 이곳에서 자랐던 거대한 나무의 속이 빈 줄기가 곳곳에 자리잡고 있습니다."
-    },
-    {
-      "rank": 8,
       "id": "3838987100",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838987100",
       "title": "Cardboard Warcasket",
       "preview": "https://images.steamusercontent.com/ugc/12366862982721752899/0E8DAEF573E214769A8B9962EE3E287A8544751E/",
-      "subs": 141,
-      "current": 135,
-      "favorited": 65,
-      "views": 3445,
+      "subs": 155,
+      "current": 148,
+      "favorited": 72,
+      "views": 3791,
       "tags": [
         "Mod",
         "1.7",
@@ -181,8 +158,31 @@
       "size": 586563,
       "collection": false,
       "summary": "Add the borderline useless Cardboard Warcasket to the game! From the brilliant mind of a yayo huffing, smokeleaf crackin, flake flinging local tribal engineer. One day he woke up and thought: \"Hmmmm these Spacer Warcaske",
-      "prevRank": 12,
+      "prevRank": 8,
       "ko": "야요 허핑, 연기 잎사귀, 플레이크 던지는 지역 부족 기술자의 빛나는 마음에서 나온 것입니다."
+    },
+    {
+      "rank": 8,
+      "id": "3837906824",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837906824",
+      "title": "Wayward Biomes: Tangled Hollows",
+      "preview": "https://images.steamusercontent.com/ugc/9617940594054675953/E0B5CAA5143193FEBE472BC1CB1DD27AF12F5D87/",
+      "subs": 1370,
+      "current": 1302,
+      "favorited": 155,
+      "views": 5262,
+      "tags": [
+        "Mod",
+        "1.7",
+        "1.6"
+      ],
+      "created": 1794410400000,
+      "updated": 1794696325000,
+      "size": 18544534,
+      "collection": false,
+      "summary": "The remnants of an ancient, colossal forest dotted with the hollow trunks of the enormous trees that once grew here. Though the soil is poor, this overgrown forest is still crowded with giant flowers and fungi. This fair",
+      "prevRank": 7,
+      "ko": "고대의 거대한 숲의 잔해에는 한때 이곳에서 자랐던 거대한 나무의 속이 빈 줄기가 곳곳에 자리잡고 있습니다."
     },
     {
       "rank": 9,
@@ -190,10 +190,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3835938747",
       "title": "More Shader Visuals",
       "preview": "https://images.steamusercontent.com/ugc/11528140942039473253/59757A36F81D58FC3C4265C595DF5186574F7F75/",
-      "subs": 13455,
-      "current": 12392,
-      "favorited": 1177,
-      "views": 21919,
+      "subs": 13567,
+      "current": 12485,
+      "favorited": 1184,
+      "views": 22047,
       "tags": [
         "Mod",
         "1.7"
@@ -203,7 +203,7 @@
       "size": 767536,
       "collection": false,
       "summary": "More Shader Visuals Adds more shader-based lighting effects to the game. Every effect is drawn by a custom shader with minimal performance cost, and each one can be toggled and fine-tuned individually in the settings. In",
-      "prevRank": 7,
+      "prevRank": 9,
       "ko": "게임에 더 많은 셰이더 기반 조명 효과를 추가합니다. 모든 효과는 최소한의 성능 비용으로 사용자 정의 셰이더에 의해 그려지며 각 효과는 설정에서 개별적으로 전환하고 미세 조정할 수 있습니다."
     },
     {
@@ -212,10 +212,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836456822",
       "title": "Realistic Water",
       "preview": "https://images.steamusercontent.com/ugc/11683647938646096538/76A92F77B968A020822032FB665D705AF5D6B5C8/",
-      "subs": 5128,
-      "current": 4542,
-      "favorited": 669,
-      "views": 13773,
+      "subs": 5264,
+      "current": 4664,
+      "favorited": 681,
+      "views": 14040,
       "tags": [
         "Mod",
         "1.7"
@@ -234,22 +234,22 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837981505",
       "title": "[KCB] Liftoff Effects (이륙 이펙트)",
       "preview": "https://images.steamusercontent.com/ugc/9889155727940097281/3595704D9EF4C97D316B91FABD4EFDD21AC23DA1/",
-      "subs": 2756,
-      "current": 2610,
-      "favorited": 247,
-      "views": 4810,
+      "subs": 2839,
+      "current": 2689,
+      "favorited": 252,
+      "views": 4887,
       "tags": [
         "Mod",
         "1.7",
         "1.6"
       ],
       "created": 1794419106000,
-      "updated": 1794506760000,
-      "size": 1094668,
+      "updated": 1794770425000,
+      "size": 1699920,
       "collection": false,
-      "summary": "Transport pods and the Odyssey shuttle now lift off like rockets: flame, smoke, a slow rise, then acceleration. Save-safe. Mod: Orca Shuttle ------------------------------------------------ 수송 포드와 오디세이 왕복선이 로켓처럼 불꽃과 연기를 ",
-      "prevRank": 14,
-      "ko": "수송 포드와 오디세이 왕복선이 로켓처럼 불꽃과 연기를 내뿜으며 천천히 떠올랐다가 점점 빨라지며 날아갑니다. 세이브 호환."
+      "summary": "Liftoff Effects Transport pods and shuttles lift off like rockets: engine flames from each nozzle, launch smoke and a smoke trail, a slow rise, then acceleration away from the map. Save-safe, and it can be added to or re",
+      "prevRank": 11,
+      "ko": "수송 포드와 왕복선이 로켓처럼 이륙합니다. 분사구마다 엔진 불꽃이 나오고, 발사 연기와 연기 꼬리를 남기며 천천히 떠올랐다가 점점 빨라지며 날아갑니다."
     },
     {
       "rank": 12,
@@ -257,10 +257,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837314353",
       "title": "The Dead Man's Switch - RatkinExpand",
       "preview": "https://images.steamusercontent.com/ugc/18425955992400237621/C09023863A63BC8253E2700E3181D016E1AEF0BF/",
-      "subs": 3560,
-      "current": 3317,
-      "favorited": 510,
-      "views": 11742,
+      "subs": 3596,
+      "current": 3348,
+      "favorited": 518,
+      "views": 11864,
       "tags": [
         "Mod",
         "1.7",
@@ -272,7 +272,7 @@
       "size": 12856783,
       "collection": false,
       "summary": "With their outdated technology and struggling economies, the ratkin kingdoms stood little chance against the rogue mechanoids scattered across the planet. One knightly order after another was torn apart by relentless gun",
-      "prevRank": 11,
+      "prevRank": 12,
       "ko": "구식 기술과 어려움을 겪고 있는 경제로 인해 쥐족 왕국은 행성 전역에 흩어져 있는 불량 기계체에 맞서 싸울 가능성이 거의 없었습니다."
     },
     {
@@ -281,10 +281,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3835595282",
       "title": "Windows (Continued) Continued",
       "preview": "https://images.steamusercontent.com/ugc/17909829238785531899/C79CED98007874F390D1421986FA02232D6E5A53/",
-      "subs": 2885,
-      "current": 2737,
-      "favorited": 324,
-      "views": 9745,
+      "subs": 2923,
+      "current": 2772,
+      "favorited": 325,
+      "views": 9823,
       "tags": [
         "Mod",
         "1.7",
@@ -297,7 +297,7 @@
       "size": 1109608,
       "collection": false,
       "summary": "No one can take my windows from me. Temporary RimWorld 1.7 continuation of Owlchemist's Windows, itself a fork and continuation of Open The Windows by jptrrs. Preserves Yap's seamless wall-integrated textures and Owlchem",
-      "prevRank": 15,
+      "prevRank": 13,
       "ko": "Yap의 매끄러운 벽 통합 텍스처와 Owlchemist의 재료 인식 창 구성을 보존합니다. 금속, 나무, 돌로 만든 창 프레임이 주변 벽과 일치합니다."
     },
     {
@@ -306,10 +306,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838082034",
       "title": "Super Awesome Epic Weapons",
       "preview": "https://images.steamusercontent.com/ugc/16549108290925420817/C20D313CED0549AF0E6799E0F7145C1949A44CC8/",
-      "subs": 48,
-      "current": 41,
-      "favorited": 26,
-      "views": 2135,
+      "subs": 54,
+      "current": 47,
+      "favorited": 27,
+      "views": 2220,
       "tags": [
         "Mod",
         "1.7"
@@ -319,7 +319,7 @@
       "size": 150885,
       "collection": false,
       "summary": "I know this has been the most anticipated mod since Vanilla Gravships 2. Its finally here. This is the best art of all time.",
-      "prevRank": 20,
+      "prevRank": 14,
       "ko": "저는 이것이 Vanilla Gravships 2 이후 가장 기대되는 모드라는 것을 알고 있습니다. 드디어 출시되었습니다."
     },
     {
@@ -328,10 +328,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836767484",
       "title": "[Y]Unstable Genetics And Xenotypes",
       "preview": "https://images.steamusercontent.com/ugc/12471976699333184343/2C26E55EBBCF58293DE3D8EA5CFD73C2B8CB2AA7/",
-      "subs": 1523,
-      "current": 1364,
-      "favorited": 351,
-      "views": 14843,
+      "subs": 1538,
+      "current": 1380,
+      "favorited": 354,
+      "views": 15018,
       "tags": [
         "Mod",
         "1.7"
@@ -341,7 +341,7 @@
       "size": 3877819,
       "collection": false,
       "summary": "Unstable Genetics adds experimental gene assembly gameplay to the base game, with multiple new mechanics. -1 building -1 xenotype, -17 related genes, -1 storyteller; -1 backstory. This mod adds the following content to t",
-      "prevRank": 13,
+      "prevRank": 15,
       "ko": "Unstable Genetics는 여러 가지 새로운 메커니즘과 함께 실험적인 유전자 조립 게임플레이를 기본 게임에 추가합니다."
     },
     {
@@ -350,10 +350,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837999796",
       "title": "Titan Vehicles (Continued)",
       "preview": "https://images.steamusercontent.com/ugc/12020440468032264668/58EC5135462E56CBAAFF9C4E7F16BB2999BAD71A/",
-      "subs": 1125,
-      "current": 1070,
-      "favorited": 153,
-      "views": 6577,
+      "subs": 1163,
+      "current": 1106,
+      "favorited": 156,
+      "views": 6816,
       "tags": [
         "Mod",
         "1.7",
@@ -364,7 +364,7 @@
       "size": 5359771,
       "collection": false,
       "summary": "Original mod by Halituis Amaricanous Continued by Nepenthe If the original author requests it, I will remove this update. -- Updated to 1.7, fixes also backported to 1.6 - Fix Warchief shield save errors and keep Superch",
-      "prevRank": 9,
+      "prevRank": 16,
       "ko": "원본 작성자가 요청하면 이 업데이트를 삭제하겠습니다."
     },
     {
@@ -373,10 +373,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837774191",
       "title": "Kiiro Race - Devon Rex Xenotype (绮罗德文异种)",
       "preview": "https://images.steamusercontent.com/ugc/12082137762489397892/8DF91BB0448353191DA67B343B68C9B15BE4E229/",
-      "subs": 4959,
-      "current": 4713,
-      "favorited": 285,
-      "views": 7622,
+      "subs": 4971,
+      "current": 4725,
+      "favorited": 286,
+      "views": 7667,
       "tags": [
         "Mod",
         "1.7",
@@ -396,10 +396,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836639070",
       "title": "Milira's Halo Glow",
       "preview": "https://images.steamusercontent.com/ugc/11771428390454287553/1C183C33BCDB811E3CBCA0944E214D1779F706FB/",
-      "subs": 1166,
-      "current": 1080,
-      "favorited": 206,
-      "views": 6835,
+      "subs": 1176,
+      "current": 1088,
+      "favorited": 208,
+      "views": 6944,
       "tags": [
         "Mod",
         "1.7",
@@ -410,7 +410,7 @@
       "size": 3737654,
       "collection": false,
       "summary": "This mod turns the Milira's halo into a glowing “light bulb.” You can also switch modes in the mod settings to turn the halo into a disco ball—just like on the cover! Disclaimer: No Milira were harmed during the developm",
-      "prevRank": 19,
+      "prevRank": 18,
       "ko": "이 모드는 Milira의 후광을 빛나는 \"전구\"로 바꿉니다. 표지에 있는 것처럼 모드 설정에서 모드를 전환하여 후광을 디스코 볼로 바꿀 수도 있습니다!"
     },
     {
@@ -419,10 +419,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836369455",
       "title": "Baby Birds Can't Fly",
       "preview": "https://images.steamusercontent.com/ugc/11462599331613730073/A47BB05CB984307DF6D884EE88E7FF02D1CE2517/",
-      "subs": 5496,
-      "current": 4837,
-      "favorited": 149,
-      "views": 5152,
+      "subs": 5553,
+      "current": 4872,
+      "favorited": 151,
+      "views": 5186,
       "tags": [
         "Mod",
         "1.7",
@@ -433,30 +433,31 @@
       "size": 154567,
       "collection": false,
       "summary": "Description This mod disable a bird's flying ability when it's at the youngest lifestage. Works with any modded bird if it use the vanilla Bird bodyplan. Modders can include or exclude additional animals through xml patc",
-      "prevRank": 18,
+      "prevRank": 19,
       "ko": "이 모드는 새가 가장 어린 단계에 있을 때 새의 비행 능력을 비활성화합니다. 바닐라 버드 바디플랜을 사용하는 경우 모든 개조된 새와 함께 작동합니다."
     },
     {
       "rank": 20,
-      "id": "3838111458",
-      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838111458",
-      "title": "Weather Reimagined",
-      "preview": "https://images.steamusercontent.com/ugc/13986746735857019235/6AD9C49781067A81B5739D9E29539A6094671BB1/",
-      "subs": 3127,
-      "current": 2820,
-      "favorited": 466,
-      "views": 8405,
+      "id": "3839572648",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839572648",
+      "title": "Everyday Icons and Info",
+      "preview": "https://images.steamusercontent.com/ugc/16916306249883101574/74821EB554AEDF1053EBB347B9EBA38A71562707/",
+      "subs": 293,
+      "current": 286,
+      "favorited": 27,
+      "views": 698,
       "tags": [
         "Mod",
-        "1.7"
+        "1.7",
+        "1.6"
       ],
-      "created": 1794435346000,
-      "updated": 1794729115000,
-      "size": 3289558,
+      "created": 1794661580000,
+      "updated": 1794671166000,
+      "size": 6016791,
       "collection": false,
-      "summary": "A visual overhaul for fire, snow, weather and shadows in RimWorld 1.7. Rain, snow, blizzards, fog, auroras and lightning all get a new look. You can turn each feature on or off individually in the mod settings. I tested ",
-      "prevRank": 16,
-      "ko": "RimWorld 1.7의 불, 눈, 날씨 및 그림자에 대한 시각적 점검."
+      "summary": "Icons, numbers and reasons on the screens you open all day. Everyday Icons and Info makes the screens you open every day easier to read: the Work tab, the inspect pane, bills and the History tab. It only adds to what is ",
+      "prevRank": null,
+      "ko": "일상 아이콘 및 정보를 사용하면 작업 탭, 검사 창, 청구서 및 기록 탭 등 매일 여는 화면을 더 쉽게 읽을 수 있습니다."
     }
   ]
 }

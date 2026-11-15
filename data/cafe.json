@@ -1,8 +1,21 @@
 {
-  "updatedAt": 1794762006811,
+  "updatedAt": 1794775455012,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 198,
+      "title": "나만의 편의성 모드 업데이트 했습니다!",
+      "board": "🗺️ 림월드 자유 게시판",
+      "head": null,
+      "author": "김치복",
+      "time": 1794763328553,
+      "comments": 0,
+      "likes": 0,
+      "image": false,
+      "thumb": null,
+      "url": "https://cafe.naver.com/kimchibok/198"
+    },
     {
       "id": 197,
       "title": "안녕하세요 반갑습니다",
@@ -10,7 +23,7 @@
       "head": null,
       "author": "진다희",
       "time": 1794755119557,
-      "comments": 0,
+      "comments": 1,
       "likes": 0,
       "image": false,
       "thumb": null,
@@ -23,7 +36,7 @@
       "head": null,
       "author": "뿔베리",
       "time": 1794712681817,
-      "comments": 2,
+      "comments": 4,
       "likes": 0,
       "image": true,
       "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMTVfMTY4/MDAxNzk0Njc0MTUzNzA1.flOM0JkTlrCeAyRq7dMuDO9xy449NoanLDLKD8Rs4pIg.9JkrbuPxuxrpvMOYNbEC2p4ViNrQzYDh7qSgOikTuykg.JPEG/20261114143410_1.jpg",
@@ -249,19 +262,6 @@
       "image": false,
       "thumb": null,
       "url": "https://cafe.naver.com/kimchibok/178"
-    },
-    {
-      "id": 177,
-      "title": "안일하게 터졌습니다.... [ 림월드 500% 상한해제 (3) ]",
-      "board": "⏰ 영상 알림",
-      "head": "풀치복",
-      "author": "김치복2",
-      "time": 1794184460313,
-      "comments": 0,
-      "likes": 0,
-      "image": false,
-      "thumb": null,
-      "url": "https://cafe.naver.com/kimchibok/177"
     }
   ]
 }
