@@ -163,6 +163,12 @@
       "ko": "야요 허핑, 연기 잎사귀, 플레이크 던지는 지역 부족 기술자의 빛나는 마음에서 나온 것입니다.",
       "at": 1794721707083
     },
+    "3839399827": {
+      "src": "This standalone compatibility patch for *The Dead Man's Switch* base mod and its expansions fixes load errors, mech collision, weapon configs, sound issues, and cross-mod bugs in both vanilla and Comb",
+      "full": "*The Dead Man's Switch* 기본 모드 및 확장판을 위한 이 독립형 호환성 패치는 바닐라와 Comb 모두에서 로드 오류, 기계 충돌, 무기 구성, 사운드 문제 및 크로스 모드 버그를 수정합니다.",
+      "ko": "*The Dead Man's Switch* 기본 모드 및 확장판을 위한 이 독립형 호환성 패치는 바닐라와 Comb 모두에서 로드 오류, 기계 충돌, 무기 구성, 사운드 문제 및 크로스 모드 버그를 수정합니다.",
+      "at": 1794778452896
+    },
     "3839572648": {
       "src": "Everyday Icons and Info makes the screens you open every day easier to read: the Work tab, the inspect pane, bills and the History tab.",
       "full": "일상 아이콘 및 정보를 사용하면 작업 탭, 검사 창, 청구서 및 기록 탭 등 매일 여는 화면을 더 쉽게 읽을 수 있습니다.",
