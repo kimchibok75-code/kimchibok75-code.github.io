@@ -1,7 +1,7 @@
 # 김치복 홈페이지 — Claude 작업 메모
 
 > 다른 컴퓨터(사무실 등)에서 이어서 작업할 때 Claude가 가장 먼저 읽는 파일입니다.
-> 마지막 정리: 2026-11-16 (치복 타운 4단계까지)
+> 마지막 정리: 2026-11-16 (치복 타운 4단계 + 할 이유·아이콘·보안까지)
 
 ## 꼭 지킬 것
 - **설명은 항상 쉬운 한국어로.** 영어로 설명하지 않기. 사용자가 해야 할 일은 "1. 어디를 → 2. 무엇을 누르기"처럼 구체적인 순서로 적기.
@@ -225,8 +225,26 @@
   2. 같은 폴더에서 `npx --yes wrangler@4 dev --local --port 8787` (백그라운드로)
   3. 미리보기에서 `http://localhost:5173/game.html?api=http://localhost:8787` (`?api=`는 localhost에서만 먹힘)
 
+### 할 이유 · 아이콘 · 밸런스 · 보안 — 2026-11-16 배포, 테스트 통과
+- 기획서 **4-8**에 정리. 숫자는 game-rules.js 맨 아래 (`DAILY_POOL, dailyGold, weekBox, EVENTS, LIVE_FX, liveGift, VILLAGE, giveScore, worldFx`)
+- **마을 소식판** (`openNews`, 오른쪽 📋 버튼): 오늘 의뢰 · 공동 건설 · 마을 소식. 상단 `#evChip`에 지금 사건/방송 보너스
+  - 매일 의뢰는 `life.daily`(그날 시작할 때의 `cnt` 값을 base로 저장) · `life.stamp`. 서버 `play()`가 매번 `checkDaily` → 응답 `daily`
+  - 마을 사건은 시간으로 정해짐 (`eventAt`, 저장 없음). 방송 보너스·공동 건설 효과는 서버가 `c.gfx = worldFx(...)`로 넣고 `statFx`가 더함
+  - 서버: `GET /api/news`(20초 기억), `/api/village/give`, `/api/live/checkin`, 관리자 `/api/admin/live {min}`. 표는 `migrations/0010_village.sql` (village, village_give, chronicle)
+  - 방송 상태: wrangler.toml의 `[[services]] LIVE` → kimchibok-live Worker를 직접 부름
+- **아이콘**: `assets/js/game-icons.js` — 이모지 대신 직접 그린 SVG (테두리 + 색 면). 화면 글자는 `iconize()`가 자동으로 바꾸고, 캔버스는 `fillTextIco`
+  - 새 이모지를 쓰면 `ICONS`에 그림을 그리고 `EMOJI` 표에 이어 줘야 함 (안 하면 이모지 그대로 보임)
+- **밸런스**(사냥 봇 시험): 55레벨까지 약 13~15시간, 시간당 골드 ≈ 1,500 × 레벨 + 8,000. 의뢰 = 사냥 4분, 도장 상자 = 1시간, 방송 출석 = 8분어치
+- **보안·부하**
+  - 웹소켓: 1초 6개(최대 12개)를 넘으면 4008로 끊음, 인증 안 한 연결 10초 뒤 정리, 하루 채팅 1,500줄
+  - 로그인: 같은 IP에서 계속 틀리면 잠금 (`login_fails` 표, `migrations/0009_security.sql`)
+  - 낚시: 서버가 바늘 위치를 시간으로 계산해서 판정 (화면이 보낸 결과를 믿지 않음). 하루 400마리 넘으면 값·코인 절반
+  - `own()`(Object.hasOwn)으로 `__proto__` 같은 이름 막음, 링크 허용은 주소 앞부분이 정확히 같을 때만
+  - 위치 저장 45초, 사냥 정산 60초, 방송 확인 3분, 집 목록은 서버가 바뀐 집만 알려 줌
+
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감
+- 다 지은 공동 건설(꽃밭·등대 등)을 지도에 그림으로 보여 주기
 
 ## 남은 일 / 확인할 것
 - **실제 생방송 때 확인하기**: 2026-11-14(토) 밤 9시 방송이 첫 실전 테스트
