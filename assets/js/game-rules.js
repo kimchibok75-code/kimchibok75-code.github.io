@@ -25,7 +25,7 @@ export const allOk = o => Object.values(o).every(Boolean);
 
 // ───────── 성장 (기획서 3장) ─────────
 export const pick = a => a[Math.floor(Math.random() * a.length)];
-export const needExp = L => Math.round(50 * Math.pow(L, 1.6));
+export const needExp = L => Math.round(50 * Math.pow(L, 2));
 export const GRADES = { normal: { n: '일반', c: '#6f7a8a', m: 1, o: 0 }, uncommon: { n: '고급', c: '#2f8f45', m: 1.15, o: 0 }, rare: { n: '희귀', c: '#2f6fd0', m: 1.3, o: 1 }, epic: { n: '영웅', c: '#8a48cc', m: 1.5, o: 2 }, legend: { n: '전설', c: '#e0731c', m: 1.8, o: 3 } };
 export const TIERS = [{ n: '들판', req: 1, price: 100 }, { n: '숲', req: 10, price: 900 }, { n: '협곡', req: 25, price: 3500 }, { n: '공장', req: 40, price: 10000 }];
 export const WTYPES = { sword: { n: '검', i: '🗡️', gap: 1.0, m: 1 }, dagger: { n: '단검', i: '🔪', gap: .7, m: .7 }, hammer: { n: '망치', i: '🔨', gap: 1.5, m: 1.5 }, staff: { n: '지팡이', i: '🪄', gap: 1.1, m: .95, sp: 1.3 } };
@@ -84,3 +84,40 @@ export function newCharacter() {
 }
 // 능력치에 쓴 포인트 수 (전부 5에서 시작)
 export const spentPoints = c => c.str + c.dex + c.int + c.luk - 20;
+
+// ───────── 사냥터 (기획서 4장) ─────────
+export const LV_CAP = 55;            // 지금 열린 최고 레벨 (사냥터를 추가하면 올리기)
+export const BAG_MAX = 40;           // 가방 칸. 가득 차면 주운 장비는 자동으로 팔림
+export const HUNT = { offlineMax: 8 * 3600, offlineEff: .7, onlineGap: 90, bossEvery: 1800, deathLoss: .1, townRegen: .02, huntRegen: .02 };
+export const POTS = { s: { n: '작은 음료', i: '🥤', d: '체력 +50', price: 20, heal: () => 50 }, l: { n: '큰 음료', i: '🧋', d: '체력 +200', price: 70, heal: () => 200 }, xl: { n: '특대 음료', i: '🍹', d: '최대 체력의 50%', price: 200, heal: max => Math.round(max * .5) } };
+// 몬스터: n 이름, lv, hp, atk, exp, gold, c 색, s 크기, f 생김새
+const M = (n, lv, hp, atk, exp, gold, c, s, f) => ({ n, lv, hp, atk, exp, gold, c, s, f });
+export const MONS = {
+  rat: M('풀쥐', 1, 30, 4, 6, 3, '#c2ad92', .75, 'ears'), hen: M('성난 닭', 4, 70, 8, 14, 6, '#fff7ea', .85, 'beak'), boar: M('아기 멧돼지', 8, 150, 14, 30, 12, '#a87452', 1, 'snout'),
+  wolf: M('숲 늑대', 12, 260, 22, 48, 18, '#8d97a6', 1, 'ears'), shroom: M('독버섯', 18, 420, 30, 75, 26, '#f3e6cf', .95, 'cap'), vine: M('덩굴 괴물', 23, 640, 42, 110, 35, '#5aa04f', 1.1, 'leaf'),
+  eagle: M('협곡 독수리', 27, 900, 55, 150, 45, '#9b6a3d', 1, 'wing'), turtle: M('돌 거북', 33, 1500, 60, 210, 60, '#a3b07a', 1.1, 'shell'), golem: M('바위 골렘', 38, 2200, 85, 280, 75, '#9a958c', 1.25, 'rock'),
+  drone: M('녹슨 드론', 42, 2800, 110, 360, 95, '#b58a5a', .9, 'bot'), guard: M('경비 로봇', 48, 4000, 140, 470, 120, '#7f8fa3', 1.15, 'bot'), fixbot: M('폭주 수리봇', 53, 5500, 170, 600, 150, '#e0a63a', 1.1, 'bot'),
+};
+export const FIELDS = [
+  { id: 'plain', n: '바람 들판', i: '🌾', min: 1, max: 10, tier: 0, mons: ['rat', 'hen', 'boar'], boss: M('왕 멧돼지', 12, 2000, 40, 400, 300, '#7d4f33', 2, 'snout'), g: ['#9ad27f', '#91ca75'], deco: 'flower' },
+  { id: 'forest', n: '깊은 숲', i: '🌲', min: 10, max: 25, tier: 1, mons: ['wolf', 'shroom', 'vine'], boss: M('숲의 거대 곰', 27, 12000, 120, 2500, 1500, '#6b4a33', 2.2, 'ears'), g: ['#5f9e58', '#589651'], deco: 'tree' },
+  { id: 'canyon', n: '바위 협곡', i: '⛰️', min: 25, max: 40, tier: 2, mons: ['eagle', 'turtle', 'golem'], boss: M('협곡의 주인', 42, 50000, 260, 9000, 4000, '#7a746b', 2.3, 'rock'), g: ['#d2b48a', '#c9ab80'], deco: 'rock' },
+  { id: 'factory', n: '고장 난 공장', i: '🏚️', min: 40, max: 55, tier: 3, mons: ['drone', 'guard', 'fixbot'], boss: M('공장장 기계', 57, 160000, 520, 25000, 10000, '#5e6b7d', 2.4, 'bot'), g: ['#a3abb5', '#9aa2ad'], deco: 'pipe' },
+];
+// 내 레벨이 몬스터보다 10 이상 높으면 경험치 줄어듦
+export const expPenalty = (lv, mlv) => { const d = lv - mlv; return d >= 10 ? Math.max(.2, 1 - (d - 9) * .1) : 1; };
+// 레벨업 (최고 레벨에서는 경험치가 더 쌓이지 않음). 올라간 레벨 수를 돌려줌
+export function addExp(c, n) {
+  let up = 0; c.exp += n;
+  while (c.lv < LV_CAP && c.exp >= needExp(c.lv)) { c.exp -= needExp(c.lv); c.lv++; c.points += POINTS_PER_LV; up++; if (c.lv % 10 === 0) c.title = `🏷️ Lv.${c.lv} 달성`; }
+  if (c.lv >= LV_CAP) c.exp = Math.min(c.exp, needExp(c.lv) - 1);
+  return up;
+}
+// 몬스터가 떨어뜨리는 장비 (기본 6%, 운으로 늘어남, 보스는 항상 + 좋은 등급 10배)
+export function rollDrop(tier, dropB, boss) {
+  const lb = 1 + dropB / 100;
+  if (!boss && Math.random() * 100 >= 6 * lb) return null;
+  const bm = boss ? 10 : 1, r = Math.random() * 100;
+  const grade = r < .1 * lb * bm ? 'legend' : r < 1 * lb * bm ? 'epic' : r < 5 * lb * bm ? 'rare' : r < 20 * lb * bm ? 'uncommon' : 'normal';
+  return makeItem(pick(Object.keys(SLOTS)), tier, { grade, wt: pick(Object.keys(WTYPES)) });
+}
