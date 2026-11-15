@@ -53,6 +53,7 @@ h3.sub { margin: 14px 0 6px; font-size: 15px; }
 .titles li { align-items: start; } .titles li.lock { opacity: .72; } .titles li.on { border-color: #f2c14e; background: #fffaf0; }
 .titles .nm { color: #8a5a12; } .titles .fx { display: block; color: #2f8f45; font-weight: 700; }
 .tbar { display: block; height: 5px; background: var(--paper-2); border-radius: 3px; margin: 4px 0 2px; overflow: hidden; } .tbar i { display: block; height: 100%; background: #e9a23b; }
+.btns.cheat { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; } .admform select { font: inherit; padding: 6px; border-radius: 8px; border: 1px solid var(--line); }
 .ttabs { flex-wrap: wrap; } .ttabs button { flex: 0 0 auto; padding: 6px 10px; white-space: nowrap; word-break: keep-all; }
 .gtablebtn { width: 100%; margin: 8px 0 2px; }
 .gtable-wrap { overflow-x: auto; margin: 8px 0; -webkit-overflow-scrolling: touch; }
@@ -1537,6 +1538,7 @@ function applyHit(m, h, D, src) {
 function hitMe(m, D) {
   if (Math.random() * 100 < D.eva) { fxBurst(me.x, me.y - 26, '#bfefff', 5, 90, 2.4, 0); return floatText(me.x, me.y - 52, '회피', '#9fe0ff'); }
   const dmg = biteDmg(m.d, D);
+  if (!dmg) { fxBurst(me.x, me.y - 26, '#ffe27a', 5, 90, 2.4, 0); return floatText(me.x, me.y - 52, '무적', '#ffe27a'); }
   me.hp -= dmg; me.hurt = .22; fxShake(m.boss ? 7 : 3.5); m.sq = .6;
   fxBurst(me.x, me.y - 26, m.d.mg ? '#c9a2ff' : '#ff8a7a', 7, 130, 2.8);
   floatText(me.x, me.y - 52, `-${dmg}`, '#ff7b6b', 17);
@@ -2805,7 +2807,7 @@ const fmtT = t => new Date(t).toLocaleString('ko-KR', { month: 'numeric', day: '
 const ADM = { tab: 'reports', done: false, chat: null, user: null, q: { nick: '', text: '', who: '' } };
 async function openAdmin(tab = ADM.tab) {
   ADM.tab = tab;
-  const tabs = [['reports', '🚨 신고함'], ['chat', '💬 채팅'], ['user', '🔎 사람'], ['notice', '📢 공지']];
+  const tabs = [['reports', '🚨 신고함'], ['chat', '💬 채팅'], ['user', '🔎 사람'], ['notice', '📢 공지'], ['cheat', '🧪 치트']];
   const show = (body, ready) => openModal(`<h3>🛡️ 관리자 화면</h3><div class="rtabs">${tabs.map(([k, n]) => `<button data-t="${k}" aria-pressed="${k === tab}">${n}</button>`).join('')}</div><div class="adm">${body}</div><button class="close" data-close>닫기</button>`,
     el => { el.querySelector('.rtabs').onclick = e => { const t = e.target.closest('[data-t]')?.dataset.t; if (t) openAdmin(t); }; wire(el.querySelector('.adm'), async (x, b) => { try { await ready(x, el, b); } catch (err) { toast(err.message); } }); });
   if (tab === 'reports') {
@@ -2852,6 +2854,24 @@ async function openAdmin(tab = ADM.tab) {
         if (a === 'kick') await api('/api/admin/kick', { id: u.id });
         if (a === 'ban') { if (!u.banned && !confirm(`${u.nick}님을 영구 차단할까요?`)) return; await api('/api/admin/ban', { id: u.id, on: !u.banned }); }
         toast('처리했어요'); ADM.user = (await api(`/api/admin/user?nick=${encodeURIComponent(u.nick)}`)).user; openAdmin('user');
+      });
+  }
+  if (tab === 'cheat') {   // 관리자 시험용 치트 (내 캐릭터만 바뀜, 서버 기록에 남음)
+    const god = !!me.life?.god, B = (k, n, label) => `<button class="mini" data-x="${k}:${n}">${label}</button>`;
+    return show(`<p class="muted">시험용이에요. <b>내 캐릭터만</b> 바뀌고, 쓴 기록은 서버에 남아요.</p>
+      <div class="btns cheat">${B('god', 0, god ? '😇 갓모드 끄기' : '😇 갓모드 켜기 (안 맞음 · 공격력 10배)')}</div>
+      <div class="btns cheat">${B('gold', 1e6, '🪙 골드 +100만')}${B('gold', 1e8, '🪙 골드 +1억')}${B('lv', 55, '🌟 55레벨')}${B('lv', 1, '🌱 1레벨로')}</div>
+      <div class="btns cheat">${B('gear', 0, '🗡️ 최고 장비 + 최고 강화')}${B('titles', 0, '🏷️ 칭호 모두')}${B('skins', 0, '👕 스킨 모두')}${B('pots', 0, '🥤 물약·체력 가득')}</div>
+      <div class="btns cheat">${B('wood', 1000, '🪵 목재 +1000')}${B('stone', 1000, '🪨 석재 +1000')}${B('fishCoin', 1000, '🐚 낚시 코인 +1000')}${B('farmCoin', 1000, '🌻 텃밭 코인 +1000')}</div>
+      <div class="btns cheat">${B('farm', 0, '🌾 텃밭 다 자람')}${B('work', 0, '🪓 알바 창고 가득')}${B('cool', 0, '⏱️ 기다리는 시간 없애기')}</div>
+      <p class="muted" style="margin-bottom:4px">직접 숫자 넣기 (빼려면 -를 붙여요)</p>
+      <div class="admform"><input id="cN" type="number" placeholder="숫자" value="1000"><select id="cK"><option value="gold">골드 더하기</option><option value="exp">경험치 더하기</option><option value="lv">레벨 정하기</option><option value="wood">목재 더하기</option><option value="stone">석재 더하기</option><option value="fishCoin">낚시 코인 더하기</option><option value="farmCoin">텃밭 코인 더하기</option></select><button class="mini main" data-x="custom">적용</button></div>`,
+      async (x, el) => {
+        let [k, n] = x.split(':');
+        if (k === 'custom') { k = el.querySelector('#cK').value; n = el.querySelector('#cN').value; }
+        if (k === 'lv' && !confirm(`${n}레벨로 바꿀까요? 능력치가 다시 계산돼요.`)) return;
+        const j = await act('/api/admin/cheat', { k, n: Number(n) }); if (!j) return;
+        toast('🧪 ' + j.msg); sysMsg('🧪 치트: ' + j.msg); if (k === 'god' || k === 'skins') openAdmin('cheat');
       });
   }
   if (tab === 'notice') {

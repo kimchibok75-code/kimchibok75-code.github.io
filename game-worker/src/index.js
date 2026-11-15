@@ -2,7 +2,7 @@
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
 import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, FISH_GRADES, rollFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
-  fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, FISH_SHOP, fishZone, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START } from '../../assets/js/game-rules.js';
+  fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, FISH_SHOP, fishZone, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES } from '../../assets/js/game-rules.js';
 import { canHouse, isSolid, NODES, BACK } from '../../assets/js/game-map.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
@@ -632,12 +632,49 @@ async function report(req, env, user) {
   return json({ ok: true });
 }
 // 관리자 화면 (김치복님): 신고함 · 채팅 기록 · 사람 찾기(임시 비밀번호·채팅 금지·내보내기·영구 차단) · 공지
+// 관리자 치트 (자기 캐릭터만). k = 종류, n = 숫자
+const CHEAT_MAX = 1e9;
+function cheat(c, k, b, at, env, user) {
+  const n = Math.max(-CHEAT_MAX, Math.min(CHEAT_MAX, Math.round(Number(b.n) || 0))), L = c.life, add = (o, key) => { o[key] = Math.max(0, (o[key] || 0) + n); };
+  if (k === 'gold') { c.gold = Math.max(0, c.gold + n); return { msg: `골드 ${n >= 0 ? '+' : ''}${n.toLocaleString()}` }; }
+  if (k === 'exp') { c.exp = Math.max(0, c.exp + n); return { msg: `경험치 +${n.toLocaleString()}` }; }
+  if (k === 'lv') {
+    const lv = Math.max(1, Math.min(LV_CAP, n || 1)); c.lv = lv; c.exp = 0;
+    if (totalPoints(lv) < spentPoints(c)) { c.str = c.dex = c.int = c.luk = 5; c.presets = c.presets.map(p => ({ ...p, s: [5, 5, 5, 5] })); }
+    c.points = totalPoints(lv) - spentPoints(c); c.hp = derive(c).maxHp; return { msg: `${lv}레벨로 바꿨어요` };
+  }
+  if (k === 'wood' || k === 'stone') { add(L.res, k); return { msg: `${k === 'wood' ? '목재' : '석재'} +${n}` }; }
+  if (k === 'fishCoin' || k === 'farmCoin') { add(L.coins, k === 'fishCoin' ? 'fish' : 'farm'); return { msg: `${k === 'fishCoin' ? '낚시' : '텃밭'} 코인 +${n}` }; }
+  if (k === 'pots') { for (const p of ['s', 'l', 'xl']) c.pots[p] = (c.pots[p] || 0) + 50; c.hp = derive(c).maxHp; return { msg: '물약 50개씩 + 체력 가득' }; }
+  if (k === 'titles') { L.titles = TITLES.map(x => x.id); return { msg: `칭호 ${TITLES.length}개 모두 받음` }; }
+  if (k === 'skins') { c.hats = [...new Set([...c.hats, ...HATS.map(h => h.id), ...EYE_SKINS.filter(e => e.price).map(e => 'eye:' + e.id)])]; return { msg: '스킨 모두 받음' }; }
+  if (k === 'gear') {   // 모든 칸에 최고 단계·최고 등급 + 최고 강화
+    const g = Object.keys(GRADES).at(-1);
+    for (const slot of Object.keys(SLOTS)) { c.equip[slot] = makeItem(slot, STAGES, g, null, rollOpts(slot, STAGES, g)); c.enh[slot] = ENH_MAX; }
+    c.bag = []; c.hp = derive(c).maxHp; return { msg: `모든 칸에 ${STAGES}단계 ${GRADES[g].n} + 강화 ${ENH_MAX}` };
+  }
+  if (k === 'farm') { for (const p of L.farm.plots) if (p) p.g = 1e9; L.farm.wetAt = 0; return { msg: '텃밭 다 자람 + 물 주기 쿨 초기화' }; }
+  if (k === 'work') {
+    for (const [w, W] of Object.entries(WORK)) { const x = L.work[w]; if (!x.n) x.n = 1; x.acc = x.n * W.rate * W.cap; x.at = at; }
+    return { msg: '벌목소·채광소 창고 가득' };
+  }
+  if (k === 'cool') {   // 분수·채집·나무·바위·낚시 기다리는 시간 없애기
+    L.wishAt = 0; L.gatherAt = 0; L.nodes = {}; L.farm.wetAt = 0; if (c.jobAt) c.jobAt = 1;
+    return { msg: '기다리는 시간 모두 없앰', after: () => env.DB.prepare('UPDATE fishing SET last_cast = 0 WHERE user_id = ?').bind(user.id).run() };
+  }
+  if (k === 'god') { L.god = !L.god; if (L.god) c.hp = derive(c).maxHp; return { msg: L.god ? '갓모드 켬: 안 맞고 공격력 10배' : '갓모드 끔' }; }
+  fail(400, '없는 치트예요');
+}
 async function admin(p, m, req, env, user, url) {
   if (!user.is_admin) fail(403, '관리자만 쓸 수 있어요');
   const DB = env.DB, t = now(), q = k => url.searchParams.get(k) || '';
   const body = m === 'POST' ? await readBody(req) : {}, id = Number(body.id);
   const userOf = async uid => { const u = await DB.prepare('SELECT id, nick FROM users WHERE id = ?').bind(uid).first(); if (!u) fail(404, '없는 사람이에요'); return u; };
   const done = async (kind, detail) => DB.prepare('INSERT INTO activity (user_id, kind, detail, at) VALUES (?, ?, ?, ?)').bind(user.id, 'admin-' + kind, detail, t).run();
+  if (m === 'POST' && p === '/api/admin/cheat') {
+    const k = String(body.k || ''); await done('cheat', `${k} ${body.n ?? ''}`.trim());
+    return play(env, user, (c, at) => cheat(c, k, body, at, env, user));
+  }
   if (m === 'GET' && p === '/api/admin/reports') {
     const rows = (await DB.prepare(`SELECT r.*, a.nick AS reporter, b.nick AS target FROM reports r JOIN users a ON a.id = r.reporter_id JOIN users b ON b.id = r.target_id
       WHERE r.done = ? ORDER BY r.at DESC LIMIT 100`).bind(q('done') === '1' ? 1 : 0).all()).results;
