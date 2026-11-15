@@ -38,6 +38,8 @@ export const ENH_RATE = [100, 95, 90, 80, 70, 60, 50, 40, 35, 30];
 export const enhRate = (enh, D) => Math.min(100, ENH_RATE[enh] + (D?.enhB || 0));
 export const ENH_COST = [10, 20, 35, 50, 80, 120, 170, 230, 300, 400];
 export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'ribbon', n: '🎀 리본', price: 300 }, { id: 'sprout', n: '🌱 새싹', price: 500 }, { id: 'cat', n: '🐱 고양이 귀', price: 800 }, { id: 'straw', n: '👒 밀짚모자', price: 1200 }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 2000 }];
+// 눈 모양 스킨 (가진 것은 hats 목록에 'eye:별' 처럼 저장). dot은 기본
+export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 400 }, { id: 'star', n: '⭐ 별 눈', price: 700 }, { id: 'wink', n: '😉 윙크', price: 800 }, { id: 'heart', n: '💗 하트 눈', price: 1000 }, { id: 'cat', n: '🐱 고양이 눈', price: 1200 }, { id: 'big', n: '✨ 반짝 큰 눈', price: 1500 }];
 export const OPT_N = { str: '힘', dex: '민첩', int: '지력', luk: '운', crit: '치명타', gold: '골드' };
 
 let seq = 1;

@@ -1,6 +1,6 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, EYES, MW, MH, T, STATS, SLOTS, WTYPES, TIERS, HATS, POTS, FIELDS, BAG_MAX, ENH_COST, ENH_RATE, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, FISH_GRADES, rollFish } from '../../assets/js/game-rules.js';
+import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, EYES, MW, MH, T, STATS, SLOTS, WTYPES, TIERS, HATS, EYE_SKINS, POTS, FIELDS, BAG_MAX, ENH_COST, ENH_RATE, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, FISH_GRADES, rollFish } from '../../assets/js/game-rules.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
 
@@ -188,8 +188,8 @@ async function play(env, user, fn) {
     } else out.hunt = settle(c, at);
     const res = (await fn(c, at, out)) || {};
     const w = await env.DB.prepare(`UPDATE characters SET title = ?, x = ?, y = ?, lv = ?, exp = ?, gold = ?, s_str = ?, s_dex = ?, s_int = ?, s_luk = ?, points = ?, hp = ?, hp_at = ?,
-        equip = ?, bag = ?, hats = ?, hat = ?, pots = ?, pot_at = ?, hunt = ?, bonus_day = ?, job_at = ?, ver = ver + 1, updated_at = ? WHERE user_id = ? AND ver = ?`)
-      .bind(c.title, c.x, c.y, c.lv, c.exp, c.gold, c.str, c.dex, c.int, c.luk, c.points, c.hp, c.hpAt, JSON.stringify(c.equip), JSON.stringify(c.bag), JSON.stringify(c.hats), c.hat,
+        equip = ?, bag = ?, hats = ?, hat = ?, eyes = ?, pots = ?, pot_at = ?, hunt = ?, bonus_day = ?, job_at = ?, ver = ver + 1, updated_at = ? WHERE user_id = ? AND ver = ?`)
+      .bind(c.title, c.x, c.y, c.lv, c.exp, c.gold, c.str, c.dex, c.int, c.luk, c.points, c.hp, c.hpAt, JSON.stringify(c.equip), JSON.stringify(c.bag), JSON.stringify(c.hats), c.hat, c.eyes,
         JSON.stringify(c.pots), c.potAt, c.hunt ? JSON.stringify(c.hunt) : '', c.bonusDay, c.jobAt || 0, at, user.id, c.ver).run();
     if (w.meta.changes) {
       if (res.log) await log(env, user.id, res.log[0], res.log[1] || '');
@@ -225,8 +225,14 @@ const GAME = {
     return { log: ['hunt-start', FIELDS[fi].n] };
   },
   '/api/hunt/sync'() {},
-  '/api/hunt/leave'(c, b, at) {
+  '/api/hunt/leave'(c, b, at, out) {
     if (!c.hunt) return { summary: null };   // 이미 쓰러져서 마을에 있음
+    if (b.died) {   // 화면에서 체력이 0이 됨 → 바로 마을로 (쓰러짐 손해는 똑같이)
+      const h = c.hunt, lost = Math.floor(h.gold * HUNT.deathLoss);
+      c.gold = Math.max(0, c.gold - lost); c.hunt = null; c.hp = Math.round(derive(c).maxHp * .3); c.hpAt = at; c.x = 36.5 * T; c.y = 14.5 * T;
+      out.hunt = { ...(out.hunt || { kills: 0, exp: 0, gold: 0, drops: [], pots: 0 }), died: true, lost, summary: summary(h, at) };
+      return { summary: null, log: ['hunt-died', `${FIELDS[h.f].n} -${lost}g`] };
+    }
     const sum = summary(c.hunt, at);
     c.hunt = null; c.hpAt = at; c.x = 36.5 * T; c.y = 14.5 * T;
     return { summary: sum, log: ['hunt-end', `${FIELDS[sum.f].n} ${sum.kills}마리 +${sum.exp}exp +${sum.gold}g`] };
@@ -298,7 +304,14 @@ const GAME = {
   // 스킨샵 (겉모습만, 현금 결제 없음)
   '/api/skin'(c, b) {
     townOnly(c);
-    const h = HATS.find(x => x.id === b.id && x.id !== 'none'); if (!h) fail(400, '없는 스킨이에요');
+    const id = String(b.id || '');
+    if (id.startsWith('eye:')) {   // 눈 모양 스킨
+      const e = EYE_SKINS.find(x => 'eye:' + x.id === id && x.price); if (!e) fail(400, '없는 스킨이에요');
+      if (c.hats.includes(id)) fail(400, '이미 가지고 있어요');
+      spend(c, e.price); c.hats.push(id); c.eyes = e.id;
+      return { log: ['skin', id] };
+    }
+    const h = HATS.find(x => x.id === id && x.id !== 'none'); if (!h) fail(400, '없는 스킨이에요');
     if (c.hats.includes(h.id)) fail(400, '이미 가지고 있어요');
     spend(c, h.price); c.hats.push(h.id); c.hat = h.id;
     return { log: ['skin', h.id] };
@@ -339,8 +352,10 @@ const GAME = {
 };
 async function saveLook(req, env, user) {
   const b = await readBody(req), c = await env.DB.prepare('SELECT hats FROM characters WHERE user_id = ?').bind(user.id).first();
-  const face = FACES.includes(b.face) ? b.face : null, body = BODIES.includes(b.body) ? b.body : null, eyes = EYES.includes(b.eyes) ? b.eyes : null;
-  const hat = typeof b.hat === 'string' && JSON.parse(c.hats).includes(b.hat) ? b.hat : null;
+  const owned = JSON.parse(c.hats);
+  const face = FACES.includes(b.face) ? b.face : null, body = BODIES.includes(b.body) ? b.body : null;
+  const eyes = b.eyes === 'dot' || (EYE_SKINS.some(e => e.id === b.eyes) && owned.includes('eye:' + b.eyes)) ? b.eyes : null;
+  const hat = typeof b.hat === 'string' && owned.includes(b.hat) ? b.hat : null;
   let intro = null;
   if (typeof b.intro === 'string') {
     intro = b.intro.replace(/\s+/g, ' ').trim();
