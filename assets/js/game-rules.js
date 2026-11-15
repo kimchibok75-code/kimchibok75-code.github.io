@@ -7,6 +7,9 @@ export const START = { x: 19.5 * T, y: 19.5 * T };
 export const FACES = ['#ffe0c2', '#f7c9a0', '#d9a77a', '#a8754f', '#ffd4e0', '#c9f0d2', '#d6e4ff', '#fff3b0'];
 export const BODIES = ['#e8553a', '#4f9d5a', '#3d7bd9', '#9a5ad6', '#e9a23b', '#2f3b4f', '#ef7fa6', '#2bb3a6'];
 export const EYES = ['dot', 'happy', 'sleep', 'wow'];
+// 헤어스타일 · 헤어 색 (겉모습만, 언제든 무료로 바꿈). none = 민머리(처음 모습)
+export const HAIRS = [{ id: 'none', n: '민머리' }, { id: 'short', n: '짧은 머리' }, { id: 'side', n: '옆머리 대머리' }, { id: 'bowl', n: '바가지 머리' }, { id: 'spiky', n: '삐죽 머리' }, { id: 'long', n: '긴 머리' }, { id: 'pony', n: '묶은 머리' }];
+export const HAIR_COLORS = ['#3a2a20', '#7a4a2a', '#e8c15a', '#d0502f', '#c9ccd4', '#f2a0c2', '#5b86e0', '#5fae5a'];
 export const MAX_LV = 100;
 export const START_GOLD = 500;
 export const POINTS_PER_LV = 4;
@@ -96,7 +99,7 @@ export const tierFor = lv => TIERS.reduce((t, x, i) => (lv >= x.req ? i : t), 0)
 
 // 새 캐릭터 기본값
 export function newCharacter() {
-  const c = { face: FACES[0], body: BODIES[0], eyes: 'dot', hat: 'none', intro: '', title: '🏷️ 새내기 주민', x: START.x, y: START.y,
+  const c = { face: FACES[0], body: BODIES[0], eyes: 'dot', hat: 'none', hair: 'none', hairC: HAIR_COLORS[0], intro: '', title: '🏷️ 새내기 주민', x: START.x, y: START.y,
     lv: 1, exp: 0, gold: START_GOLD, str: 5, dex: 5, int: 5, luk: 5, points: 0,
     equip: { weapon: makeItem('weapon', 0, { wt: 'sword' }), hat: null, armor: null, shoes: null, acc: null }, bag: [], hats: ['none'], pots: { s: 5, l: 0, xl: 0 }, potAt: 40 };
   c.hp = derive(c).maxHp;

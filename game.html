@@ -404,6 +404,8 @@ body.hunting .chat-log { height: 64px; }
       <canvas id="makeCanvas" aria-label="내 캐릭터 미리보기"></canvas>
       <div class="field"><label>얼굴 색</label><div class="swatches" id="faceSw"></div></div>
       <div class="field"><label>옷 색</label><div class="swatches" id="bodySw"></div></div>
+      <div class="field"><label>헤어스타일</label><div class="hats" id="hairList"></div></div>
+      <div class="field"><label>헤어 색</label><div class="swatches" id="hairSw"></div></div>
       <div class="field"><label for="introIn">한 줄 소개</label><input id="introIn" maxlength="30" placeholder="예: 림월드 좋아하는 주민이에요"></div>
       <button class="btn main" type="button" id="makeDone">치복 타운으로 출발!</button>
     </div>
@@ -452,6 +454,8 @@ body.hunting .chat-log { height: 64px; }
       <div class="pane" data-pane="skin" hidden>
         <div class="field"><label>얼굴 색</label><div class="swatches" id="faceSw2"></div></div>
         <div class="field"><label>옷 색</label><div class="swatches" id="bodySw2"></div></div>
+        <div class="field"><label>헤어스타일</label><div class="hats" id="hairList2"></div></div>
+        <div class="field"><label>헤어 색</label><div class="swatches" id="hairSw2"></div></div>
         <div class="field"><label>머리 장식</label><div class="hats" id="hatList"></div></div>
         <div class="field"><label>눈 모양</label><div class="hats" id="eyeList"></div></div>
         <p class="muted">스킨은 겉모습만 바뀌고 능력치는 없어요. 스킨샵에서 더 살 수 있어요.</p>
@@ -522,7 +526,7 @@ body.hunting .chat-log { height: 64px; }
 
 <script type="module">
 'use strict';
-import { needExp, GRADES, TIERS, WTYPES, SLOTS, STATS, ENH_RATE, ENH_COST, HATS, EYE_SKINS, makeItem, enhMul, itemIcon, itemName, itemDesc, derive as deriveOf, tierFor, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, BAG_MAX, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES } from './assets/js/game-rules.js?v=__BUILD__';
+import { needExp, GRADES, TIERS, WTYPES, SLOTS, STATS, ENH_RATE, ENH_COST, HATS, EYE_SKINS, HAIRS, HAIR_COLORS, makeItem, enhMul, itemIcon, itemName, itemDesc, derive as deriveOf, tierFor, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, BAG_MAX, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES } from './assets/js/game-rules.js?v=__BUILD__';
 const API = 'https://kimchibok-game.kimchibok.workers.dev';
 const LIVE_API = 'https://kimchibok-live.kimchibok.workers.dev/live';
 const $ = s => document.querySelector(s);
@@ -578,6 +582,21 @@ function weaponParts(w) {
     { path: R(-6, -4.6, 12, 3.4, 1.6), c: m }, { path: PG([[-2.4, -4], [2.4, -4], [2.4, -20], [0, -25], [-2.4, -20]]), c: m },
     { flat: 1, path: PG([[.3, -4.5], [2.4, -4.5], [2.4, -20], [.3, -23.5]]), c: shine }];
 }
+// 헤어스타일 (머리 위쪽 hy 기준, 얼굴은 x -14~14 · 높이 26)
+function hairParts(id, c, hy) {
+  const cap = { path: R(-15, hy - 2.5, 30, 10.5, [11, 11, 3, 3]), c }, shine = 'rgba(255,255,255,.35)';
+  switch (id) {
+    case 'short': return { back: [], front: [cap, { path: PG([[-14.6, hy + 4], [14.6, hy + 4], [14.6, hy + 8.5], [10, hy + 7], [6, hy + 10.5], [2, hy + 7.5], [-3, hy + 10.5], [-7, hy + 7.5], [-14.6, hy + 9]]), c }, { flat: 1, path: E(-6, hy + 1.2, 4.5, 1.6, -.2), c: shine }] };
+    case 'side': return { back: [], front: [   // 옆머리만 남은 대머리 + 반짝이는 정수리
+      { path: R(-16.2, hy + 7, 5.4, 10, [3, 1.5, 1.5, 3]), c }, { path: R(10.8, hy + 7, 5.4, 10, [1.5, 3, 3, 1.5]), c },
+      { flat: 1, path: E(-5, hy + 3.5, 4.5, 2, -.3), c: 'rgba(255,255,255,.6)' }, { flat: 1, path: E(1, hy + 2.2, 1.6, 1, 0), c: 'rgba(255,255,255,.6)' }] };
+    case 'bowl': return { back: [], front: [{ path: R(-16, hy - 3, 32, 14.5, [13, 13, 1.5, 1.5]), c }, { flat: 1, path: R(-12, hy - .5, 10, 2.4, 1.2), c: shine }] };
+    case 'spiky': return { back: [], front: [{ path: PG([[-15.5, hy + 9], [-15.5, hy + 1], [-13, hy - 7], [-8.5, hy - 1.5], [-5, hy - 10], [-1, hy - 2.5], [3, hy - 11], [6.5, hy - 2.5], [10.5, hy - 8], [11.5, hy], [16, hy - 4], [15.5, hy + 9], [11, hy + 6], [6, hy + 8], [0, hy + 6], [-6, hy + 8], [-11, hy + 6]]), c }] };
+    case 'long': return { back: [{ path: R(-17, hy + 2, 34, 33, [12, 12, 7, 7]), c }], front: [cap, { path: R(-16.5, hy + 3, 5.5, 23, [2, 2, 3, 3]), c }, { path: R(11, hy + 3, 5.5, 23, [2, 2, 3, 3]), c }, { flat: 1, path: E(-6, hy + 1.2, 4.5, 1.6, -.2), c: shine }] };
+    case 'pony': return { back: [{ path: E(-17, hy + 13, 5.5, 11, .35), c }, { path: E(-13.5, hy + 4.5, 3.2, 3.2), c: '#e8553a' }], front: [cap, { flat: 1, path: E(-6, hy + 1.2, 4.5, 1.6, -.2), c: shine }] };
+    default: return { back: [], front: [] };
+  }
+}
 // 모자 장비 (머리 스킨을 안 썼을 때 보임)
 function helmParts(it, hy) {
   const c = ARMOR[it.tier], P = [{ path: R(-15.5, hy - 2.5, 31, 12.5, [12, 12, 3, 3]), c }];
@@ -627,13 +646,19 @@ function drawEyes(g, c, ey, t) {
 }
 function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   // (x, y) = 발 위치
-  ctx.save(); ctx.translate(x, y); ctx.scale(scale * (c.dir < 0 ? -1 : 1), scale);
-  const walk = c.moving ? Math.sin(t * 14) : 0;
-  const bob = c.moving ? Math.abs(Math.sin(t * 14)) * 2 : Math.sin(t * 2.2 + (c.seed || 0)) * .6;
-  ctx.fillStyle = 'rgba(31,42,58,.18)'; ctx.beginPath(); ctx.ellipse(0, 0, 11, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+  const sit = c.sit >= 0 && !HT && !c.still;
+  ctx.save(); ctx.translate(x, y - (sit ? 12 : 0)); ctx.scale(scale * (c.dir < 0 ? -1 : 1), scale);
+  const walk = c.moving && !sit ? Math.sin(t * 14) : 0;
+  const bob = c.moving && !sit ? Math.abs(Math.sin(t * 14)) * 2 : Math.sin(t * 2.2 + (c.seed || 0)) * .6;
+  if (!sit) { ctx.fillStyle = 'rgba(31,42,58,.18)'; ctx.beginPath(); ctx.ellipse(0, 0, 11, 3.5, 0, 0, Math.PI * 2); ctx.fill(); }
   const eq = c.equip || {}, hy = -45 - bob, P = [];
   // 다리 + 신발
   for (const [lx, w] of [[-6, walk * 1.2], [1, -walk * 1.2]]) {
+    if (sit) {   // 앉음: 허벅지가 앞으로 나오고 발이 벤치 아래로
+      P.push({ path: R(lx, -8, 5, 11, 2.5), c: '#3a4456' });
+      P.push({ path: R(lx - 1, 1, 7, 4.6, [1.5, 2.5, 2.3, 2.3]), c: eq.shoes ? SHOE[eq.shoes.tier] : '#3a4456' });
+      continue;
+    }
     P.push({ path: R(lx, -8 + w, 5, 8, 2.5), c: '#3a4456' });
     if (eq.shoes) P.push({ path: R(lx - 1, -4 + w, 7, 4.6, [1.5, 2.5, 2.3, 2.3]), c: SHOE[eq.shoes.tier] });
   }
@@ -643,8 +668,11 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   P.push({ path: R(-9, -20 - bob, 18, 14, 5), c: c.body });
   if (eq.armor) P.push({ flat: 1, path: R(-7.6, -17.5 - bob, 15.2, 11, [3, 3, 4, 4]), c: ARMOR[eq.armor.tier] }, { flat: 1, path: R(-7.8, -10 - bob, 15.6, 2.4, 0), c: 'rgba(60,35,20,.55)' });
   if (eq.acc) P.push({ flat: 1, path: E(0, -16.8 - bob, 2, 2), c: STAT_C[eq.acc.stat] || '#ffd45a' });
-  // 머리 + 눈
+  // 머리 + 눈 (+ 헤어: 뒷머리는 얼굴 뒤, 앞머리는 얼굴 위)
+  const hp = hairParts(c.hair, c.hairC || HAIR_COLORS[0], hy);
+  P.push(...hp.back);
   P.push({ path: R(-14, hy, 28, 26, 9), c: c.face, after: g => drawEyes(g, c, hy + 16, t) });
+  P.push(...hp.front);
   if (c.hat && c.hat !== 'none') P.push(...hatParts(c.hat, hy, c.face));
   else if (eq.hat) P.push(...helmParts(eq.hat, hy));
   // 오른팔 (몸 앞) + 무기: 손(팔 끝)이 손잡이를 쥠
@@ -730,6 +758,18 @@ for (const s of SPOTS) if (!s.walk) for (let y = s.y; y < s.y + s.h; y++) for (l
 const PORTAL = { x: 37.8 * T, y: 15.6 * T };   // 사냥터 포탈 (발 위치)
 const BENCHES = [{ x: 16, y: 12 }, { x: 23, y: 12 }, { x: 16, y: 18 }, { x: 23, y: 18 }];
 for (const b of BENCHES) block[b.y][b.x] = true;
+// 벤치 앞(걸어가서 앉는 자리): 아래 → 왼쪽 → 오른쪽 → 위 중 걸을 수 있는 칸
+const benchFront = b => [[0, 1], [-1, 0], [1, 0], [0, -1]].map(([dx, dy]) => [b.x + dx, b.y + dy]).find(([x, y]) => block[y]?.[x] === false) || [b.x, b.y + 1];
+const benchTaken = i => people.some(p => p.sit === i && shown(p));
+function sitDown(ch, i) {
+  const b = BENCHES[i]; if (!b) return;
+  ch.sit = i; ch.path = []; ch.moving = false; ch.x = b.x * T + T / 2; ch.y = b.y * T + 25; ch.dir = 1;
+  if (ch === me) netSend({ t: 'sit', b: i });
+}
+function standUp(ch) {
+  if (!(ch.sit >= 0)) return;
+  const [fx, fy] = benchFront(BENCHES[ch.sit]); ch.sit = -1; ch.x = fx * T + T / 2; ch.y = fy * T + T / 2;
+}
 // 나무 (항상 같은 자리)
 let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 const TREES = [];
@@ -787,6 +827,7 @@ function findPath(sx, sy, tx, ty) {
   return null;
 }
 function walkTo(ch, tx, ty, then) {
+  standUp(ch);
   const p = findPath(Math.floor(ch.x / T), Math.floor(ch.y / T), tx, ty);
   if (!p) return false;
   ch.path = p.slice(1).map(([x, y]) => ({ x: x * T + T / 2, y: y * T + T / 2 })); ch.then = then || null;
@@ -805,8 +846,8 @@ function stepChar(ch, dt) {
 // ───────── 다른 유저 (실시간: 서버의 마을 방에서 받아 옴) ─────────
 let people = [];
 function mkPerson(d) {
-  return { id: d.id, name: d.n, adm: d.adm, lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, equip: d.equip || {},
-    x: d.tx ?? d.x, y: d.ty ?? d.y, path: [], seed: (d.id % 17) * .37, speed: 130, hunt: !!d.hunt, bubble: null, emote: null };
+  return { id: d.id, name: d.n, adm: d.adm, lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, equip: d.equip || {},
+    x: d.tx ?? d.x, y: d.ty ?? d.y, path: [], seed: (d.id % 17) * .37, speed: 130, hunt: !!d.hunt, sit: -1, bubble: null, emote: null };
 }
 const personOf = id => people.find(p => p.id === id);
 const shown = p => !p.hunt && !S.blocked.has(p.id);
@@ -908,7 +949,8 @@ function drawSpot(s) {
     ctx.fillStyle = '#1f2a3a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, x + 14, y - 4);
   }
 }
-function drawBench(b) { const x = b.x * T, y = b.y * T; ctx.fillStyle = '#a86f3f'; ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 1.5; rr(ctx, x + 3, y + 8, T - 6, 9, 3); ctx.fill(); ctx.stroke(); rr(ctx, x + 3, y + 1, T - 6, 6, 3); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#5c3b20'; ctx.fillRect(x + 6, y + 17, 3, 8); ctx.fillRect(x + T - 9, y + 17, 3, 8); }
+// 벤치: 칸보다 넓게 그려서 앉은 사람 양옆으로 보이게 (막힌 칸은 1칸 그대로)
+function drawBench(b) { const x = b.x * T - 9, y = b.y * T, w = T + 18; ctx.fillStyle = '#a86f3f'; ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 1.5; rr(ctx, x, y + 1, w, 7, 3); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#5c3b20'; ctx.fillRect(x + 4, y + 7, 3, 3); ctx.fillRect(x + w - 7, y + 7, 3, 3); ctx.fillStyle = '#b97a45'; rr(ctx, x, y + 10, w, 8, 3); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#5c3b20'; ctx.fillRect(x + 4, y + 18, 3.5, 8); ctx.fillRect(x + w - 7.5, y + 18, 3.5, 8); }
 
 function bubbleAt(x, y, text, mine) {
   ctx.font = '500 13px "IBM Plex Sans KR", sans-serif';
@@ -951,6 +993,10 @@ function update(dt, now) {
 function setPlace(place) { if ($('#placeChip').dataset.p !== place) { $('#placeChip').dataset.p = place; $('#placeChip').textContent = `📍 ${place}`; } }
 // 이름표는 머리 위 (발밑에 두면 아래 칸·물건에 가려짐), 말풍선은 그 위
 function nameTag(c, now) {
+  if (c.sit >= 0 && !HT) { ctx.save(); ctx.translate(0, -12); nameTagAt(c, now); ctx.restore(); return; }   // 앉으면 머리가 낮아진 만큼
+  nameTagAt(c, now);
+}
+function nameTagAt(c, now) {
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.font = '700 11.5px "IBM Plex Sans KR", sans-serif'; const label = `${c.adm ? '🛡️ ' : ''}Lv.${c.lv} ${c.name}`; const tw = ctx.measureText(label).width + 12;
   ctx.fillStyle = c === me ? 'rgba(232,85,58,.94)' : c.adm ? 'rgba(108,79,194,.94)' : 'rgba(31,42,58,.76)'; rr(ctx, c.x - tw / 2, c.y - 66, tw, 17, 8.5); ctx.fill();
@@ -1016,7 +1062,7 @@ let huntBusy = false, syncT = null;
 function enterHunt(h) {
   const f = FIELDS[h.f]; paintHunt(f);
   HT = { f, mons: [], floats: [], parts: [], fx: [], shots: [], shake: 0, freeze: 0, loc: { kills: 0, exp: 0, gold: 0 }, t0: h.start, srv: h, bossAt: performance.now() + (h.boss - h.t) * 1000, atkT: .4, potCD: 0, target: null };
-  me.x = HW * T / 2; me.y = HH * T / 2; me.path = []; me.moving = false; cam = { x: me.x, y: me.y };
+  me.sit = -1; me.x = HW * T / 2; me.y = HH * T / 2; me.path = []; me.moving = false; cam = { x: me.x, y: me.y };
   for (let i = 0; i < 8; i++) spawnMon(false);
   document.body.classList.add('hunting'); $('#huntBox').hidden = false; $('#hbField').textContent = `${f.i} ${f.n}`;
   setPlace(f.n);
@@ -1321,6 +1367,7 @@ const okStep = (x, y, dx, dy) => { const nx = x + dx, ny = y + dy; return nx >= 
 function steerTick(dt) {
   STEER.t -= dt;
   const d = HT ? null : steerDir();
+  if (d && me.sit >= 0) standUp(me);
   if (!d) { if (STEER.on) { STEER.on = false; STEER.last = ''; if (me.path.length > 1) { me.path = me.path.slice(0, 1); me.then = null; netGo(); } } return; }
   STEER.on = true; ROAM.pause = 15;
   const key = d.join();
@@ -1364,6 +1411,15 @@ function tap(sx, sy) {
   const hit = people.filter(shown).find(p => Math.abs(w.x - p.x) < 16 && w.y > p.y - 66 && w.y < p.y + 10);
   if (hit) return openProfile(hit);
   if (Math.abs(w.x - me.x) < 14 && w.y > me.y - 56 && w.y < me.y + 8) { openPanelTab('stat'); return; }
+  // 벤치: 앞까지 걸어가서 앉기
+  const bi = BENCHES.findIndex(b => w.x > b.x * T - 10 && w.x < b.x * T + T + 10 && w.y > b.y * T - 4 && w.y < b.y * T + T + 2);
+  if (bi >= 0) {
+    if (me.sit === bi) return;
+    if (benchTaken(bi)) return toast('다른 사람이 앉아 있어요');
+    const [fx, fy] = benchFront(BENCHES[bi]);
+    if (!walkTo(me, fx, fy, () => { if (benchTaken(bi)) return toast('다른 사람이 먼저 앉았어요'); sitDown(me, bi); })) toast('거기는 갈 수 없어요');
+    return;
+  }
   // 건물: 누르면 바로 이용 (입구까지 안 걸어감)
   const b = BUILDINGS.find(b => w.x > b.x * T && w.x < (b.x + b.w) * T && w.y > (b.y - .7) * T && w.y < (b.y + b.h) * T);
   if (b) return openBuilding(b);
@@ -1604,6 +1660,11 @@ function swatches(el, list, key, after) {
   el.innerHTML = list.map(c => `<button type="button" style="background:${c}" aria-label="색 ${c}" aria-pressed="${me[key] === c}" data-c="${c}"></button>`).join('');
   el.onclick = e => { const c = e.target.closest('[data-c]')?.dataset.c; if (!c) return; me[key] = c; $$(`#${el.id} button`).forEach(b => b.setAttribute('aria-pressed', b.dataset.c === c)); after(); };
 }
+// 헤어스타일 버튼 (무료, 누르면 바로 바뀜)
+function hairPicker(el, after) {
+  el.innerHTML = HAIRS.map(h => `<button type="button" data-hr="${h.id}" aria-pressed="${(me.hair || 'none') === h.id}">${h.n}</button>`).join('');
+  el.onclick = e => { const id = e.target.closest('[data-hr]')?.dataset.hr; if (!id) return; me.hair = id; el.querySelectorAll('[data-hr]').forEach(b => b.setAttribute('aria-pressed', b.dataset.hr === id)); after(); };
+}
 function renderBag() {
   const P = [['s', '🥤', '작은 음료', '체력 +50'], ['l', '🧋', '큰 음료', '체력 +200'], ['xl', '🍹', '특대 음료', '최대 체력의 50%']];
   $('#potList').innerHTML = P.map(([k, ic, n, d]) => row(ic, `${n} × ${me.pots[k]}`, d, '')).join('');
@@ -1645,7 +1706,7 @@ async function api(path, body, opts = {}) {
 // 서버에서 받은 내 정보로 캐릭터 맞추기
 function applyMe(m) {
   const c = m.char, keepPos = HT && c.hunt;
-  Object.assign(me, { name: m.nick, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
+  Object.assign(me, { name: m.nick, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair || 'none', hairC: c.hairC || HAIR_COLORS[0], intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
     str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp || derive().maxHp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt });
   me.job = c.job; me.jobEnd = c.job ? Date.now() + c.job.left * 1000 : 0;
   me.hunt = c.hunt; if (!keepPos) { me.path = []; me.moving = false; }
@@ -1701,7 +1762,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 let lookT = null;
 function saveLook() {
   clearTimeout(lookT);
-  lookT = setTimeout(() => api('/api/character', { face: me.face, body: me.body, eyes: me.eyes, hat: me.hat }).catch(e => toast(e.message)), 700);
+  lookT = setTimeout(() => api('/api/character', { face: me.face, body: me.body, eyes: me.eyes, hat: me.hat, hair: me.hair, hairC: me.hairC }).catch(e => toast(e.message)), 700);
 }
 // 실제 김치복 방송 상태 (홈페이지와 같은 Worker)
 async function checkLive() {
@@ -1814,9 +1875,10 @@ $('#shotCode').onclick = () => toast('휴대폰은 전원+볼륨 버튼, PC는 W
 $('#codeNext').onclick = () => { if ($('#codeNext').dataset.after === 'login') { delete $('#codeNext').dataset.after; $('#codeNext').textContent = '다음: 캐릭터 만들기'; showAuth('login'); return; } $('#codeCard').hidden = true; $('#makeCard').hidden = false; requestAnimationFrame(drawMake); };
 function drawMake() { portrait($('#makeCanvas'), me, 2.6); }
 swatches($('#faceSw'), FACES, 'face', drawMake); swatches($('#bodySw'), BODIES, 'body', drawMake);
+me.hair = me.hair || 'none'; me.hairC = me.hairC || HAIR_COLORS[0]; hairPicker($('#hairList'), drawMake); swatches($('#hairSw'), HAIR_COLORS, 'hairC', drawMake);
 $('#makeDone').onclick = async () => {
   const btn = $('#makeDone'); busy(btn, true, '저장하는 중…');
-  try { const j = await api('/api/character', { face: me.face, body: me.body, intro: $('#introIn').value.trim() }); applyMe(j.me); enterTown(); }
+  try { const j = await api('/api/character', { face: me.face, body: me.body, hair: me.hair, hairC: me.hairC, intro: $('#introIn').value.trim() }); applyMe(j.me); enterTown(); }
   catch (x) { toast(x.message); }
   finally { busy(btn, false, '치복 타운으로 출발!'); }
 };
@@ -1827,6 +1889,7 @@ function enterTown(first) {   // first: 방금 받은 /api/me 결과 (자리 비
   setTimeout(() => {
     resize(); me.hp = Math.min(me.hp, derive().maxHp); syncMe();
     swatches($('#faceSw2'), FACES, 'face', () => { syncMe(); saveLook(); }); swatches($('#bodySw2'), BODIES, 'body', () => { syncMe(); saveLook(); });
+    hairPicker($('#hairList2'), () => { syncMe(); saveLook(); }); swatches($('#hairSw2'), HAIR_COLORS, 'hairC', () => { syncMe(); saveLook(); });
     cam = { x: me.x, y: me.y };
     if (!S.greeted) { S.greeted = true; addChat({ sys: true, text: `${me.name}님, 치복 타운에 온 걸 환영해요! 바닥을 누르면 걸어가요(대각선도 OK). 오른쪽 끝 보라색 포탈을 누르면 자동 사냥을 할 수 있어요` }); logAct('치복 타운 도착'); }
     if (first) took(first); else act('/api/me');   // 사냥 정산(자리 비운 동안 결과)과 오늘 첫 접속 보너스
@@ -1838,7 +1901,7 @@ function enterTown(first) {   // first: 방금 받은 /api/me 결과 (자리 비
 // 로그인 화면 장식: 캐릭터들이 걸어 다님
 (function gateAnim() {
   const g = $('#gateCanvas'), gc = g.getContext('2d');
-  const crew = [[1, 2, 'sprout'], [3, 3, 'none'], [7, 4, 'cat'], [2, 5, 'straw'], [4, 6, 'ribbon']].map(([f, b, hat], i) => ({ face: FACES[f], body: BODIES[b], hat, x: 40 + i * 70, dir: i % 2 ? -1 : 1, moving: true, seed: i, eyes: i === 2 ? 'happy' : 'dot' }));
+  const crew = [[1, 2, 'sprout'], [3, 3, 'none'], [7, 4, 'cat'], [2, 5, 'straw'], [4, 6, 'ribbon']].map(([f, b, hat], i) => ({ face: FACES[f], body: BODIES[b], hat, hair: ['short', 'side', 'long', 'bowl', 'pony'][i], hairC: HAIR_COLORS[[0, 1, 2, 3, 6][i]], x: 40 + i * 70, dir: i % 2 ? -1 : 1, moving: true, seed: i, eyes: i === 2 ? 'happy' : 'dot' }));
   function loop(t) {
     if ($('#gate').hidden) return requestAnimationFrame(loop);
     const dpr = devicePixelRatio || 1, w = g.clientWidth, h = g.clientHeight; if (g.width !== w * dpr) { g.width = w * dpr; g.height = h * dpr; }
@@ -1901,7 +1964,7 @@ const PLACES = [['⛲', '광장 분수 앞', 20, 19], ['☕', '카페', ...door(
   ['🔨', '대장간', ...door('smith')], ['📺', '방송국', ...door('station')], ['🎣', '강가 선착장', 3, 9], ['🌀', '사냥터 포탈', 36, 15], ['🌾', '텃밭', 33, 23], ['🏠', '내 집', ...door('home1')]];
 function teleport(tx, ty) {
   if (block[ty]?.[tx] !== false) return toast('거기는 갈 수 없어요');
-  me.x = tx * T + T / 2; me.y = ty * T + T / 2; me.path = []; me.moving = false; cam = { x: me.x, y: me.y }; savePos(true); netGo(); emote(me, '✨');
+  me.sit = -1; me.x = tx * T + T / 2; me.y = ty * T + T / 2; me.path = []; me.moving = false; cam = { x: me.x, y: me.y }; savePos(true); netGo(); emote(me, '✨');
 }
 $('#townBtn').onclick = () => {
   if (HT) return toast('사냥 중에는 현황판의 "마을로 돌아가기"를 눌러 주세요');
@@ -1964,16 +2027,18 @@ function netMove(p, m) {
 function onNet(m) {
   if (m.t === 'hi') {
     Object.assign(NET, { ready: true, me: m.id, ch: m.ch, tries: 0, full: 0 });
-    people = m.list.filter(d => d.id !== m.id).map(mkPerson);
+    people = m.list.filter(d => d.id !== m.id).map(d => { const p = mkPerson(d); if (d.sit >= 0) sitDown(p, d.sit); return p; });
+    if (me.sit >= 0) netSend({ t: 'sit', b: me.sit });
     if (HT) netSend({ t: 'hunt', on: true }); else netGo();
     NET.sig = lookSig(); netSend({ t: 'look' });
   }
-  else if (m.t === 'join') { people = people.filter(p => p.id !== m.p.id); if (m.p.id !== NET.me) people.push(mkPerson(m.p)); }
+  else if (m.t === 'join') { people = people.filter(p => p.id !== m.p.id); if (m.p.id !== NET.me) { const p = mkPerson(m.p); people.push(p); if (m.p.sit >= 0) sitDown(p, m.p.sit); } }
+  else if (m.t === 'sit') { const p = personOf(m.id); if (p) { if (m.b >= 0) sitDown(p, m.b); else standUp(p); } }
   else if (m.t === 'leave') people = people.filter(p => p.id !== m.id);
-  else if (m.t === 'go') { const p = personOf(m.id); if (p) netMove(p, m); }
-  else if (m.t === 'hunt') { const p = personOf(m.id); if (p) { p.hunt = m.on; p.path = []; } }
+  else if (m.t === 'go') { const p = personOf(m.id); if (p) { standUp(p); netMove(p, m); } }
+  else if (m.t === 'hunt') { const p = personOf(m.id); if (p) { p.hunt = m.on; p.path = []; p.sit = -1; } }
   else if (m.t === 'emo') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) emote(p, m.e); }
-  else if (m.t === 'look') { const p = personOf(m.p.id), d = m.p; if (p) Object.assign(p, { lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, equip: d.equip || {} }); }
+  else if (m.t === 'look') { const p = personOf(m.p.id), d = m.p; if (p) Object.assign(p, { lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, equip: d.equip || {} }); }
   else if (m.t === 'say') {
     if (S.blocked.has(m.id)) return;
     const mine = m.id === NET.me, p = mine ? me : personOf(m.id);
@@ -1988,7 +2053,7 @@ function onNet(m) {
   setOnline();
 }
 // 내 겉모습·레벨이 바뀌면 다른 사람 화면에도 (서버가 저장된 값을 다시 읽음)
-const lookSig = () => JSON.stringify([me.lv, me.title, me.intro, me.face, me.body, me.eyes, me.hat, Object.values(me.equip || {}).map(it => it && `${it.id}+${it.enh}`)]);
+const lookSig = () => JSON.stringify([me.lv, me.title, me.intro, me.face, me.body, me.eyes, me.hat, me.hair, me.hairC, Object.values(me.equip || {}).map(it => it && `${it.id}+${it.enh}`)]);
 function lookChanged() { if (!NET.ready) return; const s = lookSig(); if (s === NET.sig) return; NET.sig = s; clearTimeout(NET.lookT); NET.lookT = setTimeout(() => netSend({ t: 'look' }), 1600); }
 
 // ───────── 차단 목록 (설정) ─────────

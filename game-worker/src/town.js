@@ -16,7 +16,7 @@ async function sha256(s) {   // index.js 와 같은 방식 (base64url)
 }
 
 // 다른 사람에게 보이는 겉모습
-export const lookRow = r => ({ lv: r.lv, title: r.title, intro: r.intro, face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, equip: JSON.parse(r.equip || '{}') });
+export const lookRow = r => ({ lv: r.lv, title: r.title, intro: r.intro, face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, hair: r.hair || 'none', hairC: r.hair_c, equip: JSON.parse(r.equip || '{}') });
 // 모든 채널에 알리기 (관리자: 공지·내보내기·채팅 금지 등). skip = 지금 방(자기 자신은 부르지 않음)
 export async function toRooms(env, body, skip) {
   await Promise.all(Array.from({ length: MAX_CH }, (_, i) => i + 1).filter(ch => ch !== skip).map(ch =>
@@ -31,7 +31,7 @@ export class Town extends DurableObject {
   info(ws) { return ws.deserializeAttachment() || {}; }
   save(ws, a) { ws.serializeAttachment(a); }
   members(except) { return this.ctx.getWebSockets().filter(w => w !== except && this.info(w).id && !this.info(w).gone); }
-  pub(a) { return { id: a.id, n: a.n, adm: a.adm, ...a.look, x: a.x, y: a.y, tx: a.tx, ty: a.ty, hunt: a.hunt }; }
+  pub(a) { return { id: a.id, n: a.n, adm: a.adm, ...a.look, x: a.x, y: a.y, tx: a.tx, ty: a.ty, hunt: a.hunt, sit: a.sit ?? -1 }; }
   send(ws, o) { try { ws.send(JSON.stringify(o)); } catch {} }
   all(o, except) { const s = JSON.stringify(o); for (const w of this.members(except)) try { w.send(s); } catch {} }
 
@@ -58,7 +58,7 @@ export class Town extends DurableObject {
     const others = this.members(ws);
     if (others.length >= MAX) { this.send(ws, { t: 'full' }); return ws.close(4001, 'full'); }
     Object.assign(a, { pending: false, id: u.id, n: u.nick, adm: !!u.is_admin, joined: u.created_at, mute: u.mute_until || 0, limited: (rep?.n || 0) >= 3,
-      look: lookRow(c), x: c.x, y: c.y, tx: c.x, ty: c.y, hunt: !!c.hunt, sent: [], last: [], cool: 0, lookAt: 0, emoAt: 0 });
+      look: lookRow(c), x: c.x, y: c.y, tx: c.x, ty: c.y, hunt: !!c.hunt, sit: -1, sent: [], last: [], cool: 0, lookAt: 0, emoAt: 0 });
     this.save(ws, a);
     this.send(ws, { t: 'hi', id: a.id, ch: a.room, list: others.map(w => this.pub(this.info(w))) });
     this.all({ t: 'join', p: this.pub(a) }, ws);
@@ -73,10 +73,15 @@ export class Town extends DurableObject {
     const t = now(), num = (v, max) => Number.isFinite(v) && v >= 0 && v <= max;
     if (m.t === 'go') {   // 걷기 시작 (x,y → tx,ty). 순간 이동은 tx=x
       if (![m.x, m.tx].every(v => num(v, MW * T)) || ![m.y, m.ty].every(v => num(v, MH * T))) return;
-      Object.assign(a, { x: m.x, y: m.y, tx: m.tx, ty: m.ty }); this.save(ws, a);
+      Object.assign(a, { x: m.x, y: m.y, tx: m.tx, ty: m.ty, sit: -1 }); this.save(ws, a);
       return this.all({ t: 'go', id: a.id, x: m.x, y: m.y, tx: m.tx, ty: m.ty }, ws);
     }
-    if (m.t === 'hunt') { a.hunt = !!m.on; this.save(ws, a); return this.all({ t: 'hunt', id: a.id, on: a.hunt }, ws); }
+    if (m.t === 'sit') {   // 벤치에 앉기 (b = 벤치 번호 0~7, -1 = 일어남)
+      const b = Number.isInteger(m.b) && m.b >= -1 && m.b < 8 ? m.b : -1;
+      if (b >= 0 && this.members(ws).some(w => { const o = this.info(w); return o.id !== a.id && o.sit === b; })) return;   // 이미 누가 앉아 있음
+      a.sit = b; this.save(ws, a); return this.all({ t: 'sit', id: a.id, b }, ws);
+    }
+    if (m.t === 'hunt') { a.hunt = !!m.on; a.sit = -1; this.save(ws, a); return this.all({ t: 'hunt', id: a.id, on: a.hunt }, ws); }
     if (m.t === 'emo') { if (!EMOTES.includes(m.e) || t - a.emoAt < 800) return; a.emoAt = t; this.save(ws, a); return this.all({ t: 'emo', id: a.id, e: m.e }, ws); }
     if (m.t === 'look') {   // 겉모습·레벨이 바뀜 → 저장된 값을 다시 읽어서 알림
       if (t - a.lookAt < 1500) return; a.lookAt = t;
