@@ -196,10 +196,50 @@ body.hunting .side { display: none; }
 .derived div { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--line); padding: 4px 0; }
 .derived dt { color: var(--ink-soft); } .derived dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
 .ilist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.ilist li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 9px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 14px; }
+.ilist li { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 9px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 14px; }
 .ilist li.locked { opacity: .5; }
 .ilist .ic { font-size: 22px; text-align: center; }
 .gi { width: 36px; height: 36px; display: block; margin: 0 auto; }
+/* 장비 아이콘 칸: 테두리 = 등급 색, 왼쪽 위 숫자 = 단계 */
+.gt { position: relative; display: grid; place-items: center; width: 44px; height: 44px; margin: 0 auto; border-radius: 10px; border: 2px solid var(--gc); background: radial-gradient(circle at 50% 42%, #fff 0 38%, color-mix(in srgb, var(--gc) 30%, #fff) 100%); }
+.gt img { width: 38px; height: 38px; display: block; }
+.gt b { position: absolute; left: 1px; top: 1px; font-size: 10px; line-height: 1; padding: 2px 3px; border-radius: 6px; background: var(--gc); color: #fff; }
+/* 가챠센터 */
+.gbox { border: 2px solid var(--ink); border-radius: 14px; background: #fff; padding: 10px; display: grid; gap: 8px; box-shadow: 0 3px 0 var(--ink); }
+.gbox-h { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .gbox-h b { font-size: 17px; } .gbox-h small { color: var(--ink-soft); }
+.gbox-i { font-size: 26px; } .glv { margin-left: auto; background: var(--ink); color: #fff; border-radius: 999px; padding: 3px 10px; font-weight: 700; font-size: 13px; }
+.gbar { position: relative; height: 18px; border-radius: 9px; background: var(--paper-2); overflow: hidden; } .gbar i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #ffb02e, #e0304a); }
+.gbar span { position: relative; display: block; text-align: center; font-size: 12px; font-weight: 700; line-height: 18px; }
+.godds { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 13px; color: var(--ink-soft); }
+.gbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; } .gbtns .btn { justify-content: center; text-align: center; }
+.gpend { width: 100%; justify-content: center; } .gfold summary { cursor: pointer; font-weight: 700; padding: 4px 0; }
+.gres { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; perspective: 600px; }
+.gcard { display: grid; justify-items: center; align-content: start; gap: 2px; padding: 6px 2px; border-radius: 10px; background: #fff; border: 2px solid var(--gc); font-size: 11px; text-align: center; line-height: 1.25; word-break: keep-all;
+  animation: gflip .45s both; animation-delay: calc(var(--i) * 90ms); }
+.gcard .gt { width: 40px; height: 40px; border: 0; } .gcard .gt img { width: 34px; height: 34px; }
+.gcard em { font-style: normal; font-weight: 800; color: var(--gc); } .gcard .pw { font-weight: 800; font-size: 12px; }
+.gcard .up { color: #2f8f45; font-weight: 800; } .gcard .dis { color: var(--ink-soft); }
+.gcard.keep { box-shadow: 0 0 0 3px #ffd45a; }
+.gcard.shine { animation: gflip .45s both, gglow .9s ease-in-out infinite alternate; animation-delay: calc(var(--i) * 90ms), calc(var(--i) * 90ms + .45s); }
+@keyframes gflip { from { transform: rotateY(90deg) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes gglow { to { box-shadow: 0 0 16px 2px var(--gc); } }
+.gsum { text-align: center; margin: 4px 0; }
+/* 비교 창 */
+.cmp { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 6px; text-align: center; }
+.cmp-c { background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 8px 4px; display: grid; gap: 3px; justify-items: center; word-break: keep-all; }
+.cmp-c.new { border-color: var(--gc); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gc) 30%, transparent); }
+.cmp-c .gt { width: 60px; height: 60px; } .cmp-c .gt img { width: 54px; height: 54px; }
+.cmp-arrow { font-size: 22px; font-weight: 800; }
+.cmp-big { text-align: center; font-size: 17px; font-weight: 700; margin: 4px 0; } .cmp-big .n { font-size: 28px; }
+.cmp-big .up { color: #2f8f45; } .cmp-big .down { color: #d0502f; }
+/* 클래스 · 프리셋 */
+.clsbar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin: 8px 0; }
+.clsbar button { border: 1.5px solid var(--line); background: #fff; border-radius: 10px; padding: 6px 2px; font-weight: 700; font-size: 14px; display: grid; gap: 1px; cursor: pointer; }
+.clsbar button small { font-weight: 500; font-size: 11px; color: var(--ink-soft); }
+.clsbar button[aria-pressed="true"] { border-color: var(--ink); background: #fff7d6; box-shadow: 0 2px 0 var(--ink); }
+.presets { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) 34px; gap: 4px; margin-bottom: 6px; }
+.presets button { border: 1.5px solid var(--line); background: #fff; border-radius: 9px; padding: 6px 2px; font-size: 12px; font-weight: 700; line-height: 1.2; word-break: keep-all; overflow-wrap: anywhere; cursor: pointer; }
+.presets button[aria-pressed="true"] { border-color: var(--ink); background: #fff7d6; }
 .anvil .gi { width: 64px; height: 64px; }
 .ilist .nm { font-weight: 700; overflow-wrap: anywhere; }
 .ilist small { display: block; color: var(--ink-soft); font-size: 12px; font-weight: 400; }
@@ -440,6 +480,7 @@ body.hunting .chat-log { height: 64px; }
         <div class="bar hp"><i id="hpFill"></i><span id="hpText">체력</span></div>
         <div class="bar"><i id="expFill"></i><span id="expText">경험치</span></div>
       </div>
+      <div class="clsbar" id="clsBar" role="group" aria-label="클래스 (언제든 무료로 바꿈)"></div>
       <div class="ptabs" role="tablist" id="ptabs">
         <button role="tab" data-p="stat" aria-selected="true">능력치</button>
         <button role="tab" data-p="equip" aria-selected="false">장비</button>
@@ -447,15 +488,16 @@ body.hunting .chat-log { height: 64px; }
         <button role="tab" data-p="bag" aria-selected="false">가방</button>
       </div>
       <div class="pane" data-pane="stat">
+        <div class="presets" id="presetBar" role="group" aria-label="능력치 프리셋"></div>
         <div class="points"><span>남은 포인트</span><span id="ptsLeft">0</span></div>
         <div class="pane" id="statRows"></div>
         <dl class="derived" id="derived"></dl>
         <button class="btn" id="resetStats" type="button" style="width:100%;margin-top:8px">🔄 능력치 초기화</button>
-        <p class="muted">레벨이 오르면 포인트 4개를 받아요. 잘못 찍었으면 위 버튼으로 초기화할 수 있어요 (골드: 레벨 × 100).</p>
+        <p class="muted">레벨이 오르면 포인트 4개를 받아요. 프리셋 5개마다 따로 찍을 수 있고, 위에서 누르면 바로 바뀌어요 (✏️로 이름 바꾸기). 잘못 찍었으면 초기화(지금 프리셋만, 레벨 × 100 골드).</p>
       </div>
       <div class="pane" data-pane="equip" hidden>
         <ul class="ilist" id="equipList"></ul>
-        <p class="muted">무기점·방어구점에서 사거나 사냥터에서 주워요. 강화는 대장간에서 해요.</p>
+        <p class="muted">무기 3개는 모두 끼고 있고, 위에서 고른 클래스의 무기로 싸워요. 장비는 가챠센터에서 뽑고, 대장간에서 <b>칸</b>을 강화해요 (장비를 바꿔도 강화는 그대로).</p>
       </div>
       <div class="pane" data-pane="skin" hidden>
         <div class="field"><label>얼굴 색</label><div class="swatches" id="faceSw2"></div></div>
@@ -471,7 +513,7 @@ body.hunting .chat-log { height: 64px; }
         <h3>물약</h3>
         <ul class="ilist" id="potList"></ul>
         <label class="potset">사냥 중 자동으로 마시기: 체력 <select id="potAt"><option>30</option><option selected>40</option><option>50</option><option>60</option><option>70</option></select>% 이하</label>
-        <h3>장비 <span class="muted" id="bagCount"></span></h3>
+        <h3>🎁 고를 새 장비 <span class="muted" id="bagCount"></span></h3>
         <ul class="ilist" id="bagList"></ul>
         <h3>최근 일</h3>
         <ul class="log" id="actLog"></ul>
@@ -497,7 +539,7 @@ body.hunting .chat-log { height: 64px; }
       <div class="hb-top"><b id="hbField">🌾 바람 들판</b><span id="hbTime">자동 사냥 00:00</span><button class="hbmin" id="hbMin" type="button" aria-label="현황판 접기" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg></button></div>
       <div class="hb-stats">
         <span>처치 <b id="hbKills">0</b></span><span>경험치 <b id="hbExp">+0</b></span>
-        <span>골드 <b id="hbGold">+0</b></span><span>아이템 <b id="hbDrops">0</b></span>
+        <span>골드 <b id="hbGold">+0</b></span><span hidden>아이템 <b id="hbDrops">0</b></span>
       </div>
       <div class="hb-row"><span id="hbBoss">👑 보스까지 30:00</span></div>
       <div class="hb-row pot"><label>🥤 자동 <select id="hbPot"><option>30</option><option selected>40</option><option>50</option><option>60</option><option>70</option></select>%</label><span id="hbPots">물약 5개</span></div>
@@ -536,7 +578,7 @@ body.hunting .chat-log { height: 64px; }
 
 <script type="module">
 'use strict';
-import { needExp, GRADES, TIERS, WTYPES, SLOTS, STATS, ENH_RATE, ENH_COST, HATS, EYE_SKINS, HAIRS, HAIR_COLORS, makeItem, enhMul, itemIcon, itemName, itemDesc, derive as deriveOf, tierFor, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, BAG_MAX, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES } from './assets/js/game-rules.js?v=__BUILD__';
+import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES } from './assets/js/game-rules.js?v=__BUILD__';
 const API = 'https://kimchibok-game.kimchibok.workers.dev';
 const LIVE_API = 'https://kimchibok-live.kimchibok.workers.dev/live';
 const $ = s => document.querySelector(s);
@@ -561,36 +603,78 @@ function inkDraw(ctx, parts, O = 2.2) {
   for (const p of parts) { if (p.c) { p.path(ctx); ctx.fillStyle = p.c; ctx.fill(); } p.after?.(ctx); }
   ctx.restore();
 }
-// 장비 색 (단계: 들판 · 숲 · 협곡 · 공장)
-const METAL = ['#c9d2dc', '#e2b26a', '#9fcdf2', '#ffd45a'];
-const ARMOR = ['#b07a45', '#5f9e57', '#a7bccf', '#f2c14e'];
-const SHOE = ['#7a4a2a', '#3f6e3a', '#5d7690', '#c99a2e'];
+// 장비 색 (단계 1~6)
+const ARMOR_C = ['#e3d6bb', '#b07a45', '#9aa5b1', '#dfe6ee', '#b8433a', '#f2c14e'];
+const SHOE_C = ['#d2b06a', '#7a4a2a', '#7f8b98', '#5d7690', '#3fb6a8', '#e0b23a'];
 const WOOD = '#7a4a2a';
-const STAT_C = { str: '#e8553a', dex: '#2bb3a6', int: '#9a5ad6', luk: '#4f9d5a' };
-const gemOf = it => it.grade === 'normal' ? METAL[it.tier] : GRADES[it.grade].c;
+const gemOf = it => (it.g === 'poor' || it.g === 'normal' ? null : GRADES[it.g].c);
 // 무기: 손잡이(쥐는 곳)가 (0,0), 날은 위(-y)로
-function weaponParts(w) {
-  const m = METAL[w.tier], gem = gemOf(w), shine = 'rgba(255,255,255,.4)';
-  if (w.wt === 'dagger') return [
-    { path: R(-1.5, -1.5, 3, 7, 1), c: WOOD }, { path: E(0, 6, 2.2, 2.2), c: gem },
-    { path: R(-4.2, -3.8, 8.4, 2.8, 1.3), c: m }, { path: PG([[-2, -3.5], [2, -3.5], [2, -11], [0, -15.5], [-2, -11]]), c: m },
-    { flat: 1, path: PG([[.3, -4], [2, -4], [2, -11], [.3, -14]]), c: shine }];
-  if (w.wt === 'hammer') return [
-    { path: R(-1.5, -17, 3, 25, 1.3), c: WOOD }, { path: R(-7.5, -25, 15, 9.5, 2.2), c: m },
-    { flat: 1, path: R(-7.5, -22.2, 15, 2.6, 0), c: gem }, { flat: 1, path: R(-6, -24, 4, 7.5, 1.5), c: shine }];
-  if (w.wt === 'bow') {   // 활: 손잡이를 손(0,0)이 쥐고, 활대는 앞으로 휨 + 시위
-    const cx = -12, ro = 16, ri = 12.6, out = [], inn = [];
-    for (let i = 0; i <= 14; i++) { const a = -1.1 + 2.2 * i / 14; out.push([cx + ro * Math.cos(a), ro * Math.sin(a)]); inn.unshift([cx + ri * Math.cos(a), ri * Math.sin(a)]); }
-    return [{ path: R(-6.1, -14, 1.1, 28, 0), c: '#f3ead2' }, { path: PG([...out, ...inn]), c: w.tier ? m : '#b07a45' },
-      { path: R(-.8, -4, 5.2, 8, 2), c: WOOD }, { path: E(1.8, 0, 1.7, 1.7), c: gem }];
+const weaponParts = w => (w.slot === 'bow' ? bowParts : w.slot === 'staff' ? staffParts : swordParts)(w.st, gemOf(w));
+function swordParts(st, gem) {
+  const shine = 'rgba(255,255,255,.45)', pom = c => ({ path: E(0, 7.6, 2.6, 2.6), c: gem || c });
+  switch (st) {
+    case 1: return [   // 나무 검
+      { path: R(-1.6, -2, 3.2, 9, 1.2), c: '#5a3a20' }, pom('#8a5a30'), { path: R(-5, -4, 10, 2.8, 1.4), c: '#8a5a30' },
+      { path: PG([[-2.2, -3.5], [2.2, -3.5], [2.2, -17], [0, -21], [-2.2, -17]]), c: '#c4935a' }, { flat: 1, path: R(-.4, -17, .9, 12, 0), c: 'rgba(90,58,32,.45)' }];
+    case 2: return [   // 청동 검: 둥근 날밑
+      { path: R(-1.6, -2, 3.2, 9, 1.2), c: WOOD }, pom('#b8743a'), { path: E(0, -3, 5.5, 2.4), c: '#b8743a' },
+      { path: PG([[-2.5, -4], [2.5, -4], [3, -15], [0, -23], [-3, -15]]), c: '#d99a5a' }, { flat: 1, path: PG([[.3, -4.5], [2.5, -4.5], [3, -15], [.3, -21]]), c: shine }];
+    case 3: return [   // 강철 기사검: 긴 날, 넓은 십자 날밑
+      { path: R(-1.6, -2, 3.2, 10, 1.2), c: '#3b4a6b' }, pom('#5b86e0'), { path: R(-7.5, -5, 15, 3.4, 1.6), c: '#9aa5b1' },
+      { path: PG([[-2.4, -4.5], [2.4, -4.5], [2.4, -24], [0, -29], [-2.4, -24]]), c: '#e3e9f0' }, { flat: 1, path: PG([[.3, -5], [2.4, -5], [2.4, -24], [.3, -27.5]]), c: shine },
+      { path: E(0, -3.3, 2.1, 2.1), c: gem || '#5b86e0' }];
+    case 4: return [   // 룬 블레이드: 청록 날 + 빛나는 룬
+      { path: R(-1.6, -2, 3.2, 10, 1.2), c: '#2a3550' }, pom('#7fd6e8'), { path: PG([[-7, -6.5], [-2, -4], [2, -4], [7, -6.5], [5, -2.5], [-5, -2.5]]), c: '#4b5a78' },
+      { path: PG([[-2.8, -5], [2.8, -5], [3.2, -22], [0, -30], [-3.2, -22]]), c: '#7fd6e8' }, { flat: 1, path: R(-.6, -24, 1.2, 17, .6), c: '#effeff' },
+      { flat: 1, path: R(-2.2, -11, 4.4, 1.3, .6), c: '#2f8fa8' }, { flat: 1, path: R(-2.2, -17, 4.4, 1.3, .6), c: '#2f8fa8' }];
+    case 5: return [   // 용비늘 대검: 넓은 톱니 날 + 뿔 날밑
+      { path: R(-1.8, -2, 3.6, 11, 1.4), c: '#3a2420' }, pom('#ffcf5a'), { path: PG([[-9, -8], [-3, -4], [3, -4], [9, -8], [7, -2], [-7, -2]]), c: '#5a2a24' },
+      { path: PG([[-4, -4.5], [4, -4.5], [5, -12], [3.6, -14], [5, -19], [3.4, -21], [4.2, -26], [0, -33], [-4.2, -26], [-3.4, -21], [-5, -19], [-3.6, -14], [-5, -12]]), c: '#d4473b' },
+      { flat: 1, path: PG([[0, -5], [2, -5], [2.5, -25], [0, -31]]), c: 'rgba(255,200,160,.55)' }];
+    default: return [   // 김치 성검: 황금 날 + 배추잎 날밑 + 빨간 보석
+      { path: R(-1.8, -2, 3.6, 11, 1.4), c: '#e8553a' }, pom('#e8553a'), { path: E(-5.5, -4, 5, 2.6, -.35), c: '#7fcf6a' }, { path: E(5.5, -4, 5, 2.6, .35), c: '#7fcf6a' },
+      { path: PG([[-3.2, -5], [3.2, -5], [3.6, -26], [0, -34], [-3.6, -26]]), c: '#ffd45a' }, { flat: 1, path: PG([[.3, -5.5], [3.2, -5.5], [3.6, -26], [.3, -32]]), c: 'rgba(255,255,255,.55)' },
+      { path: E(0, -4, 2.4, 2.4), c: gem || '#e8553a' }, { flat: 1, path: g => starPath(g, -1.6, -24, 2.2), c: '#fffbe0' }];
   }
-  if (w.wt === 'staff') return [
-    { path: R(-1.4, -23, 2.8, 33, 1.4), c: WOOD }, { path: PG([[-4.2, -21], [4.2, -21], [3, -24.5], [-3, -24.5]]), c: m },
-    { path: E(0, -28.5, 4.8, 4.8), c: w.grade === 'normal' ? '#7fd0ff' : gem }, { flat: 1, path: E(-1.5, -30, 1.5, 1.5), c: 'rgba(255,255,255,.75)' }];
-  return [   // 검
-    { path: R(-1.6, -2, 3.2, 9, 1.2), c: WOOD }, { path: E(0, 7.6, 2.6, 2.6), c: gem },
-    { path: R(-6, -4.6, 12, 3.4, 1.6), c: m }, { path: PG([[-2.4, -4], [2.4, -4], [2.4, -20], [0, -25], [-2.4, -20]]), c: m },
-    { flat: 1, path: PG([[.3, -4.5], [2.4, -4.5], [2.4, -20], [.3, -23.5]]), c: shine }];
+}
+function bowParts(st, gem) {   // 활: 손잡이를 손(0,0)이 쥐고, 활대는 앞으로 휨 + 시위
+  const ro = st >= 3 ? 18 : 16, cx = 4 - ro, ri = ro - (st >= 5 ? 4.4 : 3.4), out = [], inn = [];
+  for (let i = 0; i <= 14; i++) { const a = -1.1 + 2.2 * i / 14; out.push([cx + ro * Math.cos(a), ro * Math.sin(a)]); inn.unshift([cx + ri * Math.cos(a), ri * Math.sin(a)]); }
+  const col = ['#b07a45', '#6b4226', '#aab4bf', '#3fb6a8', '#e2552f', '#8a5ad6'][st - 1], half = (ro - 1.8) * Math.sin(1.1), sx = cx + (ro - 1.8) * Math.cos(1.1);
+  const tx = cx + ro * Math.cos(1.1), ty = ro * Math.sin(1.1), P = [{ path: R(sx - .55, -half, 1.1, half * 2, 0), c: st === 6 ? '#fff3b0' : '#f3ead2' }];
+  if (st === 4) for (const k of [-1, 1]) P.push({ path: E(tx + 1.5, k * (ty + 1), 3.4, 1.6, k * .9), c: '#e8fdff' });
+  if (st === 5) for (const k of [-1, 1]) P.push({ path: PG([[tx - 2.5, k * (ty - 2)], [tx + 3.5, k * (ty + 5)], [tx + 2.5, k * (ty - 1.5)]]), c: '#ffb02e' });
+  P.push({ path: PG([...out, ...inn]), c: col });
+  if (st === 2) for (const y of [-9, 7]) P.push({ flat: 1, path: R(cx + ro - 4, y, 4, 2, 0), c: '#3a2420' });
+  if (st === 3) for (const k of [-1, 1]) P.push({ path: E(tx, k * ty, 2, 2), c: '#7f8b98' });
+  if (st === 6) for (const k of [-1, 1]) P.push({ path: g => starPath(g, tx + .5, k * (ty + 1), 3.6), c: '#ffd45a' });
+  P.push({ path: R(-.8, -4, 5.2, 8, 2), c: st >= 5 ? '#3a2420' : WOOD }, { path: E(1.8, 0, 1.7, 1.7), c: gem || ['#c9a36a', '#d08a4e', '#c9d2dc', '#7fd6e8', '#ffcf5a', '#ffd45a'][st - 1] });
+  return P;
+}
+function staffParts(st, gem) {
+  const shaft = ['#8a5a30', '#7a4a2a', '#c9d2dc', '#3a3f4b', '#6b2a24', '#4b3a8a'][st - 1], P = [{ path: R(-1.4, -23, 2.8, 33, 1.4), c: shaft }], glint = { flat: 1, path: E(-1.5, -30.5, 1.4, 1.4), c: 'rgba(255,255,255,.8)' };
+  switch (st) {
+    case 1: P.push({ path: at(0, -16, -.7, R(-.8, -7, 1.6, 8, .8)), c: shaft }, { path: E(-6, -24, 3.4, 1.8, -.6), c: '#6cc35a' }, { path: E(0, -24.5, 2.6, 2.6), c: gem || '#a8743f' }); break;
+    case 2: P.push({ path: g => { g.beginPath(); g.arc(0, -29, 7, 0, Math.PI * 2); g.arc(0, -29, 5, 0, Math.PI * 2, true); }, c: '#a8743f' }, { path: PG([[0, -38], [4.6, -29], [0, -21], [-4.6, -29]]), c: gem || '#9fdcff' }, { flat: 1, path: PG([[0, -36], [2, -29], [0, -24]]), c: 'rgba(255,255,255,.6)' }); break;
+    case 3: P.push({ path: g => { g.beginPath(); g.arc(0, -30, 6.4, 0, Math.PI * 2); g.arc(2.8, -31.5, 5.2, 0, Math.PI * 2, true); }, c: '#fff3b0' }, { path: E(0, -22.5, 2.2, 2.2), c: gem || '#9fcdf2' }); break;
+    case 4: P.push({ path: E(0, -24, 3, 3), c: gem || '#ffe14a' }, { path: PG([[-.5, -26], [4, -32], [1, -32], [4.5, -40], [-3.5, -30.5], [-.5, -30.5], [-4, -26]]), c: '#ffe14a' }); break;
+    case 5: P.push({ path: PG([[-6, -22], [-5, -33], [-2.5, -24]]), c: '#3a2420' }, { path: PG([[6, -22], [5, -33], [2.5, -24]]), c: '#3a2420' }, { path: E(0, -29, 5, 5), c: gem || '#ffb02e' }, { flat: 1, path: E(0, -29, 1.3, 3.8), c: INK }, glint); break;
+    default: P.push({ path: g => { g.beginPath(); g.ellipse(0, -29, 10, 3, -.4, 0, Math.PI * 2); g.ellipse(0, -29, 8, 1.6, -.4, 0, Math.PI * 2, true); }, c: '#ffd45a' }, { path: E(0, -29, 5.4, 5.4), c: '#3a2a7a' },
+      { flat: 1, path: g => starPath(g, 1.5, -30, 2), c: '#fff3b0' }, { flat: 1, path: E(-2, -27.5, .8, .8), c: '#fff' }, { path: E(0, -21.5, 2, 2), c: gem || '#c9a2ff' });
+  }
+  return P;
+}
+// 갑옷 (몸 위에 덧그림)
+function armorParts(it, bob) {
+  const st = it.st, c = ARMOR_C[st - 1], y = -17.5 - bob, gem = gemOf(it), P = [{ flat: 1, path: R(-7.6, y, 15.2, 11, [3, 3, 4, 4]), c }];
+  if (st === 1) P.push({ flat: 1, path: R(-7.6, y + 7, 15.2, 1.8, 0), c: '#a88a5a' });
+  if (st === 2) P.push({ flat: 1, path: R(-7.8, y + 7.5, 15.6, 2.4, 0), c: 'rgba(60,35,20,.6)' }, { flat: 1, path: R(-1.1, y + 7.2, 2.2, 3, .5), c: '#e2b26a' });
+  if (st === 3) for (let i = 0; i < 3; i++) for (let j = 0; j < 4; j++) P.push({ flat: 1, path: E(-5.2 + j * 3.5, y + 2 + i * 3, .9, .9), c: 'rgba(40,50,60,.45)' });
+  if (st === 4) P.push({ flat: 1, path: R(-.6, y, 1.2, 11, 0), c: 'rgba(40,50,70,.35)' }, { flat: 1, path: R(-7.6, y + 4.5, 15.2, 1.2, 0), c: 'rgba(40,50,70,.3)' });
+  if (st === 5) for (let i = 0; i < 2; i++) for (let j = 0; j < 3; j++) { const x = -4.5 + j * 4.5 + (i ? 2.2 : 0), yy = y + 2.5 + i * 3.5; P.push({ flat: 1, path: PG([[x - 2, yy], [x, yy + 2.6], [x + 2, yy]]), c: '#7a2a24' }); }
+  if (st === 6) P.push({ flat: 1, path: R(-7.6, y, 15.2, 2.2, [3, 3, 0, 0]), c: '#fff3b0' }, { flat: 1, path: E(0, y + 5.5, 2.2, 2.2), c: gem || '#e8553a' });
+  else if (gem) P.push({ flat: 1, path: E(0, y + 3.2, 1.8, 1.8), c: gem });
+  return P;
 }
 // 헤어스타일 (머리 위쪽 hy 기준, 얼굴은 x -14~14 · 높이 26)
 function hairParts(id, c, hy) {
@@ -607,15 +691,19 @@ function hairParts(id, c, hy) {
     default: return { back: [], front: [] };
   }
 }
-// 모자 장비 (머리 스킨을 안 썼을 때 보임)
+// 모자 장비 (머리 스킨을 안 썼을 때 보임). 단계마다 모양이 다름
 function helmParts(it, hy) {
-  const c = ARMOR[it.tier], P = [{ path: R(-15.5, hy - 2.5, 31, 12.5, [12, 12, 3, 3]), c }];
-  if (it.tier === 0) P.push({ path: E(0, hy - 3, 3, 2.4), c });
-  if (it.tier === 1) P.push({ path: E(10, hy - 6, 2.6, 7, .6), c: '#9fdc6f' });
-  if (it.tier === 2) P.push({ path: R(-1.8, hy - 6.5, 3.6, 13, 1.8), c: '#7f97ad' });
-  if (it.tier === 3) for (const x of [-9, 0, 9]) P.push({ path: PG([[x - 3.5, hy], [x, hy - 9.5], [x + 3.5, hy]]), c });
-  P.push({ flat: 1, path: R(-15.5, hy + 6.5, 31, 3.5, 0), c: 'rgba(0,0,0,.14)' });
-  if (it.grade !== 'normal') P.push({ flat: 1, path: E(0, hy + 3, 2.3, 2.3), c: GRADES[it.grade].c });
+  const gem = gemOf(it), P = [];
+  switch (it.st) {
+    case 1: P.push({ path: E(14.5, hy + 6, 4.2, 2.4, .7), c: '#d9a45a' }, { path: R(-15.5, hy - 1.5, 31, 10, [11, 11, 3, 3]), c: '#d9a45a' }, { flat: 1, path: R(-15.5, hy + 5, 31, 1.8, 0), c: 'rgba(0,0,0,.12)' }); break;
+    case 2: P.push({ path: R(-15.5, hy - 3, 31, 11, [12, 12, 3, 3]), c: '#9a6a3a' }, { path: R(-17.5, hy + 6, 35, 3.6, 1.8), c: '#7a4a2a' }); break;
+    case 3: P.push({ path: R(-15.5, hy - 3, 31, 13, [12, 12, 3, 3]), c: '#a7b0ba' }, { path: R(-1.8, hy + 6, 3.6, 8, 1.5), c: '#a7b0ba' }, { path: E(0, hy - 3.4, 2.6, 2), c: '#8d99a6' }); break;
+    case 4: P.push({ path: E(5, hy - 9, 3.2, 8, .5), c: '#e8553a' }, { path: R(-15.5, hy - 3, 31, 13, [12, 12, 3, 3]), c: '#e3e9f0' }, { flat: 1, path: R(-12, hy + 6.5, 24, 2.2, 1), c: '#3b4a6b' }); break;
+    case 5: P.push({ path: PG([[-11, hy + 1], [-19, hy - 12], [-6, hy - 3]]), c: '#f3e6cf' }, { path: PG([[11, hy + 1], [19, hy - 12], [6, hy - 3]]), c: '#f3e6cf' }, { path: R(-15.5, hy - 3, 31, 13, [12, 12, 3, 3]), c: '#b8433a' }, { flat: 1, path: PG([[-6, hy + 2], [0, hy - 2], [6, hy + 2], [0, hy + 5]]), c: '#7a2a24' }); break;
+    default: for (const x of [-9, 0, 9]) P.push({ path: PG([[x - 3.8, hy + 1], [x, hy - 10], [x + 3.8, hy + 1]]), c: '#f2c14e' }); P.push({ path: R(-15.5, hy - 2, 31, 12, [12, 12, 3, 3]), c: '#f2c14e' }, { flat: 1, path: E(0, hy + 2.5, 2.2, 2.2), c: gem || '#e8553a' });
+  }
+  if (it.st !== 2) P.push({ flat: 1, path: R(-15.5, hy + 6.5, 31, 3, 0), c: 'rgba(0,0,0,.12)' });
+  if (gem && it.st !== 6) P.push({ flat: 1, path: E(0, hy + 2.5, 2.2, 2.2), c: gem });
   return P;
 }
 // 머리 장식 스킨
@@ -666,31 +754,30 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   for (const [lx, w] of [[-6, walk * 1.2], [1, -walk * 1.2]]) {
     if (sit) {   // 앉음: 허벅지가 앞으로 나오고 발이 벤치 아래로
       P.push({ path: R(lx, -8, 5, 11, 2.5), c: '#3a4456' });
-      P.push({ path: R(lx - 1, 1, 7, 4.6, [1.5, 2.5, 2.3, 2.3]), c: eq.shoes ? SHOE[eq.shoes.tier] : '#3a4456' });
+      P.push({ path: R(lx - 1, 1, 7, 4.6, [1.5, 2.5, 2.3, 2.3]), c: eq.shoes ? SHOE_C[eq.shoes.st - 1] : '#3a4456' });
       continue;
     }
     P.push({ path: R(lx, -8 + w, 5, 8, 2.5), c: '#3a4456' });
-    if (eq.shoes) P.push({ path: R(lx - 1, -4 + w, 7, 4.6, [1.5, 2.5, 2.3, 2.3]), c: SHOE[eq.shoes.tier] });
+    if (eq.shoes) P.push({ path: R(lx - 1, -4 + w, 7, 4.6, [1.5, 2.5, 2.3, 2.3]), c: SHOE_C[eq.shoes.st - 1] });
   }
   // 왼팔 (몸 뒤)
   P.push({ path: at(-9, -17 - bob, .25 + walk * .45, R(-2.5, 0, 5, 10, 2.5)), c: c.face });
   // 몸 + 갑옷 + 장신구
   P.push({ path: R(-9, -20 - bob, 18, 14, 5), c: c.body });
-  if (eq.armor) P.push({ flat: 1, path: R(-7.6, -17.5 - bob, 15.2, 11, [3, 3, 4, 4]), c: ARMOR[eq.armor.tier] }, { flat: 1, path: R(-7.8, -10 - bob, 15.6, 2.4, 0), c: 'rgba(60,35,20,.55)' });
-  if (eq.acc) P.push({ flat: 1, path: E(0, -16.8 - bob, 2, 2), c: STAT_C[eq.acc.stat] || '#ffd45a' });
+  if (eq.armor?.st) P.push(...armorParts(eq.armor, bob));
   // 머리 + 눈 (+ 헤어: 뒷머리는 얼굴 뒤, 앞머리는 얼굴 위)
   const hp = hairParts(c.hair, c.hairC || HAIR_COLORS[0], hy);
   P.push(...hp.back);
   P.push({ path: R(-14, hy, 28, 26, 9), c: c.face, after: g => drawEyes(g, c, hy + 16, t) });
   P.push(...hp.front);
   if (c.hat && c.hat !== 'none') P.push(...hatParts(c.hat, hy, c.face));
-  else if (eq.hat) P.push(...helmParts(eq.hat, hy));
+  else if (eq.hat?.st) P.push(...helmParts(eq.hat, hy));
   // 오른팔 (몸 앞) + 무기: 손(팔 끝)이 손잡이를 쥠
   // 근접: 위에서 아래로 내려침 · 원거리(지팡이·활): 팔을 앞으로 뻗고 반동
-  const wt = eq.weapon?.wt, far = wt === 'staff' || wt === 'bow', sw = c.swing > 0 ? c.swing / .18 : 0;
+  const W = eq[c.cls || 'sword']?.st ? eq[c.cls || 'sword'] : null, wt = W?.slot, far = wt === 'staff' || wt === 'bow', sw = c.swing > 0 ? c.swing / .18 : 0;
   const arm = sw ? (far ? -1.5 + sw * .35 : -2.6 + (1 - sw) * 2.1) : -.25 - walk * .45, sx = 9, sy = -17 - bob;
   P.push({ path: at(sx, sy, arm, R(-2.5, 0, 5, 10, 2.5)), c: c.face });
-  if (eq.weapon) { const tilt = wt === 'bow' ? -arm : wt === 'staff' ? (sw ? -arm + .5 : .3) : 1.2; for (const p of weaponParts(eq.weapon)) P.push({ ...p, path: at(sx, sy, arm, at(0, 9, tilt, p.path)) }); }
+  if (W) { const tilt = wt === 'bow' ? -arm : wt === 'staff' ? (sw ? -arm + .5 : .3) : 1.2; for (const p of weaponParts(W)) P.push({ ...p, path: at(sx, sy, arm, at(0, 9, tilt, p.path)) }); }
   P.push({ path: at(sx, sy, arm, E(0, 9, 3.1, 3.1)), c: c.face });
   inkDraw(ctx, P, 2.2);
   ctx.restore();
@@ -702,23 +789,36 @@ function portrait(cv, c, s = 2.6) {
   s = Math.min(s, (h - 12) / 60);   // 모자·무기까지 잘리지 않게
   drawChar(ctx, w / 2, h - 8, { ...c, moving: false, still: true }, 0, s);
 }
-// 장비 그림 아이콘 (가게·가방 목록용)
+// 장비 그림 아이콘 (가챠·장비창 목록용). 테두리 색 = 등급, 왼쪽 위 숫자 = 단계
 const ICONS = new Map();
 function itemImg(it) {
-  const k = `${it.slot}|${it.tier}|${it.wt || ''}|${it.grade}|${it.stat || ''}`;
+  const k = `${it.slot}|${it.st}|${it.g}`;
   if (ICONS.has(k)) return ICONS.get(k);
   const cv = document.createElement('canvas'); cv.width = cv.height = 96; const g = cv.getContext('2d');
   g.translate(48, 48); g.scale(2.1, 2.1);
-  let P;
-  if (it.slot === 'weapon') { g.rotate(.78); if (it.wt === 'bow') { g.rotate(-.78); g.translate(4, 0); } else g.translate(0, it.wt === 'staff' ? 10 : it.wt === 'dagger' ? 4 : 8); P = weaponParts(it); }
-  else if (it.slot === 'hat') P = helmParts(it, -5);
-  else if (it.slot === 'armor') { const c = ARMOR[it.tier]; P = [{ path: E(-11, -9, 5.5, 4.5), c }, { path: E(11, -9, 5.5, 4.5), c }, { path: R(-10, -13, 20, 25, 6), c }, { flat: 1, path: R(-10, 4, 20, 3, 0), c: 'rgba(60,35,20,.55)' }, { flat: 1, path: E(0, -5, 2.4, 2.4), c: gemOf(it) }]; }
-  else if (it.slot === 'shoes') { const c = SHOE[it.tier]; P = [-1, 1].flatMap(s => { const x = s < 0 ? -15 : 2; return [{ path: R(x, -12 + (s > 0 ? 3 : 0), 8, 16, 3), c }, { path: R(x, -1 + (s > 0 ? 3 : 0), 13, 7, [2, 4, 3, 3]), c }]; }); }
-  else { const gem = STAT_C[it.stat] || '#ffd45a'; P = [{ path: g2 => { g2.beginPath(); g2.arc(0, 4, 9.5, 0, Math.PI * 2); g2.moveTo(6.5, 4); g2.arc(0, 4, 6.5, 0, Math.PI * 2, true); }, c: '#ffd45a' }, { path: E(0, -7, 5, 5), c: gem }, { flat: 1, path: E(-1.6, -8.6, 1.5, 1.5), c: 'rgba(255,255,255,.7)' }]; }
+  let P; const c = ARMOR_C[it.st - 1], gem = gemOf(it);
+  if (it.slot === 'bow') { g.scale(1.15, 1.15); g.translate(3, 0); P = weaponParts(it); }
+  else if (WEAPON_SLOTS.includes(it.slot)) { g.rotate(.78); g.scale(1.08, 1.08); g.translate(0, it.slot === 'staff' ? 14 : 12); P = weaponParts(it); }
+  else if (it.slot === 'hat') { g.scale(1.15, 1.15); P = helmParts(it, -3); }
+  else if (it.slot === 'armor') {
+    P = [{ path: E(-11, -9, 5.5, 4.5), c }, { path: E(11, -9, 5.5, 4.5), c }, { path: R(-10, -13, 20, 25, 6), c }];
+    if (it.st === 1) P.push({ flat: 1, path: R(-10, 3, 20, 3, 0), c: '#a88a5a' });
+    if (it.st === 2) P.push({ flat: 1, path: R(-10, 4, 20, 3.5, 0), c: 'rgba(60,35,20,.6)' }, { flat: 1, path: R(-1.6, 3.6, 3.2, 4.4, .8), c: '#e2b26a' });
+    if (it.st === 3) for (let i = 0; i < 5; i++) for (let j = 0; j < 4; j++) P.push({ flat: 1, path: E(-6 + j * 4, -8 + i * 4.5, 1.1, 1.1), c: 'rgba(40,50,60,.45)' });
+    if (it.st === 4) P.push({ flat: 1, path: R(-.8, -13, 1.6, 25, 0), c: 'rgba(40,50,70,.35)' }, { flat: 1, path: R(-10, -2, 20, 1.6, 0), c: 'rgba(40,50,70,.3)' }, { flat: 1, path: R(-10, 5, 20, 1.6, 0), c: 'rgba(40,50,70,.3)' });
+    if (it.st === 5) for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) { const x = -5.5 + j * 5.5 + (i % 2 ? 2.7 : 0), y = -9 + i * 5; P.push({ flat: 1, path: PG([[x - 2.6, y], [x, y + 3.2], [x + 2.6, y]]), c: '#7a2a24' }); }
+    if (it.st === 6) P.push({ flat: 1, path: R(-10, -13, 20, 3.5, [6, 6, 0, 0]), c: '#fff3b0' }, { flat: 1, path: R(-10, 8, 20, 2.5, 0), c: '#fff3b0' });
+    if (gem || it.st === 6) P.push({ flat: 1, path: E(0, -3, 2.6, 2.6), c: gem || '#e8553a' });
+  } else {   // 신발
+    const sc = SHOE_C[it.st - 1];
+    P = [-1, 1].flatMap(k => { const x = k < 0 ? -15 : 2, dy = k > 0 ? 3 : 0; return [{ path: R(x, -12 + dy, 8, 16, 3), c: sc }, { path: R(x, -1 + dy, 13, 7, [2, 4, 3, 3]), c: sc },
+      ...(it.st === 5 ? [{ path: E(x - 1, -8 + dy, 3.4, 1.7, -.5), c: '#e8fdff' }] : []), ...(it.st >= 4 ? [{ flat: 1, path: R(x, -12 + dy, 8, 2.4, [3, 3, 0, 0]), c: it.st === 6 ? '#fff3b0' : 'rgba(255,255,255,.35)' }] : []),
+      ...(it.st === 2 ? [{ flat: 1, path: R(x + 1, -6 + dy, 6, 1.2, 0), c: 'rgba(0,0,0,.25)' }] : []), ...(gem ? [{ flat: 1, path: E(x + 4, -4 + dy, 1.6, 1.6), c: gem }] : [])]; });
+  }
   inkDraw(g, P, 2);
   const url = cv.toDataURL(); ICONS.set(k, url); return url;
 }
-const gIcon = it => `<img class="gi" src="${itemImg(it)}" alt="">`;
+const gIcon = it => `<span class="gt" style="--gc:${GRADES[it.g].c}"><img src="${itemImg(it)}" alt=""><b>${it.st}</b></span>`;
 
 // ───────── 상태 ─────────
 const me = { name: '', ...newCharacter(), path: [], moving: false, seed: .3 };
@@ -728,7 +828,7 @@ const S = { zoom: 1.6, live: false, chatMode: 'near', sent: [], warns: 0, muteUn
 
 // 규칙(숫자·계산식)은 assets/js/game-rules.js 에 있어요 (서버와 같이 씀)
 const derive = (c = me) => deriveOf(c);
-const itemTag = it => `<span style="color:${GRADES[it.grade].c}">${itemName(it)}</span>`;
+const itemTag = it => `<span style="color:${GRADES[it.g].c}">${itemName(it)}</span>`;
 
 // ───────── 지도 만들기 ─────────
 const G = 0, PATH = 1, WATER = 2, STONE = 3, SOIL = 4, DOCK = 5, SAND = 6;
@@ -749,8 +849,7 @@ for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (tiles[y][x] === WA
 const BUILDINGS = [
   { id: 'cafe', name: '카페', icon: '☕', x: 7, y: 5, w: 5, h: 4, roof: '#c8553d', wall: '#fff1dc' },
   { id: 'skin', name: '스킨샵', icon: '👕', x: 13, y: 5, w: 4, h: 4, roof: '#ef7fa6', wall: '#fff0f5' },
-  { id: 'weapon', name: '무기점', icon: '⚔️', x: 25, y: 5, w: 5, h: 4, roof: '#3d7bd9', wall: '#eef4ff' },
-  { id: 'armor', name: '방어구점', icon: '🛡️', x: 31, y: 5, w: 5, h: 4, roof: '#56677f', wall: '#eef1f5' },
+  { id: 'gacha', name: '가챠센터', icon: '🎰', x: 25, y: 5, w: 11, h: 4, roof: '#e0304a', wall: '#fff4e8' },
   { id: 'smith', name: '대장간', icon: '🔨', x: 31, y: 17, w: 5, h: 3, roof: '#8a4b2a', wall: '#f7ebe0', chimney: true },
   { id: 'station', name: '방송국', icon: '📺', x: 24, y: 19, w: 6, h: 5, roof: '#6c4fc2', wall: '#f3efff', antenna: true },
   { id: 'home1', name: '내 집', icon: '🏠', x: 6, y: 17, w: 4, h: 3, roof: '#4f9d5a', wall: '#f6fbef', mine: true },
@@ -856,7 +955,7 @@ function stepChar(ch, dt) {
 // ───────── 다른 유저 (실시간: 서버의 마을 방에서 받아 옴) ─────────
 let people = [];
 function mkPerson(d) {
-  return { id: d.id, name: d.n, adm: d.adm, lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, equip: d.equip || {},
+  return { id: d.id, name: d.n, adm: d.adm, lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {},
     x: d.tx ?? d.x, y: d.ty ?? d.y, path: [], seed: (d.id % 17) * .37, speed: 130, hunt: !!d.hunt, sit: -1, bubble: null, emote: null };
 }
 const personOf = id => people.find(p => p.id === id);
@@ -1224,8 +1323,7 @@ function usePotion(D) {
 }
 function huntSummary(h) {
   const f = FIELDS[h.f], sec = h.sec, tm = sec >= 3600 ? `${Math.floor(sec / 3600)}시간 ${Math.floor(sec % 3600 / 60)}분` : `${Math.floor(sec / 60)}분 ${sec % 60}초`;
-  return `<table class="ruletable"><tbody><tr><td>사냥터</td><td>${f.i} ${f.n}</td></tr><tr><td>시간</td><td>${tm}</td></tr><tr><td>처치</td><td>${h.kills.toLocaleString()}마리${h.bosses ? ` (👑 보스 ${h.bosses})` : ''}</td></tr><tr><td>경험치</td><td>+${h.exp.toLocaleString()}</td></tr><tr><td>골드</td><td>+${h.gold.toLocaleString()}${h.sold ? ` <small>(가방이 가득 차서 자동 판매 ${h.sold.toLocaleString()} 포함)</small>` : ''}</td></tr><tr><td>물약</td><td>${h.pots}개 마심</td></tr>
-    <tr><td>장비</td><td>${h.drops}개${h.best?.length ? '<br>' + h.best.map(b => `<b style="color:${GRADES[b.g].c}">${GRADES[b.g].n} ${esc(b.n)}</b>`).join('<br>') : ''}</td></tr></tbody></table>`;
+  return `<table class="ruletable"><tbody><tr><td>사냥터</td><td>${f.i} ${f.n}</td></tr><tr><td>시간</td><td>${tm}</td></tr><tr><td>처치</td><td>${h.kills.toLocaleString()}마리${h.bosses ? ` (👑 보스 ${h.bosses})` : ''}</td></tr><tr><td>경험치</td><td>+${h.exp.toLocaleString()}</td></tr><tr><td>골드</td><td>+${h.gold.toLocaleString()}</td></tr><tr><td>물약</td><td>${h.pots}개 마심</td></tr></tbody></table>`;
 }
 // 현황판 접기 (상태 기억)
 function setHbMin(on) { $('#huntBox').classList.toggle('min', on); $('#hbMin').setAttribute('aria-expanded', String(!on)); $('#hbMin').setAttribute('aria-label', on ? '현황판 펼치기' : '현황판 접기'); try { localStorage.setItem('cbt-hbmin', on ? '1' : '0'); } catch {} }
@@ -1474,31 +1572,13 @@ function openBuilding(b, keep) {
       if (j) { logAct(`${POTS[k].n} ${n}개 −${POTS[k].price * n}`); toast(`${POTS[k].i} ${n}개 샀어요`); reopen?.(); }
     }), keep);
   }
-  if (id === 'weapon' || id === 'armor') {
-    const t = tierFor(me.lv), tiers = [t, t + 1].filter(x => x < TIERS.length);
-    const goods = tiers.flatMap(ti => id === 'weapon' ? Object.keys(WTYPES).map(wt => makeItem('weapon', ti, { wt, id: 'shop' }))
-      : [makeItem('hat', ti, { id: 'shop' }), makeItem('armor', ti, { id: 'shop' }), makeItem('shoes', ti, { id: 'shop' }), ...Object.keys(STATS).map(stat => makeItem('acc', ti, { stat, id: 'shop' }))]);
-    const mine = me.bag.filter(it => id === 'weapon' ? it.slot === 'weapon' : it.slot !== 'weapon'), normals = me.bag.filter(it => it.grade === 'normal');
-    const sell = me.bag.length ? `<h3 style="margin:4px 0 0">팔기 (산 값의 30%)</h3>${normals.length ? `<button class="btn" data-x="sellnormal" style="width:100%;margin:6px 0">일반 등급 장비 ${normals.length}개 한꺼번에 팔기 · ${goldTxt(normals.reduce((a, it) => a + Math.round(it.price * .3), 0))}</button>` : ''}
-      <ul class="ilist">${(mine.length ? mine : me.bag).map(it => row(gIcon(it), itemTag(it), itemDesc(it), `<button class="mini" data-x="sell:${it.id}">${goldTxt(Math.round(it.price * .3))}</button>`)).join('')}</ul>` : '';
-    return openModal(`${sheetHead(b, id === 'weapon' ? '검·단검·망치는 힘, 지팡이(마법)는 지력, 활은 민첩으로 세져요. 지팡이·활은 멀리서 공격해요. 사면 바로 장착하고, 쓰던 건 가방으로 가요.' : '모자·갑옷·신발·반지를 팔아요. 사면 바로 장착하고, 쓰던 건 가방으로 가요.')}
-      <ul class="ilist">${goods.map((it, i) => { const lock = me.lv < TIERS[it.tier].req; return row(gIcon(it), itemName(it), itemDesc(it), lock ? `<span class="tagok">Lv.${TIERS[it.tier].req}</span>` : `<button class="mini main" data-x="buy:${i}" ${me.gold < it.price ? 'disabled' : ''}>${goldTxt(it.price)}</button>`, lock); }).join('')}</ul>
-      ${sell}<button class="close" data-close>닫기</button>`, el => wire(el, async x => {
-      const [a, v] = x.split(':');
-      if (a === 'buy') { const it = goods[+v], j = await act('/api/shop/buy', { slot: it.slot, tier: it.tier, wt: it.wt, stat: it.stat }); if (j) { logAct(`${itemName(it)} 구입 −${it.price}`); toast(`${itemIcon(it)} ${itemName(it)} 장착!`); } }
-      if (a === 'sell') { const it = me.bag.find(i => i.id === v); const j = it && await act('/api/sell', { ids: [v] }); if (j) { logAct(`${itemName(it)} 판매 +${j.got}`); toast(`🪙 ${j.got} 받았어요`); } }
-      if (a === 'sellnormal') { const j = await act('/api/sell', { ids: normals.map(it => it.id) }); if (j) { logAct(`일반 장비 ${j.n}개 판매 +${j.got}`); toast(`${j.n}개 팔았어요 · 🪙 ${j.got}`); } }
-      reopen?.();
-    }), keep);
-  }
+  if (id === 'gacha') return gachaSheet(b, keep);
   if (id === 'smith') {
-    const eq = Object.values(me.equip).filter(Boolean), D = derive();
-    return openModal(`${sheetHead(b, '장착한 장비를 강화해요. <b>실패해도 단계가 떨어지거나 부서지지 않아요</b> (골드만 사라져요).')}
-      <ul class="ilist">${eq.map(it => { const max = it.enh >= 10, rate = enhRate(it.enh, D), cost = TIERS[it.tier].req * ENH_COST[it.enh]; return row(gIcon(it), itemTag(it), max ? '최대 강화 (+10)' : `+${it.enh} → +${it.enh + 1} · 성공 ${+rate.toFixed(2)}%`, max ? '' : `<button class="mini main" data-x="enh:${it.id}" ${me.gold < cost ? 'disabled' : ''}>${goldTxt(cost)}</button>`); }).join('') || '<li><span></span><span class="muted">장착한 장비가 없어요</span><span></span></li>'}
+    const D = derive();
+    return openModal(`${sheetHead(b, '장비가 아니라 <b>장비 칸</b>을 강화해요. 장비를 바꿔도 칸의 강화 단계는 <b>그대로</b>예요. 실패해도 단계가 떨어지지 않아요 (골드만 사라져요).')}
+      <ul class="ilist">${Object.entries(SLOTS).map(([k, sl]) => { const l = me.enh[k] || 0, it = me.equip[k], max = l >= ENH_MAX, cost = ENH_COST[l]; return row(it ? gIcon(it) : sl.i, `${sl.n} 칸 <b>+${l}</b>${k === me.cls ? ' <span class="tagok">사용 중</span>' : ''}`, max ? `최대 강화 (+${ENH_MAX})` : `+${l} → +${l + 1} · 성공 ${+enhRate(l, D).toFixed(2)}%${it ? ` · ${pwrTxt(it, l)} → ${pwrTxt(it, l + 1)}` : ''}`, max ? '' : `<button class="mini main" data-x="${k}" ${me.gold < cost ? 'disabled' : ''}>${goldTxt(cost)}</button>`); }).join('')}
       </ul>
-      <p class="muted">강화 1단계마다 장비 수치 +8%. 확률: +1 100% · +2 95% · +3 90% · +4 80% · +5 70% · +6 60% · +7 50% · +8 40% · +9 35% · +10 30%. 🍀 운이 높으면 조금 더 잘 붙어요 (지금 +${D.enhB.toFixed(2)}%p). 능력치 초기화는 캐릭터창 → 능력치에서 해요.</p><button class="close" data-close>닫기</button>`, el => wire(el, async x => {
-      doEnhance(x.split(':')[1]);
-    }), keep);
+      <p class="muted">강화 1단계마다 그 칸 장비 수치 +${Math.round(ENH_STEP * 100)}%. 확률: ${ENH_RATE.map((r, i) => `+${i + 1} ${r}%`).join(' · ')}. 🍀 운이 높으면 조금 더 잘 붙어요 (지금 +${D.enhB.toFixed(2)}%p).</p>`, el => wire(el, x => doEnhance(x)), keep);
   }
   if (id === 'skin') {
     return openModal(`${sheetHead(b, '머리 장식·눈 모양처럼 겉모습만 바꾸는 스킨을 팔아요. 능력치는 없고, <b>현금 결제도 없어요.</b>')}
@@ -1522,8 +1602,70 @@ function openBuilding(b, keep) {
   const desc = { station: '김치복 테마 장소. 방송 중이면 마을 전체에 이벤트가 열려요.', home1: '내 집이에요. 집은 <b>언제나 모두에게 공개</b>라서 누구나 구경 올 수 있어요.', home2: '림린이님의 집. 주인이 없어도 언제나 들어가서 구경할 수 있어요.' }[id];
   openModal(`<h3>${b.icon} ${b.name}</h3><p>${desc}</p><div class="actions">${acts.join('')}</div><button class="close" data-close>닫기</button>`, el => el.querySelector('.actions').addEventListener('click', e => { const a = e.target.closest('[data-a]')?.dataset.a; if (a) doAct(a); }));
 }
-async function equipItem(it) { if (await act('/api/equip', { id: it.id })) toast(`${itemIcon(it)} ${itemName(it)} 장착!`); }
-async function unequip(slot) { await act('/api/unequip', { slot }); }
+// ───────── 가챠센터 (무기 뽑기 · 방어구 뽑기) ─────────
+const gachaB = () => BUILDINGS.find(b => b.id === 'gacha');
+const pwrTxt = (it, l = me.enh[it.slot] || 0) => { const x = itemStats(it, l); return x.atk != null ? `${it.slot === 'staff' ? '마력' : '공격'} ${x.atk}` : `방어 ${x.def}`; };
+const tenCost = gi => Math.round(gi.cost * 10 * GACHA_TEN);
+function gachaSheet(b, keep) {
+  const box = k => {
+    const G = GACHA[k], gi = gachaInfo(me.gacha[k]), odds = GACHA_ODDS[gi.lv - 1];
+    return `<div class="gbox"><div class="gbox-h"><span class="gbox-i">${G.i}</span><b>${G.n}</b><small>${G.slots.map(x => SLOTS[x].n).join(' · ')}</small><span class="glv">뽑기 Lv.${gi.lv}</span></div>
+      <div class="gbar"><i style="width:${gi.need ? gi.now / gi.need * 100 : 100}%"></i><span>${gi.need ? `다음 레벨까지 ${gi.need - gi.now}회` : '최고 레벨'}</span></div>
+      <div class="godds">${odds.map((p, i) => (p ? `<span>${i + 1}단계 <b>${p}%</b></span>` : '')).join('')}</div>
+      <div class="gbtns"><button class="btn" data-x="${k}:1" ${me.gold < gi.cost ? 'disabled' : ''}>1회 뽑기<small>${goldTxt(gi.cost)}</small></button><button class="btn main" data-x="${k}:10" ${me.gold < tenCost(gi) ? 'disabled' : ''}>10회 뽑기<small>${goldTxt(tenCost(gi))} · 10% 할인</small></button></div></div>`;
+  };
+  openModal(`${sheetHead(b, '골드로 무기·방어구를 뽑아요. 지금 것보다 <b>좋은 장비</b>가 나오면 비교 창에서 바꿀지 고르고, 나머지는 자동으로 <b>분해(골드)</b>돼요. 많이 뽑을수록 뽑기 레벨이 올라 높은 단계가 나와요.')}
+    ${me.bag.length ? `<button class="btn main gpend" data-x="pend">🎁 아직 안 고른 좋은 장비 ${me.bag.length}개 · 비교하기</button>` : ''}
+    ${box('w')}${box('a')}
+    <details class="gfold"><summary>등급 확률 · 규칙</summary><div class="godds">${Object.values(GRADES).map(g => `<span style="color:${g.c}">${g.n} <b>${g.p}%</b></span>`).join('')}</div>
+      <p class="muted">단계가 등급보다 중요해요. 2단계 '빈약'도 1단계 '신화'보다 세요. 무기는 3개(검·활·지팡이)를 모두 끼고, 지금 클래스의 무기로 싸워요.</p></details>`, el => wire(el, async x => {
+    if (x === 'pend') return showPicks();
+    const [k, n] = x.split(':'), j = await act('/api/gacha/pull', { box: k, n: +n });
+    if (j) showPulls(j, k);
+  }), keep);
+}
+// 뽑기 결과: 카드가 하나씩 뒤집힘. 좋은 장비(NEW)는 비교 창으로, 나머지는 분해
+function showPulls(j, box) {
+  const best = j.items.filter(it => ['legend', 'myth'].includes(it.g));
+  const cards = j.items.map((it, i) => {
+    const cur = me.equip[it.slot], a = itemStats(it, me.enh[it.slot] || 0), b = cur ? itemStats(cur, me.enh[it.slot] || 0) : null, v = a.atk ?? a.def, d = v - (b ? b.atk ?? b.def : 0);
+    return `<div class="gcard${it.keep ? ' keep' : ''}${best.includes(it) ? ' shine' : ''}" style="--i:${i};--gc:${GRADES[it.g].c}">${gIcon(it)}<em>${GRADES[it.g].n}</em><span class="nm">${itemName(it)}</span><span class="pw">${a.atk != null ? (it.slot === 'staff' ? '마력' : '공격') : '방어'} ${v}</span>${it.keep ? `<span class="up">▲${Math.max(0, d)} NEW</span>` : `<span class="dis">분해</span>`}</div>`;
+  }).join('');
+  const gi = gachaInfo(me.gacha[box]);
+  openModal(`<h3>${GACHA[box].i} ${GACHA[box].n} 결과</h3><div class="gres">${cards}</div>
+    <p class="gsum">🔨 나머지는 분해해서 <b>${goldTxt(j.got)}</b> 받았어요${j.lvUp ? `<br>🎉 <b>뽑기 레벨 ${j.lvUp}</b> 달성! 더 높은 단계가 나와요` : ''}</p>
+    <div class="actions">${me.bag.length ? `<button class="btn main" data-x="pick">🔍 좋은 장비 비교하고 고르기<small>${me.bag.length}개</small></button>` : ''}
+      <button class="btn${me.bag.length ? '' : ' main'}" data-x="again" ${me.gold < tenCost(gi) ? 'disabled' : ''}>🎰 10회 더 뽑기<small>${goldTxt(tenCost(gi))}</small></button><button class="btn" data-x="back">가챠센터로</button></div>`, el => wire(el, async x => {
+    if (x === 'pick') { PK.back = true; return showPicks(); }
+    if (x === 'back') return openBuilding(gachaB());
+    const k = await act('/api/gacha/pull', { box, n: 10 }); if (k) showPulls(k, box);
+  }));
+  for (const it of best) { toast(`✨ ${GRADES[it.g].n}! ${itemName(it)}`); sysMsg(`✨ ${GRADES[it.g].n} 장비: ${it.st}단계 ${itemName(it)}`); }
+  if (best.length) emote(me, '🎉');
+  logAct(`${GACHA[box].n} ${j.items.length}회 −${j.cost} +${j.got}`);
+}
+// 비교 창: 지금 장비 ↔ 새 장비. 바꾸기(쓰던 것은 분해) / 분해하기
+const PK = { back: false };
+function showPicks(id) {
+  const it = me.bag.find(p => p.id === id) || me.bag[0];
+  if (!it) { if (PK.back && !HT) { PK.back = false; return openBuilding(gachaB()); } return closeModal(); }
+  const slot = it.slot, e = me.enh[slot] || 0, cur = me.equip[slot], A = cur ? itemStats(cur, e) : {}, B = itemStats(it, e), wpn = WEAPON_SLOTS.includes(slot);
+  const D0 = derive(), D1 = derive({ ...me, equip: { ...me.equip, [slot]: it } });
+  const main = wpn ? [slot === 'staff' ? '마력' : '공격력', A.atk || 0, B.atk] : ['방어', A.def || 0, B.def], d = main[2] - main[1];
+  const sub = wpn ? (slot === me.cls ? [[slot === 'staff' ? '내 마력' : '내 공격력', D0.hit, D1.hit]] : []) : [['체력', A.hp || 0, B.hp], ['내 물리 방어', D0.def, D1.def], ['내 마법 방어', D0.mdef, D1.mdef], ['내 최대 체력', D0.maxHp, D1.maxHp]];
+  const card = (x, label, cls) => `<div class="cmp-c${cls}" style="--gc:${x ? GRADES[x.g].c : 'var(--line)'}"><small>${label}</small>${x ? `${gIcon(x)}<b style="color:${GRADES[x.g].c}">${x.st}단계 ${GRADES[x.g].n}</b><span>${itemName(x)}</span>` : `<span style="font-size:40px">${SLOTS[slot].i}</span><span class="muted">비어 있음</span>`}</div>`;
+  openModal(`<h3>🎁 새 ${SLOTS[slot].n}!${me.bag.length > 1 ? ` <small class="muted">(${me.bag.length}개 남음)</small>` : ''}</h3>
+    <div class="cmp">${card(cur, '지금 장비', '')}<div class="cmp-arrow">➜</div>${card(it, '새 장비', ' new')}</div>
+    <div class="cmp-big">${main[0]} <span class="n">${main[1]}</span> → <span class="n ${d > 0 ? 'up' : 'down'}">${main[2]}</span> <span class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</span>${e ? ` <small class="muted">(칸 강화 +${e} 포함)</small>` : ''}</div>
+    ${sub.length ? diffList(sub.map(r => [r[0], r[1]]), sub.map(r => [r[0], r[2]])) : ''}
+    ${wpn && slot !== me.cls ? `<p class="muted">지금 클래스(${CLASSES[me.cls].i} ${CLASSES[me.cls].n})의 무기가 아니에요. 캐릭터창에서 ${CLASSES[slot].n}(으)로 바꾸면 이 무기로 싸워요.</p>` : ''}
+    <div class="actions"><button class="btn main" data-x="take">✅ 바꾸기<small>${cur ? `쓰던 장비는 분해 · ${goldTxt(dismantle(cur))}` : '바로 장착'}</small></button><button class="btn" data-x="no">🔨 분해하기<small>새 장비를 골드로 · ${goldTxt(dismantle(it))}</small></button></div>`, el => wire(el, async x => {
+    const j = await act('/api/gacha/pick', { id: it.id, take: x === 'take' }); if (!j) return;
+    if (j.take) { toast(`${itemIcon(it)} ${itemName(it)} 장착!${j.got ? ` (분해 🪙 ${j.got})` : ''}`); logAct(`${itemName(it)} 장착`); emote(me, '🎉'); }
+    else { toast(`분해해서 🪙 ${j.got} 받았어요`); logAct(`${itemName(it)} 분해 +${j.got}`); }
+    showPicks();
+  }));
+}
 function openSpot(s) {
   if (s.id === 'hunt') return openHuntSelect();
   if (s.id === 'river') return openFishing();
@@ -1557,9 +1699,10 @@ function setLive(on) { S.live = on; $('#liveBanner').hidden = !on; toast(on ? '�
 
 // ───────── 프로필 카드 · 신고 (귓속말·친구·선물·거래 없음) ─────────
 function openProfile(p) {
-  const gear = Object.values(p.equip || {}).filter(Boolean);
+  const gear = Object.entries(p.equip || {}).filter(([, it]) => it?.st);
   openModal(`<div class="prof"><canvas id="profCv"></canvas><div><h3><span class="lv">Lv.${p.lv}</span>${esc(p.name)}${p.adm ? ' 🛡️' : ''}</h3><div class="row" style="justify-content:flex-start"><span class="badge">${esc(p.title)}</span></div><p class="muted" style="margin-top:6px">${esc(p.intro || '')}</p></div></div>
-    <ul class="ilist">${gear.map(it => row(gIcon(it), itemTag(it), itemDesc(it), '')).join('')}</ul>
+    <p class="muted" style="margin:0">${CLASSES[p.cls || 'sword'].i} ${CLASSES[p.cls || 'sword'].n}</p>
+    <ul class="ilist">${gear.map(([k, it]) => row(gIcon(it), itemTag(it), `${SLOTS[k].n}${p.enh?.[k] ? ` +${p.enh[k]}` : ''} · ${itemDesc(it, p.enh?.[k] || 0)}`, '')).join('')}</ul>
     <div class="actions">
       <button class="btn" data-p="home">🏠 집 구경 가기<small>집은 언제나 모두 공개</small></button>
       <button class="btn" data-p="wave">👋 손 흔들어 인사</button>
@@ -1626,7 +1769,7 @@ function syncMe() {
   $('#meName').textContent = me.name; $('#peekName').textContent = me.name; $('#meTitle').textContent = me.title; $('#meIntro').textContent = me.intro;
   $('#meLv').textContent = `Lv.${me.lv}`; $('#peekLv').textContent = `Lv.${me.lv}`;
   portrait($('#meCanvas'), me, 3); portrait($('#peekCanvas'), me, .82);
-  renderStats(); renderEquip(); renderSkins(); renderBag(); syncBars(); lookChanged();
+  renderCls(); renderStats(); renderEquip(); renderSkins(); renderBag(); syncBars(); lookChanged();
 }
 // 자주 바뀌는 숫자 (체력·경험치·골드·사냥 상황)
 function syncBars() {
@@ -1649,17 +1792,31 @@ function syncBars() {
 function renderStats() {
   const D = derive();
   $('#ptsLeft').textContent = me.points;
+  $('#presetBar').innerHTML = (me.presets || []).map((p, i) => `<button type="button" data-pr="${i}" aria-pressed="${i === me.preset}">${esc(p.n)}</button>`).join('') + '<button type="button" data-pr="name" aria-label="지금 프리셋 이름 바꾸기">✏️</button>';
   $('#statRows').innerHTML = Object.entries(STATS).map(([k, s]) => `<div class="stat"><span><b>${s.i} ${s.n}</b><small>${s.d}</small></span><span class="val">${D[k]}${D.b[k] ? `<em> (+${D.b[k]})</em>` : ''}</span><button class="plus" data-s="${k}" aria-label="${s.n} 올리기" ${me.points ? '' : 'disabled'}>+</button></div>`).join('');
-  const rows = [[D.magic ? '공격력' : '공격력 ⚔️', D.atk], [D.magic ? '마력 ⚔️' : '마력', D.mag], ['물리 방어', D.def], ['마법 방어', D.mdef], ['최대 체력', D.maxHp.toLocaleString()], ['공격 간격', `${D.gap.toFixed(2)}초`], ['이동 속도', `${Math.round(D.spd * 100)}%`], ['치명타', `${D.crit.toFixed(1)}%`], ['회피', `${D.eva.toFixed(1)}%`], ['필살기 확률', `${D.sp.toFixed(1)}%`], ['필살기 피해', `×${D.spMul.toFixed(2)}`], ['골드 보너스', `+${D.goldB.toFixed(1)}%`], ['드랍 보너스', `+${D.dropB.toFixed(1)}%`], ['강화 확률', `+${D.enhB.toFixed(2)}%p`]];
+  const rows = [[D.magic ? '공격력' : '공격력 ⚔️', D.atk], [D.magic ? '마력 ⚔️' : '마력', D.mag], ['물리 방어', D.def], ['마법 방어', D.mdef], ['최대 체력', D.maxHp.toLocaleString()], ['공격 간격', `${D.gap.toFixed(2)}초`], ['이동 속도', `${Math.round(D.spd * 100)}%`], ['치명타', `${D.crit.toFixed(1)}%`], ['회피', `${D.eva.toFixed(1)}%`], ['필살기 확률', `${D.sp.toFixed(1)}%`], ['필살기 피해', `×${D.spMul.toFixed(2)}`], ['골드 보너스', `+${D.goldB.toFixed(1)}%`], ['강화 확률', `+${D.enhB.toFixed(2)}%p`]];
   $('#derived').innerHTML = rows.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('');
   $('#resetStats').textContent = `🔄 능력치 초기화 · ${goldTxt(me.lv * 100)}`; $('#resetStats').disabled = !spentPoints(me);
   me.speed = 110 * D.spd;   // 민첩 → 이동 속도
 }
 $('#statRows').addEventListener('click', e => { const k = e.target.closest('[data-s]')?.dataset.s; if (k) addStat(k); });
 function renderEquip() {
-  $('#equipList').innerHTML = Object.entries(SLOTS).map(([k, s]) => { const it = me.equip[k]; return it ? row(gIcon(it), itemTag(it), `<b class="slotname">${s.n}</b> · ${itemDesc(it)}`, `<button class="mini" data-u="${k}">빼기</button>`) : row(s.i, `<span class="muted">비어 있음</span>`, `<b class="slotname">${s.n}</b>`, '', true); }).join('');
+  $('#equipList').innerHTML = Object.entries(SLOTS).map(([k, sl]) => { const it = me.equip[k], l = me.enh[k] || 0, tag = `<b class="slotname">${sl.n}${l ? ` +${l}` : ''}</b>${k === me.cls ? ' <span class="tagok">사용 중</span>' : ''}`;
+    return it ? row(gIcon(it), itemTag(it), `${tag} · ${itemDesc(it, l)}`, '') : row(sl.i, '<span class="muted">비어 있음</span>', `${tag} · 가챠센터에서 뽑아요`, '', true); }).join('');
 }
-$('#equipList').addEventListener('click', e => { const k = e.target.closest('[data-u]')?.dataset.u; if (k) unequip(k); });
+function renderCls() {
+  $('#clsBar').innerHTML = Object.entries(CLASSES).map(([k, c]) => { const it = me.equip[k]; return `<button type="button" data-cls="${k}" aria-pressed="${me.cls === k}">${c.i} ${c.n}<small>${STATS[c.st].n}${it ? ` · ${pwrTxt(it)}` : ''}</small></button>`; }).join('');
+}
+$('#clsBar').addEventListener('click', async e => {
+  const k = e.target.closest('[data-cls]')?.dataset.cls; if (!k || k === me.cls) return;
+  const j = await act('/api/class', { cls: k }); if (j) { toast(`${CLASSES[k].i} ${CLASSES[k].n}(으)로 바꿨어요 · ${WTYPES[k].n}으로 싸워요`); logAct(`클래스: ${CLASSES[k].n}`); }
+});
+$('#presetBar').addEventListener('click', async e => {
+  const v = e.target.closest('[data-pr]')?.dataset.pr; if (v == null) return;
+  if (v === 'name') return formSheet('✏️ 프리셋 이름', [['presetName', '이름 (10글자까지)', 'text', me.presets[me.preset].n]], '저장', async o => { took(await api('/api/preset/name', { i: me.preset, n: o.presetName })); toast('이름을 바꿨어요'); });
+  if (+v === me.preset) return;
+  const j = await act('/api/preset/use', { i: +v }); if (j) toast(`📋 ${me.presets[me.preset].n}(으)로 바꿨어요`);
+});
 function renderSkins() {
   $('#hatList').innerHTML = HATS.filter(h => me.hats.includes(h.id)).map(h => `<button type="button" data-h="${h.id}" aria-pressed="${me.hat === h.id}">${h.n}</button>`).join('');
   $('#eyeList').innerHTML = EYE_SKINS.filter(e => e.id === 'dot' || me.hats.includes('eye:' + e.id)).map(e => `<button type="button" data-y="${e.id}" aria-pressed="${(me.eyes || 'dot') === e.id}">${e.n}</button>`).join('');
@@ -1678,10 +1835,10 @@ function hairPicker(el, after) {
 function renderBag() {
   const P = [['s', '🥤', '작은 음료', '체력 +50'], ['l', '🧋', '큰 음료', '체력 +200'], ['xl', '🍹', '특대 음료', '최대 체력의 50%']];
   $('#potList').innerHTML = P.map(([k, ic, n, d]) => row(ic, `${n} × ${me.pots[k]}`, d, '')).join('');
-  $('#bagCount').textContent = `${me.bag.length} / ${BAG_MAX}개`;
-  $('#bagList').innerHTML = me.bag.length ? me.bag.map(it => row(gIcon(it), itemTag(it), itemDesc(it), `<button class="mini main" data-e="${it.id}" ${me.lv < TIERS[it.tier].req ? 'disabled' : ''}>장착</button>`)).join('') : '<li><span></span><span class="muted">사냥터에서 주운 장비가 여기에 모여요. 팔기는 무기점·방어구점에서.</span><span></span></li>';
+  $('#bagCount').textContent = me.bag.length ? `${me.bag.length}개` : '';
+  $('#bagList').innerHTML = me.bag.length ? me.bag.map(it => row(gIcon(it), itemTag(it), itemDesc(it, me.enh[it.slot] || 0), `<button class="mini main" data-e="${it.id}">비교</button>`)).join('') : '<li><span></span><span class="muted">가챠센터에서 지금 것보다 좋은 장비가 나오면 여기서 바꿀지 골라요.</span><span></span></li>';
 }
-$('#bagList').addEventListener('click', e => { const id = e.target.closest('[data-e]')?.dataset.e; if (!id) return; const it = me.bag.find(i => i.id === id); if (it) equipItem(it); });
+$('#bagList').addEventListener('click', e => { const id = e.target.closest('[data-e]')?.dataset.e; if (id) { PK.back = false; showPicks(id); } });
 function setPotAt(v) { me.potAt = +v; $('#potAt').value = v; $('#hbPot').value = v; }
 const savePotAt = e => { setPotAt(e.target.value); api('/api/pot-at', { v: me.potAt }).catch(x => toast(x.message)); };
 $('#potAt').onchange = savePotAt; $('#hbPot').onchange = savePotAt;
@@ -1717,7 +1874,8 @@ async function api(path, body, opts = {}) {
 function applyMe(m) {
   const c = m.char, keepPos = HT && c.hunt;
   Object.assign(me, { name: m.nick, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair || 'none', hairC: c.hairC || HAIR_COLORS[0], intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
-    str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp || derive().maxHp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt });
+    str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp || derive().maxHp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
+    cls: c.cls || 'sword', enh: c.enh || {}, presets: c.presets, preset: c.preset || 0, gacha: c.gacha || { w: 0, a: 0 } });
   me.job = c.job; me.jobEnd = c.job ? Date.now() + c.job.left * 1000 : 0;
   me.hunt = c.hunt; if (!keepPos) { me.path = []; me.moving = false; }
   if ($('#potAt')) setPotAt(me.potAt);
@@ -1730,10 +1888,10 @@ function took(j) {
   if (h && inTown) {
     if (h.bosses?.length) { toast(`👑 보스 ${h.bosses[0]}를 쓰러뜨렸어요!`); sysMsg(`👑 보스 ${h.bosses.join(', ')} 처치!`); }
     if (h.bossSkip?.length) sysMsg(`👑 보스 ${h.bossSkip[0]}가 너무 강해서 피했어요 (손해 없음)`);
-    for (const it of h.drops || []) if (['rare', 'epic', 'legend'].includes(it.grade)) { toast(`✨ ${GRADES[it.grade].n} 장비! ${itemName(it)}`); sysMsg(`✨ ${GRADES[it.grade].n} 장비 획득: ${itemName(it)}`); }
-    if (HT && h.drops?.length) h.drops.slice(0, 3).forEach((it, i) => floatText(me.x + (i - 1) * 26, me.y - 84 - i * 10, `${itemIcon(it)} ${GRADES[it.grade].n}`, it.grade === 'normal' ? '#e6ebf2' : GRADES[it.grade].c, 14, 1.8));
+    for (const it of h.drops || []) if (it.g && ['epic', 'legend', 'myth'].includes(it.g)) { toast(`✨ ${GRADES[it.g].n} 장비! ${itemName(it)}`); sysMsg(`✨ ${GRADES[it.g].n} 장비 획득: ${itemName(it)}`); }
+    if (HT && h.drops?.length) h.drops.slice(0, 3).forEach((it, i) => floatText(me.x + (i - 1) * 26, me.y - 84 - i * 10, `${itemIcon(it)} ${GRADES[it.g].n}`, it.g === 'normal' ? '#e6ebf2' : GRADES[it.g].c, 14, 1.8));
     if (h.offline >= 60 && !h.died) openModal(`<h3>🌙 자리 비운 동안</h3><p>${Math.floor(h.sec / 3600)}시간 ${Math.floor(h.sec % 3600 / 60)}분 동안 계속 사냥했어요${h.offline >= HUNT.offlineMax ? ' (최대 8시간까지만 계산)' : ''}. 화면을 닫은 시간은 효율 70%예요.</p>
-      <table class="ruletable"><tbody><tr><td>처치</td><td>${h.kills.toLocaleString()}마리</td></tr><tr><td>경험치</td><td>+${h.exp.toLocaleString()}${h.up ? ` (레벨 +${h.up})` : ''}</td></tr><tr><td>골드</td><td>+${h.gold.toLocaleString()}</td></tr><tr><td>장비</td><td>${h.drops.length}개${h.sold ? ` · 가방이 가득 차서 자동 판매 🪙 ${h.sold.toLocaleString()}` : ''}</td></tr><tr><td>물약</td><td>${h.pots}개 마심</td></tr></tbody></table><button class="btn main" data-close>확인</button>`);
+      <table class="ruletable"><tbody><tr><td>처치</td><td>${h.kills.toLocaleString()}마리</td></tr><tr><td>경험치</td><td>+${h.exp.toLocaleString()}${h.up ? ` (레벨 +${h.up})` : ''}</td></tr><tr><td>골드</td><td>+${h.gold.toLocaleString()}</td></tr><tr><td>물약</td><td>${h.pots}개 마심</td></tr></tbody></table><button class="btn main" data-close>확인</button>`);
     if (h.died) {
       if (HT) exitHuntView();
       emote(me, '💤');
@@ -1781,7 +1939,7 @@ async function checkLive() {
 
 // 2단계 이후에 열리는 곳
 const LATER = { farm: '4단계(놀거리)', fountain: '4단계(놀거리)', home1: '4단계(집)', home2: '4단계(집)' };
-const LATER_DESC = { cafe: '체력 회복 음료(물약)를 파는 곳', weapon: '검·단검·망치·지팡이·활을 파는 곳', armor: '모자·갑옷·신발·반지를 파는 곳', smith: '장비 강화(+1~+10)와 능력치 초기화', skin: '겉모습만 바꾸는 스킨을 파는 곳', hunt: '사냥터를 골라 자동 사냥하는 곳', river: '낚시하는 곳', farm: '씨를 심고 수확하는 곳', fountain: '동전을 던지는 분수', home1: '내 집 (언제나 모두에게 공개)', home2: '다른 유저의 집 (언제나 모두에게 공개)' };
+const LATER_DESC = { cafe: '체력 회복 음료(물약)를 파는 곳', gacha: '무기·방어구를 뽑는 곳', smith: '장비 칸 강화(+1~+10)', skin: '겉모습만 바꾸는 스킨을 파는 곳', hunt: '사냥터를 골라 자동 사냥하는 곳', river: '낚시하는 곳', farm: '씨를 심고 수확하는 곳', fountain: '동전을 던지는 분수', home1: '내 집 (언제나 모두에게 공개)', home2: '다른 유저의 집 (언제나 모두에게 공개)' };
 function laterSheet(id, icon, name) {
   openModal(`<h3>${icon} ${name}</h3><p>${LATER_DESC[id]}이에요.</p><p class="muted">🔒 <b>${LATER[id]}</b>에서 열려요. 지금은 시험 중이에요.</p><button class="btn main" data-close>알겠어요</button>`);
 }
@@ -1924,41 +2082,32 @@ function enterTown(first) {   // first: 방금 받은 /api/me 결과 (자리 비
 
 // ───────── 강화: 한 번 누를 때 딱 1단계씩, 망치질 애니메이션 뒤에 결과 ─────────
 const fmtSec = n => `${Math.floor(n / 60)}:${String(Math.max(0, n) % 60).padStart(2, '0')}`;
-// 강화 전후 비교용: 장비 수치(이름, 값)와 내 전투 수치
-function enhStats(it) {
-  const m = enhMul(it);
-  if (it.slot === 'weapon') return [[it.wt === 'staff' ? '마력' : '공격', Math.round(it.atk * m)]];
-  if (it.slot === 'acc') return [[`${STATS[it.stat].n}`, Math.round(it.val * m)]];
-  return [['방어', Math.round(it.def * m)], ['체력', Math.round(it.hp * m)]];
-}
-function charStats(D, it) {
-  if (it.slot === 'weapon') return [[it.wt === 'staff' ? '내 마력' : '내 공격력', D.hit]];
-  if (it.slot === 'acc') return [['내 공격력', D.hit], ['내 최대 체력', D.maxHp]];
-  return [['내 물리 방어', D.def], ['내 마법 방어', D.mdef], ['내 최대 체력', D.maxHp]];
-}
+// 강화 전후 비교용: 그 칸 장비 수치와 내 전투 수치
+function enhStats(slot, l) { const it = me.equip[slot]; if (!it) return []; const x = itemStats(it, l); return x.atk != null ? [[slot === 'staff' ? '마력' : '공격력', x.atk]] : [['방어', x.def], ['체력', x.hp]]; }
+function charStats(D, slot) { if (WEAPON_SLOTS.includes(slot)) return slot === me.cls ? [[slot === 'staff' ? '내 마력' : '내 공격력', D.hit]] : []; return [['내 물리 방어', D.def], ['내 마법 방어', D.mdef], ['내 최대 체력', D.maxHp]]; }
 function diffList(a, b) {
   return `<ul class="enh-diff">${a.map(([n, v], i) => { const w = b[i][1], d = w - v; return `<li><span>${n}</span><span class="${d > 0 ? 'up' : 'same'}">${v.toLocaleString()} → ${w.toLocaleString()}${d > 0 ? ` (+${d.toLocaleString()})` : ''}</span></li>`; }).join('')}</ul>`;
 }
-async function doEnhance(id) {
-  const it = Object.values(me.equip).find(i => i?.id === id); if (!it || it.enh >= 10) return;
-  const smith = BUILDINGS.find(b => b.id === 'smith'), rate = enhRate(it.enh, derive()), cost = TIERS[it.tier].req * ENH_COST[it.enh];
+async function doEnhance(slot) {
+  const l = me.enh[slot] || 0; if (l >= ENH_MAX) return;
+  const smith = BUILDINGS.find(b => b.id === 'smith'), rate = enhRate(l, derive()), cost = ENH_COST[l], it = me.equip[slot];
   if (me.gold < cost) return toast('골드가 부족해요');
-  openModal(`<h3>⚒️ 강화</h3><p style="text-align:center">${itemTag(it)} <b>+${it.enh} → +${it.enh + 1}</b> · 성공 ${+rate.toFixed(2)}% · ${goldTxt(cost)}</p>
-    <div class="anvil" id="anvil"><span class="ham">🔨</span><span class="item">${gIcon(it)}</span></div><div class="enh-result" id="enhRes">땅! 땅! 땅!</div><div class="actions" id="enhBtns"></div>`);
-  const before = { ...it }, d0 = derive();
-  const [j] = await Promise.all([act('/api/enhance', { id }), new Promise(r => setTimeout(r, 1500))]);   // 결과가 빨리 와도 1.5초는 두드림
+  openModal(`<h3>⚒️ ${SLOTS[slot].n} 칸 강화</h3><p style="text-align:center"><b>+${l} → +${l + 1}</b> · 성공 ${+rate.toFixed(2)}% · ${goldTxt(cost)}</p>
+    <div class="anvil" id="anvil"><span class="ham">🔨</span><span class="item">${it ? `<img class="gi" src="${itemImg(it)}" alt="">` : `<span style="font-size:52px">${SLOTS[slot].i}</span>`}</span></div><div class="enh-result" id="enhRes">땅! 땅! 땅!</div><div class="actions" id="enhBtns"></div>`);
+  const a0 = enhStats(slot, l), d0 = derive();
+  const [j] = await Promise.all([act('/api/enhance', { slot }), new Promise(r => setTimeout(r, 1500))]);   // 결과가 빨리 와도 1.5초는 두드림
   const an = $('#anvil'), res = $('#enhRes'), btns = $('#enhBtns'); if (!an) return;
   an.classList.add('done');
   if (!j) { res.textContent = '강화하지 못했어요'; }
   else if (j.ok) {
-    an.classList.add('ok'); res.className = 'enh-result ok'; res.textContent = `✨ 성공! ${itemName(j.item)}`;
+    an.classList.add('ok'); res.className = 'enh-result ok'; res.textContent = `✨ 성공! ${SLOTS[slot].n} 칸 +${j.lv}`;
     for (let k = 0; k < 10; k++) { const sp = document.createElement('span'); sp.className = 'spark'; sp.textContent = ['✨', '⭐', '🔥'][k % 3]; sp.style.setProperty('--dx', `${Math.cos(k / 10 * 6.28) * 70}px`); sp.style.setProperty('--dy', `${Math.sin(k / 10 * 6.28) * 45}px`); an.appendChild(sp); }
-    emote(me, '🎉'); logAct(`${itemName(j.item)} 강화 성공`);
-    res.insertAdjacentHTML('afterend', diffList([...enhStats(before), ...charStats(d0, before)], [...enhStats(j.item), ...charStats(derive(), j.item)]));
+    emote(me, '🎉'); logAct(`${SLOTS[slot].n} 칸 +${j.lv} 강화 성공`);
+    const A = [...a0, ...charStats(d0, slot)]; if (A.length) res.insertAdjacentHTML('afterend', diffList(A, [...enhStats(slot, j.lv), ...charStats(derive(), slot)]));
   } else { an.classList.add('bad'); res.className = 'enh-result bad'; res.textContent = '💨 실패… 단계는 그대로예요 (골드만 사용)'; emote(me, '❓'); logAct('강화 실패'); }
-  const now = Object.values(me.equip).find(i => i?.id === id), nc = now && now.enh < 10 ? TIERS[now.tier].req * ENH_COST[now.enh] : 0;
-  btns.innerHTML = `${now && now.enh < 10 ? `<button class="btn main" data-x="again" ${me.gold < nc ? 'disabled' : ''}>🔨 한 번 더 (+${now.enh} → +${now.enh + 1})<small>${goldTxt(nc)} · 성공 ${+enhRate(now.enh, derive()).toFixed(2)}%</small></button>` : ''}<button class="btn" data-x="back">대장간으로</button>`;
-  wire(sheet, x => (x === 'again' ? doEnhance(id) : openBuilding(smith)));
+  const nl = me.enh[slot] || 0, nc = ENH_COST[nl];
+  btns.innerHTML = `${nl < ENH_MAX ? `<button class="btn main" data-x="again" ${me.gold < nc ? 'disabled' : ''}>🔨 한 번 더 (+${nl} → +${nl + 1})<small>${goldTxt(nc)} · 성공 ${+enhRate(nl, derive()).toFixed(2)}%</small></button>` : ''}<button class="btn" data-x="back">대장간으로</button>`;
+  wire(sheet, x => (x === 'again' ? doEnhance(slot) : openBuilding(smith)));
 }
 
 // ───────── 능력치 초기화 (캐릭터창 → 능력치) ─────────
@@ -1970,7 +2119,7 @@ $('#resetStats').onclick = () => {
 
 // ───────── 마을 바로가기 (설정 버튼 밑 🏘️): 누르면 그 자리로 바로 이동 ─────────
 const door = id => { const b = BUILDINGS.find(b => b.id === id); return [b.door.x, b.door.y]; };
-const PLACES = [['⛲', '광장 분수 앞', 20, 19], ['☕', '카페', ...door('cafe')], ['👕', '스킨샵', ...door('skin')], ['⚔️', '무기점', ...door('weapon')], ['🛡️', '방어구점', ...door('armor')],
+const PLACES = [['⛲', '광장 분수 앞', 20, 19], ['☕', '카페', ...door('cafe')], ['👕', '스킨샵', ...door('skin')], ['🎰', '가챠센터', ...door('gacha')],
   ['🔨', '대장간', ...door('smith')], ['📺', '방송국', ...door('station')], ['🎣', '강가 선착장', 3, 9], ['🌀', '사냥터 포탈', 36, 15], ['🌾', '텃밭', 33, 23], ['🏠', '내 집', ...door('home1')]];
 function teleport(tx, ty) {
   if (block[ty]?.[tx] !== false) return toast('거기는 갈 수 없어요');
@@ -2064,7 +2213,7 @@ function onNet(m) {
   else if (m.t === 'go') { const p = personOf(m.id); if (p) { standUp(p); netMove(p, m); } }
   else if (m.t === 'hunt') { const p = personOf(m.id); if (p) { p.hunt = m.on; p.path = []; p.sit = -1; } }
   else if (m.t === 'emo') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) emote(p, m.e); }
-  else if (m.t === 'look') { const p = personOf(m.p.id), d = m.p; if (p) Object.assign(p, { lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, equip: d.equip || {} }); }
+  else if (m.t === 'look') { const p = personOf(m.p.id), d = m.p; if (p) Object.assign(p, { lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {} }); }
   else if (m.t === 'say') {
     if (S.blocked.has(m.id)) return;
     const mine = m.id === NET.me, p = mine ? me : personOf(m.id);
@@ -2079,7 +2228,7 @@ function onNet(m) {
   setOnline();
 }
 // 내 겉모습·레벨이 바뀌면 다른 사람 화면에도 (서버가 저장된 값을 다시 읽음)
-const lookSig = () => JSON.stringify([me.lv, me.title, me.intro, me.face, me.body, me.eyes, me.hat, me.hair, me.hairC, Object.values(me.equip || {}).map(it => it && `${it.id}+${it.enh}`)]);
+const lookSig = () => JSON.stringify([me.lv, me.title, me.intro, me.face, me.body, me.eyes, me.hat, me.hair, me.hairC, me.cls, me.enh, Object.values(me.equip || {}).map(it => it?.id)]);
 function lookChanged() { if (!NET.ready) return; const s = lookSig(); if (s === NET.sig) return; NET.sig = s; clearTimeout(NET.lookT); NET.lookT = setTimeout(() => netSend({ t: 'look' }), 1600); }
 
 // ───────── 차단 목록 (설정) ─────────

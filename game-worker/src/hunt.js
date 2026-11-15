@@ -1,6 +1,6 @@
 // 자동 사냥 계산 (기획서 4장). 화면의 전투는 보여 주기용이고, 실제 결과는 여기서 정해짐.
 // 흐른 시간만큼 몬스터를 한 마리씩 잡는 과정을 빠르게 흉내 냄.
-import { FIELDS, MONS, HUNT, POTS, BAG_MAX, FAR, derive, expPenalty, addExp, rollDrop, pick, itemName, biteDmg } from '../../assets/js/game-rules.js';
+import { FIELDS, MONS, HUNT, POTS, FAR, derive, expPenalty, addExp, pick, biteDmg } from '../../assets/js/game-rules.js';
 
 const MAX_STEPS = 300000;   // 한 번 계산할 때 최대 반복 (안전장치)
 
@@ -81,16 +81,10 @@ export function settle(c, at) {
 }
 function reward(c, h, out, f, mon, D, boss) {
   const e = Math.max(1, Math.round(mon.exp * expPenalty(c.lv, mon.lv)));
-  const g = Math.max(1, Math.round(mon.gold * (1 + D.goldB / 100) * (.8 + Math.random() * .4)));
+  const g = Math.max(1, Math.round(mon.gold * HUNT.goldMul * (1 + D.goldB / 100) * (.8 + Math.random() * .4)));
   out.up += addExp(c, e);
   c.gold += g; out.kills++; out.exp += e; out.gold += g; h.kills++; h.exp += e; h.gold += g;
   if (boss) h.bosses++;
-  const it = rollDrop(f.tier, D.dropB, boss);
-  if (!it) return;
-  h.drops++;
-  if (c.bag.length >= BAG_MAX) { const s = Math.round(it.price * .3); c.gold += s; out.sold += s; h.sold += s; out.gold += s; h.gold += s; return; }   // 가방이 가득 차면 자동으로 팔기
-  c.bag.push(it); out.drops.push(it);
-  if (['rare', 'epic', 'legend'].includes(it.grade)) { h.best.push({ g: it.grade, n: itemName(it) }); h.best = h.best.slice(-10); }
 }
 export function summary(h, at) {
   return { f: h.f, sec: Math.round((at - h.start) / 1000), kills: h.kills, exp: h.exp, gold: h.gold, pots: h.pots, drops: h.drops, sold: h.sold, bosses: h.bosses, best: h.best };

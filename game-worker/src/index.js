@@ -1,6 +1,7 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, WTYPES, TIERS, HATS, EYE_SKINS, POTS, FIELDS, BAG_MAX, ENH_COST, ENH_RATE, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, FISH_GRADES, rollFish } from '../../assets/js/game-rules.js';
+import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, FISH_GRADES, rollFish,
+  GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints } from '../../assets/js/game-rules.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
 import { Town, MAX_CH, toRooms, lookRow } from './town.js';
@@ -171,10 +172,22 @@ async function recover(req, env) {
 // ───────── 로그인한 뒤 ─────────
 // DB 한 줄 ↔ 캐릭터
 function toChar(r) {
-  return { face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, hair: r.hair, hairC: r.hair_c, intro: r.intro, title: r.title, x: r.x, y: r.y, lv: r.lv, exp: r.exp, gold: r.gold,
+  const c = { face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, hair: r.hair, hairC: r.hair_c, intro: r.intro, title: r.title, x: r.x, y: r.y, lv: r.lv, exp: r.exp, gold: r.gold,
     str: r.s_str, dex: r.s_dex, int: r.s_int, luk: r.s_luk, points: r.points, hp: r.hp, hpAt: r.hp_at,
     equip: JSON.parse(r.equip), bag: JSON.parse(r.bag), hats: JSON.parse(r.hats), pots: JSON.parse(r.pots), potAt: r.pot_at,
-    hunt: r.hunt ? JSON.parse(r.hunt) : null, bonusDay: r.bonus_day, jobAt: r.job_at, ver: r.ver };
+    hunt: r.hunt ? JSON.parse(r.hunt) : null, bonusDay: r.bonus_day, jobAt: r.job_at, ver: r.ver,
+    cls: CLASSES[r.cls] ? r.cls : 'sword', enh: jp(r.enh, {}), presets: jp(r.presets, null) || defaultPresets(), preset: r.preset || 0, gacha: { w: 0, a: 0, ...jp(r.gacha, {}) } };
+  if ('weapon' in c.equip || 'acc' in c.equip) oldGear(c);
+  return c;
+}
+const jp = (s, d) => { try { return s ? JSON.parse(s) : d; } catch { return d; } };
+// 예전(상점) 장비: 산 값의 절반을 골드로 돌려주고, 새 기본 무기 3개(1단계 일반)를 끼워 줌
+function oldGear(c) {
+  const old = [...Object.values(c.equip), ...c.bag].filter(Boolean);
+  c.gold += old.reduce((a, it) => a + Math.round((it.price || 0) * .5), 0);
+  const wt = c.equip.weapon?.wt; c.cls = wt === 'bow' || wt === 'staff' ? wt : 'sword';
+  for (const [k, it] of Object.entries(c.equip)) if (it?.enh) { const s = k === 'weapon' ? c.cls : k; if (SLOTS[s]) c.enh[s] = Math.max(c.enh[s] || 0, it.enh); }   // 예전 강화 단계는 같은 칸으로
+  c.equip = newCharacter().equip; c.bag = [];
 }
 function meOut(user, c) {
   const h = c.hunt;
@@ -182,6 +195,7 @@ function meOut(user, c) {
     nick: user.nick, admin: !!user.is_admin,
     char: { face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair, hairC: c.hairC, intro: c.intro, title: c.title, x: c.x, y: c.y, lv: c.lv, exp: c.exp, gold: c.gold,
       str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
+      cls: c.cls, enh: c.enh, gacha: c.gacha, preset: c.preset, presets: c.presets.map((p, i) => (i === c.preset ? { ...p, s: [c.str, c.dex, c.int, c.luk] } : p)),
       hunt: h ? { f: h.f, start: h.start, t: Math.round(h.t), boss: h.boss, kills: h.kills, exp: h.exp, gold: h.gold, drops: h.drops } : null,
       job: c.jobAt ? { left: Math.max(0, Math.ceil((c.jobAt + JOB.sec * 1000 - Date.now()) / 1000)), pay: JOB.pay(c.lv) } : null },
   };
@@ -201,9 +215,9 @@ async function play(env, user, fn) {
     } else out.hunt = settle(c, at);
     const res = (await fn(c, at, out)) || {};
     const w = await env.DB.prepare(`UPDATE characters SET title = ?, x = ?, y = ?, lv = ?, exp = ?, gold = ?, s_str = ?, s_dex = ?, s_int = ?, s_luk = ?, points = ?, hp = ?, hp_at = ?,
-        equip = ?, bag = ?, hats = ?, hat = ?, eyes = ?, pots = ?, pot_at = ?, hunt = ?, bonus_day = ?, job_at = ?, ver = ver + 1, updated_at = ? WHERE user_id = ? AND ver = ?`)
+        equip = ?, bag = ?, hats = ?, hat = ?, eyes = ?, pots = ?, pot_at = ?, hunt = ?, bonus_day = ?, job_at = ?, cls = ?, enh = ?, presets = ?, preset = ?, gacha = ?, ver = ver + 1, updated_at = ? WHERE user_id = ? AND ver = ?`)
       .bind(c.title, c.x, c.y, c.lv, c.exp, c.gold, c.str, c.dex, c.int, c.luk, c.points, c.hp, c.hpAt, JSON.stringify(c.equip), JSON.stringify(c.bag), JSON.stringify(c.hats), c.hat, c.eyes,
-        JSON.stringify(c.pots), c.potAt, c.hunt ? JSON.stringify(c.hunt) : '', c.bonusDay, c.jobAt || 0, at, user.id, c.ver).run();
+        JSON.stringify(c.pots), c.potAt, c.hunt ? JSON.stringify(c.hunt) : '', c.bonusDay, c.jobAt || 0, c.cls, JSON.stringify(c.enh), JSON.stringify(c.presets), c.preset, JSON.stringify(c.gacha), at, user.id, c.ver).run();
     if (w.meta.changes) {
       if (res.log) await log(env, user.id, res.log[0], res.log[1] || '');
       if (res.after) await res.after();   // 캐릭터 저장이 끝난 뒤 할 일 (낚시 기록 등)
@@ -221,10 +235,9 @@ function dailyBonus(c, at) {
   return { bonus: g };
 }
 const spend = (c, n) => { if (c.gold < n) fail(400, '골드가 부족해요'); c.gold -= n; };
-const findBag = (c, id) => { const i = c.bag.findIndex(it => it.id === String(id)); if (i < 0) fail(400, '가방에 없는 장비예요'); return i; };
+const findBag = (c, id) => { const i = c.bag.findIndex(it => it.id === String(id)); if (i < 0) fail(400, '이미 고른 장비예요'); return i; };
 const townOnly = c => { if (c.hunt) fail(400, '사냥 중에는 할 수 없어요. 마을로 돌아온 뒤에 해 주세요'); };
 const notWorking = c => { if (c.jobAt) fail(400, '카페 알바 중이에요. 알바를 끝내거나 그만둔 뒤에 해 주세요'); };
-const sellPrice = it => Math.round(it.price * .3);
 
 // 2단계 기능들: (캐릭터, 보낸 내용, 지금 시각, 사냥 정산 결과) → 캐릭터를 바꾸고, 화면에 알려 줄 것을 돌려줌
 const GAME = {
@@ -259,54 +272,64 @@ const GAME = {
   },
   '/api/rest'(c) { townOnly(c); c.hp = derive(c).maxHp; },
   '/api/pot-at'(c, b) { const v = Number(b.v); if (!Number.isInteger(v) || v < 10 || v > 90) fail(400, '10~90 사이로 정해 주세요'); c.potAt = v; },
-  // 무기점 · 방어구점: 일반 등급 장비. 사면 바로 장착, 쓰던 건 가방으로
-  '/api/shop/buy'(c, b) {
+  // 가챠센터: 무기 뽑기 · 방어구 뽑기 (1회 / 10회)
+  // 지금 낀 것보다 좋은 장비는 칸마다 가장 좋은 것 하나만 "바꿀지 고르기"로 남기고, 나머지는 자동으로 분해(골드)
+  '/api/gacha/pull'(c, b) {
     townOnly(c);
-    const slot = b.slot, tier = Number(b.tier);
-    if (!SLOTS[slot] || !Number.isInteger(tier) || !TIERS[tier]) fail(400, '없는 물건이에요');
-    if (c.lv < TIERS[tier].req) fail(400, `Lv.${TIERS[tier].req}부터 살 수 있어요`);
-    if (slot === 'weapon' && !WTYPES[b.wt]) fail(400, '없는 무기예요');
-    if (slot === 'acc' && !STATS[b.stat]) fail(400, '없는 반지예요');
-    const it = makeItem(slot, tier, { wt: b.wt, stat: b.stat });
-    if (c.equip[slot] && c.bag.length >= BAG_MAX) fail(400, '가방이 가득 찼어요. 먼저 장비를 팔아 주세요');
-    spend(c, it.price);
-    if (c.equip[slot]) c.bag.push(c.equip[slot]);
-    c.equip[slot] = it; c.hp = Math.min(c.hp, derive(c).maxHp);
-    return { item: it, log: ['buy', `${itemName(it)} -${it.price}`] };
-  },
-  '/api/sell'(c, b) {
-    townOnly(c);
-    const ids = Array.isArray(b.ids) ? b.ids.slice(0, BAG_MAX).map(String) : [];
-    if (!ids.length) fail(400, '팔 장비를 골라 주세요');
-    let got = 0, n = 0;
-    for (const id of new Set(ids)) { const i = c.bag.findIndex(it => it.id === id); if (i < 0) continue; got += sellPrice(c.bag[i]); c.bag.splice(i, 1); n++; }
-    if (!n) fail(400, '가방에 없는 장비예요');
+    const box = b.box, n = Number(b.n);
+    if (!GACHA[box] || ![1, 10].includes(n)) fail(400, '잘못된 요청이에요');
+    const g0 = gachaInfo(c.gacha[box]), cost = n === 10 ? Math.round(g0.cost * 10 * GACHA_TEN) : g0.cost;
+    spend(c, cost);
+    const items = []; let got = 0;
+    for (let k = 0; k < n; k++) {
+      const it = rollGacha(box, gachaInfo(c.gacha[box]).lv); c.gacha[box]++; items.push(it);
+      const pi = c.bag.findIndex(p => p.slot === it.slot), best = Math.max(itemPower(c.equip[it.slot]), pi >= 0 ? itemPower(c.bag[pi]) : 0);
+      if (itemPower(it) > best) { if (pi >= 0) { got += dismantle(c.bag[pi]); c.bag.splice(pi, 1); } c.bag.push(it); }
+      else got += dismantle(it);
+    }
     c.gold += got;
-    return { got, n, log: ['sell', `${n}개 +${got}`] };
+    const g1 = gachaInfo(c.gacha[box]), keep = new Set(c.bag.map(p => p.id));
+    return { items: items.map(it => ({ ...it, keep: keep.has(it.id) })), got, cost, lvUp: g1.lv > g0.lv ? g1.lv : 0,
+      log: ['gacha', `${GACHA[box].n} ${n}회 -${cost} +${got} ${items.filter(it => ['epic', 'legend', 'myth'].includes(it.g)).map(it => `${it.st}단계 ${GRADES[it.g].n} ${itemName(it)}`).join(', ')}`] };
   },
-  '/api/equip'(c, b) {
-    const i = findBag(c, b.id), it = c.bag[i];
-    if (c.lv < TIERS[it.tier].req) fail(400, `Lv.${TIERS[it.tier].req}부터 낄 수 있어요`);
-    c.bag.splice(i, 1);
-    if (c.equip[it.slot]) c.bag.push(c.equip[it.slot]);
-    c.equip[it.slot] = it; c.hp = Math.min(c.hp, derive(c).maxHp);
+  // 비교 창에서 고르기: take = 바꾸기(쓰던 것은 분해) / 아니면 새 장비를 분해
+  '/api/gacha/pick'(c, b) {
+    const i = findBag(c, b.id), it = c.bag[i]; c.bag.splice(i, 1);
+    let got;
+    if (b.take) { got = c.equip[it.slot] ? dismantle(c.equip[it.slot]) : 0; c.equip[it.slot] = it; }
+    else got = dismantle(it);
+    c.gold += got; c.hp = Math.min(c.hp, derive(c).maxHp);
+    return { got, take: !!b.take, log: ['gacha-pick', `${itemName(it)} ${b.take ? '장착' : '분해'} +${got}`] };
   },
-  '/api/unequip'(c, b) {
-    if (!SLOTS[b.slot] || !c.equip[b.slot]) fail(400, '빈 칸이에요');
-    if (c.bag.length >= BAG_MAX) fail(400, '가방이 가득 찼어요');
-    c.bag.push(c.equip[b.slot]); c.equip[b.slot] = null; c.hp = Math.min(c.hp, derive(c).maxHp);
+  // 클래스 바꾸기 (언제든 무료): 지금 쓰는 무기가 바뀜
+  '/api/class'(c, b) {
+    if (!CLASSES[b.cls]) fail(400, '없는 클래스예요');
+    c.cls = b.cls; c.hp = Math.min(c.hp, derive(c).maxHp);
   },
-  // 대장간
+  // 능력치 프리셋: 바꾸기 · 이름 정하기
+  '/api/preset/use'(c, b) {
+    const i = Number(b.i); if (!Number.isInteger(i) || i < 0 || i >= PRESETS) fail(400, '없는 프리셋이에요');
+    if (i === c.preset) return;
+    c.presets[c.preset].s = [c.str, c.dex, c.int, c.luk];
+    [c.str, c.dex, c.int, c.luk] = c.presets[i].s; c.preset = i;
+    c.points = Math.max(0, totalPoints(c.lv) - spentPoints(c)); c.hp = Math.min(c.hp, derive(c).maxHp);
+  },
+  '/api/preset/name'(c, b) {
+    const i = Number(b.i), n = String(b.n || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 10);
+    if (!Number.isInteger(i) || i < 0 || i >= PRESETS) fail(400, '없는 프리셋이에요');
+    if (!n) fail(400, '이름을 적어 주세요');
+    c.presets[i].n = n;
+  },
+  // 대장간: 장비 칸(슬롯)을 강화. 장비를 바꿔도 강화 단계는 그대로
   '/api/enhance'(c, b) {
     townOnly(c);
-    const slot = Object.keys(c.equip).find(k => c.equip[k]?.id === String(b.id));
-    const it = slot ? c.equip[slot] : c.bag[findBag(c, b.id)];
-    if (it.enh >= 10) fail(400, '이미 최대 강화(+10)예요');
-    const cost = TIERS[it.tier].req * ENH_COST[it.enh];
-    spend(c, cost);
-    const ok = Math.random() * 100 < enhRate(it.enh, derive(c));   // 운이 높으면 성공 확률 조금 더
-    if (ok) it.enh++;   // 실패해도 단계가 떨어지거나 부서지지 않음 (골드만 사라짐)
-    return { ok, item: it, log: ['enhance', `${itemName(it)} ${ok ? '성공' : '실패'} -${cost}`] };
+    const slot = String(b.slot || ''); if (!SLOTS[slot]) fail(400, '없는 칸이에요');
+    const l = c.enh[slot] || 0; if (l >= ENH_MAX) fail(400, `이미 최대 강화(+${ENH_MAX})예요`);
+    const cost = ENH_COST[l]; spend(c, cost);
+    const ok = Math.random() * 100 < enhRate(l, derive(c));   // 운이 높으면 성공 확률 조금 더
+    if (ok) c.enh[slot] = l + 1;   // 실패해도 단계가 떨어지지 않음 (골드만 사라짐)
+    c.hp = Math.min(c.hp, derive(c).maxHp);
+    return { ok, slot, lv: c.enh[slot] || 0, log: ['enhance', `${SLOTS[slot].n} 칸 +${l + 1} ${ok ? '성공' : '실패'} -${cost}`] };
   },
   '/api/reset-stats'(c) {   // 캐릭터창 → 능력치에서 (사냥 중에도 가능)
     const n = spentPoints(c); if (!n) fail(400, '찍은 포인트가 없어요');

@@ -15,7 +15,7 @@ export const START_GOLD = 500;
 export const POINTS_PER_LV = 4;
 
 // ───────── 활 · 원거리 밸런스 (시험 계산으로 맞춘 값) ─────────
-export const MELEE_K = 2.6, STAFF_K = 1.6, STAFF_SP = 1, BOW_DEX = 1.3, BOW_GAP = 1.1, BOW_M = .9, FAR_LEAD = .8, FAR_WALK = .75;
+export const MELEE_K = 2.6, STAFF_K = 1.6, STAFF_SP = 1, BOW_DEX = 1.3, BOW_GAP = 1.1, BOW_M = .9, FAR_LEAD = .6, FAR_WALK = .8;
 
 // ───────── 닉네임 · 비밀번호 규칙 (기획서 7-1) ─────────
 // 김치복님 본인 계정 이름은 정확히 이 이름만 가입 가능 (한 번 가입되면 다른 사람은 못 씀)
@@ -34,74 +34,124 @@ export const allOk = o => Object.values(o).every(Boolean);
 // ───────── 성장 (기획서 3장) ─────────
 export const pick = a => a[Math.floor(Math.random() * a.length)];
 export const needExp = L => Math.round(50 * Math.pow(L, 2));
-export const GRADES = { normal: { n: '일반', c: '#6f7a8a', m: 1, o: 0 }, uncommon: { n: '고급', c: '#2f8f45', m: 1.15, o: 0 }, rare: { n: '희귀', c: '#2f6fd0', m: 1.3, o: 1 }, epic: { n: '영웅', c: '#8a48cc', m: 1.5, o: 2 }, legend: { n: '전설', c: '#e0731c', m: 1.8, o: 3 } };
-export const TIERS = [{ n: '들판', req: 1, price: 100 }, { n: '숲', req: 10, price: 900 }, { n: '협곡', req: 25, price: 3500 }, { n: '공장', req: 40, price: 10000 }];
-// 무기 종류. st: 공격력을 올려 주는 능력치, far: 원거리 (몬스터가 다가오는 동안 먼저 때림)
-// 근접(검·단검·망치)은 힘, 지팡이는 지력(마법), 활은 민첩 (화살은 필요 없음)
-export const WTYPES = { sword: { n: '검', i: '🗡️', gap: 1.0, m: 1, st: 'str', k: MELEE_K }, dagger: { n: '단검', i: '🔪', gap: .7, m: .7, st: 'str', k: MELEE_K }, hammer: { n: '망치', i: '🔨', gap: 1.5, m: 1.5, st: 'str', k: MELEE_K },
+// ───────── 장비 (뽑기로만 얻음, 기획서 3-2) ─────────
+// 등급 7개. m: 수치 배율, p: 뽑기 확률(%), d: 분해할 때 골드 배율
+// 단계(1~6)가 등급보다 훨씬 중요함: 한 단계 위의 '빈약'이 아래 단계 '신화'보다 셈
+export const GRADES = {
+  poor: { n: '빈약', c: '#8b8f98', m: .85, p: 30, d: .8 },
+  normal: { n: '일반', c: '#5d6b7e', m: 1, p: 32, d: 1 },
+  uncommon: { n: '고급', c: '#2f9e4f', m: 1.1, p: 20, d: 1.3 },
+  rare: { n: '희귀', c: '#2f6fd0', m: 1.2, p: 11, d: 1.7 },
+  epic: { n: '영웅', c: '#8a48cc', m: 1.32, p: 5, d: 2.3 },
+  legend: { n: '전설', c: '#e0731c', m: 1.45, p: 1.7, d: 3.2 },
+  myth: { n: '신화', c: '#e0304a', m: 1.6, p: .3, d: 5 },
+};
+export const STAGES = 6;
+// 사냥터 이름 (예전 장비 단계 이름. 지금은 사냥터 설명에만 씀)
+export const TIERS = [{ n: '들판', req: 1 }, { n: '숲', req: 10 }, { n: '협곡', req: 25 }, { n: '공장', req: 40 }];
+// 클래스 = 지금 쓰는 무기. 무기 3개는 모두 끼고 있고, 클래스는 언제든 무료로 바꿈
+export const CLASSES = { sword: { n: '검사', i: '🗡️', st: 'str' }, bow: { n: '궁수', i: '🏹', st: 'dex' }, staff: { n: '마법사', i: '🪄', st: 'int' } };
+// 무기 종류. st: 공격력을 올려 주는 능력치, far: 원거리 (몬스터가 다가오는 동안 먼저 때림), m: 같은 단계 무기 공격력 배율
+export const WTYPES = { sword: { n: '검', i: '🗡️', gap: 1.0, m: 1, st: 'str', k: MELEE_K },
   staff: { n: '지팡이', i: '🪄', gap: 1.1, m: .95, sp: STAFF_SP, st: 'int', far: true, k: STAFF_K }, bow: { n: '활', i: '🏹', gap: BOW_GAP, m: BOW_M, st: 'dex', far: true, k: BOW_DEX } };
 // 원거리 무기: 몬스터가 다가오는 시간(초)만큼 먼저 공격, 걸어가는 시간도 줄어듦 (FAR.walk 배)
 export const FAR = { lead: FAR_LEAD, walk: FAR_WALK };
-export const SLOTS = { weapon: { n: '무기', i: '🗡️' }, hat: { n: '모자', i: '⛑️' }, armor: { n: '갑옷', i: '🧥' }, shoes: { n: '신발', i: '👢' }, acc: { n: '장신구', i: '💍' } };
-export const STATS = { str: { n: '힘', i: '💪', d: `검·단검·망치 공격력 +${MELEE_K} · 체력 +5 · 물리 방어 +0.5` }, dex: { n: '민첩', i: '🏃', d: `활 공격력 +${BOW_DEX} · 공격 속도 +0.5% · 회피 +0.2% · 이동 속도 +0.3%` }, int: { n: '지력', i: '🧠', d: `지팡이 마력 +${STAFF_K} · 마법 방어 +0.5 · 필살기 피해 +2% · 확률 +0.1%` }, luk: { n: '운', i: '🍀', d: '치명타 +0.25% · 드랍 +0.5% · 골드 +1% · 강화 성공 +0.05%p' } };
-export const BASE = { weapon: [10, 32, 70, 120], hatDef: [2, 6, 13, 22], hatHp: [10, 30, 70, 120], armorDef: [4, 12, 26, 44], armorHp: [20, 60, 140, 240], shoesDef: [1, 4, 9, 15], shoesHp: [5, 20, 45, 80], acc: [2, 5, 9, 14] };
-export const PRICE_MUL = { weapon: 1, armor: .9, hat: .6, shoes: .5, acc: .8 };
+// 장비 칸 6개: 무기 3 + 방어구 3. k: 방어구 칸별 수치 배율
+export const SLOTS = { sword: { n: '검', i: '🗡️' }, bow: { n: '활', i: '🏹' }, staff: { n: '지팡이', i: '🪄' }, hat: { n: '모자', i: '⛑️', k: .5 }, armor: { n: '갑옷', i: '🧥', k: 1 }, shoes: { n: '신발', i: '👢', k: .35 } };
+export const WEAPON_SLOTS = ['sword', 'bow', 'staff'], ARMOR_SLOTS = ['hat', 'armor', 'shoes'];
+export const ITEM_NAMES = {
+  sword: ['나무 검', '청동 검', '강철 기사검', '룬 블레이드', '용비늘 대검', '김치 성검'],
+  bow: ['나무 활', '사냥꾼 활', '강철 장궁', '바람의 활', '불사조 활', '별빛 활'],
+  staff: ['나뭇가지 지팡이', '수정 지팡이', '달빛 지팡이', '번개 지팡이', '용의 눈 지팡이', '우주 지팡이'],
+  hat: ['천 두건', '가죽 모자', '철 투구', '기사 투구', '용 투구', '황금 왕관 투구'],
+  armor: ['천 옷', '가죽 갑옷', '사슬 갑옷', '판금 갑옷', '용비늘 갑옷', '황금 갑옷'],
+  shoes: ['짚신', '가죽 신발', '철 장화', '기사 장화', '바람 장화', '황금 장화'],
+};
+// 단계별 기본 수치 (일반 등급 기준). 무기 공격력 · 방어구 방어 · 방어구 체력
+export const W_ATK = [7, 15, 34, 72, 145, 280], A_DEF = [3, 8, 17, 36, 72, 140], A_HP = [17, 38, 85, 180, 360, 700];
+export const STATS = { str: { n: '힘', i: '💪', d: `검 공격력 +${MELEE_K} · 체력 +5 · 물리 방어 +0.5` }, dex: { n: '민첩', i: '🏃', d: `활 공격력 +${BOW_DEX} · 공격 속도 +0.5% · 회피 +0.2% · 이동 속도 +0.3%` }, int: { n: '지력', i: '🧠', d: `지팡이 마력 +${STAFF_K} · 마법 방어 +0.5 · 필살기 피해 +2% · 확률 +0.1%` }, luk: { n: '운', i: '🍀', d: '치명타 +0.25% · 골드 +1% · 강화 성공 +0.05%p' } };
+// 강화: 장비가 아니라 장비 칸(슬롯)을 강화. 장비를 바꿔도 강화 단계는 그대로
+export const ENH_MAX = 10, ENH_STEP = .06;
 export const ENH_RATE = [100, 95, 90, 80, 70, 60, 50, 40, 35, 30];
 // 운이 높으면 강화 성공 확률 증가 (1포인트당 +0.05%p, 최대 +10%p)
 export const enhRate = (enh, D) => Math.min(100, ENH_RATE[enh] + (D?.enhB || 0));
-export const ENH_COST = [10, 20, 35, 50, 80, 120, 170, 230, 300, 400];
+export const ENH_COST = [700, 1400, 2400, 3600, 5600, 8400, 12000, 17000, 22000, 30000];
 export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'ribbon', n: '🎀 리본', price: 300 }, { id: 'sprout', n: '🌱 새싹', price: 500 }, { id: 'cat', n: '🐱 고양이 귀', price: 800 }, { id: 'straw', n: '👒 밀짚모자', price: 1200 }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 2000 }];
 // 눈 모양 스킨 (가진 것은 hats 목록에 'eye:별' 처럼 저장). dot은 기본
 export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 400 }, { id: 'star', n: '⭐ 별 눈', price: 700 }, { id: 'wink', n: '😉 윙크', price: 800 }, { id: 'heart', n: '💗 하트 눈', price: 1000 }, { id: 'cat', n: '🐱 고양이 눈', price: 1200 }, { id: 'big', n: '✨ 반짝 큰 눈', price: 1500 }];
-export const OPT_N = { str: '힘', dex: '민첩', int: '지력', luk: '운', crit: '치명타', gold: '골드' };
 
 let seq = 1;
 const newId = () => (globalThis.crypto?.randomUUID ? crypto.randomUUID().slice(0, 8) : `i${Date.now().toString(36)}${seq++}`);
-export function makeItem(slot, tier, o = {}) {
-  const g = o.grade || 'normal', it = { id: o.id || newId(), slot, tier, grade: g, enh: o.enh || 0, opts: [] };
-  if (slot === 'weapon') { it.wt = o.wt || 'sword'; it.atk = Math.round(BASE.weapon[tier] * WTYPES[it.wt].m); }
-  else if (slot === 'acc') { it.stat = o.stat || pick(Object.keys(STATS)); it.val = BASE.acc[tier]; }
-  else { it.def = BASE[slot + 'Def'][tier]; it.hp = BASE[slot + 'Hp'][tier]; }
-  for (let k = 0; k < GRADES[g].o; k++) it.opts.push(randOpt(tier));
-  it.price = Math.round(TIERS[tier].price * PRICE_MUL[slot] * GRADES[g].m);
-  return it;
+// 장비 한 개: { id, slot, st(단계 1~6), g(등급) }. 수치는 저장하지 않고 itemStats로 계산 (밸런스를 바꾸기 쉽게)
+export const makeItem = (slot, st = 1, g = 'normal', id) => ({ id: id || newId(), slot, st, g });
+export const isWeapon = it => WEAPON_SLOTS.includes(it.slot);
+export function itemStats(it, enh = 0) {
+  const m = GRADES[it.g].m * (1 + enh * ENH_STEP), i = it.st - 1;
+  if (isWeapon(it)) return { atk: Math.round(W_ATK[i] * WTYPES[it.slot].m * m) };
+  const k = SLOTS[it.slot].k;
+  return { def: Math.round(A_DEF[i] * k * m), hp: Math.round(A_HP[i] * k * m) };
 }
-export function randOpt(tier) { const r = Math.random(); if (r < .6) return { k: pick(Object.keys(STATS)), v: (2 + Math.floor(Math.random() * 4)) * (tier + 1) }; if (r < .8) return { k: 'crit', v: 1 + Math.floor(Math.random() * 3) }; return { k: 'gold', v: 3 + Math.floor(Math.random() * 6) }; }
-export const enhMul = it => GRADES[it.grade].m * (1 + it.enh * .08);
-export const itemIcon = it => it.slot === 'weapon' ? WTYPES[it.wt].i : SLOTS[it.slot].i;
-export function itemName(it) { const base = it.slot === 'weapon' ? WTYPES[it.wt].n : it.slot === 'acc' ? `${STATS[it.stat].n} 반지` : SLOTS[it.slot].n; return `${TIERS[it.tier].n} ${base}${it.enh ? ` +${it.enh}` : ''}`; }
-export function itemDesc(it) {
-  const m = enhMul(it), parts = [GRADES[it.grade].n];
-  if (it.slot === 'weapon') parts.push(`${it.wt === 'staff' ? '마력' : '공격'} ${Math.round(it.atk * m)}`, `간격 ${WTYPES[it.wt].gap}초`, ...(WTYPES[it.wt].far ? ['원거리'] : []), ...(WTYPES[it.wt].sp ? ['필살기 +30%'] : []));
-  else if (it.slot === 'acc') parts.push(`${STATS[it.stat].n} +${Math.round(it.val * m)}`);
-  else parts.push(`방어 ${Math.round(it.def * m)}`, `체력 +${Math.round(it.hp * m)}`);
-  it.opts.forEach(o => parts.push(`${OPT_N[o.k]} +${o.v}${o.k === 'crit' || o.k === 'gold' ? '%' : ''}`));
-  return `${parts.join(' · ')} · Lv.${TIERS[it.tier].req}+`;
+// 비교용 한 숫자: 무기는 공격력, 방어구는 방어×4 + 체력
+export const itemPower = (it, enh = 0) => { if (!it) return 0; const x = itemStats(it, enh); return x.atk ?? x.def * 4 + x.hp; };
+export const itemIcon = it => SLOTS[it.slot].i;
+export const itemName = it => ITEM_NAMES[it.slot][it.st - 1];
+export function itemDesc(it, enh = 0) {
+  const x = itemStats(it, enh);
+  return [`${it.st}단계 ${GRADES[it.g].n}`, ...(x.atk != null ? [`${it.slot === 'staff' ? '마력' : '공격력'} ${x.atk}`] : [`방어 ${x.def}`, `체력 +${x.hp}`])].join(' · ');
 }
-// 능력치 → 전투 수치 (기획서 3-3 계산식)
+// 분해하면 받는 골드
+export const DISMANTLE = [20, 45, 100, 220, 450, 900];
+export const dismantle = it => Math.round(DISMANTLE[it.st - 1] * GRADES[it.g].d);
+
+// ───────── 가챠센터 (뽑기) ─────────
+// 많이 뽑을수록 뽑기 레벨이 올라 높은 단계가 나옴. 상자마다 레벨 따로
+export const GACHA = { w: { n: '무기 뽑기', i: '⚔️', slots: WEAPON_SLOTS }, a: { n: '방어구 뽑기', i: '🛡️', slots: ARMOR_SLOTS } };
+export const GACHA_NEED = [10, 30, 60, 100, 160, 240, 330, 440, 560];        // 다음 뽑기 레벨까지 필요한 횟수 (Lv.1→2, 2→3 …)
+export const GACHA_COST = [150, 300, 500, 800, 1300, 2000, 2900, 4000, 5400, 7200];   // 레벨별 1회 가격
+export const GACHA_TEN = .9;   // 10회 뽑기는 10% 할인
+// 레벨별 단계 확률(%) [1단계 … 6단계]
+export const GACHA_ODDS = [
+  [100, 0, 0, 0, 0, 0], [70, 30, 0, 0, 0, 0], [40, 50, 10, 0, 0, 0], [15, 50, 32, 3, 0, 0], [5, 30, 50, 15, 0, 0],
+  [0, 15, 50, 32, 3, 0], [0, 5, 35, 45, 14, 1], [0, 0, 20, 50, 26, 4], [0, 0, 10, 45, 37, 8], [0, 0, 5, 35, 45, 15],
+];
+export const GACHA_MAX = GACHA_ODDS.length;
+// 뽑은 횟수 → { lv, now(이번 레벨에서 뽑은 수), need(다음 레벨까지), cost }
+export function gachaInfo(n = 0) {
+  let lv = 1, base = 0;
+  while (lv < GACHA_MAX && n >= base + GACHA_NEED[lv - 1]) { base += GACHA_NEED[lv - 1]; lv++; }
+  return { lv, now: n - base, need: lv < GACHA_MAX ? GACHA_NEED[lv - 1] : 0, cost: GACHA_COST[lv - 1] };
+}
+const roll = (list, w) => { let r = Math.random() * w.reduce((a, b) => a + b, 0); for (let i = 0; i < list.length; i++) { r -= w[i]; if (r < 0) return list[i]; } return list[list.length - 1]; };
+export function rollGacha(box, lv) {
+  const st = roll([1, 2, 3, 4, 5, 6], GACHA_ODDS[lv - 1]), g = roll(Object.keys(GRADES), Object.values(GRADES).map(x => x.p));
+  return makeItem(pick(GACHA[box].slots), st, g);
+}
+
+// ───────── 능력치 프리셋 (5개, 이름 붙이기) ─────────
+export const PRESETS = 5;
+export const defaultPresets = () => Array.from({ length: PRESETS }, (_, i) => ({ n: `프리셋 ${i + 1}`, s: [5, 5, 5, 5] }));
+export const totalPoints = lv => (lv - 1) * POINTS_PER_LV;
+
+// 능력치 → 전투 수치 (기획서 3-3 계산식). 공격은 지금 클래스의 무기로
 export function derive(c) {
-  const b = { str: 0, dex: 0, int: 0, luk: 0, crit: 0, gold: 0 }; let def = 0, hp = 0;
-  for (const it of Object.values(c.equip || {})) {
-    if (!it) continue; const m = enhMul(it);
-    if (it.slot === 'acc') b[it.stat] += Math.round(it.val * m); else if (it.slot !== 'weapon') { def += it.def * m; hp += it.hp * m; }
-    it.opts.forEach(o => (b[o.k] += o.v));
-  }
-  const str = c.str + b.str, dex = c.dex + b.dex, int = c.int + b.int, luk = c.luk + b.luk, w = c.equip?.weapon, wt = WTYPES[w?.wt || 'sword'], staff = wt.st === 'int', bow = wt.st === 'dex';
-  const wAtk = w ? w.atk * enhMul(w) : 3;
-  // 공격력: 검·단검·망치는 힘, 활은 민첩. 마력: 지팡이는 지력. 기본 공격 피해 = hit
+  const b = { str: 0, dex: 0, int: 0, luk: 0, crit: 0, gold: 0 }, E = c.enh || {}; let def = 0, hp = 0;
+  for (const s of ARMOR_SLOTS) { const it = c.equip?.[s]; if (!it) continue; const x = itemStats(it, E[s] || 0); def += x.def; hp += x.hp; }
+  const cls = CLASSES[c.cls] ? c.cls : 'sword', w = c.equip?.[cls], wt = WTYPES[cls], staff = wt.st === 'int', bow = wt.st === 'dex';
+  const str = c.str, dex = c.dex, int = c.int, luk = c.luk, wAtk = w ? itemStats(w, E[cls] || 0).atk : 3;
+  // 공격력: 검은 힘, 활은 민첩. 마력: 지팡이는 지력. 기본 공격 피해 = hit
   // 능력치·레벨에서 오는 피해는 공격 간격만큼 곱함 → 느린 무기는 한 방이 세고, 빠른 무기는 약하게 여러 번 (초당 피해는 비슷)
   const atk = Math.round((staff ? 3 : wAtk) + ((bow ? dex * wt.k : str * (staff ? 2 : wt.k)) + c.lv) * (staff ? 1 : wt.gap)), mag = Math.round((staff ? wAtk : 0) + (int * (staff ? wt.k : 2) + c.lv) * (staff ? wt.gap : 1));
-  return { b, str, dex, int, luk, atk, mag, hit: staff ? mag : atk, magic: staff, far: !!wt.far, wt: w?.wt || 'sword',
+  return { b, str, dex, int, luk, atk, mag, hit: staff ? mag : atk, magic: staff, far: !!wt.far, wt: cls, cls,
     def: Math.round(def + str * .5), mdef: Math.round(def * .5 + int * .5), maxHp: Math.round(100 + c.lv * 20 + str * 5 + hp),
-    gap: wt.gap / Math.min(2, 1 + dex * .005), spd: Math.min(1.6, 1 + dex * .003), crit: Math.min(60, 5 + luk * .25 + b.crit), eva: Math.min(40, dex * .2), sp: 5 + int * .1, spMul: (2 + int * .02) * (wt.sp || 1), goldB: luk + b.gold, dropB: luk * .5, enhB: Math.min(10, luk * .05) };
+    gap: wt.gap / Math.min(2, 1 + dex * .005), spd: Math.min(1.6, 1 + dex * .003), crit: Math.min(60, 5 + luk * .25), eva: Math.min(40, dex * .2), sp: 5 + int * .1, spMul: (2 + int * .02) * (wt.sp || 1), goldB: luk, enhB: Math.min(10, luk * .05) };
 }
-export const tierFor = lv => TIERS.reduce((t, x, i) => (lv >= x.req ? i : t), 0);
 
-// 새 캐릭터 기본값
+// 새 캐릭터 기본값: 무기 3개(1단계 일반) 모두 낌, 클래스는 검사
 export function newCharacter() {
   const c = { face: FACES[0], body: BODIES[0], eyes: 'dot', hat: 'none', hair: 'none', hairC: HAIR_COLORS[0], intro: '', title: '🏷️ 새내기 주민', x: START.x, y: START.y,
-    lv: 1, exp: 0, gold: START_GOLD, str: 5, dex: 5, int: 5, luk: 5, points: 0,
-    equip: { weapon: makeItem('weapon', 0, { wt: 'sword' }), hat: null, armor: null, shoes: null, acc: null }, bag: [], hats: ['none'], pots: { s: 5, l: 0, xl: 0 }, potAt: 40 };
+    lv: 1, exp: 0, gold: START_GOLD, str: 5, dex: 5, int: 5, luk: 5, points: 0, cls: 'sword',
+    equip: { sword: makeItem('sword'), bow: makeItem('bow'), staff: makeItem('staff'), hat: null, armor: null, shoes: null }, enh: {}, bag: [],
+    presets: defaultPresets(), preset: 0, gacha: { w: 0, a: 0 }, hats: ['none'], pots: { s: 5, l: 0, xl: 0 }, potAt: 40 };
   c.hp = derive(c).maxHp;
   return c;
 }
@@ -110,8 +160,7 @@ export const spentPoints = c => c.str + c.dex + c.int + c.luk - 20;
 
 // ───────── 사냥터 (기획서 4장) ─────────
 export const LV_CAP = 55;            // 지금 열린 최고 레벨 (사냥터를 추가하면 올리기)
-export const BAG_MAX = 40;           // 가방 칸. 가득 차면 주운 장비는 자동으로 팔림
-export const HUNT = { offlineMax: 8 * 3600, offlineEff: .7, onlineGap: 90, bossEvery: 1800, deathLoss: .1, townRegen: .02, huntRegen: .02 };
+export const HUNT = { offlineMax: 8 * 3600, offlineEff: .7, onlineGap: 90, bossEvery: 1800, deathLoss: .1, townRegen: .02, huntRegen: .02, goldMul: 1.15 };   // goldMul: 사냥에서 장비가 안 떨어지는 대신 골드 +15%
 export const POTS = { s: { n: '작은 음료', i: '🥤', d: '체력 +50', price: 20, heal: () => 50 }, l: { n: '큰 음료', i: '🧋', d: '체력 +200', price: 70, heal: () => 200 }, xl: { n: '특대 음료', i: '🍹', d: '최대 체력의 50%', price: 200, heal: max => Math.round(max * .5) } };
 // 몬스터: n 이름, lv, hp, atk, exp, gold, c 색, s 크기, f 생김새
 // mg: 마법 공격 (마법 방어력으로 막음), 없으면 물리 공격 (물리 방어력으로 막음)
@@ -137,15 +186,6 @@ export function addExp(c, n) {
   if (c.lv >= LV_CAP) c.exp = Math.min(c.exp, needExp(c.lv) - 1);
   return up;
 }
-// 몬스터가 떨어뜨리는 장비 (기본 6%, 운으로 늘어남, 보스는 항상 + 좋은 등급 10배)
-export function rollDrop(tier, dropB, boss) {
-  const lb = 1 + dropB / 100;
-  if (!boss && Math.random() * 100 >= 6 * lb) return null;
-  const bm = boss ? 10 : 1, r = Math.random() * 100;
-  const grade = r < .1 * lb * bm ? 'legend' : r < 1 * lb * bm ? 'epic' : r < 5 * lb * bm ? 'rare' : r < 20 * lb * bm ? 'uncommon' : 'normal';
-  return makeItem(pick(Object.keys(SLOTS)), tier, { grade, wt: pick(Object.keys(WTYPES)) });
-}
-
 // 몬스터 한 번 공격의 피해 (물리/마법 방어력, 무작위 ±15%)
 export const biteDmg = (mon, D) => Math.max(1, Math.round(mon.atk * 100 / (100 + (mon.mg ? D.mdef : D.def)) * (.85 + Math.random() * .3)));
 
