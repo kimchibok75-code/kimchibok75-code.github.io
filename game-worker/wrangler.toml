@@ -1,0 +1,15 @@
+# 치복 타운 게임 서버
+# 배포: 이 폴더에서  npx --yes wrangler@4 deploy
+# 표 바꾸기(새 migrations 파일 추가 후):  npx --yes wrangler@4 d1 migrations apply kimchibok-game --remote
+name = "kimchibok-game"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kimchibok-game"
+database_id = "40dd7d72-2e27-4412-91d1-1ba075296663"
+migrations_dir = "migrations"
+
+[observability]
+enabled = true

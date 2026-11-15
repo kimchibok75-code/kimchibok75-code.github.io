@@ -1,7 +1,7 @@
 # 김치복 홈페이지 — Claude 작업 메모
 
 > 다른 컴퓨터(사무실 등)에서 이어서 작업할 때 Claude가 가장 먼저 읽는 파일입니다.
-> 마지막 정리: 2026-11-15
+> 마지막 정리: 2026-11-15 (치복 타운 1단계까지)
 
 ## 꼭 지킬 것
 - **설명은 항상 쉬운 한국어로.** 영어로 설명하지 않기. 사용자가 해야 할 일은 "1. 어디를 → 2. 무엇을 누르기"처럼 구체적인 순서로 적기.
@@ -12,7 +12,7 @@
 - 유튜버 **김치복**(림월드) 공식 홈페이지. 정적 사이트, GitHub Pages로 배포됨.
 - 주소: https://kimchibok75-code.github.io
 - 저장소: https://github.com/kimchibok75-code/kimchibok75-code.github.io
-- 페이지: `index.html`(홈), `schedule.html`(방송 일정 달력), `mods.html`(모드 추천), `weekly.html`(주간 모드 순위), `community.html`(팬 카페·디스코드·카페 새 글)
+- 페이지: `index.html`(홈), `schedule.html`(방송 일정 달력), `mods.html`(모드 추천), `weekly.html`(주간 모드 순위), `community.html`(팬 카페·디스코드·카페 새 글), `game.html`(치복 타운 — 아직 숨김)
 - 새 페이지를 만들면 `.github/workflows/update.yml`의 `sed -i "s/__BUILD__/..."` 줄에 파일 이름을 꼭 추가
 - 모든 페이지가 `assets/js/app.js` 하나를 씀. `body[data-page]` 값으로 페이지마다 불러올 데이터가 정해짐.
 - 공통 부분(SVG 아이콘, 푸터, 알림 동의 창, 모바일 하단 탭바)은 `injectShell()`이 넣어 줌.
@@ -87,16 +87,39 @@
 - 모바일 하단 탭바 메뉴 추가. 카페 이미지가 화면 밖으로 넘치던 문제 수정.
 - 디스코드 설명: "채팅 위주 소통을 원하면 디스코드로"
 
-## 웹 게임 기획 (진행 중)
-- 기획서: `plan/웹게임-기획서.md` (v0.3) — 「치복 타운」
-  - **팬들이 각자 머리 큰 SD 캐릭터로 들어와 하고 싶은 걸 자유롭게 하는 마을.** 목표·퀘스트·역할·직업 없음
-  - 사용자가 거절한 방향: 나이 먹고 엔딩 나는 인생 게임(v0.1), 역할 고르는 역할극(v0.2)
-  - 왼쪽 캐릭터창, 오른쪽 지도(건물), 다른 유저 만남·채팅, 모바일 우선
-  - 계획: `game.html` + Cloudflare Worker·D1(로그인·저장) + Durable Objects(실시간)
+## 웹 게임 「치복 타운」 (진행 중)
+- 기획서: `plan/웹게임-기획서.md` (v0.5)
+  - **팬 마을 + 성장**: 레벨·경험치·골드, 능력치(힘·민첩·지력·운), 장비 5칸(무기·모자·갑옷·신발·장신구) + 등급·강화, 스킨(겉모습만), 사냥터 자동 사냥(4곳 + 보스)
+  - 소통은 최소한: 근처·전체 채팅 + 이모트만. **귓속말·친구·선물·거래 없음** (친목 우려). 집은 언제나 모두 공개
+  - 건물은 누르면 바로 이용, 대각선 8방향 이동, 이름표는 머리 위, PC 전체화면 버튼
+  - 사용자가 거절한 방향: 나이 먹는 인생 게임(v0.1), 역할극(v0.2)
+  - **결정 필요**: 기획서 4-4 "화면을 닫아도 사냥(최대 8시간, 효율 70%)"
+- 목업: `plan/mockup.html` (가짜 데이터, 서버 없음). 비공개 링크: https://claude.ai/artifact/5zN1k7xe4ZoBKpHpk1rTuv
+  - 고친 뒤 같은 링크로 다시 올리려면 Artifact 도구에 이 파일 경로로 publish (다른 대화에서는 `url`로 이 주소를 넘김)
 - `plan/` 폴더는 배포할 때 지워서 사이트에 안 올라감 (update.yml의 `rm -rf plan`)
-- 결정됨 (2026-11-15): 이름 **치복 타운**, 닉네임+비밀번호 로그인(복구 코드 + 관리자 임시 비밀번호), 캐릭터는 Claude가 그림(눈만 있는 둥근 사각형 얼굴·몸·팔다리), 지도는 윗면+앞면 보이는 비스듬한 2D, 신고는 김치복님이 처리, 채팅 규칙은 기획서 6-1
-- 목업: `plan/mockup.html` (가짜 데이터, 서버 없음). 공유 링크(비공개 Artifact): https://claude.ai/artifact/5zN1k7xe4ZoBKpHpk1rTuv
-  - 고친 뒤 같은 링크로 다시 올리려면 Artifact 도구에 `url`로 이 주소를 넘겨서 publish
+- 채팅 금칙어: `plan/chat-banwords.txt` (김치복님이 준 696개 → 가림 514 / 차단 153 / 문맥 29). 검사 방식은 기획서 8-1
+  - "보지 마세요"처럼 평범한 말은 문맥 단어의 앞뒤 글자를 보고 통과시킴. 허용 단어 목록(ALLOW)은 `game-worker/src/filter.js`
+  - 목록을 바꾸면 `game-worker/src/banwords.js`도 다시 만들어야 함
+
+### 1단계 (계정과 저장) — 2026-11-15 배포, 테스트 통과
+- 게임 화면: `game.html` (https://kimchibok75-code.github.io/game.html). **메뉴에 링크 안 걸음**, 검색 제외(noindex). 첫 공개는 3단계
+  - 목업을 복사해서 만듦. 이제부터는 game.html이 진짜, 목업은 기획용
+  - 1단계에서 되는 것: 가입(복구 코드) · 로그인(30일 유지) · 비밀번호 찾기 · 비밀번호/복구 코드 바꾸기 · 캐릭터 만들기 · 마을 걷기 · **위치·겉모습·소개 서버 저장** · 능력치 찍기(포인트가 있을 때)
+  - 잠긴 것: 가게·대장간·사냥터(2단계), 채팅(3단계), 낚시·텃밭·집(4단계). `LATER` 목록으로 잠금
+  - 방송국·전광판은 실제 방송 상태(kimchibok-live의 `/live`)를 1분마다 읽음
+- 공용 규칙: `assets/js/game-rules.js` — 숫자·계산식. 화면(game.html)과 서버가 **같은 파일**을 씀
+- 서버: Cloudflare Worker **`kimchibok-game`** (`game-worker/` 폴더)
+  - 주소: https://kimchibok-game.kimchibok.workers.dev (`/api/signup`, `/api/login`, `/api/recover`, `/api/me`, `/api/character`, `/api/move`, `/api/stats`, `/api/password`, `/api/recovery-code`, `/api/logout`)
+  - DB: D1 **`kimchibok-game`** (id 40dd7d72-2e27-4412-91d1-1ba075296663). 표 정의는 `game-worker/migrations/`
+  - 비밀번호는 PBKDF2(3만 번) 해시, 로그인 토큰도 해시로만 저장. 5번 틀리면 10분 잠금. 같은 곳에서 가입은 1시간 3개까지
+  - 배포: `game-worker` 폴더에서 `npx --yes wrangler@4 deploy`
+  - 표를 바꿀 때: `migrations/0002_….sql` 새로 만들고 `npx --yes wrangler@4 d1 migrations apply kimchibok-game --remote`
+  - 테스트 계정은 닉네임 `zz`로 시작하게 만들고 끝나면 지움 (`d1 execute … --command "DELETE …"`)
+- 관리자 임시 비밀번호 발급 화면은 아직 없음 (3단계 관리자 화면에서 만들 예정)
+
+### 다음: 2단계 (성장)
+- 서버가 사냥 결과를 계산 (시작 시각·능력치·사냥터로 30초마다/귀환 때 정산), 경험치·레벨업·골드·드랍
+- 상점·강화·스킨·물약을 서버 API로 (목업의 openBuilding 코드가 화면 쪽 기준)
 
 ## 남은 일 / 확인할 것
 - **실제 생방송 때 확인하기**: 2026-11-14(토) 밤 9시 방송이 첫 실전 테스트

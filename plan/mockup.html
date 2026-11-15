@@ -1098,7 +1098,7 @@ function tap(sx, sy) {
 // ───────── 모달 ─────────
 const modal = $('#modal'), sheet = $('#sheet');
 let reopen = null;   // 지금 열린 가게 화면 (사고 나서 다시 그리기용)
-function openModal(html, onReady, keep) { const st = keep ? sheet.scrollTop : 0; sheet.innerHTML = html; modal.hidden = false; onReady?.(sheet); if (keep) sheet.scrollTop = st; else sheet.querySelector('button, input')?.focus({ preventScroll: true }); }
+function openModal(html, onReady, keep) { const st = keep ? sheet.scrollTop : 0; sheet.onclick = null; sheet.innerHTML = html; modal.hidden = false; onReady?.(sheet); if (keep) sheet.scrollTop = st; else sheet.querySelector('button, input')?.focus({ preventScroll: true }); }
 function closeModal() { modal.hidden = true; sheet.innerHTML = ''; reopen = null; }
 modal.addEventListener('click', e => { if (e.target === modal || e.target.closest('[data-close]')) closeModal(); });
 addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
@@ -1106,7 +1106,7 @@ const actBtn = (id, label, cost) => `<button class="btn" data-a="${id}">${label}
 const goldTxt = n => `🪙 ${n.toLocaleString()}`;
 const row = (ic, name, desc, btns, locked) => `<li${locked ? ' class="locked"' : ''}><span class="ic">${ic}</span><span><span class="nm">${name}</span><small>${desc}</small></span><span class="btns">${btns}</span></li>`;
 function sheetHead(b, desc) { return `<h3>${b.icon} ${b.name}</h3><p>${desc}</p><div class="points" style="background:#fff;border-color:var(--line)"><span>내 골드</span><span>${goldTxt(me.gold)}</span></div>`; }
-function wire(el, fn) { el.addEventListener('click', e => { const t = e.target.closest('[data-x]'); if (t && !t.disabled) fn(t.dataset.x, t); }); }
+function wire(el, fn) { el.onclick = e => { const t = e.target.closest('[data-x]'); if (t && !t.disabled) fn(t.dataset.x, t); }; }   // onclick: 다시 열 때 이전 처리기가 쌓이지 않게
 function spend(n) { if (me.gold < n) { toast('골드가 부족해요'); return false; } me.gold -= n; syncBars(); return true; }
 
 function openBuilding(b, keep) {
