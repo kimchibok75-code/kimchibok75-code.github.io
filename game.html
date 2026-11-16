@@ -374,6 +374,12 @@ body.hunting .side { display: none; }
 .anvil .gi { width: 64px; height: 64px; }
 .ilist .nm { font-weight: 700; overflow-wrap: anywhere; }
 .ilist small { display: block; color: var(--ink-soft); font-size: calc(12px * var(--fs)); font-weight: 400; }
+.enhl small { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.enhl .elv { color: #c0662a; }
+.echip { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 999px; background: #f2f4ef; color: var(--ink); font-size: calc(12.5px * var(--fs)); font-weight: 600; white-space: nowrap; }
+.echip b { color: #2f8f45; } .echip.max { background: #fff1d6; color: #b5751c; }
+.echip.rate.hi { background: #e3f4e6; color: #2f8f45; } .echip.rate.mid { background: #fff1d6; color: #b5751c; } .echip.rate.lo { background: #fde5e5; color: #c0392b; }
+.enhnote { text-align: center; }
 .ilist .btns { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
 .mini { border: 2px solid var(--ink); border-radius: 9px; background: #fff; padding: 5px 8px; font-size: calc(13px * var(--fs)); font-weight: 700; white-space: nowrap; }
 .mini.main { background: var(--kimchi); color: #fff; }
@@ -852,7 +858,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, fishHit, FISH_RIVER, FISH_SEA, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx } from './assets/js/game-rules.js?v=__BUILD__';
@@ -1234,6 +1240,7 @@ const me = { name: '', ...newCharacter(), path: [], moving: false, seed: .3 };
 const LINES = ['안녕하세요~', '오늘 9시 방송 하나요?', '숲 늑대 너무 세요ㅠ', '카페에서 물약 사가세요', 'ㅋㅋㅋㅋ', '방금 희귀 떴다!!', '+6 강화 실패했어요…', '치복님 언제 와요?', '운 몰빵 해봤는데 골드 잘 나와요', '협곡 보스 같이 잡아요', '여기 벤치 명당이네', '굿밤~'];
 const FISH = [['🐟', '붕어'], ['🐠', '열대어'], ['🐡', '복어'], ['🦐', '새우'], ['🦀', '꽃게'], ['🐙', '문어'], ['🐢', '거북이'], ['👢', '낡은 장화']];
 const S = { zoom: 1.6, live: false, sent: [], warns: 0, muteUntil: 0, coolUntil: 0, lastMsgs: [], blocked: new Map(), log: [], barT: 0 };
+try { S.seed = localStorage.getItem('cbt-seed') || undefined; } catch {}   // 텃밭에서 마지막으로 고른 씨앗 기억
 
 // 규칙(숫자·계산식)은 assets/js/game-rules.js 에 있어요 (서버와 같이 씀)
 const derive = (c = me) => deriveOf(c);
@@ -1744,10 +1751,12 @@ function drawHouse(h) {
 // 나무 · 바위 (꾸밈 + 채집 자원)
 // 나무 · 바위 (꾸밈 + 채집 자원): 위에서 내려다본 모습, 테두리 없음. 수관(잎)은 위에서 보이고, 아래쪽에 어두운 앞면 + 짧은 줄기
 const TRUNK = '#7a5332';
+// 줄기: 아래가 살짝 넓고 위는 잎 속으로 들어감 (오른쪽은 그늘)
+const trunkP = h => [{ path: PG([[-3, -h], [3, -h], [3.6, -2], [6, 0], [-6, 0], [-3.6, -2]]), c: TRUNK }, { path: PG([[.8, -h], [3, -h], [3.6, -2], [6, 0], [1.4, 0]]), c: sh(TRUNK, -.25) }];
 // 둥근 잎 덩어리: [x, y, rx, ry] 여러 개 → 아래로 어두운 앞면, 위는 밝은 면, 왼쪽 위 빛
 const crown = (blobs, c, trunkH = 8) => {
   const d = sh(c, -.28), l = sh(c, .18), hl = sh(c, .38);
-  return [{ path: R(-3.5, -trunkH, 7, trunkH, 2), c: TRUNK }, { path: R(-3.5, -trunkH, 7, 3, 0), c: 'rgba(0,0,0,.25)' },
+  return [...trunkP(trunkH + 10),
     ...blobs.map(([x, y, rx, ry]) => ({ path: E(x, y + 4, rx, ry), c: d })), ...blobs.map(([x, y, rx, ry]) => ({ path: E(x, y, rx, ry), c })),
     ...blobs.map(([x, y, rx, ry]) => ({ path: E(x - rx * .22, y - ry * .25, rx * .62, ry * .55), c: l })), ...blobs.slice(0, 2).map(([x, y, rx, ry]) => ({ path: E(x - rx * .38, y - ry * .42, rx * .25, ry * .2), c: hl }))];
 };
@@ -1755,7 +1764,7 @@ const crown = (blobs, c, trunkH = 8) => {
 const spiky = (x, y, r, n, c) => g => { g.beginPath(); for (let i = 0; i < n * 2; i++) { const a = -Math.PI / 2 + i * Math.PI / n, k = i % 2 ? r * .72 : r; g.lineTo(x + Math.cos(a) * k, y + Math.sin(a) * k * .9); } g.closePath(); };
 const TG = '#4a9a55';
 const treeP = (k, c = TG) => k === 'pine'
-  ? [{ path: R(-3, -8, 6, 8, 1.5), c: TRUNK }, { path: spiky(0, -22, 21, 11, 0), c: '#2c6440' }, { path: spiky(0, -26, 20, 11, 0), c: '#3a7d4e' }, { path: spiky(0, -29, 14, 9, 0), c: '#4d9660' }, { path: spiky(-1, -32, 7.5, 7, 0), c: '#68b277' }, { path: E(-4, -34, 2.5, 2), c: '#8fd09a' }]
+  ? [...trunkP(16), { path: spiky(0, -22, 21, 11, 0), c: '#2c6440' }, { path: spiky(0, -26, 20, 11, 0), c: '#3a7d4e' }, { path: spiky(0, -29, 14, 9, 0), c: '#4d9660' }, { path: spiky(-1, -32, 7.5, 7, 0), c: '#68b277' }, { path: E(-4, -34, 2.5, 2), c: '#8fd09a' }]
   : crown([[-9, -22, 11, 9.5], [9, -22, 11, 9.5], [0, -29, 15, 12.5]], c);
 const birchP = crown([[0, -42, 10, 13], [0, -30, 11, 12], [0, -20, 9, 8]], '#4a9a55', 10);
 const cherryP = crown([[-13, -22, 12, 9.5], [13, -22, 12, 9.5], [0, -26, 11, 10]], '#4a9a55', 8);
@@ -1766,9 +1775,9 @@ const rockP = (c = '#9aa0a8', ore) => [{ path: PG([[-16, -8], [-17, -1], [-12, 3
   ...(ore ? [{ path: E(7, -10, 2.8, 2.1), c: '#e8c55a' }, { path: E(-5, -8, 2.2, 1.7), c: '#e8c55a' }, { path: E(10, -15, 1.7, 1.4), c: '#bfe9ff' }] : [])];
 const stumpP = [{ path: R(-8, -7, 16, 8, [0, 0, 3, 3]), c: '#8a5a30' }, { path: E(0, -7, 8, 5), c: '#d8a56a' }, { path: E(0, -7, 4.5, 2.8), c: '#c48a4f' }, { path: E(0, -7, 1.6, 1), c: '#a0703c' }, { path: E(9, -1, 3, 1.6, .5), c: '#6cc35a' }];
 const rubbleP = [{ path: E(-6, -2, 5, 3.4), c: '#7e848c' }, { path: E(-6, -3.5, 5, 3), c: '#a3a9b1' }, { path: E(5, -2, 4, 3), c: '#757b83' }, { path: E(5, -3.2, 4, 2.6), c: '#9aa0a8' }, { path: E(0, -5, 3.5, 2.6), c: '#b4bac2' }];
-const SP_TREE = { birch: () => sprite('t:birch3', 40, 70, 20, 64, g => flatInk(g, birchP)), cherry: () => sprite('t:cherry3', 60, 50, 30, 44, g => flatInk(g, cherryP)), maple: () => sprite('t:maple3', 50, 50, 25, 44, g => flatInk(g, mapleP)),
-  round: () => sprite('t:round3', 50, 60, 25, 54, g => flatInk(g, treeP('round'))), pine: () => sprite('t:pine3', 50, 62, 25, 56, g => flatInk(g, treeP('pine'))), stone: () => sprite('t:stone3', 44, 30, 22, 26, g => flatInk(g, rockP('#a39a8c'))) };
-const SP_NODE = { tree: () => sprite('n:tree3', 50, 60, 25, 54, g => flatInk(g, treeP('round', '#58a856'))), rock: () => sprite('n:rock3', 44, 30, 22, 26, g => flatInk(g, rockP('#a3a8b0', true))),
+const SP_TREE = { birch: () => sprite('t:birch4', 40, 70, 20, 64, g => flatInk(g, birchP)), cherry: () => sprite('t:cherry4', 60, 50, 30, 44, g => flatInk(g, cherryP)), maple: () => sprite('t:maple4', 50, 50, 25, 44, g => flatInk(g, mapleP)),
+  round: () => sprite('t:round4', 50, 60, 25, 54, g => flatInk(g, treeP('round'))), pine: () => sprite('t:pine4', 50, 62, 25, 56, g => flatInk(g, treeP('pine'))), stone: () => sprite('t:stone4', 44, 30, 22, 26, g => flatInk(g, rockP('#a39a8c'))) };
+const SP_NODE = { tree: () => sprite('n:tree4', 50, 60, 25, 54, g => flatInk(g, treeP('round', '#58a856'))), rock: () => sprite('n:rock3', 44, 30, 22, 26, g => flatInk(g, rockP('#a3a8b0', true))),
   stump: () => sprite('n:stump3', 30, 18, 15, 14, g => flatInk(g, stumpP)), rubble: () => sprite('n:rubble3', 30, 16, 15, 12, g => flatInk(g, rubbleP)) };
 const nodeReady = n => !((me.life?.nodes?.[n.i] || 0) > Date.now());
 function drawDeco(d) { const x = d.x * T + T / 2, y = d.y * T + T - 3; ctx.fillStyle = 'rgba(31,42,58,.15)'; ctx.beginPath(); ctx.ellipse(x, y, 13 * d.s, 4, 0, 0, 7); ctx.fill(); blit(SP_TREE[d.k](), x, y, d.s); }
@@ -1991,6 +2000,42 @@ function drawFishSpot() {
   ctx.font = '17px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; fillTextIco(ctx, '🎣', FSIGN.x, FSIGN.y - 44);
   plaque('🎣 낚시터', FSIGN.x, FSIGN.y - 74);
 }
+// 물 움직임 (2026-11-16): 바닥 그림 위에 반짝이는 물결 · 강은 아래로 흐름 · 바닷가 파도가 밀려왔다 빠짐. 화면에 보이는 칸만 그림
+let WATER_PTS = null;
+function drawWater(now, vx0, vy0, vw, vh) {
+  if (!WATER_PTS) {   // 물 칸 중 사방이 물인 칸 (기슭에 걸치지 않게)
+    WATER_PTS = [];
+    for (let y = 1; y < MH - 1; y++) for (let x = 1; x < MW - 1; x++) {
+      if (tileAt(x, y) !== WATER || tileAt(x - 1, y) !== WATER || tileAt(x + 1, y) !== WATER || tileAt(x, y - 1) !== WATER || tileAt(x, y + 1) !== WATER) continue;
+      const h = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453, r = h - Math.floor(h);
+      WATER_PTS.push({ x, y, ph: r * 6.28, ox: (r * 7.3) % 1, sea: seaAt(x, y) });
+    }
+  }
+  const t = now / 1000, x0 = vx0 / T - 1, x1 = (vx0 + vw) / T + 1, y0 = vy0 / T - 1, y1 = (vy0 + vh) / T + 1;
+  ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = '#fff';
+  for (const w of WATER_PTS) {
+    if (w.x < x0 || w.x > x1 || w.y < y0 || w.y > y1) continue;
+    const a = Math.sin(t * 1.4 + w.ph); if (a <= .15) continue;   // 나타났다 사라지는 물결
+    const flow = w.sea ? 0 : ((t * .35 + w.ox) % 1);                // 강·연못 물결은 천천히 아래로
+    const cx = (w.x + .2 + w.ox * .6) * T + (w.sea ? Math.sin(t * .8 + w.ph) * 4 : 0), cy = (w.y + .25 + flow * .5) * T, len = w.sea ? 11 : 8;
+    ctx.globalAlpha = (a - .15) * (w.sea ? .5 : .6); ctx.lineWidth = w.sea ? 1.8 : 1.5;
+    ctx.beginPath(); ctx.moveTo(cx - len / 2, cy); ctx.quadraticCurveTo(cx, cy - 3, cx + len / 2, cy); ctx.stroke();
+  }
+  // 바닷가 파도: 해안선을 따라 하얀 거품 줄이 밀려왔다 빠짐
+  if (y1 > 56) {
+    const sw = Math.sin(t * 1.1);
+    for (const [off, al] of [[.35, .75], [1.1, .4]]) {
+      ctx.globalAlpha = al * (.55 + .45 * sw); ctx.lineWidth = 2.2; ctx.beginPath(); let on = false;
+      for (let fx = Math.max(0, x0); fx <= Math.min(MW, x1); fx += .2) {
+        const fy = coastY(fx) + off - .25 * sw + .15 * Math.sin(fx * 2.3 + t * 1.5), ok = soft(WATER, fx, fy) > .75;
+        if (ok && on) ctx.lineTo(fx * T, fy * T); else if (ok) ctx.moveTo(fx * T, fy * T);
+        on = ok;
+      }
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
 function render(now) {
   if (RD) return renderRaid(now);
   if (HT) return renderHunt(now);
@@ -2004,6 +2049,7 @@ function render(now) {
   const vx0 = cam.x - W / z / 2, vy0 = cam.y - H / z / 2, vw = W / z, vh = H / z;
   const sx = Math.max(0, Math.floor(vx0)), sy = Math.max(0, Math.floor(vy0)), sw = Math.min(MW * T - sx, Math.ceil(vw) + 2), sh = Math.min(MH * T - sy, Math.ceil(vh) + 2);
   if (ground && sw > 0 && sh > 0) ctx.drawImage(ground, sx * GK, sy * GK, sw * GK, sh * GK, sx, sy, sw, sh);
+  drawWater(now, vx0, vy0, vw, vh);
   drawPlots(now);
   if (S.place) drawPlaceGhost();
   if (me.path.length && !STEER.on) { const d = me.path[me.path.length - 1]; ctx.strokeStyle = 'rgba(232,85,58,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(d.x, d.y + 6, 9 + Math.sin(now / 150) * 2, 4, 0, 0, 7); ctx.stroke(); }
@@ -3156,10 +3202,15 @@ function openBuilding(b, keep) {
   if (id === 'gacha') return gachaSheet(b, keep);
   if (id === 'smith') {
     const D = derive();
-    return openModal(`${sheetHead(b, '장비가 아니라 <b>장비 칸</b>을 강화해요. 장비를 바꿔도 칸의 강화 단계는 <b>그대로</b>예요. 실패해도 단계가 떨어지지 않아요 (골드만 사라져요).')}
-      <ul class="ilist">${Object.entries(SLOTS).map(([k, sl]) => { const l = me.enh[k] || 0, it = me.equip[k], max = l >= ENH_MAX, cost = ENH_COST[l]; return row(it ? gIcon(it) : sl.i, `${sl.n} 칸 <b>+${l}</b>${k === me.cls ? ' <span class="tagok">사용 중</span>' : ''}`, max ? `최대 강화 (+${ENH_MAX})` : `+${l} → +${l + 1} · 성공 ${+enhRate(l, D).toFixed(2)}%${it ? ` · ${pwrTxt(it, l)} → ${pwrTxt(it, l + 1)}` : ''}`, max ? '' : `<button class="mini main" data-x="${k}" ${me.gold < cost ? 'disabled' : ''}>${goldTxt(cost)}</button>`); }).join('')}
+    // 2026-11-16 정리: 설명은 한 줄, 칸마다 [수치 전 → 후] [성공 %] 꼬리표만
+    const pw = (it, l) => { const x = itemStats(it, l); return x.atk ?? x.def; }, pn = it => itemStats(it, 0).atk != null ? (it.slot === 'staff' ? '마력' : '공격') : '방어';
+    return openModal(`${sheetHead(b, '장비를 바꿔도 강화는 칸에 남아요 · 실패해도 안 떨어져요')}
+      <ul class="ilist enhl">${Object.entries(SLOTS).map(([k, sl]) => { const l = me.enh[k] || 0, it = me.equip[k], max = l >= ENH_MAX, cost = ENH_COST[l], r = +enhRate(l, D).toFixed(1);
+        return row(it ? gIcon(it) : sl.i, `${sl.n} <b class="elv">+${l}</b>${k === me.cls ? ' <span class="tagok">사용 중</span>' : ''}`,
+          max ? '<span class="echip max">최대 강화</span>' : `${it ? `<span class="echip">${pn(it)} ${pw(it, l)} → <b>${pw(it, l + 1)}</b></span>` : ''}<span class="echip rate ${r >= 70 ? 'hi' : r >= 30 ? 'mid' : 'lo'}">성공 ${r}%</span>`,
+          max ? '' : `<button class="mini main" data-x="${k}" ${me.gold < cost ? 'disabled' : ''}>${goldTxt(cost)}</button>`); }).join('')}
       </ul>
-      <p class="muted">강화 1단계마다 그 칸 장비 수치 +${Math.round(ENH_STEP * 100)}%. 확률: ${ENH_RATE.map((r, i) => `+${i + 1} ${r}%`).join(' · ')}. 🍀 운이 높으면 조금 더 잘 붙어요 (지금 +${D.enhB.toFixed(2)}%p).</p>`, el => wire(el, x => doEnhance(x)), keep);
+      <p class="muted enhnote">1단계마다 수치 +${Math.round(ENH_STEP * 100)}% · 🍀 운 보너스 +${D.enhB.toFixed(2)}%p</p>`, el => wire(el, x => doEnhance(x)), keep);
   }
   if (id === 'skin') return skinShop(b, keep);
   if (id === 'hall') return hallSheet(b, keep);
@@ -3491,6 +3542,12 @@ const wskLook = (look, t, id) => ({ ...look, cls: t, equip: { [t]: { slot: t, st
 function skinTile(cv, look, mode) {
   const d = Math.min(devicePixelRatio || 1, 2), w = cv.clientWidth || 58, h = cv.clientHeight || 58; cv.width = w * d; cv.height = h * d;
   const g = cv.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, w, h);
+  if (mode === 'weapon') {   // 무기 스킨: 캐릭터 없이 무기 그림만 (장비 아이콘처럼 비스듬히)
+    const t = look.cls, id = look.wsk?.[t]; if (!t || !id) return;
+    g.translate(w / 2, h / 2); g.scale(Math.min(w, h) / 46, Math.min(w, h) / 46);
+    if (t === 'bow') { g.scale(1.15, 1.15); g.translate(3, 0); } else { g.rotate(.78); g.scale(1.08, 1.08); g.translate(0, t === 'staff' ? 14 : 12); }
+    inkDraw(g, wskParts(t, id), 1.6); return;
+  }
   const sc = mode === 'eye' ? w / 30 : mode === 'weapon' || mode === 'suit' ? w / 62 : w / 40, fy = mode === 'eye' ? h * .3 + 32 * sc : mode === 'weapon' || mode === 'suit' ? h * .8 : h * .5 + 38 * sc;
   drawChar(g, w / 2 - (mode === 'weapon' ? 7 * sc : 0), fy, { equip: {}, cls: '', ...look, moving: false, still: true }, 0, sc);
 }
@@ -3597,10 +3654,11 @@ function applyMe(m, keep) {   // keep: 지금 위치 그대로 (서버 저장 �
 // 서버 응답 처리: 내 정보 맞추기 + 사냥 결과 알려 주기
 function took(j) {
   if (j.auto && !$('#app').hidden) {
-    const a = j.auto, parts = [['wood', '🪵'], ['stone', '🪨'], ['gold', '🪙'], ['fish', '🐚'], ['farm', '🌻']].filter(([k]) => a[k]).map(([k, i]) => `${i} +${a[k].toLocaleString()}`);
+    const a = j.auto, parts = [['exp', '✨'], ['wood', '🪵'], ['stone', '🪨'], ['gold', '🪙'], ['fish', '🐚'], ['farm', '🌻']].filter(([k]) => a[k]).map(([k, i]) => `${i} +${a[k].toLocaleString()}`);
     if (parts.length) { townFloat(me.x, me.y - 70, parts.slice(0, 3).join(' '), '#ffe9a8'); if (a.sec >= 600) sysMsg(`🧺 자리 비운 동안 자동 생활: ${parts.join(' · ')}`); else logAct(`자동 생활 ${parts.join(' ')}`); }
   }
   const lv0 = me.lv, inTown = !$('#app').hidden;
+  if (j.lexp && inTown) townFloat(me.x + 18, me.y - 52, `✨ +${j.lexp.toLocaleString()}`, '#cfe6ff');   // 생활 경험치
   applyMe(j.me, !(HT && !j.me.char.hunt));   // 버튼 응답으로 순간이동하지 않게. 사냥에서 돌아올 때만 서버 위치로
   const h = j.hunt, srv = j.me.char.hunt;
   if (h && inTown) {
@@ -3970,7 +4028,7 @@ async function autoSet(on) {
     took(await api(on ? '/api/auto/start' : '/api/auto/stop', {}));
     AUTOV.i = Math.floor(Math.random() * AUTO_ST.length); AUTOV.work = 0; me.path = [];
     const P = AUTO_LIFE.perHour(me.lv);
-    if (on) { toast('🧺 자동 생활 ON · 벌목·채광·알바·낚시·농사, 틈틈이 산책하며 인사도 해요'); sysMsg(`🧺 자동 생활: 1시간에 약 🪵 ${P.wood} · 🪨 ${P.stone} · 🪙 ${Math.round(P.gold).toLocaleString()} · 🐚 ${P.fish} · 🌻 ${P.farm} (창을 닫아도 최대 8시간)`); }
+    if (on) { toast('🧺 자동 생활 ON · 벌목·채광·알바·낚시·농사, 틈틈이 산책하며 인사도 해요'); sysMsg(`🧺 자동 생활: 1시간에 약 ✨ 경험치 ${lifeExpHour(me.lv).toLocaleString()} · 🪵 ${P.wood} · 🪨 ${P.stone} · 🪙 ${Math.round(P.gold).toLocaleString()} · 🐚 ${P.fish} · 🌻 ${P.farm} (창을 닫아도 최대 8시간)`); }
     else toast('🧺 자동 생활을 멈췄어요');
   } catch (x) { toast(x.message); }
   autoUi();
@@ -4112,7 +4170,7 @@ function openFarm(keep) {
       ${nextPlot != null ? row('🟫', '텃밭 한 칸 늘리기', `지금 ${f.plots.length}칸 → ${f.plots.length + 1}칸 (최대 ${FARM.maxPlots}칸)`, `<button class="mini main" data-x="plot" ${L.coins.farm < nextPlot ? 'disabled' : ''}>${coinTxt('farm', nextPlot)}</button>`) : ''}</ul>
     <p class="muted">작물은 마을 텃밭에 내 것만 보여요. <b>밭의 두둑을 직접 누르면</b> 고른 씨앗 심기 · 물 주기 · 수확이 바로 돼요. 화면을 닫아 두어도 계속 자라요.</p></div>`, el => wire(el, async x => {
     const [a, v] = x.split(':');
-    if (a === 'seed') { S.seed = v; return reopen?.(); }
+    if (a === 'seed') { S.seed = v; try { localStorage.setItem('cbt-seed', v); } catch {} return reopen?.(); }
     if (a === 'p') {
       const p = f.plots[+v];
       if (!p) { const j = await act('/api/farm/plant', { i: +v, crop: S.seed }); if (j) { logAct(`${cr.i} ${cr.n} 심음 −${cr.cost}`); reopen?.(); } return; }

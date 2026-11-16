@@ -668,6 +668,17 @@ export function raidPattern(start) {
 // 보스 공격 피해 (최대 체력 비율): 3번 맞으면 쓰러짐
 export const RAID_HIT = { breath: .36, meteor: .3, tail: .4, roar: .12 };
 
+// ───────── 생활 경험치 (2026-11-16): 생활 놀거리로도 레벨이 오름 ─────────
+// 사냥터 방치(화면 닫고 70%) 1시간 경험치 어림값 (사냥 봇 시험으로 맞춤: Lv10 ≈ 6만, Lv30 ≈ 17만, Lv50 ≈ 29만)
+export const huntIdleExp = lv => 5500 * lv + 10000;
+// 자동 생활 1시간 경험치 = 사냥 방치의 50% (사용자 결정)
+export const LIFE_EXP_RATE = .5;
+export const lifeExpHour = lv => Math.round(huntIdleExp(lv) * LIFE_EXP_RATE);
+// 직접 하는 생활 한 번에 주는 경험치 = 자동 생활 1시간 경험치 ÷ 아래 숫자 (직접 하면 자동과 비슷하거나 조금 많게)
+//   낚시 성공 1마리(10초마다) · 채집 1번 · 카페 알바 1번(1분) · 작물 1포기 수확
+export const LIFE_EXP_DIV = { fish: 250, gather: 60, job: 55, crop: 40 };
+export const lifeExp = (c, k, n = 1) => Math.max(1, Math.round(lifeExpHour(c.lv) / LIFE_EXP_DIV[k] * n * (1 + (derive(c).expB || 0) / 100)));
+
 // ───────── 자동 생활 (마을에서 벌목·채광·알바·낚시·농사를 알아서 돌아가며 함) ─────────
 // 직접 하는 것보다 효율이 낮음. 창을 닫아도 최대 8시간까지 계속. life.auto = { on, at, acc(소수점 남은 양) }
 export const AUTO_LIFE = { max: 8 * 3600,
@@ -678,10 +689,10 @@ export function autoSettle(c, now) {
   const sec = Math.max(0, Math.min(AUTO_LIFE.max, (now - (A.at || now)) / 1000)); A.at = now; if (!sec) return null;
   const D = derive(c), P = AUTO_LIFE.perHour(c.lv), acc = A.acc || (A.acc = {}), got = {};
   const add = (k, v) => { acc[k] = (acc[k] || 0) + v * sec / 3600; const n = Math.floor(acc[k]); if (n > 0) { acc[k] -= n; got[k] = n; } };
-  add('wood', P.wood); add('stone', P.stone); add('fish', P.fish); add('farm', P.farm); add('gold', P.gold * (1 + D.goldB / 100));
+  add('wood', P.wood); add('stone', P.stone); add('fish', P.fish); add('farm', P.farm); add('gold', P.gold * (1 + D.goldB / 100)); add('exp', lifeExpHour(c.lv) * (1 + (D.expB || 0) / 100));
   const L = c.life;
   if (got.wood) L.res.wood += got.wood; if (got.stone) L.res.stone += got.stone;
-  if (got.fish) L.coins.fish += got.fish; if (got.farm) L.coins.farm += got.farm; if (got.gold) c.gold += got.gold;
+  if (got.fish) L.coins.fish += got.fish; if (got.farm) L.coins.farm += got.farm; if (got.gold) c.gold += got.gold; if (got.exp) got.up = addExp(c, got.exp);
   return Object.keys(got).length ? { ...got, sec: Math.round(sec) } : null;
 }
 

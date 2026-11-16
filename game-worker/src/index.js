@@ -4,7 +4,7 @@ import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BOD
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, AUTO_FISH, FISH_SHOP, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
-  dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidDps, raidSet, autoSettle, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle } from '../../assets/js/game-rules.js';
+  dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle } from '../../assets/js/game-rules.js';
 import { canHouse, isSolid, NODES, BACK, tileAt, WATER, seaAt } from '../../assets/js/game-map.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
@@ -485,7 +485,8 @@ const GAME = {
     const left = Math.ceil((c.jobAt + JOB.sec * 1000 - at) / 1000);
     if (left > 0) fail(400, `아직 ${left}초 남았어요`);
     const pay = JOB.pay(c.lv); c.gold += pay; c.jobAt = 0; cntAdd(c, 'job');
-    return { pay, log: ['job', String(pay)] };
+    const lexp = lifeExp(c, 'job'); addExp(c, lexp);
+    return { pay, lexp, log: ['job', String(pay)] };
   },
   '/api/job/quit'(c) { c.jobAt = 0; },
   // 손 낚시: 물을 누르면 바로. 서버가 결과를 정하고, 화면은 wait(ms) 뒤에 입질 → 결과를 보여 줌
@@ -573,7 +574,8 @@ const GAME = {
     if (!got.length) fail(400, '다 자란 작물이 없어요');
     coin = Math.round(coin * (1 + (fx.farmC || 0) / 100));
     c.gold += gold; c.life.coins.farm += coin; cntAdd(c, 'crops', got.length);
-    return { gold, coin, got, log: ['harvest', `${got.length}개 +${gold}g +${coin}c`] };
+    const lexp = lifeExp(c, 'crop', got.length); addExp(c, lexp);
+    return { gold, coin, got, lexp, log: ['harvest', `${got.length}개 +${gold}g +${coin}c`] };
   },
   '/api/farm/unlock'(c, b) {
     const f = c.life.farm, cr = cropOf(b.crop); if (!cr) fail(400, '없는 품종이에요'); if (f.seeds.includes(cr.id)) fail(400, '이미 가진 품종이에요');
@@ -604,7 +606,8 @@ const GAME = {
     L.nodes[n.i] = Math.round(at + G.regrow[0] + Math.random() * (G.regrow[1] - G.regrow[0]));
     for (const k of Object.keys(L.nodes)) if (L.nodes[k] < at) delete L.nodes[k];   // 다 자란 기록은 지움
     if (!isSolid(Math.floor(x / T), Math.floor(y / T))) { c.x = x; c.y = y; }
-    return { res: G.res, amt, until: L.nodes[n.i] };
+    const lexp = lifeExp(c, 'gather'); addExp(c, lexp);
+    return { res: G.res, amt, until: L.nodes[n.i], lexp };
   },
   // 벌목소·채광소 알바: 고용 · 모인 것 받기
   '/api/work/hire'(c, b, at) {
@@ -766,8 +769,9 @@ async function fishOnce(c, b, at, env, user, auto) {
   const big = isBigFish(fish), price = Math.round(fish.price * tired), info = JSON.stringify({ i: fish.i, n: fish.n, grade: fish.grade, len: fish.len, price });
   const sell = Math.round(price * (1 + (D.fx.fishP || 0) / 100)), coin = Math.round(FISH_COIN[fish.grade] * (1 + (D.fx.fishC || 0) / 100) * tired);
   c.gold += sell; c.life.coins.fish += coin; cntAdd(c, 'fish');   // 낚은 물고기는 바로 팔림
+  const lexp = lifeExp(c, 'fish'); addExp(c, lexp);
   if (big) cntAdd(c, 'perfect'); if (fish.grade === 'legend') cntAdd(c, 'legendFish'); if (fish.n === '낡은 장화') cntAdd(c, 'boot');
-  return { ...base, caught: true, big, fish: { ...fish, price: sell }, coin, tired: tired < 1, chron: fish.grade === 'legend' ? ['fish', `전설 물고기 ${fish.n} ${fish.len}cm를 낚았어요!`] : null,
+  return { ...base, caught: true, big, lexp, fish: { ...fish, price: sell }, coin, tired: tired < 1, chron: fish.grade === 'legend' ? ['fish', `전설 물고기 ${fish.n} ${fish.len}cm를 낚았어요!`] : null,
     after: async () => { await mark(); await env.DB.prepare(`UPDATE fishing SET count = count + 1, gold = gold + ?, day = ?, day_n = ?,
         best_price_fish = CASE WHEN ? > best_price THEN ? ELSE best_price_fish END, best_price = MAX(best_price, ?),
         best_len_fish = CASE WHEN ? > best_len THEN ? ELSE best_len_fish END, best_len = MAX(best_len, ?) WHERE user_id = ?`)

@@ -202,7 +202,7 @@ export const SEA = new Uint8Array(MW * MH);   // 1 = 바다 (강·연못과 다�
     // 강: 같은 식으로 계속 흐르고, 바다에 가까울수록 넓어짐 (하구)
     const wide = 1 + Math.max(0, y - (OMH - 1)) * .22, d = Math.abs(x + .5 - riverX(y)), hw = riverHalf(y) * wide;
     if (y + .5 >= c) { set(x, y, WATER); SEA[y * MW + x] = 1; }
-    else if (y >= OMH && d < hw) set(x, y, WATER);
+    else if ((y >= OMH || tileAt(x, y) === WATER) && d < hw) set(x, y, WATER);   // 2026-11-16: 58~59줄 강물이 모래로 덮여 바다와 끊겼던 것 고침
     else if (y + .5 >= beachTop(x) || (y >= OMH && d < hw + 1.05)) { if (tileAt(x, y) !== PATH || y + .5 >= c - .6) set(x, y, SAND); }
     else if (y >= OMH) set(x, y, G);
   }
@@ -219,6 +219,25 @@ export const SEA = new Uint8Array(MW * MH);   // 1 = 바다 (강·연못과 다�
   }
   // 캘 수 있는 나무·돌은 번호(i)가 저장돼 있어서 빼지 않고 off 표시만 (화면·서버가 건너뜀)
   for (const n of NODES) if (!keepAt(n.x, n.y, 58) || tileAt(n.x, n.y) === SAND || tileAt(n.x, n.y) === WATER) { n.off = true; unblock(n.x, n.y); }
+}
+// 9) 2026-11-16 가챠센터·마을회관 자리 옮김 (사용자 요청). 맨 마지막에 옮겨서 나무·돌 번호는 그대로
+//    새 자리(둘레 1칸 포함)에 있던 꾸밈 나무는 빼고, 캘 수 있는 자원은 off
+{
+  const move = (id, nx, ny) => {
+    const b = BUILDINGS.find(q => q.id === id);
+    for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) solid[y * MW + x] = 0;
+    b.x = nx; b.y = ny; b.door = { x: b.x + Math.floor(b.w / 2), y: b.y + b.h };
+    const near = (x, y) => x >= b.x - 1 && x <= b.x + b.w && y >= b.y - 1 && y <= b.y + b.h;
+    for (let k = DECO.length - 1; k >= 0; k--) { const d = DECO[k]; if (near(d.x, d.y)) { if (tileAt(d.x, d.y) !== WATER) solid[d.y * MW + d.x] = 0; DECO.splice(k, 1); } }
+    for (const n of NODES) if (!n.off && near(n.x, n.y)) { n.off = true; if (tileAt(n.x, n.y) !== WATER) solid[n.y * MW + n.x] = 0; }
+    for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) solid[y * MW + x] = 1;
+    if (tileAt(b.door.x, b.door.y) !== WATER) { tiles[b.door.y * MW + b.door.x] = PATH; solid[b.door.y * MW + b.door.x] = 0; }
+  };
+  move('gacha', 21, 32);
+  move('hall', 30, 41);
+  road([[25, 37.4], [27.5, 38.2], [29.4, 39.4]], .95, 28);   // 가챠센터 문 → 남서쪽 길
+  road([[33, 46.4], [35.5, 46], [37.2, 44.2]], .95, 29);     // 마을회관 문 → 남쪽 길
+  for (let k = DECO.length - 1; k >= 0; k--) { const d = DECO[k]; if (d.x >= 22 && d.x <= 38 && d.y >= 36 && d.y <= 48 && tileAt(d.x, d.y) === PATH) { solid[d.y * MW + d.x] = 0; DECO.splice(k, 1); } }   // 새 길 위 나무 빼기
 }
 // 바다인지 (칸). 강·연못 물은 0
 export const seaAt = (tx, ty) => tx >= 0 && ty >= 0 && tx < MW && ty < MH && SEA[ty * MW + tx] === 1;
