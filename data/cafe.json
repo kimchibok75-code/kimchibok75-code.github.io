@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1794792678236,
+  "updatedAt": 1794816947984,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
@@ -10,7 +10,7 @@
       "head": null,
       "author": "김치복",
       "time": 1794763328553,
-      "comments": 0,
+      "comments": 1,
       "likes": 0,
       "image": false,
       "thumb": null,
