@@ -1191,12 +1191,41 @@ const BLD = {
     ...doorP(W - 62, H - 52, 30, 52, '#c2457a'),
     { path: PG([[W / 2 - 22, -6], [W / 2 - 10, -14], [W / 2 + 10, -14], [W / 2 + 22, -6], [W / 2 + 15, 2], [W / 2 + 10, -2], [W / 2 + 10, 14], [W / 2 - 10, 14], [W / 2 - 10, -2], [W / 2 - 15, 2]]), c: '#4f9dd9' },
     { flat: 1, path: g => heartPath(g, W / 2, 2, 4), c: '#fff' }],
-  hall: (W, H) => [
-    { path: R(-4, H - 12, W + 8, 12, 2), c: '#cfc9bc' }, { path: R(8, 60, W - 16, H - 70, 2), c: '#f4f1ea' },
-    ...[18, 50, W - 64, W - 32].map(x => ({ flat: 1, path: R(x, 64, 14, H - 78, 2), c: '#ffffff' })), ...[18, 50, W - 64, W - 32].map(x => ({ flat: 1, path: R(x + 10, 64, 4, H - 78, 0), c: 'rgba(0,0,0,.08)' })),
-    { path: PG([[-8, 66], [W + 8, 66], [W / 2, 0]]), c: '#5d7690' }, { flat: 1, path: PG([[16, 58], [W - 16, 58], [W / 2, 14]]), c: '#7e97b0' },
-    { path: E(W / 2, 40, 11, 11), c: '#fff' }, { flat: 1, path: R(W / 2 - 1, 32, 2, 9, 1), c: INK }, { flat: 1, path: R(W / 2, 39, 7, 2, 1), c: INK },
-    ...doorP(W / 2 - 18, H - 58, 36, 46), { path: R(W / 2 - 1.5, -44, 3, 46, 1), c: '#5b4636' }, { path: E(W / 2, -46, 3, 3), c: '#ffd45a' }],
+  // 마을회관 (2.5D 시험): 위에서 비스듬히 내려다본 모습. 지붕 윗면이 넓게 보이고, 처마 두께 → 앞벽 → 계단
+  hall: (W, H) => {
+    const eave = 78, wallT = eave + 9, ridge = -12, inset = 22;
+    return [
+      // 바닥 단 (앞으로 튀어나온 돌 기단 + 계단)
+      { path: R(-6, H - 14, W + 12, 14, 3), c: '#cfc9bc' }, { flat: 1, path: R(-6, H - 14, W + 12, 4, 0), c: '#e4dfd3' },
+      { path: PG([[W / 2 - 30, H - 2], [W / 2 + 30, H - 2], [W / 2 + 26, H + 10], [W / 2 - 26, H + 10]]), c: '#bdb6a7' },
+      { flat: 1, path: R(W / 2 - 28, H + 2, 56, 2, 0), c: 'rgba(0,0,0,.12)' },
+      // 앞벽 (흰 돌) + 기둥 + 창문 + 문
+      { path: R(4, wallT - 2, W - 8, H - wallT - 10, 2), c: '#f4f1ea' },
+      { flat: 1, path: R(4, wallT - 2, W - 8, 8, 0), c: 'rgba(60,70,90,.16)' },
+      ...[14, W - 28].map(x => ({ path: R(x, wallT + 2, 14, H - wallT - 16, 2), c: '#ffffff' })),
+      ...[14, W - 28].map(x => ({ flat: 1, path: R(x + 10, wallT + 2, 4, H - wallT - 16, 0), c: 'rgba(0,0,0,.08)' })),
+      ...winP(36, wallT + 12, 26, 26), ...winP(W - 62, wallT + 12, 26, 26),
+      ...doorP(W / 2 - 18, H - 58, 36, 46),
+      { flat: 1, path: R(W / 2 - 24, H - 62, 48, 5, 2), c: '#c9b48a' },
+      // 지붕: 처마 두께(앞면) + 넓은 윗면(앞쪽 경사) + 양옆 경사면 + 용마루
+      { path: R(-12, eave, W + 24, 10, 3), c: '#3f566e' },
+      { path: PG([[-12, eave + 1], [W + 12, eave + 1], [W - inset, ridge], [inset, ridge]]), c: '#6d88a4', after: g => {
+        g.save(); g.beginPath(); g.moveTo(-12, eave + 1); g.lineTo(W + 12, eave + 1); g.lineTo(W - inset, ridge); g.lineTo(inset, ridge); g.closePath(); g.clip();
+        for (let y = ridge + 9, r = 0; y < eave; y += 9, r++) { // 기와 줄
+          g.fillStyle = 'rgba(30,45,65,.22)'; g.fillRect(-20, y, W + 40, 1.6);
+          g.fillStyle = 'rgba(255,255,255,.10)'; for (let x = -20 + (r % 2) * 9; x < W + 20; x += 18) g.fillRect(x, y - 7.5, 1.4, 7);
+        }
+        g.restore(); } },
+      { flat: 1, path: PG([[-12, eave + 1], [inset, ridge], [inset + 26, ridge + 10], [12, eave + 1]]), c: 'rgba(20,35,55,.22)' },
+      { flat: 1, path: PG([[W + 12, eave + 1], [W - inset, ridge], [W - inset - 26, ridge + 10], [W - 12, eave + 1]]), c: 'rgba(255,255,255,.12)' },
+      { path: R(inset - 4, ridge - 6, W - inset * 2 + 8, 9, 4), c: '#4b6580' },
+      // 지붕창(시계): 경사 위에 솟은 작은 박공
+      { path: R(W / 2 - 20, 26, 40, 34, 2), c: '#f4f1ea' },
+      { path: PG([[W / 2 - 26, 30], [W / 2 + 26, 30], [W / 2, 8]]), c: '#4b6580' },
+      { path: E(W / 2, 44, 11, 11), c: '#fff' }, { flat: 1, path: R(W / 2 - 1, 36, 2, 9, 1), c: INK }, { flat: 1, path: R(W / 2, 43, 7, 2, 1), c: INK },
+      // 깃대 (용마루 위)
+      { path: R(W / 2 - 1.5, ridge - 46, 3, 42, 1), c: '#5b4636' }, { path: E(W / 2, ridge - 48, 3, 3), c: '#ffd45a' }];
+  },
   smith: (W, H) => [
     { path: R(6, 78, W - 12, H - 78, 4), c: '#9aa1aa', after: g => { g.strokeStyle = 'rgba(40,45,55,.25)'; g.lineWidth = 1.5; for (let y = 90; y < H; y += 14) { g.beginPath(); g.moveTo(8, y); g.lineTo(W - 8, y); g.stroke(); for (let x = 20 + (y % 28 ? 12 : 0); x < W - 10; x += 24) { g.beginPath(); g.moveTo(x, y - 14); g.lineTo(x, y); g.stroke(); } } } },
     { path: R(10, 48, W - 20, 34, 2), c: '#a0714a' }, { flat: 1, path: R(10, 60, W - 20, 3, 0), c: 'rgba(0,0,0,.15)' },
@@ -1228,7 +1257,7 @@ const BLD = {
     { path: R(W / 2 - 18, H - 44, 36, 44, 2), c: '#f3ead2', after: g => { g.strokeStyle = '#c8553d'; g.lineWidth = 3; g.beginPath(); g.moveTo(W / 2 - 15, H - 41); g.lineTo(W / 2 + 15, H - 3); g.moveTo(W / 2 + 15, H - 41); g.lineTo(W / 2 - 15, H - 3); g.stroke(); } },
     { path: R(W - 34, H - 22, 26, 20, 4), c: '#f2d06b' }, { flat: 1, path: R(W - 34, H - 15, 26, 2, 0), c: '#c9a24a' }, { path: E(W / 2, 18, 7, 7), c: '#f3ead2' }],
 };
-const LAB = { cafe: 40, gacha: 86, skin: 38, hall: 64, smith: 30, fishshop: 34, lumber: 40, quarry: 30, farmshed: 30 };
+const LAB = { cafe: 40, gacha: 86, skin: 38, hall: 96, smith: 30, fishshop: 34, lumber: 40, quarry: 30, farmshed: 30 };
 function bSprite(b) {
   const Wd = b.w * T, Hh = b.h * T;
   return sprite('b:' + b.id, Wd + 40, Hh + 100, 20, 90, g => inkDraw(g, BLD[b.id](Wd, Hh), 2.4));
@@ -1244,7 +1273,7 @@ function drawBuilding(b, now) {
     for (let k = 0; k < 3; k++) { const p = (tt * .9 + k / 3) % 1; ctx.beginPath(); ctx.arc(sx + Math.sin(p * 6 + k) * 4, sy - p * 26, (b.id === 'smith' ? 4 : 2.5) + p * 5, 0, 7); ctx.fill(); }
   }
   if (b.id === 'gacha') { for (let i = 0; i < 9; i++) { const on = (Math.floor(tt * 4) + i) % 3 === 0; ctx.fillStyle = on ? '#fff6b0' : '#ffb02e'; ctx.beginPath(); ctx.arc(X + 20 + i * (Wd - 40) / 8, Y + 71, on ? 3.4 : 2.4, 0, 7); ctx.fill(); } }
-  if (b.id === 'hall') { const fx = X + Wd / 2 + 1.5, fy = Y - 44; ctx.fillStyle = '#e8553a'; ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(fx, fy); for (let k = 0; k <= 6; k++) ctx.lineTo(fx + k * 5, fy + Math.sin(tt * 5 + k) * 2.2); for (let k = 6; k >= 0; k--) ctx.lineTo(fx + k * 5, fy + 15 + Math.sin(tt * 5 + k) * 2.2); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+  if (b.id === 'hall') { const fx = X + Wd / 2 + 1.5, fy = Y - 58; ctx.fillStyle = '#e8553a'; ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(fx, fy); for (let k = 0; k <= 6; k++) ctx.lineTo(fx + k * 5, fy + Math.sin(tt * 5 + k) * 2.2); for (let k = 6; k >= 0; k--) ctx.lineTo(fx + k * 5, fy + 15 + Math.sin(tt * 5 + k) * 2.2); ctx.closePath(); ctx.fill(); ctx.stroke(); }
   plaque(`${b.icon} ${b.name}`, X + Wd / 2, Y + (LAB[b.id] ?? 30));
 }
 function plaque(label, x, y, bg = '#fbfcf7', fs = 13) {
@@ -1510,18 +1539,115 @@ function leaveRoom() {
 const HW = 26, HH = 18;          // 사냥터 크기 (칸)
 let HT = null;                   // 지금 사냥 중인 상태
 const huntGround = {};
+// 사냥터 바닥 그림 (한 번 그려 두고 씀, 2배 해상도). 마을과 같은 그림체: 색 면 + 바깥 테두리
+const HUNT_ART = {
+  plain: { base: '#9fd27f', patch: ['#b2dd8f', '#8cc46f', '#a6d886', '#93cb76'], trail: ['#dcc794', '#e8d6a6'], tuft: '#6fae55', vig: 'rgba(40,80,30,' },
+  forest: { base: '#5f9b57', patch: ['#548d4e', '#6aa862', '#4c8247', '#71ad66'], trail: ['#8d7350', '#a3875f'], tuft: '#3f7a3c', vig: 'rgba(10,40,15,' },
+  canyon: { base: '#d8ba8e', patch: ['#cba97a', '#e2c79e', '#c49f70', '#dcbf92'], trail: ['#c29c6b', '#cfab7b'], tuft: '#9a8a55', vig: 'rgba(90,50,20,' },
+  factory: { base: '#a4acb6', patch: ['#99a1ab', '#aeb6bf', '#8f97a1', '#b5bcc4'], trail: ['#e9b949', '#2f3742'], tuft: '#7d8590', vig: 'rgba(20,25,35,' },
+};
+const blitTo = (g, sp, x, y, sc = 1) => g.drawImage(sp.c, x - sp.ox * sc, y - sp.oy * sc, sp.w * sc, sp.h * sc);
 function paintHunt(f) {
   if (huntGround[f.id]) return huntGround[f.id];
-  const cvs = document.createElement('canvas'); cvs.width = HW * T; cvs.height = HH * T; const g = cvs.getContext('2d'); seed = 31;
-  for (let y = 0; y < HH; y++) for (let x = 0; x < HW; x++) { g.fillStyle = f.g[(x + y) % 2]; g.fillRect(x * T, y * T, T, T); }
-  for (let i = 0; i < 160; i++) {
-    const x = rnd() * HW * T, y = rnd() * HH * T, edge = x < 2 * T || y < 2 * T || x > (HW - 2) * T || y > (HH - 2) * T;
-    if (f.deco === 'flower') { g.fillStyle = ['#fff', '#ffd166', '#ff8fab'][i % 3]; g.beginPath(); g.arc(x, y, 2.4, 0, 7); g.fill(); if (edge && i % 2) { g.fillStyle = '#e8c55a'; g.fillRect(x, y - 10, 3, 12); g.fillRect(x + 5, y - 8, 3, 10); } }
-    else if (f.deco === 'tree') { if (edge) { g.fillStyle = '#7a5332'; g.fillRect(x - 3, y - 6, 6, 12); g.fillStyle = '#2f7a3f'; g.beginPath(); g.arc(x, y - 16, 15, 0, 7); g.fill(); } else { g.fillStyle = 'rgba(30,80,30,.35)'; g.fillRect(x, y, 2, 6); } }
-    else if (f.deco === 'rock') { g.fillStyle = edge ? '#8d8478' : 'rgba(120,95,70,.35)'; g.beginPath(); g.ellipse(x, y, edge ? 18 : 4, edge ? 12 : 3, 0, 0, 7); g.fill(); }
-    else if (f.deco === 'pipe') { if (edge) { g.fillStyle = '#6b7684'; g.fillRect(x - 20, y - 5, 40, 10); g.fillStyle = '#c8553d'; g.fillRect(x - 3, y - 7, 6, 14); } else { g.strokeStyle = 'rgba(0,0,0,.08)'; g.strokeRect(Math.floor(x / T) * T + .5, Math.floor(y / T) * T + .5, T - 1, T - 1); } }
+  const A = HUNT_ART[f.id] || HUNT_ART.plain, K = 2, WP = HW * T, HP = HH * T;
+  const cvs = document.createElement('canvas'); cvs.width = WP * K; cvs.height = HP * K; const g = cvs.getContext('2d'); g.scale(K, K); seed = 31 + f.tier * 97;
+  const r = (a, b) => a + rnd() * (b - a), pick = l => l[Math.floor(rnd() * l.length)];
+  const inner = (x, y) => x > 1.6 * T && x < WP - 1.6 * T && y > 2.4 * T && y < HP - 1.3 * T;
+  g.fillStyle = A.base; g.fillRect(0, 0, WP, HP);
+  // 1) 부드러운 얼룩 (바둑판 대신 자연스러운 땅)
+  for (let i = 0; i < 110; i++) { g.globalAlpha = r(.25, .55); g.fillStyle = pick(A.patch); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(18, 70), r(10, 36), r(0, 3), 0, 7); g.fill(); }
+  g.globalAlpha = 1;
+  // 2) 가로지르는 길
+  if (f.id === 'factory') {   // 공장: 철판 바닥 + 노란·검은 안전선 통로
+    for (let y = 0; y < HP; y += 2 * T) for (let x = 0; x < WP; x += 2 * T) {
+      g.fillStyle = (x / T / 2 + y / T / 2) % 2 ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.05)'; g.fillRect(x, y, 2 * T, 2 * T);
+      g.strokeStyle = 'rgba(40,48,60,.28)'; g.lineWidth = 1.4; g.strokeRect(x + .7, y + .7, 2 * T - 1.4, 2 * T - 1.4);
+      g.fillStyle = 'rgba(40,48,60,.35)'; for (const [a, b] of [[5, 5], [2 * T - 5, 5], [5, 2 * T - 5], [2 * T - 5, 2 * T - 5]]) { g.beginPath(); g.arc(x + a, y + b, 1.8, 0, 7); g.fill(); }
+    }
+    const ly = HP * .56; g.fillStyle = '#2f3742'; g.fillRect(0, ly - 16, WP, 32);
+    g.save(); g.beginPath(); g.rect(0, ly - 16, WP, 32); g.clip(); g.fillStyle = '#e9b949'; for (let x = -40; x < WP + 40; x += 28) { g.beginPath(); g.moveTo(x, ly - 16); g.lineTo(x + 14, ly - 16); g.lineTo(x - 2, ly + 16); g.lineTo(x - 16, ly + 16); g.closePath(); g.fill(); } g.restore();
+    g.fillStyle = '#5c6672'; g.fillRect(0, ly - 18, WP, 3); g.fillRect(0, ly + 15, WP, 3);
+  } else {
+    const path = x => HP * .55 + Math.sin(x / 120 + f.tier) * 34 + Math.sin(x / 47) * 8;
+    for (const [w, c] of [[30, 'rgba(0,0,0,.08)'], [26, A.trail[0]], [17, A.trail[1]]]) { g.fillStyle = c; for (let x = -20; x < WP + 20; x += 6) { g.beginPath(); g.ellipse(x, path(x) + (w === 30 ? 3 : 0), w, w * .55, 0, 0, 7); g.fill(); } }
+    g.fillStyle = 'rgba(0,0,0,.12)'; for (let i = 0; i < 60; i++) { const x = r(0, WP); g.beginPath(); g.ellipse(x, path(x) + r(-10, 10), r(1.5, 3.5), r(1, 2.2), 0, 0, 7); g.fill(); }
   }
+  // 3) 안쪽 장식 (몬스터·캐릭터 발밑이라 낮고 작게)
+  for (let i = 0; i < 170; i++) {
+    const x = r(0, WP), y = r(0, HP); if (!inner(x, y)) continue;
+    const k = rnd();
+    if (f.id === 'plain') {
+      if (k < .45) { g.strokeStyle = A.tuft; g.lineWidth = 2; g.lineCap = 'round'; for (const d of [-4, 0, 4]) { g.beginPath(); g.moveTo(x + d * .5, y); g.lineTo(x + d, y - 6 - Math.abs(d) * -.3 - 3); g.stroke(); } }
+      else if (k < .9) { const c = pick(['#ffffff', '#ffd166', '#ff8fab', '#b89cff']); for (let j = 0; j < 5; j++) { g.fillStyle = c; g.beginPath(); g.arc(x + Math.cos(j * 1.26) * 3, y + Math.sin(j * 1.26) * 3, 2.3, 0, 7); g.fill(); } g.fillStyle = '#f2a33a'; g.beginPath(); g.arc(x, y, 1.7, 0, 7); g.fill(); }
+      else inkDraw(g, [{ path: E(x, y, 5, 3.4), c: '#c7c1b3' }], 1.4);
+    } else if (f.id === 'forest') {
+      if (k < .35) { g.strokeStyle = A.tuft; g.lineWidth = 2.2; g.lineCap = 'round'; for (const a of [-1, -.4, .4, 1]) { g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + a * 6, y - 8, x + a * 10, y - 6); g.stroke(); } }
+      else if (k < .55) inkDraw(g, [{ path: R(x - 1.5, y - 6, 3, 6, 1), c: '#f3ead2' }, { path: E(x, y - 6, 6, 4), c: '#e0533c', after: q => { q.fillStyle = '#fff'; q.beginPath(); q.arc(x - 2, y - 7, 1.1, 0, 7); q.arc(x + 2.2, y - 6, .9, 0, 7); q.fill(); } }], 1.4);
+      else if (k < .62) inkDraw(g, [{ path: R(x - 16, y - 4, 32, 8, 4), c: '#8a5a33' }, { flat: 1, path: E(x + 15, y, 2.8, 3.6), c: '#d8a978' }], 1.6);
+      else if (k < .8) { g.fillStyle = pick(['#c9862f', '#a8632a', '#d9a13a']); g.beginPath(); g.ellipse(x, y, 3, 1.8, r(0, 3), 0, 7); g.fill(); }
+      else inkDraw(g, [{ path: E(x, y, 6, 4), c: '#8f9a88' }, { flat: 1, path: E(x - 1, y - 2, 4, 1.8), c: '#6fa058' }], 1.4);
+    } else if (f.id === 'canyon') {
+      if (k < .3) { g.strokeStyle = 'rgba(110,70,40,.4)'; g.lineWidth = 1.3; g.beginPath(); g.moveTo(x, y); let cx = x, cy = y; for (let j = 0; j < 4; j++) { cx += r(-9, 9); cy += r(2, 7); g.lineTo(cx, cy); } g.stroke(); }
+      else if (k < .6) inkDraw(g, [{ path: E(x, y, r(3, 6), r(2, 4)), c: pick(['#b39577', '#c7a582', '#9c8068']) }], 1.3);
+      else if (k < .72) { g.strokeStyle = '#8f7a45'; g.lineWidth = 1.8; g.lineCap = 'round'; for (const a of [-1, -.5, 0, .5, 1]) { g.beginPath(); g.moveTo(x, y); g.lineTo(x + a * 7, y - 7 + Math.abs(a) * 3); g.stroke(); } }
+      else if (k < .76) inkDraw(g, [{ path: R(x - 4, y - 18, 8, 18, 4), c: '#6aa457' }, { path: R(x - 11, y - 13, 5, 9, 2.5), c: '#6aa457' }, { path: R(x - 9, y - 7, 6, 3, 1.5), c: '#6aa457' }], 1.5);
+    } else {
+      if (k < .25) { g.fillStyle = 'rgba(25,28,35,.32)'; g.beginPath(); g.ellipse(x, y, r(8, 18), r(4, 8), 0, 0, 7); g.fill(); g.fillStyle = 'rgba(160,120,255,.18)'; g.beginPath(); g.ellipse(x - 3, y - 1, r(3, 6), 1.6, 0, 0, 7); g.fill(); }
+      else if (k < .45) inkDraw(g, [{ path: E(x, y, 5, 5), c: '#8a929c', after: q => { q.fillStyle = '#5c6672'; q.beginPath(); q.arc(x, y, 1.8, 0, 7); q.fill(); } }], 1.4);
+      else if (k < .55) inkDraw(g, [{ path: R(x - 2, y - 2, 4, 4, 1), c: '#c8553d' }], 1.2);
+      else if (k < .62) { g.strokeStyle = '#2f3742'; g.lineWidth = 2.2; g.beginPath(); g.moveTo(x - 14, y); g.bezierCurveTo(x - 6, y - 8, x + 6, y + 8, x + 14, y); g.stroke(); }
+    }
+  }
+  // 4) 가장자리 (위는 높게, 양옆·아래는 낮게) — 안쪽 걷는 곳은 비워 둠
+  if (f.id === 'canyon') {   // 위: 줄무늬 절벽
+    const top = x => 2.1 * T + Math.sin(x / 33) * 6 + Math.sin(x / 11) * 3;
+    const pts = [[0, 0], [WP, 0]]; for (let x = WP; x >= 0; x -= 8) pts.push([x, top(x)]);
+    inkDraw(g, [{ path: PG(pts), c: '#b9805a', after: q => { q.save(); q.beginPath(); pts.forEach(([a, b], i) => i ? q.lineTo(a, b) : q.moveTo(a, b)); q.closePath(); q.clip();
+      [['#a86e4c', 18], ['#c99368', 34], ['#9c6343', 50]].forEach(([c, yy]) => { q.fillStyle = c; q.beginPath(); q.moveTo(0, yy); for (let x = 0; x <= WP; x += 8) q.lineTo(x, yy + Math.sin(x / 40 + yy) * 4); q.lineTo(WP, yy + 9); for (let x = WP; x >= 0; x -= 8) q.lineTo(x, yy + 9 + Math.sin(x / 40 + yy) * 4); q.fill(); });
+      q.restore(); } }], 2.4);
+  } else if (f.id === 'factory') {   // 위: 공장 벽 + 파이프 + 환풍구
+    inkDraw(g, [{ path: R(-4, -4, WP + 8, 2.1 * T + 4, 0), c: '#6b7684', after: q => { q.fillStyle = 'rgba(0,0,0,.12)'; for (let x = 0; x < WP; x += 48) q.fillRect(x, 0, 2, 2.1 * T); } },
+      { path: R(-4, 1.25 * T, WP + 8, 9, 4), c: '#c8553d' }, { path: R(-4, .45 * T, WP + 8, 7, 3), c: '#8a929c' },
+      ...[1, 5, 9, 13, 17, 21, 25].map(i => ({ path: R(i * T, 1.12 * T, 10, 15, 2), c: '#8a929c' })),
+      ...[3, 11, 19].map(i => ({ path: R(i * T, .25 * T, 40, 22, 3), c: '#3a434f', after: q => { q.strokeStyle = '#8a929c'; q.lineWidth = 2; for (let k = 0; k < 4; k++) { q.beginPath(); q.moveTo(i * T + 5, .25 * T + 5 + k * 4.5); q.lineTo(i * T + 35, .25 * T + 5 + k * 4.5); q.stroke(); } } }))], 2.4);
+  }
+  const edgeSprite = f.id === 'forest' ? () => pick([SP_TREE.pine, SP_TREE.pine, SP_TREE.round])() : f.id === 'plain' ? () => pick([SP_TREE.round, SP_TREE.round, SP_TREE.pine])() : () => SP_TREE.stone();
+  const items = [];
+  if (f.id === 'plain' || f.id === 'forest') for (let x = -6; x < WP + 20; x += r(26, 38)) { items.push([x, r(1.1, 1.9) * T, r(.95, 1.25)]); if (f.id === 'forest') items.push([x + 14, r(.4, .9) * T, r(.9, 1.15)]); }
+  for (let y = 2.4 * T; y < HP; y += r(30, 44)) { items.push([r(-4, .5 * T), y, r(.8, 1.05)]); items.push([WP - r(-4, .5 * T), y, r(.8, 1.05)]); }
+  items.sort((a, b) => a[1] - b[1]);
+  for (const [x, y, sc] of items) {
+    if (f.id === 'factory') { const k = rnd(); if (k < .5) inkDraw(g, [{ path: R(x - 13, y - 26, 26, 26, 3), c: '#b9824f', after: q => { q.strokeStyle = 'rgba(80,50,25,.5)'; q.lineWidth = 2; q.beginPath(); q.moveTo(x - 13, y - 26); q.lineTo(x + 13, y); q.moveTo(x + 13, y - 26); q.lineTo(x - 13, y); q.stroke(); } }], 2); else inkDraw(g, [{ path: R(x - 11, y - 28, 22, 28, 6), c: pick(['#3d7bd9', '#c8553d', '#4f9d5a']) }, { flat: 1, path: R(x - 11, y - 20, 22, 3, 0), c: 'rgba(0,0,0,.22)' }, { flat: 1, path: R(x - 11, y - 10, 22, 3, 0), c: 'rgba(0,0,0,.22)' }], 2); continue; }
+    g.fillStyle = 'rgba(31,42,58,.16)'; g.beginPath(); g.ellipse(x, y, 14 * sc, 4, 0, 0, 7); g.fill(); blitTo(g, edgeSprite(), x, y, sc);
+  }
+  // 아래 가장자리: 낮은 덤불 · 바위 줄 (캐릭터를 가리지 않게)
+  for (let x = -10; x < WP + 20; x += r(20, 30)) {
+    const y = HP - r(2, 8);
+    if (f.id === 'factory') inkDraw(g, [{ path: R(x - 14, y - 10, 28, 12, 3), c: '#8a929c' }, { flat: 1, path: R(x - 14, y - 6, 28, 3, 0), c: '#e9b949' }], 1.8);
+    else if (f.id === 'canyon') inkDraw(g, [{ path: E(x, y - 4, r(10, 16), r(7, 10)), c: pick(['#a39a8c', '#b5a48c', '#9c8b76']) }], 2);
+    else inkDraw(g, [{ path: E(x, y - 4, r(13, 18), r(9, 12)), c: f.id === 'forest' ? '#3f7a3c' : '#6fb35e' }, { flat: 1, path: E(x - 4, y - 8, 6, 3), c: 'rgba(255,255,255,.18)' }], 2);
+  }
+  // 5) 가장자리 어둡게 (가운데로 시선)
+  const v = g.createRadialGradient(WP / 2, HP / 2, Math.min(WP, HP) * .35, WP / 2, HP / 2, Math.max(WP, HP) * .72);
+  v.addColorStop(0, A.vig + '0)'); v.addColorStop(1, A.vig + '.28)'); g.fillStyle = v; g.fillRect(0, 0, WP, HP);
   return (huntGround[f.id] = cvs);
+}
+// 사냥터 분위기 (매 프레임, 가볍게): 들판 나비 · 숲 낙엽과 햇살 · 협곡 모래바람 · 공장 불꽃과 김
+function drawAmbient(f, t) {
+  const WP = HW * T, HP = HH * T;
+  for (let i = 0; i < 16; i++) {
+    const a = (i * 97.13) % 1, b = (i * 57.71) % 1, ph = i * 1.7;
+    if (f.id === 'plain') { const x = (a * WP + t * (14 + i % 5 * 3)) % WP, y = 2.5 * T + b * (HP - 4 * T) + Math.sin(t * 1.3 + ph) * 18, w = Math.abs(Math.sin(t * 9 + ph)) * 4 + 1;
+      ctx.fillStyle = ['#fff', '#ffd166', '#ff8fab', '#b89cff'][i % 4]; ctx.beginPath(); ctx.ellipse(x - w * .8, y, w, 3, 0, 0, 7); ctx.ellipse(x + w * .8, y, w, 3, 0, 0, 7); ctx.fill(); }
+    else if (f.id === 'forest') { const y = (b * HP + t * (16 + i % 4 * 4)) % HP, x = a * WP + Math.sin(t * 1.4 + ph) * 22;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(t * 2 + ph) * 1.2); ctx.fillStyle = ['#d9a13a', '#c9862f', '#9fbf4a'][i % 3]; ctx.beginPath(); ctx.ellipse(0, 0, 4, 2.2, 0, 0, 7); ctx.fill(); ctx.restore();
+      if (i < 4) { const lx = (a * WP + 120 * i) % WP; ctx.fillStyle = 'rgba(255,250,200,.06)'; ctx.beginPath(); ctx.moveTo(lx, 0); ctx.lineTo(lx + 60, 0); ctx.lineTo(lx + 160, HP); ctx.lineTo(lx + 90, HP); ctx.fill(); } }
+    else if (f.id === 'canyon') { const x = (a * WP + t * (60 + i % 5 * 15)) % (WP + 80) - 40, y = 2.6 * T + b * (HP - 4 * T) + Math.sin(t + ph) * 6;
+      ctx.fillStyle = 'rgba(240,215,170,.35)'; ctx.beginPath(); ctx.ellipse(x, y, 14 + i % 3 * 6, 2, 0, 0, 7); ctx.fill(); }
+    else { const k = (t * .6 + a) % 1, x = (1 + (i % 7) * 3.6) * T, y = 2 * T - 4 - k * 30;
+      if (i < 7) { ctx.fillStyle = `rgba(235,240,245,${(.45 * (1 - k)).toFixed(2)})`; ctx.beginPath(); ctx.arc(x + Math.sin(t + ph) * 4, y + 12, 5 + k * 9, 0, 7); ctx.fill(); }
+      else { const sk = (t * 1.7 + a) % 1; if (sk < .25) { const sx = b * WP, sy = 3 * T + a * (HP - 5 * T); ctx.fillStyle = '#ffd166'; for (let j = 0; j < 4; j++) { ctx.beginPath(); ctx.arc(sx + Math.cos(j * 1.6 + i) * sk * 40, sy + Math.sin(j * 1.6 + i) * sk * 40, 1.6, 0, 7); ctx.fill(); } } } }
+  }
 }
 function openHuntSelect() {
   openModal(`<h3>⚔️ 사냥터 입구</h3><p>사냥터를 고르면 바로 <b>자동 사냥</b>이 시작돼요. 캐릭터가 알아서 싸우고, 체력이 낮으면 물약을 마셔요.</p>
@@ -1768,15 +1894,16 @@ function drawFx() {
 }
 function renderHunt(now) {
   const f = HT.f;
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = f.g[1]; ctx.fillRect(0, 0, W, H);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = ({ plain: '#6fa858', forest: '#3d6b38', canyon: '#a9805a', factory: '#4f5864' })[f.id] || f.g[1]; ctx.fillRect(0, 0, W, H);
   const z = S.zoom, sh = HT.shake, ox = Math.round(W / 2 - cam.x * z + (Math.random() - .5) * 2 * sh), oy = Math.round(H / 2 - cam.y * z + (Math.random() - .5) * 2 * sh);
   ctx.setTransform(DPR * z, 0, 0, DPR * z, ox * DPR, oy * DPR);
-  ctx.drawImage(huntGround[f.id], 0, 0);
+  ctx.drawImage(huntGround[f.id], 0, 0, HW * T, HH * T);
   if (HT.target && !HT.target.dead) { const m = HT.target; ctx.strokeStyle = 'rgba(232,85,58,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(m.x, m.y + 2, 16 * m.d.s, 5 * m.d.s, 0, 0, 7); ctx.stroke(); }
   const list = HT.mons.map(m => ({ y: m.y, f: () => drawMon(m, clock) }));
   const lx = me.lunge > 0 ? (me.dir || 1) * Math.sin(me.lunge / .12 * Math.PI) * 9 : 0;
   list.push({ y: me.y, f: () => drawChar(ctx, me.x + lx, me.y + 6, me, clock) });
   list.sort((a, b) => a.y - b.y).forEach(o => o.f());
+  drawAmbient(f, clock);
   drawFx();
   // 몬스터 체력 바 · 이름
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
