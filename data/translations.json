@@ -206,10 +206,10 @@
       "at": 1794801262619
     },
     "3839399827": {
-      "src": "This standalone compatibility patch for *The Dead Man's Switch* base mod and its expansions fixes load errors, mech collision, weapon configs, sound issues, and cross-mod bugs in both vanilla and Comb",
-      "full": "*The Dead Man's Switch* 기본 모드 및 확장판을 위한 이 독립형 호환성 패치는 바닐라와 Comb 모두에서 로드 오류, 기계 충돌, 무기 구성, 사운드 문제 및 크로스 모드 버그를 수정합니다.",
-      "ko": "*The Dead Man's Switch* 기본 모드 및 확장판을 위한 이 독립형 호환성 패치는 바닐라와 Comb 모두에서 로드 오류, 기계 충돌, 무기 구성, 사운드 문제 및 크로스 모드 버그를 수정합니다.",
-      "at": 1794778452896
+      "src": "This is a dedicated compatibility patch for **The Dead Man's Switch** and its expansion series.",
+      "full": "이것은 **The Dead Man's Switch** 및 해당 확장 시리즈 전용 호환성 패치입니다.",
+      "ko": "이것은 **The Dead Man's Switch** 및 해당 확장 시리즈 전용 호환성 패치입니다.",
+      "at": 1794842297767
     },
     "3839520750": {
       "src": "Screenshots use Facial Animation - Retexture, IsoRimZ and Combat Extended, see suggestions.",
