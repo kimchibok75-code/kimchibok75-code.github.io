@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1794800439643,
+  "updatedAt": 1794800716380,
   "source": "https://steamcommunity.com/workshop/browse/?appid=294100&section=readytouseitems&days=7",
   "items": [
     {
@@ -8,10 +8,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837808326",
       "title": "Supply Shelf",
       "preview": "https://images.steamusercontent.com/ugc/14471707077254728827/8049B12204A704E4E24CC450B8DFDD66618F7D8B/",
-      "subs": 6919,
-      "current": 6529,
-      "favorited": 710,
-      "views": 21639,
+      "subs": 6930,
+      "current": 6540,
+      "favorited": 711,
+      "views": 21663,
       "tags": [
         "Mod",
         "1.7",
@@ -31,10 +31,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839642536",
       "title": "SQUISHY Melee",
       "preview": "https://images.steamusercontent.com/ugc/10794798281109748820/43C158FAE832AC939AE5CE8EB9B385380D32363E/",
-      "subs": 6845,
-      "current": 6471,
-      "favorited": 870,
-      "views": 16547,
+      "subs": 6860,
+      "current": 6485,
+      "favorited": 872,
+      "views": 16573,
       "tags": [
         "Mod",
         "1.7"
@@ -53,10 +53,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839580086",
       "title": "PAWN DEPTH ORDER",
       "preview": "https://images.steamusercontent.com/ugc/13391398177189960626/E5C8828C7E874F3A82BE1B555BFBD77FC6D4B13B/",
-      "subs": 4033,
-      "current": 3839,
-      "favorited": 370,
-      "views": 6987,
+      "subs": 4040,
+      "current": 3845,
+      "favorited": 371,
+      "views": 6999,
       "tags": [
         "Mod",
         "1.7"
@@ -71,14 +71,37 @@
     },
     {
       "rank": 4,
+      "id": "3839399827",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839399827",
+      "title": "The Dead Man's Switch - Compatibility Fixes",
+      "preview": "https://images.steamusercontent.com/ugc/17482907610690873833/B7F4669CF8A39D4D744719928527FA59C9FA62B4/",
+      "subs": 910,
+      "current": 869,
+      "favorited": 103,
+      "views": 2331,
+      "tags": [
+        "Mod",
+        "1.7",
+        "1.6"
+      ],
+      "created": 1794637180000,
+      "updated": 1794737882000,
+      "size": 553873,
+      "collection": false,
+      "summary": "This standalone compatibility patch for *The Dead Man's Switch* base mod and its expansions fixes load errors, mech collision, weapon configs, sound issues, and cross-mod bugs in both vanilla and Combat Extended (CE) set",
+      "prevRank": 10,
+      "ko": "*The Dead Man's Switch* 기본 모드 및 확장판을 위한 이 독립형 호환성 패치는 바닐라와 Comb 모두에서 로드 오류, 기계 충돌, 무기 구성, 사운드 문제 및 크로스 모드 버그를 수정합니다."
+    },
+    {
+      "rank": 5,
       "id": "3838987100",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838987100",
       "title": "Cardboard Warcasket",
       "preview": "https://images.steamusercontent.com/ugc/12366862982721752899/0E8DAEF573E214769A8B9962EE3E287A8544751E/",
-      "subs": 209,
-      "current": 195,
+      "subs": 210,
+      "current": 196,
       "favorited": 92,
-      "views": 5050,
+      "views": 5066,
       "tags": [
         "Mod",
         "1.7",
@@ -93,15 +116,15 @@
       "ko": "야요 허핑, 연기 잎사귀, 플레이크 던지는 지역 부족 기술자의 빛나는 마음에서 나온 것입니다."
     },
     {
-      "rank": 5,
+      "rank": 6,
       "id": "3837063832",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837063832",
       "title": "Seamless Pockets",
       "preview": "https://images.steamusercontent.com/ugc/11610367328486528479/BA821761713939E81E69C50A956EE8A56EBAC3D6/",
-      "subs": 4352,
-      "current": 4087,
-      "favorited": 778,
-      "views": 14815,
+      "subs": 4353,
+      "current": 4090,
+      "favorited": 779,
+      "views": 14825,
       "tags": [
         "Mod",
         "1.7",
@@ -116,15 +139,15 @@
       "ko": "포켓 맵은 연결이 끊긴 사이드 룸을 중지합니다."
     },
     {
-      "rank": 6,
+      "rank": 7,
       "id": "3837906824",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837906824",
       "title": "Wayward Biomes: Tangled Hollows",
       "preview": "https://images.steamusercontent.com/ugc/9617940594054675953/E0B5CAA5143193FEBE472BC1CB1DD27AF12F5D87/",
-      "subs": 1833,
-      "current": 1739,
+      "subs": 1837,
+      "current": 1743,
       "favorited": 162,
-      "views": 5821,
+      "views": 5828,
       "tags": [
         "Mod",
         "1.7",
@@ -139,15 +162,15 @@
       "ko": "고대의 거대한 숲의 잔해에는 한때 이곳에서 자랐던 거대한 나무의 속이 빈 줄기가 곳곳에 자리잡고 있습니다."
     },
     {
-      "rank": 7,
+      "rank": 8,
       "id": "3840043127",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3840043127",
       "title": "[OPEN BETA] These Are Our People",
       "preview": "https://images.steamusercontent.com/ugc/10653866610571298481/25AAD42163A77E98A8126383FADF813B2B0A44CE/",
-      "subs": 352,
-      "current": 337,
-      "favorited": 109,
-      "views": 2075,
+      "subs": 356,
+      "current": 341,
+      "favorited": 110,
+      "views": 2099,
       "tags": [
         "Mod",
         "1.7"
@@ -161,15 +184,15 @@
       "ko": "모드와 인포그래픽이 제작 중입니다. 언제든지 무엇이든 바뀔 수 있습니다. 현재 베타를 인포그래픽이 없는 모험으로 생각하세요"
     },
     {
-      "rank": 8,
+      "rank": 9,
       "id": "3837981505",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837981505",
       "title": "[KCB] Liftoff Effects (이륙 이펙트)",
       "preview": "https://images.steamusercontent.com/ugc/9889155727940097281/3595704D9EF4C97D316B91FABD4EFDD21AC23DA1/",
-      "subs": 3024,
-      "current": 2848,
+      "subs": 3030,
+      "current": 2855,
       "favorited": 263,
-      "views": 5096,
+      "views": 5101,
       "tags": [
         "Mod",
         "1.7",
@@ -184,7 +207,7 @@
       "ko": "수송 포드와 왕복선이 로켓처럼 이륙합니다. 분사구마다 엔진 불꽃이 나오고, 발사 연기와 연기 꼬리를 남기며 천천히 떠올랐다가 점점 빨라지며 날아갑니다."
     },
     {
-      "rank": 9,
+      "rank": 10,
       "id": "3837314353",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837314353",
       "title": "The Dead Man's Switch - RatkinExpand",
@@ -192,7 +215,7 @@
       "subs": 3688,
       "current": 3422,
       "favorited": 528,
-      "views": 12239,
+      "views": 12240,
       "tags": [
         "Mod",
         "1.7",
@@ -208,38 +231,15 @@
       "ko": "구식 기술과 어려움을 겪고 있는 경제로 인해 쥐족 왕국은 행성 전역에 흩어져 있는 불량 기계체에 맞서 싸울 가능성이 거의 없었습니다."
     },
     {
-      "rank": 10,
-      "id": "3839399827",
-      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839399827",
-      "title": "The Dead Man's Switch - Compatibility Fixes",
-      "preview": "https://images.steamusercontent.com/ugc/17482907610690873833/B7F4669CF8A39D4D744719928527FA59C9FA62B4/",
-      "subs": 907,
-      "current": 867,
-      "favorited": 101,
-      "views": 2316,
-      "tags": [
-        "Mod",
-        "1.7",
-        "1.6"
-      ],
-      "created": 1794637180000,
-      "updated": 1794737882000,
-      "size": 553873,
-      "collection": false,
-      "summary": "This standalone compatibility patch for *The Dead Man's Switch* base mod and its expansions fixes load errors, mech collision, weapon configs, sound issues, and cross-mod bugs in both vanilla and Combat Extended (CE) set",
-      "prevRank": 10,
-      "ko": "*The Dead Man's Switch* 기본 모드 및 확장판을 위한 이 독립형 호환성 패치는 바닐라와 Comb 모두에서 로드 오류, 기계 충돌, 무기 구성, 사운드 문제 및 크로스 모드 버그를 수정합니다."
-    },
-    {
       "rank": 11,
       "id": "3836456822",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836456822",
       "title": "Realistic Water",
       "preview": "https://images.steamusercontent.com/ugc/11683647938646096538/76A92F77B968A020822032FB665D705AF5D6B5C8/",
-      "subs": 5622,
-      "current": 4972,
+      "subs": 5629,
+      "current": 4978,
       "favorited": 704,
-      "views": 14727,
+      "views": 14740,
       "tags": [
         "Mod",
         "1.7"
@@ -261,7 +261,7 @@
       "subs": 60,
       "current": 50,
       "favorited": 29,
-      "views": 2485,
+      "views": 2488,
       "tags": [
         "Mod",
         "1.7"
@@ -281,9 +281,9 @@
       "title": "Cherokee Sling - Vehicle and Container Airlift",
       "preview": "https://images.steamusercontent.com/ugc/16776818813964644570/EA8EBB69E0ACE2E9B9EEB4594A5177017FF32C21/",
       "subs": 5058,
-      "current": 4723,
+      "current": 4722,
       "favorited": 678,
-      "views": 12968,
+      "views": 12970,
       "tags": [
         "Mod",
         "1.7",
@@ -303,10 +303,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837999796",
       "title": "Titan Vehicles (Continued)",
       "preview": "https://images.steamusercontent.com/ugc/12020440468032264668/58EC5135462E56CBAAFF9C4E7F16BB2999BAD71A/",
-      "subs": 1268,
-      "current": 1196,
+      "subs": 1270,
+      "current": 1198,
       "favorited": 165,
-      "views": 7446,
+      "views": 7451,
       "tags": [
         "Mod",
         "1.7",
@@ -351,10 +351,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837774191",
       "title": "Kiiro Race - Devon Rex Xenotype (绮罗德文异种)",
       "preview": "https://images.steamusercontent.com/ugc/12082137762489397892/8DF91BB0448353191DA67B343B68C9B15BE4E229/",
-      "subs": 5087,
-      "current": 4834,
+      "subs": 5089,
+      "current": 4836,
       "favorited": 290,
-      "views": 7891,
+      "views": 7897,
       "tags": [
         "Mod",
         "1.7",
@@ -374,10 +374,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838111458",
       "title": "Weather Reimagined",
       "preview": "https://images.steamusercontent.com/ugc/13986746735857019235/6AD9C49781067A81B5739D9E29539A6094671BB1/",
-      "subs": 3383,
-      "current": 3039,
-      "favorited": 493,
-      "views": 9053,
+      "subs": 3384,
+      "current": 3040,
+      "favorited": 495,
+      "views": 9058,
       "tags": [
         "Mod",
         "1.7"
@@ -387,7 +387,7 @@
       "size": 3289558,
       "collection": false,
       "summary": "A visual overhaul for fire, snow, weather and shadows in RimWorld 1.7. Rain, snow, blizzards, fog, auroras and lightning all get a new look. You can turn each feature on or off individually in the mod settings. I tested ",
-      "prevRank": 20,
+      "prevRank": 17,
       "ko": "RimWorld 1.7의 불, 눈, 날씨 및 그림자에 대한 시각적 점검."
     },
     {
@@ -397,9 +397,9 @@
       "title": "Orc Facial Animation",
       "preview": "https://images.steamusercontent.com/ugc/17618971733562983623/6BD35CBF36485733670DD0A94C282DED4C7CC7BA/",
       "subs": 273,
-      "current": 236,
-      "favorited": 54,
-      "views": 2135,
+      "current": 235,
+      "favorited": 55,
+      "views": 2139,
       "tags": [
         "Mod",
         "1.7"
@@ -409,7 +409,7 @@
       "size": 605129,
       "collection": false,
       "summary": "Info Adds Facial Animation support for orcs xenotype from Legacy of The Rim. Ears are upscaled to 512x512 Compatibility All facial animation types Eyegenes Credits Galahad - For the damn incredible LOTR work he is doing,",
-      "prevRank": 17,
+      "prevRank": 18,
       "ko": "Legacy of The Rim의 오크 이종형에 대한 얼굴 애니메이션 지원을 추가합니다. 귀는 512x512로 업스케일됩니다."
     },
     {
@@ -418,10 +418,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837808238",
       "title": "Repeatable Technologies",
       "preview": "https://images.steamusercontent.com/ugc/14206298098965558478/90D8BBFCEF1D366AF714A314DA1A6148FCF90A06/",
-      "subs": 649,
-      "current": 620,
+      "subs": 652,
+      "current": 623,
       "favorited": 54,
-      "views": 1938,
+      "views": 1942,
       "tags": [
         "Mod",
         "1.7",
@@ -432,7 +432,7 @@
       "size": 405819,
       "collection": false,
       "summary": "Repeatable Technologies Stellaris-style repeatable research for RimWorld. After Starflight basics, a \"Repeatable\" tab appears in the research screen with research you can complete again and again. Research Production yie",
-      "prevRank": 18,
+      "prevRank": 19,
       "ko": "RimWorld를 위한 Stellaris 스타일의 반복 가능한 연구. Starflight 기본 사항을 마친 후에는 계속해서 완료할 수 있는 연구가 포함된 \"반복 가능\" 탭이 연구 화면에 나타납니다."
     },
     {
@@ -443,8 +443,8 @@
       "preview": "https://images.steamusercontent.com/ugc/11437019900691525953/483C7D2F6C11627206EA16CA51BD95D71FCEE551/",
       "subs": 445,
       "current": 408,
-      "favorited": 180,
-      "views": 3227,
+      "favorited": 181,
+      "views": 3241,
       "tags": [
         "Mod",
         "1.7"
@@ -454,7 +454,7 @@
       "size": 109729384,
       "collection": false,
       "summary": "M3AT: Maru's 3D Animated Toons Animated 3D pawns for IsoRim Waylith. Screenshots use Facial Animation - Retexture, IsoRimZ and Combat Extended, see suggestions. Early WIP and just launched, so expect scuff; letting me kn",
-      "prevRank": 19,
+      "prevRank": 20,
       "ko": "스크린샷은 얼굴 애니메이션(Retexture, IsoRimZ 및 Combat Extended)을 사용합니다. 제안 사항을 참조하세요."
     }
   ]
