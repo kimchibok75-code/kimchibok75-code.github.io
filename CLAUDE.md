@@ -385,7 +385,7 @@
   - 화면은 1분마다(그리고 다시 볼 때) `game-version.txt`를 읽고 다르면 토스트 → 3초 뒤 위치 저장 → 새로 고침 (`checkVer`, `reloadSoon`). 레이드 중이면 끝난 뒤
   - 데이터 자동 갱신(봇 커밋)으로는 지문이 안 바뀌어서 새로 고침 안 됨. 내 컴퓨터에서는 `__GAMEV__` 그대로라 꺼져 있음
 - **그림 폴더** `assets/img/game/` (2026-11-16): 지금 코드 그림을 PNG로 뽑아 둔 참고용 사본 380장 (char·item·mon·build·nature·props·ui·bg, 설명은 그 폴더 README.md). 게임은 아직 이 파일을 안 읽음
-  - 다시 뽑기: (1) 백그라운드로 `node scripts/img-export/recv.mjs` (5199 포트, 받은 PNG를 그 폴더에 씀) (2) `scripts/img-export/exporter.js` 내용을 한 줄로 합쳐 game.html의 `// 화면 이동은 실제 화면 점` 줄 앞에 `// DEBUG-REMOVE`로 넣기 (3) 로컬 서버 + 미리보기에서 로그인 후 `window.__export()` (숨긴 창이면 몇 분 걸림, `.then`으로 돌리고 기다리기) (4) DEBUG-REMOVE 지우기
+  - **사용자 요청: 그림을 고쳐도 PNG를 다시 뽑지 말 것** (직접 부탁할 때만). 다시 뽑기: (1) 백그라운드로 `node scripts/img-export/recv.mjs` (5199 포트, 받은 PNG를 그 폴더에 씀) (2) `scripts/img-export/exporter.js` 내용을 한 줄로 합쳐 game.html의 `// 화면 이동은 실제 화면 점` 줄 앞에 `// DEBUG-REMOVE`로 넣기 (3) 로컬 서버 + 미리보기에서 로그인 후 `window.__export()` (숨긴 창이면 몇 분 걸림, `.then`으로 돌리고 기다리기) (4) DEBUG-REMOVE 지우기
   - 사용자가 직접 그린 그림을 넣으면 그 그림을 `Image`로 불러 `sprite()` 대신 쓰게 바꾸기
 - 사냥터 보스: 30분 → **5분마다** (`HUNT.bossEvery: 300`). 보상은 그대로라 보스 수입이 6배
 - 바로가기 창: `PLACES` = [아이콘, 이름, x, y, 하는 일, 묶음], 묶음 `PLACE_GROUPS` (이동 / 가게 / 생활·모으기)
