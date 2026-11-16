@@ -3,7 +3,7 @@
 // - 채팅 규칙(기획서 8-1)은 여기서 검사. 금칙어 목록은 서버에만 있음
 import { DurableObject } from 'cloudflare:workers';
 import { cleanChat } from './chat.js';
-import { T, MW, MH } from '../../assets/js/game-rules.js';
+import { T, MW, MH, FISH } from '../../assets/js/game-rules.js';
 import { SPOTS } from '../../assets/js/game-map.js';
 // 광장: 분수 가운데에서 이 거리 안 (치지직 채팅은 여기 있는 사람 말만 마을에 보임)
 const FOUNT = SPOTS.find(s => s.id === 'fountain'), PLAZA = { x: (FOUNT.x + 1) * T, y: (FOUNT.y + 1) * T, r: 9 * T };
@@ -114,6 +114,15 @@ export class Town extends DurableObject {
     }
     if (m.t === 'hunt') { a.hunt = !!m.on; a.sit = -1; this.save(ws, a); return this.all({ t: 'hunt', id: a.id, on: a.hunt }, ws); }
     if (m.t === 'emo') { if (!EMOTES.includes(m.e) || t - a.emoAt < 800) return; a.emoAt = t; this.save(ws, a); return this.all({ t: 'emo', id: a.id, e: m.e }, ws); }
+    // 낚시 모습 (다른 사람 화면에 낚싯대·찌·자랑 보여 주기). s: 1 던짐(bx,by = 찌 자리, r = 낚싯대 단계) · 2 낚음(g,n,len) · 3 놓침 · 0 낚싯대 넣음
+    // 자랑 글은 서버가 확인한 물고기 이름·길이만 (아무 글이나 못 보냄)
+    if (m.t === 'fish') {
+      if (t - (a.fishAt || 0) < 400) return; a.fishAt = t; this.save(ws, a);
+      const o = { t: 'fish', id: a.id, s: [0, 1, 2, 3].includes(m.s) ? m.s : 0 };
+      if (o.s === 1) { if (!num(m.bx, MW * T) || !num(m.by, MH * T)) return; Object.assign(o, { bx: Math.round(m.bx), by: Math.round(m.by), r: Number.isInteger(m.r) && m.r >= 0 && m.r <= 5 ? m.r : 0 }); }
+      if (o.s === 2) { const d = FISH[m.g]?.find(x => x[1] === m.n); if (!d || !num(m.len, d[3] + 1)) return; Object.assign(o, { g: m.g, n: d[1], i: d[0], len: Math.round(m.len * 10) / 10, big: !!m.big }); }
+      return this.all(o, ws);
+    }
     if (m.t === 'look') {   // 겉모습·레벨이 바뀜 → 저장된 값을 다시 읽어서 알림
       if (t - a.lookAt < 1500) return; a.lookAt = t;
       const c = await this.env.DB.prepare('SELECT * FROM characters WHERE user_id = ?').bind(a.id).first(); if (!c) return;

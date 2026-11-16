@@ -247,13 +247,14 @@ export function addExp(c, n) {
 export const biteDmg = (mon, D) => D.god ? 0 : Math.max(1, Math.round(mon.atk * 100 / (100 + (mon.mg ? D.mdef : D.def)) * (.85 + Math.random() * .3)));
 
 // ───────── 낚시 (기획서 4-6) ─────────
-// 등급: 확률(%), 미니게임 맞히는 칸 넓이(비율)와 바늘 속도(초당 왕복)
-export const FISH_GRADES = {   // 미니게임 난이도를 낮춤 (칸 넓게, 바늘 느리게)
-  normal: { n: '일반', c: '#6f7a8a', p: 60, zone: .38, speed: .6 },
-  uncommon: { n: '고급', c: '#2f8f45', p: 26, zone: .32, speed: .75 },
-  rare: { n: '희귀', c: '#2f6fd0', p: 10, zone: .26, speed: .9 },
-  epic: { n: '영웅', c: '#8a48cc', p: 3.5, zone: .21, speed: 1.05 },
-  legend: { n: '전설', c: '#e0731c', p: .5, zone: .17, speed: 1.2 },
+// 물을 누르면 바로 낚싯대를 던짐 (미니게임 없음). 낚을 확률은 낚싯대 단계로 오름
+// 등급: 확률(%)
+export const FISH_GRADES = {
+  normal: { n: '일반', c: '#6f7a8a', p: 60 },
+  uncommon: { n: '고급', c: '#2f8f45', p: 26 },
+  rare: { n: '희귀', c: '#2f6fd0', p: 10 },
+  epic: { n: '영웅', c: '#8a48cc', p: 3.5 },
+  legend: { n: '전설', c: '#e0731c', p: .5 },
 };
 // 물고기: [아이콘, 이름, 최소 cm, 최대 cm, 기본 값(골드)]
 export const FISH = {
@@ -263,7 +264,12 @@ export const FISH = {
   epic: [['🦈', '철갑상어', 80, 200, 350], ['🐟', '참치', 100, 250, 400], ['🐢', '바다거북', 30, 80, 300], ['🦈', '상어', 150, 350, 450]],
   legend: [['🥬', '김치 잉어', 50, 120, 1500], ['🐉', '강의 용', 100, 300, 2000], ['🐋', '아기 고래', 300, 800, 1800], ['👑', '황금 붕어', 20, 50, 1200]],
 };
-export const FISHING = { cooldown: 10e3, waitMin: 1500, waitMax: 4500, window: 7000, perfect: 1.2, dayFull: 400 };   // dayFull: 하루에 이만큼 넘게 낚으면 값·코인 절반
+export const FISHING = { cooldown: 10e3, waitMin: 1500, waitMax: 4000, dayFull: 400 };   // wait: 던지고 입질까지(ms). dayFull: 하루에 이만큼 넘게 낚으면 값·코인 절반
+// 낚을 확률: 기본 60% + 낚싯대 1단계마다 +6%p + 칭호·스킨·마을 효과(fishZ, %p). 최대 95%. 자동 낚시는 10%p 낮음
+export const FISH_HIT = { base: .6, rod: .06, max: .95, auto: .1 };
+export const fishHit = (rod = 0, fx = {}, auto = false) => Math.max(.3, Math.min(FISH_HIT.max, FISH_HIT.base + FISH_HIT.rod * rod + (fx.fishZ || 0) / 100) - (auto ? FISH_HIT.auto : 0));
+// 대어: 그 물고기 길이 범위의 위쪽 30%
+export const isBigFish = f => { const d = (FISH[f.grade] || []).find(x => x[1] === f.n); return !!d && f.len >= d[2] + (d[3] - d[2]) * .7; };
 // 등급별 확률(%) — 운 · 낚싯대(rod) · 미끼(bait)가 높을수록 좋은 등급이 잘 나옴
 export function fishOdds(luk = 0, rod = 0, bait = 0) {
   const lb = 1 + luk * .005, m = { normal: 1, uncommon: 1 + .12 * bait + .04 * rod, rare: (1 + .22 * bait + .1 * rod) * lb, epic: (1 + .35 * bait + .15 * rod) * lb, legend: (1 + .5 * bait + .2 * rod) * lb };
@@ -280,16 +286,16 @@ export function rollFish(luk = 0, rod = 0, bait = 0) {
   return { i, n, grade, len, price: Math.max(1, Math.round(base * (.6 + 1.4 * k))) };
 }
 
-// 낚시 코인: 낚을 때마다 등급만큼 (완벽하면 +1)
-// 자동 낚시: 자동용 미끼를 1개씩 쓰고, 미니게임 없이 알아서 당김 (성공 70%, 완벽 없음). 미끼는 골드로 묶음 구매
-export const AUTO_FISH = { hit: .7, packs: [[20, 160], [100, 750], [300, 2100]] };
+// 낚시 코인: 낚을 때마다 등급만큼
+// 자동 낚시: 자동용 미끼를 1개씩 쓰고 알아서 던지고 당김 (낚을 확률은 손 낚시보다 10%p 낮음). 미끼는 골드로 묶음 구매
+export const AUTO_FISH = { packs: [[20, 200], [100, 940], [300, 2640]] };
 export const FISH_COIN = { normal: 1, uncommon: 2, rare: 4, epic: 8, legend: 20 };
-// 낚시점 (낚시 코인으로 삼). 낚싯대: 판정 칸 +6%/단계 + 좋은 등급 조금 / 미끼: 좋은 등급이 훨씬 잘 나옴
+// 낚시점 (낚시 코인으로 삼). 낚싯대: 낚을 확률 +6%p/단계 + 좋은 등급 조금 / 미끼: 좋은 등급이 훨씬 잘 나옴
+// 손 낚시가 쉬워져서 값을 약 1.4배로 올림 (2026-11-16)
 export const FISH_SHOP = {
-  rod: { n: '낚싯대', i: '🎣', names: ['나무 낚싯대', '대나무 낚싯대', '카본 낚싯대', '은빛 낚싯대', '황금 낚싯대', '용의 낚싯대'], cost: [20, 50, 110, 220, 400], d: '판정 칸 +6% · 희귀 이상 확률 ↑' },
-  bait: { n: '미끼', i: '🪱', names: ['지렁이', '새우 미끼', '반짝 루어', '황금 떡밥', '전설의 미끼', '김치 미끼'], cost: [15, 40, 90, 180, 350], d: '고급 이상 확률 크게 ↑' },
+  rod: { n: '낚싯대', i: '🎣', names: ['나무 낚싯대', '대나무 낚싯대', '카본 낚싯대', '은빛 낚싯대', '황금 낚싯대', '용의 낚싯대'], cost: [28, 70, 155, 310, 560], d: '낚을 확률 +6%p · 희귀 이상 확률 ↑' },
+  bait: { n: '미끼', i: '🪱', names: ['지렁이', '새우 미끼', '반짝 루어', '황금 떡밥', '전설의 미끼', '김치 미끼'], cost: [21, 56, 126, 250, 490], d: '고급 이상 확률 크게 ↑' },
 };
-export const fishZone = (grade, rod = 0, fx = {}) => Math.min(.6, FISH_GRADES[grade].zone * (1 + .06 * rod + (fx.fishZ || 0) / 100));
 
 // ───────── 카페 알바 ─────────
 export const JOB = { sec: 60, pay: lv => 60 + lv * 7 };   // 카페 알바 1분 (예전 40 + 레벨×5)
@@ -389,7 +395,7 @@ export function optScore(it) { return (it?.o || []).reduce((a, [k, v]) => a + v 
 // ───────── 칭호 (도전 과제를 깨면 생김. 갖고만 있어도 효과) ─────────
 // k: 세는 것 (lv·str·dex·int·luk = 캐릭터 값, 나머지 = life.cnt) · v: 목표 · fx: 보유 효과
 export const FX_N = { atkP: ['공격력', '%'], defP: ['방어', '%'], hpP: ['최대 체력', '%'], crit: ['치명타', '%p'], eva: ['회피', '%p'], goldP: ['골드', '%'], expP: ['경험치', '%'], spdP: ['이동 속도', '%'],
-  fishC: ['낚시 코인', '%'], fishZ: ['낚시 판정 칸', '%'], farmP: ['작물 골드', '%'], farmC: ['텃밭 코인', '%'], gather: ['채집량', '개'], fishP: ['물고기 값', '%'], enhB: ['강화 확률', '%p'], bossP: ['보스 피해', '%'], regen: ['사냥 중 회복', '%p/초'] };
+  fishC: ['낚시 코인', '%'], fishZ: ['낚을 확률', '%p'], farmP: ['작물 골드', '%'], farmC: ['텃밭 코인', '%'], gather: ['채집량', '개'], fishP: ['물고기 값', '%'], enhB: ['강화 확률', '%p'], bossP: ['보스 피해', '%'], regen: ['사냥 중 회복', '%p/초'] };
 const tt = (id, n, g, k, v, fx, d) => ({ id, n, g, k, v, fx, d });
 export const TITLE_GROUPS = ['마을', '성장', '사냥', '낚시', '텃밭', '채집', '장비'];
 export const TITLES = [
@@ -407,7 +413,7 @@ export const TITLES = [
   tt('d1', '한 번 쓰러져 본', '사냥', 'died', 1, { hpP: 1 }, '사냥터에서 쓰러지기 1번'), tt('d10', '포기를 모르는', '사냥', 'died', 10, { hpP: 2, regen: .1 }, '사냥터에서 쓰러지기 10번'),
   tt('f1', '첫 물고기를 낚은', '낚시', 'fish', 1, { fishZ: 2 }, '물고기 1마리'), tt('f50', '낚시를 좋아하는', '낚시', 'fish', 50, { fishC: 5 }, '물고기 50마리'),
   tt('f300', '강가의 단골인', '낚시', 'fish', 300, { fishC: 10, fishZ: 3 }, '물고기 300마리'), tt('f1000', '물고기와 친한', '낚시', 'fish', 1000, { fishC: 15, goldP: 1 }, '물고기 1,000마리'),
-  tt('fp30', '손맛을 아는', '낚시', 'perfect', 30, { fishZ: 4 }, '완벽하게 낚기 30번'), tt('fl1', '전설을 낚은', '낚시', 'legendFish', 1, { fishC: 10 }, '전설 물고기 1마리'),
+  tt('fp30', '손맛을 아는', '낚시', 'perfect', 30, { fishZ: 4 }, '대어(큰 물고기) 30마리'), tt('fl1', '전설을 낚은', '낚시', 'legendFish', 1, { fishC: 10 }, '전설 물고기 1마리'),
   tt('boot', '낡은 장화를 건진', '낚시', 'boot', 1, { spdP: 1 }, '낡은 장화 낚기 (?)'),
   tt('c1', '첫 수확을 한', '텃밭', 'crops', 1, { farmP: 2 }, '작물 수확 1번'), tt('c100', '텃밭을 가꾸는', '텃밭', 'crops', 100, { farmP: 5, farmC: 5 }, '작물 수확 100번'),
   tt('c500', '농사의 달인인', '텃밭', 'crops', 500, { farmP: 10, farmC: 10 }, '작물 수확 500번'), tt('w100', '물 주기를 잊지 않는', '텃밭', 'water', 100, { farmC: 5 }, '물 주기 100번'),
