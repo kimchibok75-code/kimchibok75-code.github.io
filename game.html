@@ -173,7 +173,8 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .rk-list li.top .rk-n { font-size: 24px; }
 .rk-who { min-width: 0; } .rk-who b { display: block; font-size: calc(15px * var(--fs)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rk-who small { display: block; color: var(--ink-soft); font-size: calc(12px * var(--fs)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rk-v { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rk-v { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; } .rk-v small { display: block; font-weight: 600; font-size: calc(11.5px * var(--fs)); color: var(--ink-soft); }
+.bs.rk .bs-tabs button { white-space: normal; line-height: 1.15; font-size: calc(12.5px * var(--fs)); padding: 4px 1px; }
 .rk-me { background: #fff1ec; border-color: #f3b9a8; grid-template-columns: auto minmax(0, 1fr) auto; padding-left: 12px; } .rk-me span:first-child { color: var(--ink-soft); font-weight: 700; } .rk-me b { font-size: calc(17px * var(--fs)); }
 .bs .swatches button { width: 40px; height: 40px; }
 @media (max-width: 600px) { .bs { --sb: max(18px, env(safe-area-inset-bottom, 0px)); } .bs-head h3 { font-size: calc(19px * var(--fs)); } }
@@ -937,7 +938,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
       <button class="iconbtn" id="fsBtn" aria-label="전체화면" title="전체화면 (Esc로 나가기)">⛶</button>
       <button class="iconbtn" id="setBtn" aria-label="설정">⚙️</button>
     </div>
-    <div class="rcol"><div class="side"><button class="iconbtn adm" id="admBtn" hidden aria-label="관리자 화면" title="관리자 화면 (관리자만 보여요)">🛡️</button><button class="iconbtn" id="newsBtn" aria-label="마을 소식판" title="마을 소식판: 오늘 의뢰 · 공동 건설 · 마을 소식">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn lb" id="townBtn" aria-label="바로가기" title="바로가기: 누르면 그 자리로 바로 이동">🏘️<small>바로가기</small></button><button class="iconbtn lb" id="autoBtn" aria-label="자동" title="자동: 벌목·채광·알바·낚시·농사 + 산책하며 인사까지 알아서 해요 (효율은 낮아요)" aria-pressed="false">🧺<small>자동</small></button><button class="iconbtn lb" id="guideBtn" aria-label="가이드" title="가이드: 모든 놀거리 설명">📖<small>가이드</small></button><button class="iconbtn lb" id="rankBtn" aria-label="랭킹" title="랭킹: 레벨 · 번 돈 · 낚시 · 강화">🏆<small>랭킹</small></button></div>
+    <div class="rcol"><div class="side"><button class="iconbtn adm" id="admBtn" hidden aria-label="관리자 화면" title="관리자 화면 (관리자만 보여요)">🛡️</button><button class="iconbtn" id="newsBtn" aria-label="마을 소식판" title="마을 소식판: 오늘 의뢰 · 공동 건설 · 마을 소식">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn lb" id="townBtn" aria-label="바로가기" title="바로가기: 누르면 그 자리로 바로 이동">🏘️<small>바로가기</small></button><button class="iconbtn lb" id="autoBtn" aria-label="자동" title="자동: 벌목·채광·알바·낚시·농사 + 산책하며 인사까지 알아서 해요 (효율은 낮아요)" aria-pressed="false">🧺<small>자동</small></button><button class="iconbtn lb" id="guideBtn" aria-label="가이드" title="가이드: 모든 놀거리 설명">📖<small>가이드</small></button><button class="iconbtn lb" id="rankBtn" aria-label="랭킹" title="랭킹: 레벨 · 번 돈 · 물고기 · 강화">🏆<small>랭킹</small></button></div>
     <div class="zoom"><button class="iconbtn" id="zIn" aria-label="크게 보기">＋</button><button class="iconbtn" id="zOut" aria-label="작게 보기">－</button></div></div>
     <div class="banner" id="liveBanner" hidden>🔴 김치복 생방송 중!</div>
     <button class="roombtn" id="roomBtn" type="button" hidden>🚪 집에서 나가기</button>
@@ -995,7 +996,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { jobGuests, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, fishHit, FISH_RIVER, FISH_SEA, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp } from './assets/js/game-rules.js?v=__BUILD__';
@@ -3415,10 +3416,40 @@ function npcMark(p) {
   return npcDone(p) ? '?' : '…';
 }
 const NPC_IDLE = ['오늘 날씨 좋다~', '김치복님 방송 언제 하지?', '분수 소리 듣기 좋네요', '어제 큰 물고기 봤어요!', '텃밭 작물이 잘 자라네', '레이드 드래곤 무섭다…', '흥얼흥얼~ ♪', '이 마을 정말 좋아요'];
+// 카페 손님 (2026-11-17): 내가 알바 중이면 가끔 주민이 카페에 와서 커피를 사 감 (game-rules.js jobGuests, 팁은 알바 끝날 때 서버가 같이 줌)
+const JG = { at: 0, list: [] };
+function guestTick() {
+  const at = !HT && me.job?.at || 0;
+  if (at !== JG.at) {   // 새 알바 (또는 끝남): 손님 목록 새로. 이미 지나간 손님은 건너뜀
+    for (const g of JG.list) if (g.p && g.st !== 'gone') guestBye(g, true);
+    JG.at = at; const n0 = srvNow();
+    JG.list = at ? jobGuests(at, me.lv).map(g => ({ ...g, T0: at + g.t, st: at + g.t < n0 - 1500 ? 'gone' : 'wait' })) : [];
+  }
+  if (!JG.list.length) return;
+  const n = srvNow(), [dx, dy] = door('cafe');
+  for (const g of JG.list) {
+    if (g.st === 'wait' && n >= g.T0 - 7000) {   // 7초 전에 출발 (멀면 빨리 걸음)
+      const p = NPC.list[g.npc % NPC.list.length]; if (!p || p.guest) { g.st = 'gone'; continue; }
+      g.p = p; p.guest = g; g.st = 'go'; p.speed = 150; g.side = (g.npc % 2 ? 1 : -1);
+      walkNear(p, dx + g.side * T * 1.3, dy + T * .9);
+    } else if (g.st === 'go' && n >= g.T0 && (!g.p.moving || n >= g.T0 + 6000)) {
+      const p = g.p; g.st = 'buy'; p.path = []; p.moving = false; p.dir = dx < p.x ? -1 : 1;
+      say(p, `☕ ${g.menu} 한 잔 주세요!`, 2400); say(me, `☕ ${g.menu} 나왔습니다~`, 2400);
+      setTimeout(() => { if (g.st !== 'buy') return; say(p, `고마워요! 팁이에요 🪙${g.tip}`, 2600); emote(p, '❤️'); sfx('coin'); toast(`☕ ${p.name}님이 ${g.menu}를 사 갔어요 · 팁 🪙 +${g.tip} (알바 끝나면 같이 받아요)`); }, 1300);
+      setTimeout(() => guestBye(g), 4200);
+    }
+  }
+}
+function guestBye(g, now) {   // 손님 돌아감: 원래 자리로
+  const p = g.p; g.st = 'gone'; if (!p) return;
+  p.guest = null; p.speed = 70; p.next = 3 + Math.random() * 4;
+  if (now) { p.path = []; p.moving = false; } walkNear(p, p.hx, p.hy);
+}
 function npcTick(dt) {
-  npcSync();
+  npcSync(); guestTick();
   for (const p of NPC.list) {
     stepChar(p, dt);
+    if (p.guest) continue;   // 카페 손님 노릇 중
     if (!p.moving && Math.hypot(me.x - p.x, me.y - p.y) < 3 * T) { p.dir = me.x < p.x ? -1 : 1; p.next = Math.max(p.next, 2); continue; }   // 가까이 오면 멈춰서 쳐다봄
     if (p.moving || (p.next -= dt) > 0) continue;
     p.next = 4 + Math.random() * 7;
@@ -3432,7 +3463,7 @@ function npcTag(p, now) {
   ctx.fillStyle = 'rgba(46,125,74,.94)'; rr(ctx, p.x - tw / 2, p.y - 66, tw, 17, 8.5); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.fillText(p.name, p.x, p.y - 57.5);
   const m = npcMark(p);
-  if (!m) { if (p.bubble && p.bubble.until > now) bubbleAt(p.x, p.y - 68, p.bubble.text); return; }
+  if (!m || (p.guest && p.bubble?.until > now)) { if (p.bubble && p.bubble.until > now) bubbleAt(p.x, p.y - 68, p.bubble.text); return; }   // 카페 손님일 때는 말풍선이 먼저
   // 머리 위 말풍선: ❗ / ❓ (위아래로 살랑살랑)
   const y = p.y - 88 + Math.sin(now / 260 + p.seed * 3) * 2.5, x = p.x, w = 26, h = 26, gold = m !== '…';
   ctx.fillStyle = m === '?' ? '#fff4cf' : '#fff'; ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 2;
@@ -3603,7 +3634,7 @@ function cafeSheet(b, keep) {
     help: `<p>사냥 중에 체력이 <b>${me.potAt}%</b> 아래로 내려가면 음료를 자동으로 마셔요.</p><p>마을에서는 가만히 있어도 1초에 2%씩 체력이 차요.</p><p>알바 돈은 레벨이 높을수록 많아요. 생활 경험치(✨)도 받아요.</p>` },
     async x => {
       if (x === 'job') { if (await act('/api/job/start', {})) { closeModal(); say(me, '☕ 알바 중…', 4000); walkNear(me, ...door('cafe')); toast('☕ 알바 시작! 1분 동안 카페 앞에서 일해요. 끝나면 골드가 들어와요'); } return; }
-      if (x === 'quit') { if (await act('/api/job/quit', {})) { toast('알바를 그만뒀어요'); reopen?.(); } return; }
+      if (x === 'quit') { const j = await act('/api/job/quit', {}); if (j) { toast(j.tips ? `알바를 그만뒀어요 · 손님 팁 🪙 +${j.tips.toLocaleString()}` : '알바를 그만뒀어요'); reopen?.(); } return; }
       if (x === 'rest') { if (await act('/api/rest', {})) { emote(me, '❤️'); toast('푹 쉬었어요. 체력이 가득 찼어요'); reopen?.(); } return; }
       const [k, n] = x.split(':'), j = await act('/api/pots', { k, n: +n });
       if (j) { logAct(`${POTS[k].n} ${n}개 −${POTS[k].price * n}`); toast(`${POTS[k].i} ${n}개 샀어요`); reopen?.(); }
@@ -5139,7 +5170,7 @@ setInterval(async () => {
   const left = jobLeft(); chip.textContent = left ? `☕ 알바 ${fmtSec(left)}` : '☕ 알바 끝!';
   if (!left && !jobBusy && token) {
     jobBusy = true; const j = await act('/api/job/finish', {}); jobBusy = false;
-    if (j) { toast(`☕ 알바 끝! 🪙 +${j.pay.toLocaleString()}`); sysMsg(`☕ 카페 알바를 마쳤어요. 골드 +${j.pay.toLocaleString()}`); logAct(`카페 알바 +${j.pay}`); emote(me, '🎉'); }
+    if (j) { const tp = j.tips ? ` + 손님 팁 ${j.tips.toLocaleString()}` : ''; toast(`☕ 알바 끝! 🪙 +${(j.pay + (j.tips || 0)).toLocaleString()}`); sysMsg(`☕ 카페 알바를 마쳤어요. 알바비 ${j.pay.toLocaleString()}${tp}`); logAct(`카페 알바 +${j.pay + (j.tips || 0)}`); emote(me, '🎉'); }
   }
 }, 1000);
 
@@ -5346,7 +5377,7 @@ const GUIDE = () => [
     ['건물 이용', '건물을 누르면 그 앞까지 걸어가서 바로 창이 열려요.'],
     ['🏘️ 바로가기', '오른쪽 버튼. 가고 싶은 곳을 누르면 그 자리로 바로 이동하고 시설 창도 열려요.'],
     ['채팅·이모트', '아래 채팅 칸은 같은 채널의 모두에게 보여요. 😊 버튼으로 이모트. 귓속말·친구·거래는 없어요.'],
-    ['🏆 랭킹', '오른쪽 버튼. 레벨 · 번 돈 · 낚시 · 강화 합 순위(상위 50명)와 내 순위를 봐요. 번 돈은 2026-11-17부터 센 값이에요.'],
+    ['🏆 랭킹', '오른쪽 버튼. 레벨 · 번 돈 · 비싼 물고기 · 큰 물고기 · 강화 합 순위(상위 50명)와 내 순위를 봐요. 번 돈은 2026-11-17부터 센 값이에요.'],
     ['캐릭터창', '내 캐릭터를 누르면 능력치·장비·스킬·스킨·칭호를 볼 수 있어요.'],
     ['📜 주민 임무', '마을에 주민 5명이 돌아다녀요(3시간마다 새 주민). 머리 위 ❗ 말풍선을 누르면 소소한 임무를 받고, 다 하면 ❓로 바뀌어요. 다시 찾아가면 보상! 받은 임무는 왼쪽 위 임무창에 보여요 (한 번에 3개까지).'],
   ]],
@@ -5429,17 +5460,18 @@ function openGuideBook(open = 0) {
 }
 $('#guideBtn').onclick = () => openGuideBook();
 // ───────── 🏆 랭킹 (2026-11-17, 가이드 밑 버튼): 레벨 · 번 돈 · 낚시 · 강화 합. 서버 /api/rank?k= (상위 50명, 1분마다 새로) ─────────
-const RANKS = [['lv', '⭐ 레벨', x => `Lv.${x}`], ['earn', '💰 번 돈', x => `🪙 ${fmtN(x)}`], ['fish', '🎣 낚시', x => `${fmtN(x)}마리`], ['enh', '🔨 강화', x => `+${fmtN(x)}`]];
+const RANKS = [['lv', '⭐ 레벨', x => `Lv.${x}`], ['earn', '💰 번 돈', x => `🪙 ${fmtN(x)}`], ['fishp', '💎 비싼 물고기', x => `🪙 ${fmtN(x)}`], ['fishl', '📏 큰 물고기', x => `${x}cm`], ['enh', '🔨 강화', x => `+${fmtN(x)}`]];
 const RK = { k: 'lv', data: {} };
 async function openRank(k = RK.k) {
   RK.k = k; const R = RANKS.find(r => r[0] === k), d = RK.data[k];
   const fresh = d && Date.now() - d.got < 30e3;
   const rows = !d ? '<p class="muted" style="text-align:center;padding:20px 0">순위를 불러오는 중…</p>' : d.error ? `<p class="muted">${esc(d.error)}</p>` : !d.list.length ? '<p class="muted" style="text-align:center;padding:20px 0">아직 기록이 없어요. 첫 1등이 되어 보세요!</p>'
-    : `<ol class="rk-list">${d.list.map((x, i) => `<li class="${x.id === me.uid ? 'mine' : ''}${i < 3 ? ' top' : ''}"><span class="rk-n">${['🥇', '🥈', '🥉'][i] || i + 1}</span><span class="rk-who"><b>${esc(x.nick)}</b><small>Lv.${x.lv} · ${CLASSES[x.cls]?.i || ''} ${CLASSES[x.cls]?.n || ''}${x.title && x.title !== 'new' ? ` · 「${esc(titleName(x.title))}」` : ''}</small></span><span class="rk-v">${R[2](x.v)}</span></li>`).join('')}</ol>`;
-  const mine = d && !d.error ? `<div class="rk-me"><span>내 순위</span><b>${d.me.rank ? `${d.me.rank}위` : '순위 없음'}</b><span class="rk-v">${R[2](d.me.v)}</span></div>` : '';
-  openModal(bsWrap({ id: 'rank', icon: '🏆', name: '랭킹' }, { tag: k === 'earn' ? '2026-11-17부터 번 골드를 모두 더해요' : k === 'enh' ? '장비 칸 6개의 강화 단계를 모두 더해요' : k === 'fish' ? '지금까지 낚은 물고기 수' : '레벨이 같으면 경험치가 많은 순서',
+    : `<ol class="rk-list">${d.list.map((x, i) => `<li class="${x.id === me.uid ? 'mine' : ''}${i < 3 ? ' top' : ''}"><span class="rk-n">${['🥇', '🥈', '🥉'][i] || i + 1}</span><span class="rk-who"><b>${esc(x.nick)}</b><small>Lv.${x.lv} · ${CLASSES[x.cls]?.i || ''} ${CLASSES[x.cls]?.n || ''}${x.title && x.title !== 'new' ? ` · 「${esc(titleName(x.title))}」` : ''}</small></span><span class="rk-v">${R[2](x.v)}${x.f ? `<small>${x.f.i} ${esc(x.f.n)}</small>` : ''}</span></li>`).join('')}</ol>`;
+  const mine = d && !d.error ? `<div class="rk-me"><span>내 순위</span><b>${d.me.rank ? `${d.me.rank}위` : '순위 없음'}</b><span class="rk-v">${R[2](d.me.v)}${d.me.f ? `<small>${d.me.f.i} ${esc(d.me.f.n)}</small>` : ''}</span></div>` : '';
+  openModal(bsWrap({ id: 'rank', icon: '🏆', name: '랭킹' }, { tag: k === 'earn' ? '2026-11-17부터 번 골드를 모두 더해요' : k === 'enh' ? '장비 칸 6개의 강화 단계를 모두 더해요' : k === 'fishp' ? '지금까지 낚은 물고기 중 가장 비싸게 팔린 한 마리' : k === 'fishl' ? '지금까지 낚은 물고기 중 가장 큰 한 마리' : '레벨이 같으면 경험치가 많은 순서',
     tabs: RANKS.map(([id, n]) => [id, n]), tab: k, body: rows, foot: mine }), el => {
     el.querySelector('.bs-tabs').onclick = e => { const t = e.target.closest('[data-tab]')?.dataset.tab; if (t && t !== RK.k) { openRank(t); sheet.scrollTop = 0; } };
+    el.querySelector('.bs')?.classList.add('rk');
   }, !!d);
   if (fresh) return;
   try { const j = await api(`/api/rank?k=${k}`); RK.data[k] = { ...j, got: Date.now() }; } catch (x) { RK.data[k] = { error: x.message, got: Date.now() }; }
@@ -5460,7 +5492,7 @@ function showGuide() {
   openModal(`<div class="guide"><h3>🥬 치복 타운에 어서 와요, ${esc(me.name)}님!</h3>
     <h4>🎯 오늘의 목표</h4><ul>${goals}</ul>
     <h4 style="margin-top:12px">🗺️ 이런 것도 있어요</h4><ul class="tips">${[['🏛️ 마을회관', '내 집을 지을 수 있어요. 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩으로 올리면 빌라부터 임대 수입!'], ['🐉 매시 정각', '레드 드래곤 레이드! 30초 안에 참여하면 큰 보상 + 확률로 전용 스킨'], ['🎣 낚시', '아무 물이나 누르면 바로 낚싯대를 던져요. 잡으면 머리 위로 자랑!']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
-    <h4 style="margin-top:12px">👉 오른쪽 버튼</h4><ul class="tips">${[['🏘️ 바로가기', '가고 싶은 곳을 누르면 바로 이동해요'], ['🧺 자동', '벌목·채광·알바·낚시·농사를 알아서 해요 (효율은 낮아요)'], ['📖 가이드', '<b>모든 놀거리 설명은 여기에!</b> 궁금하면 언제든 눌러요'], ['🏆 랭킹', '레벨 · 번 돈 · 낚시 · 강화 합 순위를 봐요']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
+    <h4 style="margin-top:12px">👉 오른쪽 버튼</h4><ul class="tips">${[['🏘️ 바로가기', '가고 싶은 곳을 누르면 바로 이동해요'], ['🧺 자동', '벌목·채광·알바·낚시·농사를 알아서 해요 (효율은 낮아요)'], ['📖 가이드', '<b>모든 놀거리 설명은 여기에!</b> 궁금하면 언제든 눌러요'], ['🏆 랭킹', '레벨 · 번 돈 · 비싼 물고기 · 큰 물고기 · 강화 합 순위를 봐요']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
     <h4 style="margin-top:12px">⚙️ 알아 두면 편해요</h4><ul class="tips">${tips.map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul></div>
     <label class="skip guide"><input type="checkbox" id="guideSkip"> 오늘 하루 보지 않기</label>
     <div class="actions"><button class="btn" data-g="book">📖 가이드 보기</button><button class="btn" data-g="news">📋 오늘 의뢰 · 마을 소식</button><button class="btn main" data-g="go">시작하기</button></div>`, el => {

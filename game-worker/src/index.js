@@ -1,6 +1,6 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
+import { jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, AUTO_FISH, FISH_SHOP, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
@@ -227,7 +227,7 @@ function meOut(user, c) {
       str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
       cls: c.cls, enh: c.enh, gacha: c.gacha, preset: c.preset, life: c.life, presets: c.presets.map((p, i) => (i === c.preset ? { ...p, s: [c.str, c.dex, c.int, c.luk] } : p)),
       hunt: h ? { f: h.f, start: h.start, t: Math.round(h.t), boss: h.boss, kills: h.kills, exp: h.exp, gold: h.gold, drops: h.drops } : null,
-      job: c.jobAt ? { left: Math.max(0, Math.ceil((c.jobAt + JOB.sec * 1000 - Date.now()) / 1000)), pay: JOB.pay(c.lv) } : null },
+      job: c.jobAt ? { at: c.jobAt, left: Math.max(0, Math.ceil((c.jobAt + JOB.sec * 1000 - Date.now()) / 1000)), pay: JOB.pay(c.lv) } : null },
   };
 }
 async function loadMe(env, user) {
@@ -486,11 +486,12 @@ const GAME = {
     if (!c.jobAt) fail(400, '알바 중이 아니에요');
     const left = Math.ceil((c.jobAt + JOB.sec * 1000 - at) / 1000);
     if (left > 0) fail(400, `아직 ${left}초 남았어요`);
-    const pay = JOB.pay(c.lv); c.gold += pay; c.jobAt = 0; cntAdd(c, 'job');
+    const tips = jobTips(c.jobAt, c.lv), pay = JOB.pay(c.lv); c.gold += pay + tips; c.jobAt = 0; cntAdd(c, 'job');
     const lexp = lifeExp(c, 'job'); addExp(c, lexp);
-    return { pay, lexp, log: ['job', String(pay)] };
+    return { pay, tips, lexp, log: ['job', String(pay + tips)] };
   },
-  '/api/job/quit'(c) { c.jobAt = 0; },
+  // 그만두면 알바비는 없고, 그때까지 온 손님 팁만 받음
+  '/api/job/quit'(c, b, at) { const tips = c.jobAt ? jobTips(c.jobAt, c.lv, at) : 0; c.gold += tips; c.jobAt = 0; return { tips }; },
   // 손 낚시: 물을 누르면 바로. 서버가 결과를 정하고, 화면은 wait(ms) 뒤에 입질 → 결과를 보여 줌
   '/api/fish/hand'(c, b, at, out, env, user) { return fishOnce(c, b, at, env, user, false); },
   // 자동 낚시용 미끼 사기 (골드)
@@ -814,21 +815,23 @@ const ENH_SUM = ['sword', 'bow', 'staff', 'hat', 'armor', 'shoes'].map(k => `COA
 const RANK = {
   lv: { v: 'c.lv', t: 'c.exp' },
   earn: { v: "COALESCE(json_extract(c.life, '$.earn'), 0)", t: 'c.lv' },
-  fish: { v: 'COALESCE(f.count, 0)', t: 'COALESCE(f.gold, 0)' },
+  fishp: { v: 'COALESCE(f.best_price, 0)', t: 'COALESCE(f.count, 0)', i: 'f.best_price_fish' },   // 제일 비싼 물고기
+  fishl: { v: 'COALESCE(f.best_len, 0)', t: 'COALESCE(f.count, 0)', i: 'f.best_len_fish' },       // 제일 큰 물고기
   enh: { v: `(${ENH_SUM})`, t: 'c.lv' },
 };
 const RANK_MEM = {};
+const rankFish = s => { try { return s ? JSON.parse(s) : null; } catch { return null; } };
 async function rankList(env, user, k) {
   if (!own(RANK, k)) fail(400, '잘못된 요청이에요');
   const R = RANK[k], from = 'FROM characters c JOIN users u ON u.id = c.user_id LEFT JOIN fishing f ON f.user_id = c.user_id WHERE u.banned = 0';
   let M = RANK_MEM[k];
   if (!M || now() - M.at > 60e3) {
-    const r = await env.DB.prepare(`SELECT u.id, u.nick, c.lv, c.cls, c.title, ${R.v} AS v, ${R.t} AS t ${from} AND ${R.v} > 0 ORDER BY v DESC, t DESC, u.id LIMIT 50`).all();
-    M = RANK_MEM[k] = { at: now(), list: r.results.map(x => ({ id: x.id, nick: x.nick, lv: x.lv, cls: x.cls, title: x.title, v: x.v })) };
+    const r = await env.DB.prepare(`SELECT u.id, u.nick, c.lv, c.cls, c.title, ${R.v} AS v, ${R.t} AS t, ${R.i || 'NULL'} AS i ${from} AND ${R.v} > 0 ORDER BY v DESC, t DESC, u.id LIMIT 50`).all();
+    M = RANK_MEM[k] = { at: now(), list: r.results.map(x => ({ id: x.id, nick: x.nick, lv: x.lv, cls: x.cls, title: x.title, v: x.v, f: rankFish(x.i) })) };
   }
-  const me = await env.DB.prepare(`SELECT ${R.v} AS v, ${R.t} AS t ${from} AND u.id = ?`).bind(user.id).first();
+  const me = await env.DB.prepare(`SELECT ${R.v} AS v, ${R.t} AS t, ${R.i || 'NULL'} AS i ${from} AND u.id = ?`).bind(user.id).first();
   const rank = me && me.v > 0 ? (await env.DB.prepare(`SELECT COUNT(*) AS n ${from} AND (${R.v} > ? OR (${R.v} = ? AND ${R.t} > ?))`).bind(me.v, me.v, me.t).first()).n + 1 : 0;
-  return json({ k, list: M.list, me: { v: me?.v || 0, rank }, at: M.at });
+  return json({ k, list: M.list, me: { v: me?.v || 0, rank, f: rankFish(me?.i) }, at: M.at });
 }
 
 async function fishRank(env, user) {

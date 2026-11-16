@@ -434,12 +434,19 @@
   - **임무창** `#questBox` (왼쪽 위, `renderQuests`, 1초마다): 받은 임무·진행·새 주민까지 남은 시간. 줄을 누르면 그 주민에게 걸어감. ▲로 접기(localStorage `cbt-qmin`)
 
 ### 랭킹 · 낚시 쿨타임 — 2026-11-17 배포
-- 오른쪽 버튼 📖 가이드 밑에 **🏆 랭킹** (`#rankBtn`, `openRank`, bsWrap 틀, 색 `BC.rank`). 탭: 레벨 / 번 돈 / 낚시 / 강화 합. 상위 50명 + 내 순위
+- 오른쪽 버튼 📖 가이드 밑에 **🏆 랭킹** (`#rankBtn`, `openRank`, bsWrap 틀, 색 `BC.rank`). 탭: 레벨 / 번 돈 / 비싼 물고기 / 큰 물고기 / 강화 합. 상위 50명 + 내 순위 (물고기 탭은 그 물고기 이름도 보임, 응답의 `f`)
 - 서버 `GET /api/rank?k=lv|earn|fish|enh` (index.js `RANK`, `rankList`, 1분 기억 `RANK_MEM`)
-  - 레벨: lv → exp 순 · 낚시: `fishing` 표 count · 강화 합: `c.enh` 6칸 합
+  - 레벨: lv → exp 순 · 비싼 물고기 `fishp`: `fishing.best_price` · 큰 물고기 `fishl`: `fishing.best_len` · 강화 합: `c.enh` 6칸 합
   - **번 돈** = `life.earn`: `play()`에서 (나중 골드 − 처음 골드 + 그 사이 `spend`로 쓴 돈)이 양수면 더함. 치트 골드는 `c._noEarn`으로 빼고 셈. 2026-11-17부터 센 값 (예전 수입은 없음)
 - 아이콘 🏆 = game-icons.js `trophy`
 - 낚시 쿨타임 10초 → **2초** (`FISHING.cooldown`, 손·자동 같이). 시간당 낚시 수입·경험치가 크게 늘고, 하루 400마리(값 절반)에 빨리 닿음
+
+### 모자 스킨 · 카페 손님 — 2026-11-17 배포
+- 모자 스킨(`c.hat`)을 쓰면 머리 장비(`helmParts`)는 안 그림. 화면 이름 '머리 장식' → '모자'
+- **카페 손님**: 알바 중 가끔 마을 주민이 와서 커피를 사 가고 팁을 줌. game-rules.js `JOB_GUEST, jobGuests(jobAt, lv), jobTips`
+  - 1분을 3토막으로 나눠 토막마다 45% 확률로 손님 1명, 팁 = (20 + 레벨×3) × 0.8~1.4. 알바 시작 시각으로 정해져서 화면·서버 같은 계산
+  - 서버: `/api/job/finish`가 알바비 + 팁 전부(`tips`), `/api/job/quit`은 그때까지 온 손님 팁만. `/api/me`의 `job.at` = 시작 시각
+  - 화면: `guestTick`(npcTick 안). 손님 시각 7초 전에 주민이 빠르게 카페 문 앞으로 → "○○ 한 잔 주세요!" → 내가 "나왔습니다~" → 고마워요 + 팁 토스트 → 제자리로. 손님 노릇 중인 주민은 `p.guest`, 이때는 ❗ 대신 말풍선이 보임
 
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감

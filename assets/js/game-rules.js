@@ -309,6 +309,20 @@ export const FISH_SHOP = {
 
 // ───────── 카페 알바 ─────────
 export const JOB = { sec: 60, pay: lv => 60 + lv * 7 };   // 카페 알바 1분 (예전 40 + 레벨×5)
+// 카페 손님 (2026-11-17): 알바 중 가끔 마을 주민이 와서 커피를 사 감 → 팁. 알바 시작 시각(jobAt)으로 정해져서 화면·서버 같은 계산
+// 1분을 3토막(10~24초 · 25~38초 · 39~52초)으로 나눠 토막마다 chance 확률로 손님 1명. 팁 = tip(레벨) × 0.8~1.4
+export const JOB_GUEST = { slots: [[10, 24], [25, 38], [39, 52]], chance: .45, tip: lv => 20 + lv * 3,
+  menu: ['아메리카노', '카페라테', '바닐라 라테', '카푸치노', '핫초코', '딸기 스무디', '녹차 라테', '아이스티'] };
+export function jobGuests(jobAt, lv) {
+  const r = seeded('job' + jobAt), out = [];
+  for (const [a, b] of JOB_GUEST.slots) {
+    const hit = r() < JOB_GUEST.chance, t = (a + r() * (b - a)) * 1000, npc = Math.floor(r() * 5), menu = JOB_GUEST.menu[Math.floor(r() * JOB_GUEST.menu.length)], k = .8 + r() * .6;
+    if (hit) out.push({ t: Math.round(t), npc, menu, tip: Math.round(JOB_GUEST.tip(lv) * k) });
+  }
+  return out;
+}
+// upTo: 이 시각까지 온 손님 팁만 (알바를 그만둘 때). 생략하면 전부
+export const jobTips = (jobAt, lv, upTo = Infinity) => jobGuests(jobAt, lv).filter(g => jobAt + g.t <= upTo).reduce((n, g) => n + g.tip, 0);
 
 // ═════════════════════ 4단계: 생활 (텃밭 · 채집 · 알바 고용 · 집 · 칭호 · 분수) ═════════════════════
 const HOUR = 3600e3, MIN = 60e3;
