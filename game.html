@@ -87,6 +87,85 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .wishres { background: #fff8e1; border: 2px solid #f2c14e; border-radius: 12px; padding: 10px; text-align: center; font-size: calc(15px * var(--fs)); margin: 8px 0; }
 .workbox { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: grid; gap: 8px; }
 .odds { width: 100%; } .odds th, .odds td { text-align: center; }
+/* ───── 건물 창 공통 틀 (2026-11-17 UI 개편): 머리 → 지갑 → 탭 → 내용 → 도움말(접힘) → 주 버튼(아래 고정) ───── */
+.sheet:has(> .bs) { width: min(460px, 100%); }
+.bs { --bcs: color-mix(in srgb, var(--bc) 11%, #fff); --bcl: color-mix(in srgb, var(--bc) 38%, #fff); display: grid; gap: 10px; }
+.bs-head { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; align-items: center; padding-right: 52px; min-height: 52px; }
+.bs-ic { width: 52px; height: 52px; border-radius: 15px; display: grid; place-items: center; font-size: calc(28px * var(--fs)); background: var(--bcs); border: 2px solid var(--bcl); }
+.bs-head h3 { margin: 0; font-size: calc(21px * var(--fs)); line-height: 1.15; }
+.bs-head p { margin: 2px 0 0; color: var(--ink-soft); font-size: calc(13.5px * var(--fs)); line-height: 1.35; }
+.bs-wal { display: flex; flex-wrap: wrap; gap: 6px; }
+.bs-wal > span { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px 4px 8px; border-radius: 999px; background: #fff; border: 1.5px solid var(--line); font-size: calc(14px * var(--fs)); font-variant-numeric: tabular-nums; }
+.bs-wal b { font-weight: 800; }
+.bs-tabs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 3px; padding: 4px; background: var(--paper-2); border-radius: 13px; }
+.bs-tabs button { min-height: 44px; border: 0; border-radius: 10px; background: transparent; font-weight: 700; font-size: calc(14px * var(--fs)); color: var(--ink-soft); padding: 4px 2px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; }
+.bs-tabs button[aria-selected="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 0 var(--line), 0 2px 6px rgba(31,42,58,.12); }
+.bs-tabs .bdg { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--kimchi); color: #fff; font-size: 12px; display: inline-grid; place-items: center; }
+.bs-body { display: grid; gap: 10px; }
+.bs-card { background: #fff; border: 1.5px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 9px; }
+.bs-card.hero { background: var(--bcs); border-color: var(--bcl); }
+.bs-card h4 { margin: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: calc(15.5px * var(--fs)); }
+.bs-card h4 > small, .bs-card h4 > .cs, .bs-card h4 > .c:last-child { margin-left: auto; }
+.bs-card h4 small { font-weight: 600; color: var(--ink-soft); font-size: calc(13px * var(--fs)); font-variant-numeric: tabular-nums; }
+.bs-card p { margin: 0; }
+.bs-sec { margin: 4px 2px -3px; font-weight: 800; font-size: calc(13.5px * var(--fs)); color: var(--ink-soft); }
+.bs-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.bs-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 64px; padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; }
+.bs-row.cur { border-color: var(--bcl); background: var(--bcs); }
+.bs-row.stack .bs-qty { grid-column: 1 / -1; }
+.bs-ri { width: 48px; height: 48px; border-radius: 12px; background: var(--paper-2); display: grid; place-items: center; font-size: calc(26px * var(--fs)); }
+.bs-row .t { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; font-size: calc(15px * var(--fs)); }
+.bs-row .lv { color: #c0662a; }
+.bs-act { display: flex; gap: 5px; }
+.bs-qty { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.cs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.bs-card > .cs, .bs-card h4 .cs { margin-top: 0; }
+.c { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 999px; background: var(--paper-2); color: var(--ink); font-size: calc(12.5px * var(--fs)); font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.c b { color: inherit; }
+.c.up, .c.hi { background: #e3f4e6; color: #2a7f3e; } .c.gold, .c.mid { background: #fff1d1; color: #8a5a00; }
+.c.no, .c.lo { background: #fde5e5; color: #b8321f; } .c.no i { font-style: normal; font-weight: 600; font-size: .9em; opacity: .85; }
+.c s { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.bb { min-height: 44px; min-width: 64px; padding: 6px 12px; border: 2px solid var(--ink); border-radius: 12px; background: #fff; box-shadow: 0 3px 0 var(--ink); font-weight: 800; font-size: calc(14px * var(--fs)); display: inline-flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; transition: transform .08s, box-shadow .08s; }
+.bb > span { display: inline-flex; align-items: center; gap: 4px; }
+.bb small { font-weight: 600; font-size: calc(12px * var(--fs)); opacity: .82; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.bb em { font-style: normal; font-size: .78em; background: #ffe28a; color: #6b4800; border-radius: 6px; padding: 0 5px; margin-left: 4px; }
+.bb:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.bb.main { background: var(--kimchi); color: #fff; }
+.bb.wide { width: 100%; min-height: 52px; font-size: calc(15.5px * var(--fs)); }
+.bb:disabled { opacity: .45; cursor: not-allowed; }
+.bs-bar { position: relative; height: 24px; border-radius: 12px; background: rgba(31,42,58,.08); overflow: hidden; }
+.bs-bar i { position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--bc) 62%, #fff); border-radius: 12px; transition: width .3s; }
+.bs-bar span { position: relative; display: block; text-align: center; line-height: 24px; font-size: calc(13px * var(--fs)); font-weight: 800; font-variant-numeric: tabular-nums; }
+.bs-thin { height: 5px; border-radius: 3px; background: var(--paper-2); overflow: hidden; margin-top: 5px; } .bs-thin i { display: block; height: 100%; background: color-mix(in srgb, var(--bc) 75%, #fff); }
+.bs-steps { display: flex; gap: 4px; margin-top: 3px; } .bs-steps i { flex: 1; height: 7px; border-radius: 4px; background: rgba(31,42,58,.1); } .bs-steps i.on { background: var(--bc); }
+.bs-odds { display: grid; gap: 6px; } .bs-odds .ob { display: flex; height: 14px; border-radius: 7px; overflow: hidden; gap: 2px; } .bs-odds .ob i { min-width: 3px; } .bs-odds .cs { margin: 0; }
+.bs-help { border-top: 1.5px dashed var(--line); }
+.bs-help summary { min-height: 44px; display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--ink-soft); cursor: pointer; list-style: none; }
+.bs-help summary::-webkit-details-marker { display: none; }
+.bs-help summary::after { content: '▾'; margin-left: auto; transition: transform .2s; } .bs-help[open] summary::after { transform: rotate(180deg); }
+.bs-help > div { display: grid; gap: 7px; font-size: calc(14px * var(--fs)); line-height: 1.55; padding-bottom: 6px; }
+.bs-help p { margin: 0; }
+.bs-foot { position: sticky; bottom: 0; z-index: 2; margin: -4px -18px calc(-1 * var(--sb, 18px)); padding: 14px 18px var(--sb, 18px); background: linear-gradient(rgba(251,252,247,0), var(--paper) 14px); }
+.bs-two { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; } .bs-two .bb { min-height: 54px; }
+.bs-three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; } .bs-three .bb { min-height: 58px; padding: 6px 4px; min-width: 0; } .bs-three .bb small { white-space: normal; text-align: center; }
+.bs-alert { width: 100%; min-height: 52px; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 2px solid #f2c14e; border-radius: 14px; background: #fff8e1; font-weight: 700; text-align: left; animation: bsPulse 1.6s ease-in-out infinite; }
+.bs-alert span { margin-left: auto; color: var(--kimchi); font-weight: 800; white-space: nowrap; }
+@keyframes bsPulse { 50% { box-shadow: 0 0 0 4px rgba(242,193,78,.35); } }
+.gx-h { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.gx-h > div > b { font-size: calc(17px * var(--fs)); }
+.gx-i { width: 52px; height: 52px; border-radius: 14px; background: #fff; display: grid; place-items: center; font-size: calc(30px * var(--fs)); border: 2px solid var(--bcl); }
+.gx-gear { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.gx-gear > div { display: grid; justify-items: center; gap: 3px; padding: 6px 2px; border-radius: 12px; background: var(--paper-2); text-align: center; }
+.gx-gear small { font-size: calc(12px * var(--fs)); }
+.gx-gear .emp { font-size: 28px; opacity: .4; height: 44px; display: grid; place-items: center; }
+.wk-p { display: flex; gap: 6px; } .wk-p span { flex: 1; height: 40px; border-radius: 10px; display: grid; place-items: center; font-size: 22px; background: var(--paper-2); filter: grayscale(1); opacity: .35; } .wk-p span.on { filter: none; opacity: 1; background: var(--bcs); box-shadow: inset 0 0 0 1.5px var(--bcl); }
+.bs-seedpick { width: 100%; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; grid-template-areas: "i n e" "i t t"; gap: 2px 10px; align-items: center; text-align: left; padding: 8px 12px; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; min-height: 60px; }
+.bs-seedpick > span { grid-area: i; font-size: 30px; } .bs-seedpick > div { grid-area: n; } .bs-seedpick small { display: block; color: var(--ink-soft); font-size: 12px; } .bs-seedpick .ctags { grid-area: t; margin: 0; } .bs-seedpick em { grid-area: e; font-style: normal; font-weight: 800; color: var(--kimchi); white-space: nowrap; }
+.bs .plots { margin: 0; }
+.bs-table { width: 100%; border-collapse: collapse; font-size: calc(13.5px * var(--fs)); font-variant-numeric: tabular-nums; } .bs-table th, .bs-table td { padding: 6px 4px; text-align: center; border-top: 1px solid var(--line); } .bs-table th { font-size: calc(12px * var(--fs)); color: var(--ink-soft); border-top: 0; } .bs-table td.nx { color: #2a7f3e; font-weight: 700; }
+.bs .skfxsum { margin: 0; }
+.bs .swatches button { width: 40px; height: 40px; }
+@media (max-width: 600px) { .bs { --sb: max(18px, env(safe-area-inset-bottom, 0px)); } .bs-head h3 { font-size: calc(19px * var(--fs)); } }
 html, body { height: 100%; }
 body { margin: 0; background: var(--sky); color: var(--ink); font-family: var(--font-body); font-size: calc(15px * var(--fs)); overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; -webkit-tap-highlight-color: transparent; }
 button, input, select { font: inherit; color: inherit; }
@@ -858,7 +937,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, fishHit, FISH_RIVER, FISH_SEA, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx } from './assets/js/game-rules.js?v=__BUILD__';
@@ -3249,57 +3328,104 @@ addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden && !p
 const actBtn = (id, label, cost) => `<button class="btn" data-a="${id}">${label}${cost ? `<small>${cost}</small>` : ''}</button>`;
 const goldTxt = n => `🪙 ${n.toLocaleString()}`;
 const row = (ic, name, desc, btns, locked) => `<li${locked ? ' class="locked"' : ''}><span class="ic">${ic}</span><span><span class="nm">${name}</span><small>${desc}</small></span><span class="btns">${btns}</span></li>`;
-function sheetHead(b, desc) { return `<h3>${b.icon} ${b.name}</h3><p>${desc}</p><div class="points" style="background:#fff;border-color:var(--line)"><span>내 골드</span><span>${goldTxt(me.gold)}</span></div>`; }
 function wire(el, fn) { el.onclick = async e => { const t = e.target.closest('[data-x]'); if (!t || t.disabled || wire.busy) return; wire.busy = true; try { await fn(t.dataset.x, t); } finally { wire.busy = false; } }; }   // onclick: 다시 열 때 이전 처리기가 쌓이지 않게
 function spend(n) { if (me.gold < n) { toast('골드가 부족해요'); return false; } me.gold -= n; syncBars(); return true; }   // 4단계 놀거리(미리보기)용
 
+// ───────── 건물 창 공통 틀 (2026-11-17 UI 개편) ─────────
+// 적용한 원칙
+//  · 힉의 법칙: 기능이 여러 개면 탭으로 나눠 한 번에 한 가지만 보이게 (고를 것 줄이기)
+//  · 피츠의 법칙 · 엄지 영역: 버튼은 44px 이상, 가장 자주 누르는 버튼은 창 맨 아래(휴대폰 엄지 자리)에 고정
+//  · 점진적 공개 · 밀러의 법칙: 긴 설명은 접은 '도움말'에, 화면에는 한 줄 소개 + 숫자 꼬리표만
+//  · 상태 보이기: 진행 막대, 모자란 재료는 빨간 꼬리표에 '얼마 모자란지'까지
+//  · 일관성(제이콥의 법칙): 모든 건물이 같은 순서 — 머리 → 지갑 → 탭 → 내용 → 도움말 → 주 버튼
+const BC = { cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45' };
+S.btab = {}; S.bhelp = {};
+const WAL = { gold: () => ['🪙', me.gold], wood: () => [RES.wood.i, LIFE().res.wood], stone: () => [RES.stone.i, LIFE().res.stone], fish: () => [COIN.fish[0], LIFE().coins.fish], farm: () => [COIN.farm[0], LIFE().coins.farm] };
+const fmtN = n => Math.floor(n || 0).toLocaleString();
+const haveOf = k => (k === 'gold' ? me.gold : RES[k] ? LIFE().res[k] : LIFE().coins[k]) || 0;
+const costIco = k => (k === 'gold' ? '🪙' : RES[k] ? RES[k].i : COIN[k][0]);
+const canPay = o => Object.entries(o).every(([k, v]) => haveOf(k) >= v);
+const costChips = o => Object.entries(o).map(([k, v]) => { const no = haveOf(k) < v; return `<span class="c${no ? ' no' : ''}">${costIco(k)} ${fmtN(v)}${no ? `<i>${fmtN(v - haveOf(k))} 모자람</i>` : ''}</span>`; }).join('');
+const chip = (t, cls = '') => `<span class="c ${cls}">${t}</span>`;
+const pbar = (k, label) => `<div class="bs-bar"><i style="width:${Math.max(0, Math.min(1, k || 0)) * 100}%"></i><span>${label}</span></div>`;
+const thinBar = k => `<div class="bs-thin"><i style="width:${Math.max(0, Math.min(1, k || 0)) * 100}%"></i></div>`;
+const steps = (n, max) => `<div class="bs-steps">${Array.from({ length: max }, (_, i) => `<i${i < n ? ' class="on"' : ''}></i>`).join('')}</div>`;
+const bbtn = (x, label, sub, o = {}) => `<button class="bb${o.main ? ' main' : ''}${o.wide ? ' wide' : ''}" data-x="${x}"${o.dis ? ' disabled' : ''}><span>${label}</span>${sub ? `<small>${sub}</small>` : ''}</button>`;
+const btab = (id, def, ok) => (ok.includes(S.btab[id]) ? S.btab[id] : def);
+// o: { tag 한 줄 소개, wal 지갑 [키], tabs [[키, 이름, 배지]], tab, body, help, foot, live(1초마다 다시 그림), ready(그린 뒤 할 일) }
+function bsWrap(b, o) {
+  return `<div class="bs" style="--bc:${BC[b.id] || '#4f9d5a'}"${o.live ? ' data-live' : ''}>
+    <header class="bs-head"><span class="bs-ic">${b.icon}</span><div><h3>${b.name}</h3><p>${o.tag}</p></div></header>
+    ${o.wal ? `<div class="bs-wal">${o.wal.map(k => { const [i, v] = WAL[k](); return `<span>${i}<b>${fmtN(v)}</b></span>`; }).join('')}</div>` : ''}
+    ${o.tabs ? `<div class="bs-tabs" role="tablist">${o.tabs.map(([k, n, bd]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${o.tab === k}">${n}${bd ? `<b class="bdg">${bd}</b>` : ''}</button>`).join('')}</div>` : ''}
+    <div class="bs-body">${o.body}</div>
+    ${o.help ? `<details class="bs-help"${S.bhelp[b.id] ? ' open' : ''}><summary>❓ 도움말</summary><div>${o.help}</div></details>` : ''}
+    ${o.foot ? `<div class="bs-foot">${o.foot}</div>` : ''}</div>`;
+}
+function bsOpen(b, o, fn, keep) {
+  openModal(bsWrap(b, o), el => {
+    el.querySelector('.bs-tabs')?.addEventListener('click', e => { const t = e.target.closest('[data-tab]')?.dataset.tab; if (!t || t === o.tab) return; S.btab[b.id] = t; reopen?.(); sheet.scrollTop = 0; });
+    el.querySelector('.bs-help')?.addEventListener('toggle', e => { S.bhelp[b.id] = e.target.open; });
+    o.ready?.(el); wire(el, fn);
+  }, keep);
+}
+// 창이 열려 있고 data-live면 1초마다 다시 그림 (남은 시간 · 체력 · 텃밭)
+setInterval(() => { if (!modal.hidden && !wire.busy && sheet.querySelector('.bs[data-live]')) reopen?.(); }, 1000);
+
 function openBuilding(b, keep) {
-  reopen = () => openBuilding(b, true);
   const id = b.id;
-  if (id === 'cafe') {
-    const P = Object.entries(POTS);
-    return openModal(`${sheetHead(b, '체력 회복 음료(물약)를 팔아요. 사냥 중에 체력이 낮아지면 자동으로 마셔요.')}
-      <ul class="ilist">${P.map(([k, p]) => row(p.i, `${p.n} <small style="display:inline">(${me.pots[k]}개 있음)</small>`, `${p.d} · ${goldTxt(p.price)}`, [1, 5, 10].map(n => `<button class="mini${n === 5 ? ' main' : ''}" data-x="${k}:${n}" ${me.gold < p.price * n ? 'disabled' : ''}>${n}개</button>`).join(''))).join('')}
-      ${me.job ? row('☕', '알바 중이에요', `남은 시간 ${fmtSec(jobLeft())} · 끝나면 ${goldTxt(me.job.pay)}`, `<button class="mini" data-x="quit">그만두기</button>`) : row('☕', '알바하기', `1분 동안 카페 일을 도와요 · ${goldTxt(JOB.pay(me.lv))} (레벨이 높을수록 많이)`, `<button class="mini main" data-x="job">시작</button>`)}
-      ${row('🪑', '창가 자리에서 쉬기', '체력을 전부 회복해요 · 무료 (마을에서는 가만히 있어도 1초에 2%씩 차요)', `<button class="mini" data-x="rest">쉬기</button>`)}</ul><button class="close" data-close>닫기</button>`, el => wire(el, async x => {
-      if (x === 'job') { if (await act('/api/job/start', {})) { closeModal(); say(me, '☕ 알바 중…', 4000); walkNear(me, ...door('cafe')); toast('☕ 알바 시작! 1분 동안 카페 앞에서 일해요. 끝나면 골드가 들어와요'); } return; }
-      if (x === 'quit') { if (await act('/api/job/quit', {})) { toast('알바를 그만뒀어요'); reopen?.(); } return; }
-      if (x === 'rest') { if (await act('/api/rest', {})) { emote(me, '❤️'); toast('푹 쉬었어요. 체력이 가득 찼어요'); reopen?.(); } return; }
-      const [k, n] = x.split(':'), j = await act('/api/pots', { k, n: +n });
-      if (j) { logAct(`${POTS[k].n} ${n}개 −${POTS[k].price * n}`); toast(`${POTS[k].i} ${n}개 샀어요`); reopen?.(); }
-    }), keep);
-  }
+  if (id === 'cafe') return cafeSheet(b, keep);
   if (id === 'gacha') return gachaSheet(b, keep);
-  if (id === 'smith') {
-    const D = derive();
-    // 2026-11-16 정리: 설명은 한 줄, 칸마다 [수치 전 → 후] [성공 %] 꼬리표만
-    const pw = (it, l) => { const x = itemStats(it, l); return x.atk ?? x.def; }, pn = it => itemStats(it, 0).atk != null ? (it.slot === 'staff' ? '마력' : '공격') : '방어';
-    return openModal(`${sheetHead(b, '장비를 바꿔도 강화는 칸에 남아요 · 실패해도 안 떨어져요')}
-      <ul class="ilist enhl">${Object.entries(SLOTS).map(([k, sl]) => { const l = me.enh[k] || 0, it = me.equip[k], max = l >= ENH_MAX, cost = ENH_COST[l], r = +enhRate(l, D).toFixed(1);
-        return row(it ? gIcon(it) : sl.i, `${sl.n} <b class="elv">+${l}</b>${k === me.cls ? ' <span class="tagok">사용 중</span>' : ''}`,
-          max ? '<span class="echip max">최대 강화</span>' : `${it ? `<span class="echip">${pn(it)} ${pw(it, l)} → <b>${pw(it, l + 1)}</b></span>` : ''}<span class="echip rate ${r >= 70 ? 'hi' : r >= 30 ? 'mid' : 'lo'}">성공 ${r}%</span>`,
-          max ? '' : `<button class="mini main" data-x="${k}" ${me.gold < cost ? 'disabled' : ''}>${goldTxt(cost)}</button>`); }).join('')}
-      </ul>
-      <p class="muted enhnote">1단계마다 수치 +${Math.round(ENH_STEP * 100)}% · 🍀 운 보너스 +${D.enhB.toFixed(2)}%p</p>`, el => wire(el, x => doEnhance(x)), keep);
-  }
+  if (id === 'smith') return smithSheet(b, keep);
   if (id === 'skin') return skinShop(b, keep);
   if (id === 'hall') return hallSheet(b, keep);
   if (id === 'fishshop') return fishShop(b, keep);
   if (id === 'lumber' || id === 'quarry') return workSheet(b, keep);
   if (id === 'farmshed') return openFarm(keep);
 }
+// ───────── 카페: 체력 · 음료 · 알바 ─────────
+function cafeSheet(b, keep) {
+  reopen = () => cafeSheet(b, true);
+  const D = derive(), hp = Math.round(Math.min(me.hp, D.maxHp)), full = hp >= D.maxHp, pay = JOB.pay(me.lv), left = me.job ? jobLeft() : 0;
+  const pots = Object.entries(POTS).map(([k, p]) => `<li class="bs-row stack"><span class="bs-ri">${p.i}</span><div><b class="t">${p.n}</b><div class="cs">${chip(p.d, 'up')}${chip(`가진 것 ${me.pots[k]}개`)}</div></div><span></span>
+    <div class="bs-qty">${[1, 5, 10].map(n => bbtn(`${k}:${n}`, `${n}개`, `🪙 ${fmtN(p.price * n)}`, { main: n === 5, dis: me.gold < p.price * n })).join('')}</div></li>`).join('');
+  const job = me.job
+    ? `<div class="bs-card"><h4>☕ 카페 알바 ${chip('일하는 중', 'up')}</h4>${pbar(1 - left / JOB.sec, `${fmtSec(left)} 남음 · 끝나면 🪙 ${fmtN(me.job.pay)}`)}${bbtn('quit', '그만두기', '', { wide: true })}</div>`
+    : `<div class="bs-card"><h4>☕ 카페 알바<span class="cs">${chip('1분')}${chip(`🪙 ${fmtN(pay)}`, 'gold')}${chip(`✨ ${fmtN(lifeExp(me, 'job'))}`, 'up')}</span></h4>${bbtn('job', '알바 시작', '카페 앞에서 1분 동안 일해요', { wide: true })}</div>`;
+  bsOpen(b, { tag: '체력 음료 · 쉬기 · 1분 알바', wal: ['gold'], live: !!me.job || !full,
+    body: `<div class="bs-card hero"><h4>❤️ 내 체력 <small>${fmtN(hp)} / ${fmtN(D.maxHp)}</small></h4>${pbar(hp / D.maxHp, `${Math.round(hp / D.maxHp * 100)}%`)}${bbtn('rest', '🪑 창가 자리에서 쉬기', full ? '이미 가득 찼어요' : '무료 · 바로 가득 차요', { wide: true, dis: full })}</div>
+      <div class="bs-sec">🥤 체력 음료</div><ul class="bs-list">${pots}</ul>${job}`,
+    help: `<p>사냥 중에 체력이 <b>${me.potAt}%</b> 아래로 내려가면 음료를 자동으로 마셔요.</p><p>마을에서는 가만히 있어도 1초에 2%씩 체력이 차요.</p><p>알바 돈은 레벨이 높을수록 많아요. 생활 경험치(✨)도 받아요.</p>` },
+    async x => {
+      if (x === 'job') { if (await act('/api/job/start', {})) { closeModal(); say(me, '☕ 알바 중…', 4000); walkNear(me, ...door('cafe')); toast('☕ 알바 시작! 1분 동안 카페 앞에서 일해요. 끝나면 골드가 들어와요'); } return; }
+      if (x === 'quit') { if (await act('/api/job/quit', {})) { toast('알바를 그만뒀어요'); reopen?.(); } return; }
+      if (x === 'rest') { if (await act('/api/rest', {})) { emote(me, '❤️'); toast('푹 쉬었어요. 체력이 가득 찼어요'); reopen?.(); } return; }
+      const [k, n] = x.split(':'), j = await act('/api/pots', { k, n: +n });
+      if (j) { logAct(`${POTS[k].n} ${n}개 −${POTS[k].price * n}`); toast(`${POTS[k].i} ${n}개 샀어요`); reopen?.(); }
+    }, keep);
+}
+// ───────── 대장간: 칸 강화 (지금 클래스 무기가 맨 위) ─────────
+function smithSheet(b, keep) {
+  reopen = () => smithSheet(b, true);
+  const D = derive();
+  const pw = (it, l) => { const x = itemStats(it, l); return x.atk ?? x.def; }, pn = it => (itemStats(it, 0).atk != null ? (it.slot === 'staff' ? '마력' : '공격') : '방어');
+  const rowOf = k => { const sl = SLOTS[k], l = me.enh[k] || 0, it = me.equip[k], max = l >= ENH_MAX, cost = ENH_COST[l], r = +enhRate(l, D).toFixed(1);
+    return `<li class="bs-row${k === me.cls ? ' cur' : ''}"><span class="bs-ri">${it ? gIcon(it) : sl.i}</span><div><b class="t">${sl.n} <span class="lv">+${l}</span>${k === me.cls ? chip('사용 중', 'up') : ''}</b>${thinBar(l / ENH_MAX)}
+      <div class="cs">${max ? chip('최대 강화', 'gold') : `${it ? chip(`${pn(it)} ${pw(it, l)} → <b>${pw(it, l + 1)}</b>`) : chip('장비 없음')}${chip(`성공 ${r}%`, r >= 70 ? 'hi' : r >= 30 ? 'mid' : 'lo')}`}</div></div>
+      <div class="bs-act">${max ? '' : bbtn(k, '강화', `🪙 ${fmtN(cost)}`, { main: k === me.cls, dis: me.gold < cost })}</div></li>`; };
+  const wpn = [me.cls, ...WEAPON_SLOTS.filter(s => s !== me.cls)].filter(k => WEAPON_SLOTS.includes(k));
+  bsOpen(b, { tag: '장비 칸 강화 · 실패해도 안 떨어져요', wal: ['gold'],
+    body: `<div class="bs-card hero"><div class="cs">${chip(`${CLASSES[me.cls].i} ${CLASSES[me.cls].n}`)}${chip(`⚔️ ${me.cls === 'staff' ? '마력' : '공격'} ${fmtN(D.hit)}`)}${chip(`🛡️ 방어 ${fmtN(D.def)}`)}${chip(`❤️ 체력 ${fmtN(D.maxHp)}`)}</div></div>
+      <div class="bs-sec">⚔️ 무기 칸</div><ul class="bs-list">${wpn.map(rowOf).join('')}</ul>
+      <div class="bs-sec">🛡️ 방어구 칸</div><ul class="bs-list">${ARMOR_SLOTS.map(rowOf).join('')}</ul>`,
+    help: `<p>강화는 <b>장비가 아니라 칸</b>에 붙어요. 장비를 바꿔도 강화 단계는 그대로예요.</p><p>1단계마다 수치 +${Math.round(ENH_STEP * 100)}%. 실패해도 단계는 안 떨어지고 골드만 써요.</p><p>🍀 운 보너스: 성공 확률 +${D.enhB.toFixed(2)}%p</p>` },
+    x => doEnhance(x), keep);
+}
 // ───────── 가챠센터 (무기 뽑기 · 방어구 뽑기) ─────────
 const gachaB = () => BUILDINGS.find(b => b.id === 'gacha');
 const pwrTxt = (it, l = me.enh[it.slot] || 0) => { const x = itemStats(it, l); return x.atk != null ? `${it.slot === 'staff' ? '마력' : '공격'} ${x.atk}` : `방어 ${x.def}`; };
 const tenCost = gi => Math.round(gi.cost * 10 * GACHA_TEN);
 const skTen = () => Math.round(skGachaInfo(me.life?.skg || 0).cost * 10 * SKILL_GACHA.ten);
-function skBox() {
-  const gi = skGachaInfo(me.life?.skg || 0), one = gi.cost, ten = skTen(), own = me.life?.sk || {};
-  return `<div class="gbox"><div class="gbox-h"><span class="gbox-i">📘</span><b>스킬 뽑기</b><small>검사·궁수·마법사 18종 중에서 나와요 · 같은 스킬이 또 나오면 레벨 업 · 뽑기 레벨이 오르면 값과 전설 확률이 올라요</small><span class="glv">뽑기 Lv.${gi.lv}</span></div>
-    <div class="gbar"><i style="width:${gi.need ? gi.now / gi.need * 100 : 100}%"></i><span>${gi.need ? `다음 레벨까지 ${gi.need - gi.now}회` : '최고 레벨'}</span></div>
-    <div class="godds">${[1, 2, 3].map(r => `<span style="color:${SK_RARE[r].c}">${SK_RARE[r].n} <b>${gi.odds[r - 1]}%</b></span>`).join('')}<span>모은 스킬 <b>${SKILLS.filter(s => own[s.id]).length} / ${SKILLS.length}</b></span></div>
-    <div class="gbtns"><button class="btn" data-x="sk:1" ${me.gold < one ? 'disabled' : ''}>1회 뽑기<small>${goldTxt(one)}</small></button><button class="btn main" data-x="sk:10" ${me.gold < ten ? 'disabled' : ''}>10회 뽑기<small>${goldTxt(ten)} · 10% 할인</small></button></div></div>`;
-}
 // 스킬 뽑기 결과 카드: NEW / 레벨 업 / 최고 레벨이면 골드로 돌려받음
 function showSkillPulls(j) {
   { const top = Math.max(0, ...j.got.map(o => SKILLS.find(x => x.id === o.id)?.r || 0)); sfx('gacha'); setTimeout(() => sfx('reveal', top * 2), 420); }
@@ -3317,26 +3443,41 @@ function showSkillPulls(j) {
   if (best.length) emote(me, '🎉');
   logAct(`스킬 뽑기 ${j.got.length}회 −${j.cost}`);
 }
+// 단계 색 (1~6단계) · 확률 막대: [[이름, %, 색]]
+const STG_C = ['#aab4bf', '#6cbf5a', '#3f9be0', '#9a5fe0', '#f0a030', '#e8553a'];
+const oddsBar = L => { L = L.filter(x => x[1] > 0); return `<div class="bs-odds"><div class="ob">${L.map(([, p, c]) => `<i style="flex:${p};background:${c}"></i>`).join('')}</div><div class="cs">${L.map(([n, p, c]) => `<span class="c"><s style="background:${c}"></s>${n} <b>${p}%</b></span>`).join('')}</div></div>`; };
 function gachaSheet(b, keep) {
-  const box = k => {
-    const G = GACHA[k], gi = gachaInfo(me.gacha[k]), odds = GACHA_ODDS[gi.lv - 1];
-    return `<div class="gbox"><div class="gbox-h"><span class="gbox-i">${G.i}</span><b>${G.n}</b><small>${G.slots.map(x => SLOTS[x].n).join(' · ')}</small><span class="glv">뽑기 Lv.${gi.lv}</span></div>
-      <div class="gbar"><i style="width:${gi.need ? gi.now / gi.need * 100 : 100}%"></i><span>${gi.need ? `다음 레벨까지 ${gi.need - gi.now}회` : '최고 레벨'}</span></div>
-      <div class="godds">${odds.map((p, i) => (p ? `<span>${i + 1}단계 <b>${p}%</b></span>` : '')).join('')}</div>
-      <div class="gbtns"><button class="btn" data-x="${k}:1" ${me.gold < gi.cost ? 'disabled' : ''}>1회 뽑기<small>${goldTxt(gi.cost)}</small></button><button class="btn main" data-x="${k}:10" ${me.gold < tenCost(gi) ? 'disabled' : ''}>10회 뽑기<small>${goldTxt(tenCost(gi))} · 10% 할인</small></button></div></div>`;
-  };
-  openModal(`${sheetHead(b, '골드로 무기·방어구·<b>스킬</b>을 뽑아요. 지금 것보다 <b>좋은 장비</b>가 나오면 비교 창에서 바꿀지 고르고, 나머지는 자동으로 <b>분해(골드)</b>돼요. 많이 뽑을수록 뽑기 레벨이 올라 높은 단계가 나와요.')}
-    ${me.bag.length ? `<button class="btn main gpend" data-x="pend">🎁 아직 안 고른 좋은 장비 ${me.bag.length}개 · 비교하기</button>` : ''}
-    ${box('w')}${box('a')}${skBox()}
-    <button class="btn gtablebtn" data-x="table">📊 단계 × 등급 표 보기 (그림 · 수치 · 옵션)</button>
-    <details class="gfold"><summary>등급 확률 · 규칙</summary><div class="godds">${Object.values(GRADES).map(g => `<span style="color:${g.c}">${g.n} <b>${g.p}%</b></span>`).join('')}</div>
-      <p class="muted">단계가 등급보다 중요해요. 2단계 '빈약'도 1단계 '신화'보다 세요. 무기는 3개(검·활·지팡이)를 모두 끼고, 지금 클래스의 무기로 싸워요.<br>등급이 높을수록 <b>랜덤 옵션</b>이 많이 붙어요 (빈약 0개 · 일반·고급 1개 · 희귀·영웅 2개 · 전설·신화 3개).</p></details>`, el => wire(el, async x => {
-    if (x === 'pend') return showPicks();
-    if (x.startsWith('sk:')) { const j = await act('/api/skill/pull', { n: +x.slice(3) }); if (j) showSkillPulls(j); return; }
-    if (x === 'table') return gachaTable();
-    const [k, n] = x.split(':'), j = await act('/api/gacha/pull', { box: k, n: +n });
-    if (j) showPulls(j, k);
-  }), keep);
+  reopen = () => gachaSheet(b, true);
+  const tab = btab('gacha', 'w', ['w', 'a', 'sk']);
+  let body, one, ten, x1, x10;
+  if (tab === 'sk') {
+    const gi = skGachaInfo(me.life?.skg || 0), own = me.life?.sk || {};
+    one = gi.cost; ten = skTen(); x1 = 'sk:1'; x10 = 'sk:10';
+    body = `<div class="bs-card hero"><div class="gx-h"><span class="gx-i">📘</span><div><b>스킬 뽑기</b><div class="cs">${chip('검사 · 궁수 · 마법사 18종')}${chip(`모은 스킬 ${SKILLS.filter(s => own[s.id]).length} / ${SKILLS.length}`, 'up')}</div></div><span class="glv">Lv.${gi.lv}</span></div>
+      ${pbar(gi.need ? gi.now / gi.need : 1, gi.need ? `뽑기 Lv.${gi.lv + 1}까지 ${gi.need - gi.now}회` : '최고 레벨')}
+      <div class="bs-sec">나오는 등급 확률</div>${oddsBar([1, 2, 3].map(r => [SK_RARE[r].n, gi.odds[r - 1], SK_RARE[r].c]))}</div>
+      <p class="muted">같은 스킬이 또 나오면 레벨 업 · 최고 레벨이면 골드로 돌려받아요</p>`;
+  } else {
+    const G = GACHA[tab], gi = gachaInfo(me.gacha[tab]), odds = GACHA_ODDS[gi.lv - 1];
+    one = gi.cost; ten = tenCost(gi); x1 = `${tab}:1`; x10 = `${tab}:10`;
+    body = `<div class="bs-card hero"><div class="gx-h"><span class="gx-i">${G.i}</span><div><b>${G.n}</b><div class="cs">${G.slots.map(k => chip(`${SLOTS[k].i} ${SLOTS[k].n}`)).join('')}</div></div><span class="glv">Lv.${gi.lv}</span></div>
+      ${pbar(gi.need ? gi.now / gi.need : 1, gi.need ? `뽑기 Lv.${gi.lv + 1}까지 ${gi.need - gi.now}회` : '최고 레벨')}
+      <div class="bs-sec">나오는 단계 확률</div>${oddsBar(odds.map((q, i) => [`${i + 1}단계`, q, STG_C[i]]))}</div>
+      <div class="bs-card"><h4>지금 낀 장비 <small>이것보다 좋으면 비교 창이 떠요</small></h4><div class="gx-gear">${G.slots.map(k => { const it = me.equip[k]; return `<div>${it ? gIcon(it) : `<span class="emp">${SLOTS[k].i}</span>`}<small>${it ? `${it.st}단계 <b style="color:${GRADES[it.g].c}">${GRADES[it.g].n}</b>` : '비어 있음'}</small></div>`; }).join('')}</div></div>`;
+  }
+  const pend = me.bag.length ? `<button class="bs-alert" data-x="pend">🎁 아직 안 고른 좋은 장비 <b>${me.bag.length}개</b><span>비교하기 ›</span></button>` : '';
+  bsOpen(b, { tag: '골드로 장비 · 스킬 뽑기', wal: ['gold'], tabs: [['w', '⚔️ 무기'], ['a', '🛡️ 방어구'], ['sk', '📘 스킬']], tab,
+    body: pend + body,
+    help: `<p>지금 것보다 <b>좋은 장비</b>가 나오면 비교 창에서 바꿀지 골라요. 나머지는 자동으로 <b>분해(골드)</b>돼요.</p><p>많이 뽑을수록 <b>뽑기 레벨</b>이 올라 높은 단계가 나와요.</p><p>단계가 등급보다 중요해요. 2단계 '빈약'도 1단계 '신화'보다 세요. 무기 3개(검·활·지팡이)를 모두 끼고, 지금 클래스의 무기로 싸워요.</p>
+      <div class="cs">${Object.values(GRADES).map(g => `<span class="c" style="color:${g.c}">${g.n} <b>${g.p}%</b></span>`).join('')}</div><p class="muted">등급이 높을수록 랜덤 옵션이 많이 붙어요 (빈약 0 · 일반·고급 1 · 희귀·영웅 2 · 전설·신화 3개)</p>${bbtn('table', '📊 단계 × 등급 표 보기', '', { wide: true })}`,
+    foot: `<div class="bs-two">${bbtn(x1, '1회 뽑기', `🪙 ${fmtN(one)}`, { dis: me.gold < one })}${bbtn(x10, '10회 뽑기<em>10%↓</em>', `🪙 ${fmtN(ten)}`, { main: true, dis: me.gold < ten })}</div>` },
+    async x => {
+      if (x === 'pend') return showPicks();
+      if (x === 'table') return gachaTable();
+      if (x.startsWith('sk:')) { const j = await act('/api/skill/pull', { n: +x.slice(3) }); if (j) showSkillPulls(j); return; }
+      const [k, n] = x.split(':'), j = await act('/api/gacha/pull', { box: k, n: +n });
+      if (j) showPulls(j, k);
+    }, keep);
 }
 // 뽑기 결과: 카드가 하나씩 뒤집힘. 좋은 장비(NEW)는 비교 창으로, 나머지는 분해
 function showPulls(j, box) {
@@ -4189,18 +4330,19 @@ function drawTool() {
 // ───────── 벌목소 · 채광소: 알바 고용 · 모인 것 받기 ─────────
 function workSheet(b, keep) {
   reopen = () => workSheet(b, true);
-  const k = b.id, W0 = WORK[k], w = { ...LIFE().work[k] }, { have, cap } = workSettle(w, k, Date.now()), R0 = RES[W0.res];
-  const next = w.n < W0.max ? W0.hire(w.n + 1) : null, L = LIFE();
-  const canHire = next && me.gold >= next.gold && Object.entries(next).every(([r, v]) => r === 'gold' || L.res[r] >= v);
-  openModal(`${sheetHead(b, `알바를 고용하면 시간이 지날수록 <b>${R0.n}</b>를 모아 둬요. 창고는 <b>${W0.cap}시간치</b>까지만 쌓이니까 가끔 와서 받아 가세요. 마을의 ${k === 'lumber' ? '🌳 나무' : '🪨 바위'}를 눌러 직접 캘 수도 있어요.`)}
-    <div class="wallet mini">${[['🪙', me.gold], [RES.wood.i, L.res.wood], [RES.stone.i, L.res.stone]].map(([i, v]) => `<div><span class="wi">${i}</span><b>${v.toLocaleString()}</b></div>`).join('')}</div>
-    <div class="workbox"><div class="row"><b>👷 알바 ${w.n} / ${W0.max}명</b><span class="muted">1시간에 ${R0.i} ${w.n * W0.rate}개</span></div>
-      <div class="gbar"><i style="width:${cap ? have / cap * 100 : 0}%"></i><span>창고 ${R0.i} ${have} / ${cap}</span></div>
-      <div class="actions"><button class="btn main" data-x="collect" ${have < 1 ? 'disabled' : ''}>📦 모인 ${R0.n} 받기<small>${R0.i} ${have}개</small></button>
-      ${next ? `<button class="btn" data-x="hire" ${canHire ? '' : 'disabled'}>➕ 알바 1명 더 고용<small>${costText(next)}</small></button>` : '<p class="muted">알바를 모두 고용했어요</p>'}</div></div>`, el => wire(el, async x => {
-    if (x === 'collect') { const j = await act('/api/work/collect', { kind: k }); if (j) { toast(`📦 ${RES[j.res].i} ${j.amt}개 받았어요`); logAct(`${W0.n}: ${RES[j.res].n} +${j.amt}`); reopen?.(); } }
-    if (x === 'hire') { const j = await act('/api/work/hire', { kind: k }); if (j) { toast('👷 알바를 고용했어요!'); emote(me, '🎉'); logAct(`${W0.n} 알바 고용`); reopen?.(); } }
-  }), keep);
+  const k = b.id, W0 = WORK[k], L = LIFE(), w = { ...L.work[k] }, { have, cap } = workSettle(w, k, Date.now()), R0 = RES[W0.res];
+  const next = w.n < W0.max ? W0.hire(w.n + 1) : null, rate = w.n * W0.rate, fullIn = rate && have < cap ? Math.ceil((cap - have) / rate * 3600) : 0;
+  bsOpen(b, { tag: `알바가 ${R0.n}를 모아 둬요 · 가끔 와서 받기`, wal: ['gold', 'wood', 'stone'],
+    body: `<div class="bs-card hero"><h4>📦 창고 <small>${R0.i} ${fmtN(have)} / ${fmtN(cap)}</small></h4>${pbar(cap ? have / cap : 0, cap ? `${Math.round(have / cap * 100)}%` : '알바를 고용하면 쌓여요')}
+      <div class="cs">${rate ? chip(`1시간에 ${R0.i} ${rate}개`, 'up') : chip('알바가 없어요', 'no')}${rate ? (have >= cap ? chip('가득 참 · 더 안 쌓여요', 'no') : chip(`가득까지 ${durTxt(fullIn)}`)) : ''}</div></div>
+      <div class="bs-card"><h4>👷 알바 <small>${w.n} / ${W0.max}명</small></h4><div class="wk-p">${Array.from({ length: W0.max }, (_, i) => `<span${i < w.n ? ' class="on"' : ''}>👷</span>`).join('')}</div>
+        ${next ? `<div class="cs">${costChips(next)}${chip(`+${W0.rate}개/시간`, 'up')}</div>${bbtn('hire', '➕ 알바 1명 더 고용', '', { wide: true, dis: !canPay(next) })}` : `<div class="cs">${chip('알바를 모두 고용했어요', 'gold')}</div>`}</div>`,
+    help: `<p>창고는 <b>${W0.cap}시간치</b>까지만 쌓여요. 가득 차면 더 안 모이니 가끔 와서 받아 가세요.</p><p>마을의 ${k === 'lumber' ? '🌳 나무' : '🪨 바위'}를 눌러 직접 캘 수도 있어요.</p><p>목재·석재는 마을회관에서 집을 짓고 키우는 데 써요.</p>`,
+    foot: bbtn('collect', `📦 모인 ${R0.n} 받기`, `${R0.i} ${fmtN(have)}개`, { wide: true, main: true, dis: have < 1 }) },
+    async x => {
+      if (x === 'collect') { const j = await act('/api/work/collect', { kind: k }); if (j) { toast(`📦 ${RES[j.res].i} ${j.amt}개 받았어요`); logAct(`${W0.n}: ${RES[j.res].n} +${j.amt}`); reopen?.(); } }
+      if (x === 'hire') { const j = await act('/api/work/hire', { kind: k }); if (j) { toast('👷 알바를 고용했어요!'); emote(me, '🎉'); logAct(`${W0.n} 알바 고용`); reopen?.(); } }
+    }, keep);
 }
 
 // ───────── 텃밭 ─────────
@@ -4215,45 +4357,53 @@ const cropTags = c => `<span class="ctags"><em title="자라는 시간">⏱️ $
 function openFarm(keep) {
   if (HT) return;
   reopen = () => openFarm(true);
+  const b = { id: 'farmshed', icon: '🌾', name: '내 텃밭' };
   const L = LIFE(), f = L.farm, now = Date.now(), wet = Math.max(0, Math.ceil((f.wetAt + FARM.dur - now) / 1000)), cd = Math.max(0, Math.ceil((f.wetAt + FARM.cd - now) / 1000));
   if (!f.seeds.includes(S.seed)) S.seed = f.seeds[0];
-  const cells = f.plots.map((p, i) => {
-    if (!p) return `<button class="plot empty" data-x="p:${i}"><span>➕</span><small>심기</small></button>`;
-    const cr = cropOf(p.c), left = plotLeft(p, f, now), k = Math.min(1, plotGrown(p, f, now) / cr.sec);
-    return left ? `<button class="plot" data-x="p:${i}"><span style="opacity:${.45 + k * .55}">${k < .3 ? '🌱' : cr.i}</span><i style="--k:${k * 100}%"></i><small>${fmtLeft(left)}</small></button>`
-      : `<button class="plot ready" data-x="p:${i}"><span>${cr.i}</span><small>수확!</small></button>`;
-  }).join('');
-  const ready = f.plots.filter(p => p && !plotLeft(p, f, now)).length, empty = f.plots.filter(p => !p).length, cr = cropOf(S.seed);
+  const tab = btab('farmshed', 'field', ['field', 'seed', 'shop']);
+  const ready = f.plots.filter(p => p && !plotLeft(p, f, now)).length, empty = f.plots.filter(p => !p).length, cr = cropOf(S.seed), any = f.plots.some(Boolean);
   const locked = CROPS.filter(c => !f.seeds.includes(c.id)), nextPlot = f.plots.length < FARM.maxPlots ? FARM.plotCost[f.plots.length - 6] : null, canNext = f.can < CANS.cost.length;
-  openModal(`<div id="farmSheet"><h3>🌾 내 텃밭</h3><p>씨앗을 심으면 시간이 지나 자라요. <b>물을 주면 5분 동안 ${CANS.mul[f.can]}배</b> 빨리 자라요 (물은 5분에 한 번). 수확하면 골드와 <b>${COIN.farm[1]}</b>을 받아요.</p>
-    <div class="wallet mini farmw"><div><span class="wi">🪙</span><b>${me.gold.toLocaleString()}</b></div><div><span class="wi">${COIN.farm[0]}</span><b>${L.coins.farm.toLocaleString()}</b></div><div><span class="wi">🚿</span><b>${CANS.names[f.can]}</b></div></div>
-    <div class="plots">${cells}</div>
-    <div class="actions farmbtns">
-      <button class="btn${cd ? '' : ' main'}" data-x="water" ${cd || !f.plots.some(Boolean) ? 'disabled' : ''}>🚿 물 주기<small>${wet ? `💧 빨리 자라는 중 ${fmtLeft(wet)}` : ''}${cd ? ` · 다음 물 ${fmtLeft(cd)}` : ` · ${CANS.mul[f.can]}배 5분`}</small></button>
-      <button class="btn${ready ? ' main' : ''}" data-x="harvest" ${ready ? '' : 'disabled'}>🧺 모두 수확<small>${ready}칸</small></button>
-      <button class="btn" data-x="plantall" ${empty && me.gold >= cr.cost ? '' : 'disabled'}>🌱 빈 칸 모두 심기<small>${cr.i} ${cr.n} × ${empty} · ${goldTxt(cr.cost * empty)}</small></button></div>
-    <h3 class="sub">심을 씨앗</h3>
-    <div class="seeds">${f.seeds.map(id => { const c = cropOf(id); return `<button type="button" data-x="seed:${id}" aria-pressed="${S.seed === id}"><span>${c.i}</span><b>${c.n}</b>${cropTags(c)}</button>`; }).join('')}</div>
-    <h3 class="sub">🌻 텃밭 코인 상점</h3>
-    <ul class="ilist">${locked.map(c => row(c.i, `${c.n} 품종 열기`, cropTags(c), `<button class="mini main" data-x="unlock:${c.id}" ${L.coins.farm < c.unlock ? 'disabled' : ''}>${coinTxt('farm', c.unlock)}</button>`)).join('')}
-      ${canNext ? row('🚿', `${CANS.names[f.can + 1]}`, `물 준 5분 동안 ${CANS.mul[f.can]}배 → <b>${CANS.mul[f.can + 1]}배</b>`, `<button class="mini main" data-x="can" ${L.coins.farm < CANS.cost[f.can] ? 'disabled' : ''}>${coinTxt('farm', CANS.cost[f.can])}</button>`) : ''}
-      ${nextPlot != null ? row('🟫', '텃밭 한 칸 늘리기', `지금 ${f.plots.length}칸 → ${f.plots.length + 1}칸 (최대 ${FARM.maxPlots}칸)`, `<button class="mini main" data-x="plot" ${L.coins.farm < nextPlot ? 'disabled' : ''}>${coinTxt('farm', nextPlot)}</button>`) : ''}</ul>
-    <p class="muted">작물은 마을 텃밭에 내 것만 보여요. <b>밭의 두둑을 직접 누르면</b> 고른 씨앗 심기 · 물 주기 · 수확이 바로 돼요. 화면을 닫아 두어도 계속 자라요.</p></div>`, el => wire(el, async x => {
-    const [a, v] = x.split(':');
-    if (a === 'seed') { S.seed = v; try { localStorage.setItem('cbt-seed', v); } catch {} return reopen?.(); }
-    if (a === 'p') {
-      const p = f.plots[+v];
-      if (!p) { const j = await act('/api/farm/plant', { i: +v, crop: S.seed }); if (j) { logAct(`${cr.i} ${cr.n} 심음 −${cr.cost}`); reopen?.(); } return; }
-      if (!plotLeft(p, f, Date.now())) return farmHarvest();
-      return toast(`${cropOf(p.c).i} ${cropOf(p.c).n} · ${fmtLeft(plotLeft(p, f, Date.now()))} 뒤에 다 자라요${cd ? '' : ' (물을 주면 더 빨리!)'}`);
-    }
-    if (a === 'water') { const j = await act('/api/farm/water', {}); if (j) { toast(`🚿 물을 줬어요! 5분 동안 ${CANS.mul[LIFE().farm.can]}배 빨리 자라요`); emote(me, '❤️'); reopen?.(); } }
-    if (a === 'harvest') return farmHarvest();
-    if (a === 'plantall') { const j = await act('/api/farm/plantall', { crop: S.seed }); if (j) { toast(`🌱 ${j.n}칸에 ${cr.n}을(를) 심었어요`); logAct(`${cr.n} ${j.n}칸 심음`); reopen?.(); } }
-    if (a === 'unlock') { const j = await act('/api/farm/unlock', { crop: v }); if (j) { S.seed = v; toast(`${cropOf(v).i} ${cropOf(v).n} 품종을 열었어요!`); reopen?.(); } }
-    if (a === 'can') { const j = await act('/api/farm/can', {}); if (j) { toast(`🚿 ${CANS.names[LIFE().farm.can]}!`); emote(me, '🎉'); reopen?.(); } }
-    if (a === 'plot') { const j = await act('/api/farm/plot', {}); if (j) { toast('🟫 텃밭이 한 칸 늘었어요'); reopen?.(); } }
-  }), keep);
+  let body = '', foot = '';
+  if (tab === 'field') {
+    const cells = f.plots.map((p, i) => {
+      if (!p) return `<button class="plot empty" data-x="p:${i}"><span>➕</span><small>심기</small></button>`;
+      const c = cropOf(p.c), left = plotLeft(p, f, now), k = Math.min(1, plotGrown(p, f, now) / c.sec);
+      return left ? `<button class="plot" data-x="p:${i}"><span style="opacity:${.45 + k * .55}">${k < .3 ? '🌱' : c.i}</span><i style="--k:${k * 100}%"></i><small>${fmtLeft(left)}</small></button>`
+        : `<button class="plot ready" data-x="p:${i}"><span>${c.i}</span><small>수확!</small></button>`;
+    }).join('');
+    body = `<div class="cs" style="margin:0">${wet ? chip(`💧 빨리 자라는 중 · ${fmtLeft(wet)}`, 'up') : chip('💧 물 안 준 상태')}${chip(`🚿 ${CANS.names[f.can]} · ${CANS.mul[f.can]}배`)}</div>
+      <div class="plots">${cells}</div>
+      <button class="bs-seedpick" type="button" data-x="tab:seed"><span>${cr.i}</span><div><small>심을 씨앗</small><b>${cr.n}</b></div>${cropTags(cr)}<em>바꾸기 ›</em></button>`;
+    foot = `<div class="bs-three">${bbtn('water', '🚿 물 주기', cd ? `${fmtLeft(cd)} 뒤` : `${CANS.mul[f.can]}배 · 5분`, { main: !cd && !ready && any, dis: cd || !any })}${bbtn('harvest', '🧺 수확', `${ready}칸`, { main: !!ready, dis: !ready })}${bbtn('plantall', `${cr.i} 심기`, `빈 칸 ${empty} · 🪙 ${fmtN(cr.cost * empty)}`, { dis: !(empty && me.gold >= cr.cost) })}</div>`;
+  } else if (tab === 'seed') {
+    body = `<p class="muted">고르면 밭으로 돌아가요. 빈 칸이나 마을 텃밭 두둑을 누르면 이 씨앗을 심어요.</p>
+      <div class="seeds">${f.seeds.map(id => { const c = cropOf(id); return `<button type="button" data-x="seed:${id}" aria-pressed="${S.seed === id}"><span>${c.i}</span><b>${c.n}</b>${cropTags(c)}</button>`; }).join('')}</div>`;
+  } else {
+    const srow = (ic, t, cs, x, cost) => `<li class="bs-row"><span class="bs-ri">${ic}</span><div><b class="t">${t}</b>${cs}</div><div class="bs-act">${bbtn(x, '사기', coinTxt('farm', cost), { main: true, dis: L.coins.farm < cost })}</div></li>`;
+    const rows = [...locked.map(c => srow(c.i, `${c.n} 품종 열기`, cropTags(c), `unlock:${c.id}`, c.unlock)),
+      canNext ? srow('🚿', CANS.names[f.can + 1], `<div class="cs">${chip(`물 효과 ${CANS.mul[f.can]}배 → <b>${CANS.mul[f.can + 1]}배</b>`, 'up')}</div>`, 'can', CANS.cost[f.can]) : '',
+      nextPlot != null ? srow('🟫', '밭 한 칸 늘리기', `<div class="cs">${chip(`${f.plots.length}칸 → <b>${f.plots.length + 1}칸</b>`, 'up')}${chip(`최대 ${FARM.maxPlots}칸`)}</div>`, 'plot', nextPlot) : ''].join('');
+    body = rows ? `<ul class="bs-list">${rows}</ul>` : '<p class="muted">모두 샀어요! 🎉</p>';
+  }
+  bsOpen(b, { tag: '심고 · 물 주고 · 수확해요', wal: ['gold', 'farm'], tabs: [['field', '🌱 밭', ready || ''], ['seed', '🌰 씨앗'], ['shop', `${COIN.farm[0]} 상점`]], tab, live: tab === 'field', body, foot,
+    help: `<p>씨앗을 심으면 시간이 지나 자라요. 화면을 닫아도 계속 자라요.</p><p><b>물을 주면 5분 동안 ${CANS.mul[f.can]}배</b> 빨리 자라요 (물은 5분에 한 번).</p><p>수확하면 골드와 <b>${COIN.farm[1]}</b>을 받아요. 코인으로 새 품종 · 물뿌리개 · 밭 칸을 사요.</p><p>마을 텃밭의 두둑을 직접 눌러도 심기 · 물 주기 · 수확이 돼요.</p>` },
+    async x => {
+      const [a, v] = x.split(':');
+      if (a === 'tab') { S.btab.farmshed = v; reopen?.(); sheet.scrollTop = 0; return; }
+      if (a === 'seed') { S.seed = v; try { localStorage.setItem('cbt-seed', v); } catch {} S.btab.farmshed = 'field'; toast(`${cropOf(v).i} ${cropOf(v).n}을(를) 골랐어요`); reopen?.(); sheet.scrollTop = 0; return; }
+      if (a === 'p') {
+        const p = f.plots[+v];
+        if (!p) { const j = await act('/api/farm/plant', { i: +v, crop: S.seed }); if (j) { logAct(`${cr.i} ${cr.n} 심음 −${cr.cost}`); reopen?.(); } return; }
+        if (!plotLeft(p, f, Date.now())) return farmHarvest();
+        return toast(`${cropOf(p.c).i} ${cropOf(p.c).n} · ${fmtLeft(plotLeft(p, f, Date.now()))} 뒤에 다 자라요${cd ? '' : ' (물을 주면 더 빨리!)'}`);
+      }
+      if (a === 'water') { const j = await act('/api/farm/water', {}); if (j) { toast(`🚿 물을 줬어요! 5분 동안 ${CANS.mul[LIFE().farm.can]}배 빨리 자라요`); emote(me, '❤️'); reopen?.(); } }
+      if (a === 'harvest') return farmHarvest();
+      if (a === 'plantall') { const j = await act('/api/farm/plantall', { crop: S.seed }); if (j) { toast(`🌱 ${j.n}칸에 ${cr.n}을(를) 심었어요`); logAct(`${cr.n} ${j.n}칸 심음`); reopen?.(); } }
+      if (a === 'unlock') { const j = await act('/api/farm/unlock', { crop: v }); if (j) { S.seed = v; toast(`${cropOf(v).i} ${cropOf(v).n} 품종을 열었어요!`); reopen?.(); } }
+      if (a === 'can') { const j = await act('/api/farm/can', {}); if (j) { toast(`🚿 ${CANS.names[LIFE().farm.can]}!`); emote(me, '🎉'); reopen?.(); } }
+      if (a === 'plot') { const j = await act('/api/farm/plot', {}); if (j) { toast('🟫 텃밭이 한 칸 늘었어요'); reopen?.(); } }
+    }, keep);
 }
 async function farmHarvest() {
   const j = await act('/api/farm/harvest', {}); if (!j) return;
@@ -4261,27 +4411,28 @@ async function farmHarvest() {
   toast(`🧺 ${ic} ${j.got.length}개 수확! 🪙 +${j.gold.toLocaleString()} ${COIN.farm[0]} +${j.coin}`); emote(me, '🎉'); logAct(`수확 ${j.got.length}개 +${j.gold} +${j.coin}${COIN.farm[0]}`);
   reopen?.();
 }
-// 텃밭 창이 열려 있으면 1초마다 남은 시간 다시 그림
-setInterval(() => { if ($('#farmSheet') && !wire.busy && !modal.hidden) openFarm(true); }, 1000);
 
 // ───────── 낚시점 (낚시 코인으로 낚싯대 · 미끼) ─────────
 function fishShop(b, keep) {
   reopen = () => fishShop(b, true);
   const L = LIFE(), F0 = L.fish, D = derive(), cur = fishOdds(D.luk, F0.rod, F0.bait);
-  const item = k => { const S0 = FISH_SHOP[k], l = F0[k], max = l >= S0.cost.length;
-    return row(S0.i, `${S0.names[l]}${max ? ' <span class="tagok">최고</span>' : ` → <b>${S0.names[l + 1]}</b>`}`, `${S0.n} ${l + 1}단계 · ${S0.d}`, max ? '' : `<button class="mini main" data-x="${k}" ${L.coins.fish < S0.cost[l] ? 'disabled' : ''}>${coinTxt('fish', S0.cost[l])}</button>`); };
   const nr = F0.rod < FISH_SHOP.rod.cost.length ? fishOdds(D.luk, F0.rod + 1, F0.bait) : null, nb = F0.bait < FISH_SHOP.bait.cost.length ? fishOdds(D.luk, F0.rod, F0.bait + 1) : null;
   const pc = v => `${v < 1 ? v.toFixed(2) : v.toFixed(1)}%`;
-  openModal(`${sheetHead(b, `낚을 때마다 받는 <b>${COIN.fish[1]}</b>으로 더 좋은 낚싯대와 미끼를 사요. 좋은 장비일수록 <b>높은 등급 물고기</b>가 잘 나와요.`)}
-    <div class="wallet mini"><div><span class="wi">${COIN.fish[0]}</span><small>${COIN.fish[1]}</small><b>${L.coins.fish.toLocaleString()}</b></div></div>
-    <ul class="ilist">${item('rod')}${item('bait')}</ul>
-    <table class="ruletable odds"><thead><tr><th>등급</th><th>지금</th>${nr ? '<th>낚싯대 ↑</th>' : ''}${nb ? '<th>미끼 ↑</th>' : ''}<th>코인</th></tr></thead><tbody>
-      ${Object.entries(FISH_GRADES).map(([g, x]) => `<tr><td style="color:${x.c};font-weight:700">${x.n}</td><td>${pc(cur[g])}</td>${nr ? `<td>${pc(nr[g])}</td>` : ''}${nb ? `<td>${pc(nb[g])}</td>` : ''}<td>${COIN.fish[0]}${FISH_COIN[g]}</td></tr>`).join('')}</tbody></table>
-    <p class="muted">완벽하게 낚으면 코인 +1. 🍀 운이 높을수록 희귀 이상이 조금 더 잘 나와요.</p>
-    <div class="actions"><button class="btn main" data-x="go">🎣 낚시하러 가기</button></div>`, el => wire(el, async x => {
-    if (x === 'go') { closeModal(); teleport(FISH_AT.x, FISH_AT.y); return toast('🎣 물을 누르면 바로 낚싯대를 던져요'); }
-    const j = await act('/api/fish/shop', { k: x }); if (j) { toast(`${FISH_SHOP[x].i} ${FISH_SHOP[x].names[LIFE().fish[x]]}!`); emote(me, '🎉'); logAct(`${FISH_SHOP[x].names[LIFE().fish[x]]} 구입`); reopen?.(); }
-  }), keep);
+  const item = k => { const S0 = FISH_SHOP[k], l = F0[k], max = l >= S0.cost.length;
+    return `<li class="bs-row"><span class="bs-ri">${S0.i}</span><div><b class="t">${S0.names[l]}${max ? chip('최고', 'gold') : ''}</b>${steps(l + 1, S0.names.length)}<div class="cs">${max ? '' : chip(`다음: ${S0.names[l + 1]}`, 'up')}${chip(S0.d)}</div></div>
+      <div class="bs-act">${max ? '' : bbtn(k, '사기', coinTxt('fish', S0.cost[l]), { main: true, dis: L.coins.fish < S0.cost[l] })}</div></li>`; };
+  bsOpen(b, { tag: '낚시 코인으로 낚싯대 · 미끼 올리기', wal: ['fish'],
+    body: `<div class="bs-card hero"><div class="cs">${chip(`🎯 낚을 확률 ${Math.round(fishHit(F0.rod, D.fx) * 100)}%`, 'up')}${chip(`🍀 운 ${D.luk}`)}</div></div>
+      <div class="bs-sec">🛒 장비 올리기</div><ul class="bs-list">${item('rod')}${item('bait')}</ul>
+      <div class="bs-card"><h4>📊 물고기 등급 확률</h4><table class="bs-table"><thead><tr><th>등급</th><th>지금</th>${nr ? '<th>낚싯대 ↑</th>' : ''}${nb ? '<th>미끼 ↑</th>' : ''}<th>코인</th></tr></thead><tbody>
+        ${Object.entries(FISH_GRADES).map(([g, x]) => `<tr><td style="color:${x.c};font-weight:700">${x.n}</td><td>${pc(cur[g])}</td>${nr ? `<td class="nx">${pc(nr[g])}</td>` : ''}${nb ? `<td class="nx">${pc(nb[g])}</td>` : ''}<td>${COIN.fish[0]}${FISH_COIN[g]}</td></tr>`).join('')}</tbody></table></div>`,
+    help: `<p>물고기를 낚을 때마다 <b>${COIN.fish[1]}</b>을 받아요. 좋은 장비일수록 <b>높은 등급 물고기</b>가 잘 나와요.</p><p>🍀 운이 높을수록 희귀 이상이 조금 더 잘 나와요.</p><p>물은 어디든 눌러서 낚시할 수 있어요. 바다(마을 남쪽)는 물고기가 달라요.</p>`,
+    foot: `<div class="bs-two">${bbtn('auto', '🤖 자동 낚시')}${bbtn('go', '🎣 낚시하러 가기', '', { main: true })}</div>` },
+    async x => {
+      if (x === 'go') { closeModal(); teleport(FISH_AT.x, FISH_AT.y); return toast('🎣 물을 누르면 바로 낚싯대를 던져요'); }
+      if (x === 'auto') return openFishing();
+      const j = await act('/api/fish/shop', { k: x }); if (j) { toast(`${FISH_SHOP[x].i} ${FISH_SHOP[x].names[LIFE().fish[x]]}!`); emote(me, '🎉'); logAct(`${FISH_SHOP[x].names[LIFE().fish[x]]} 구입`); reopen?.(); }
+    }, keep);
 }
 
 // ───────── 소원 분수 ─────────
@@ -4364,17 +4515,20 @@ function skinShop(b, keep) {
   const WT = [['sword', '검'], ['bow', '활'], ['staff', '지팡이']], rset = raidSet('rdragon');
   const rItem = k => k.startsWith('eye:') ? EYE_SKINS.find(e => 'eye:' + e.id === k) : k.startsWith('suit:') ? SUITS.find(s => 'suit:' + s.id === k) : k.startsWith('wsk:') ? WSKINS.find(w => wskKey(w) === k) : HATS.find(h => h.id === k);
   const worn = k => { const [a, b, c2] = k.split(':'); return a === 'eye' ? me.eyes === b : a === 'suit' ? me.suit === b : a === 'wsk' ? me.wsk?.[b] === c2 : me.hat === k; };
-  openModal(`${sheetHead(b, '스킨을 팔아요. <b>가지고만 있어도 보유 효과</b>가 붙어요 (안 써도 돼요). 현금 결제는 없어요. 칸을 누르면 미리보기·구매, 가진 스킨은 바로 쓰기/벗기.')}
-    <p class="skfxsum">✨ 지금 보유 효과: <b>${fxText(skinFx(me)) || '없음'}</b></p>
-    <h3 class="sub">머리 장식</h3><div class="skgrid shop" id="shopHats">${hats.map(h => tile('hat:' + h.id, h.n, me.hats.includes(h.id), me.hat === h.id, h.price, h.fx)).join('')}</div>
-    <h3 class="sub">눈 모양</h3><div class="skgrid shop" id="shopEyes">${eyes.map(e => tile('eye:' + e.id, e.n, me.hats.includes('eye:' + e.id), me.eyes === e.id, e.price, e.fx)).join('')}</div>
-    <h3 class="sub">의상</h3><div class="skgrid shop" id="shopSuits">${suits.map(s => tile('suit:' + s.id, s.n, me.hats.includes('suit:' + s.id), me.suit === s.id, s.price, s.fx)).join('')}</div>
-    ${WT.map(([t, tn]) => `<h3 class="sub">무기 스킨 · ${tn}</h3><div class="skgrid shop shopW">${WSKINS.filter(w => w.t === t && !w.raid).map(w => tile(wskKey(w), w.n, me.hats.includes(wskKey(w)), me.wsk?.[t] === w.id, w.price, w.fx)).join('')}</div>`).join('')}
-    <h3 class="sub">🐉 레드 드래곤 레이드 전용</h3><p class="muted" style="margin:0 0 6px">매시 정각 레이드에서만 확률로 얻어요. 팔지 않아요.</p>
-    <p class="muted" style="margin:0 0 6px">같은 스킨을 또 얻으면 <b>레벨이 올라 효과가 세져요</b> (레벨마다 +${RSK.step * 100}%). 다음 레벨까지 1개 → 2개 → 4개 → 8개 …</p>
-    <div class="skgrid shop raid" id="shopRaid">${rset.map(k => { const it = rItem(k), n = rskCount(me, k), lv = rskLv(n), need = rskNeed(lv);
-      return tile('raid|' + k, it.n, !!n, worn(k), 0, rskFx(it.fx, Math.max(1, lv))).replace(/<\/button>$/, `<b class="rlv">${n ? `Lv.${lv}${need ? ` · ${n}/${need}` : ' · 최고'}` : '🔒 미보유'}</b></button>`); }).join('')}</div>
-    <p class="muted">머리 장식을 안 쓰면 장착한 모자(장비)가 보여요.</p><button class="close" data-close>닫기</button>`, el => {
+  const tab = btab('skin', 'hat', ['hat', 'eye', 'suit', 'wsk', 'raid']);
+  const grid = (id, cls, html) => `<div class="skgrid shop${cls}"${id ? ` id="${id}"` : ''}>${html}</div>`;
+  const body = {
+    hat: () => grid('shopHats', '', hats.map(h => tile('hat:' + h.id, h.n, me.hats.includes(h.id), me.hat === h.id, h.price, h.fx)).join('')) + '<p class="muted">머리 장식을 안 쓰면 장착한 모자(장비)가 보여요.</p>',
+    eye: () => grid('shopEyes', '', eyes.map(e => tile('eye:' + e.id, e.n, me.hats.includes('eye:' + e.id), me.eyes === e.id, e.price, e.fx)).join('')),
+    suit: () => grid('shopSuits', '', suits.map(x => tile('suit:' + x.id, x.n, me.hats.includes('suit:' + x.id), me.suit === x.id, x.price, x.fx)).join('')),
+    wsk: () => WT.map(([t, tn]) => `<div class="bs-sec">${tn}</div>${grid('', ' shopW', WSKINS.filter(w => w.t === t && !w.raid).map(w => tile(wskKey(w), w.n, me.hats.includes(wskKey(w)), me.wsk?.[t] === w.id, w.price, w.fx)).join(''))}`).join(''),
+    raid: () => `<p class="muted">매시 정각 레드 드래곤 레이드에서만 얻어요. 같은 스킨을 또 얻으면 <b>레벨이 올라 효과가 세져요</b> (레벨마다 +${RSK.step * 100}%).</p>` + grid('shopRaid', ' raid', rset.map(k => { const it = rItem(k), n = rskCount(me, k), lv = rskLv(n), need = rskNeed(lv);
+      return tile('raid|' + k, it.n, !!n, worn(k), 0, rskFx(it.fx, Math.max(1, lv))).replace(/<\/button>$/, `<b class="rlv">${n ? `Lv.${lv}${need ? ` · ${n}/${need}` : ' · 최고'}` : '🔒 미보유'}</b></button>`); }).join('')),
+  }[tab]();
+  bsOpen(b, { tag: '꾸미기 · 가지고만 있어도 보유 효과', wal: ['gold'], tabs: [['hat', '🎩 머리'], ['eye', '👀 눈'], ['suit', '👔 의상'], ['wsk', '⚔️ 무기'], ['raid', '🐉 레이드']], tab,
+    body: `<p class="skfxsum">✨ 지금 보유 효과: <b>${fxText(skinFx(me)) || '없음'}</b></p>${body}`,
+    help: '<p>스킨은 <b>가지고만 있어도 보유 효과</b>가 붙어요 (안 써도 돼요). 현금 결제는 없어요.</p><p>칸을 누르면 미리보기 · 구매, 가진 스킨은 누르면 바로 쓰기 / 벗기.</p>',
+    ready: el => {
     requestAnimationFrame(() => {
       el.querySelectorAll('#shopHats [data-x]').forEach(t => skinTile(t.querySelector('canvas'), { ...look, hat: t.dataset.x.slice(4) }));
       el.querySelectorAll('#shopSuits [data-x]').forEach(t => skinTile(t.querySelector('canvas'), { ...look, suit: t.dataset.x.slice(5) }, 'suit'));
@@ -4382,7 +4536,8 @@ function skinShop(b, keep) {
       el.querySelectorAll('#shopRaid [data-x]').forEach(t => { const k = t.dataset.x.slice(5), [a, b2, c2] = k.split(':'); skinTile(t.querySelector('canvas'), a === 'eye' ? { ...look, eyes: b2 } : a === 'suit' ? { ...look, suit: b2 } : a === 'wsk' ? wskLook(look, b2, c2) : { ...look, hat: k }, a === 'eye' ? 'eye' : a === 'wsk' ? 'weapon' : a === 'suit' ? 'suit' : undefined); });
       el.querySelectorAll('#shopEyes [data-x]').forEach(t => skinTile(t.querySelector('canvas'), { ...look, eyes: t.dataset.x.slice(4) }, 'eye'));
     });
-    wire(el, async x => {
+    } },
+    async x => {
       const raid = x.startsWith('raid|'); if (raid) x = x.slice(5);
       const [a, id, id2] = x.split(':'), isEye = a === 'eye', kind = a === 'eye' ? '눈 모양' : a === 'suit' ? '의상' : a === 'wsk' ? '무기 스킨' : '머리 장식';
       const key = a === 'hat' ? id : x, item = a === 'hat' ? HATS.find(k => k.id === id) : rItem(x); if (!item) return;
@@ -4404,39 +4559,43 @@ function skinShop(b, keep) {
           skinShop(b);
         };
       });
-    });
-  }, keep);
+    }, keep);
 }
 function hallSheet(b, keep) {
   reopen = () => hallSheet(b, true);
-  const L = LIFE(), h = L.house, cost = h ? HOUSE.move : HOUSE.cost, can = me.gold >= cost.gold && L.res.wood >= cost.wood && L.res.stone >= cost.stone;
+  const L = LIFE(), h = L.house, cost = h ? HOUSE.move : HOUSE.cost, can = canPay(cost);
   if (S.roof == null) S.roof = h ? h.roof : 0;
-  const list = [...HOUSES].sort((a, b) => (b.id === me.uid) - (a.id === me.uid) || a.nick.localeCompare(b.nick));
-  openModal(`${sheetHead(b, '마을 가운데(광장 주변)만 빼고 <b>어디든</b> 집을 지을 수 있어요. 집은 언제나 모두에게 공개라서 누구나 구경 올 수 있어요. 가구는 곧 들어와요.')}
-    <div class="wallet mini">${[['🪙', me.gold], [RES.wood.i, L.res.wood], [RES.stone.i, L.res.stone]].map(([i, v]) => `<div><span class="wi">${i}</span><b>${v.toLocaleString()}</b></div>`).join('')}</div>
-    <h3 class="sub">${h ? '🏠 내 집' : '🏗️ 내 집 짓기'}</h3>
-    ${h ? '' : `<label class="muted">지붕 색</label><div class="swatches roofs">${HOUSE.roofs.map((c, i) => `<button type="button" style="background:${c}" data-x="roof:${i}" aria-pressed="${S.roof === i}" aria-label="지붕 색 ${i + 1}"></button>`).join('')}</div>`}
-    <div class="actions">
-      ${h ? `<button class="btn" data-x="visit:${me.uid}">🚪 내 집에 들어가기</button>` : ''}
-      <button class="btn${h ? '' : ' main'}" data-x="place" ${can ? '' : 'disabled'}>${h ? '🚚 이사하기 (자리 옮기기)' : '📍 집 지을 자리 고르기'}<small>${costText(cost)}${can ? '' : ' · 부족해요'}</small></button>
-    </div>
-    ${h ? (() => {
-      const lv = h.lv || 0, nx = HOUSE_TIERS[lv + 1], ok = nx && me.gold >= nx.cost.gold && L.res.wood >= nx.cost.wood && L.res.stone >= nx.cost.stone, inc = houseSettle({ ...h }, Date.now());
-      return `<div class="housetier"><p>🏠 지금: <b>${HOUSE_TIERS[lv].n}</b> <small class="muted">(${lv + 1}/${HOUSE_TIERS.length}단계)</small></p>
-        ${inc.rate ? `<p>💰 임대 수입 <b>${inc.have.toLocaleString()}</b> / ${inc.cap.toLocaleString()} 골드 <small class="muted">· 1시간에 ${inc.rate.toLocaleString()} · 최대 ${HOUSE_INC_CAP}시간</small></p><button class="btn main" data-x="collect" ${inc.have >= 1 ? '' : 'disabled'}>💰 임대 수입 받기</button>` : '<p class="muted">빌라부터 일정 시간마다 임대 수입(골드)이 들어와요.</p>'}
-        ${nx ? `<button class="btn" data-x="up" ${ok ? '' : 'disabled'}>⬆️ ${nx.n}(으)로 올리기${nx.inc ? ` · 1시간에 ${nx.inc.toLocaleString()} 골드` : ''}<small>${costText(nx.cost)}${ok ? '' : ' · 부족해요'}</small></button>` : '<p>🏆 가장 높은 단계예요!</p>'}</div>`;
-    })() : ''}
-    ${h ? `<label class="muted">지붕 색 바꾸기 (무료)</label><div class="swatches roofs">${HOUSE.roofs.map((c, i) => `<button type="button" style="background:${c}" data-x="reroof:${i}" aria-pressed="${h.roof === i}" aria-label="지붕 색 ${i + 1}"></button>`).join('')}</div>` : `<p class="muted">목재·석재는 마을의 🌳 나무와 🪨 바위를 눌러 모으거나, 벌목소·채광소 알바를 고용해서 모아요.</p>`}
-    <h3 class="sub">🏘️ 마을의 집 ${HOUSES.length}채</h3>
-    <ul class="ilist">${list.map(x => row(`<span class="roofdot" style="background:${HOUSE.roofs[x.roof] || HOUSE.roofs[0]}"></span>`, `${esc(x.nick)}님의 집${x.id === me.uid ? ' <span class="tagok">내 집</span>' : ''}`, '', `<button class="mini" data-x="visit:${x.id}">구경 가기</button>`)).join('') || '<li><span></span><span class="muted">아직 집이 없어요. 첫 번째 주인이 되어 보세요!</span><span></span></li>'}</ul>`, el => wire(el, async x => {
-    const [a, v] = x.split(':');
-    if (a === 'roof') { S.roof = +v; return reopen?.(); }
-    if (a === 'reroof') { const j = await act('/api/house/roof', { roof: +v }); if (j) { await loadHouses(); toast('🎨 지붕 색을 바꿨어요'); reopen?.(); } return; }
-    if (a === 'visit') { const t = HOUSES.find(k => k.id === +v); if (t) visitHouse(t); return; }
-    if (a === 'up') { const nx = HOUSE_TIERS[(h.lv || 0) + 1]; if (!confirm(`집을 ${nx.n}(으)로 올릴까요? (${costText(nx.cost).replace(/<[^>]+>/g, '')})`)) return; const j = await act('/api/house/up', {}); if (j) { await loadHouses(); toast(`🏗️ ${nx.n}(으)로 올렸어요!`); emote(me, '🎉'); reopen?.(); } return; }
-    if (a === 'collect') { const j = await act('/api/house/collect', {}); if (j) { toast(`💰 임대 수입 +${j.got.toLocaleString()} 골드`); logAct(`임대 수입 +${j.got}`); reopen?.(); } return; }
-    if (a === 'place') startPlace(h ? h.roof : S.roof);
-  }), keep);
+  const tab = btab('hall', 'my', ['my', 'town']);
+  const sw = (pre, sel) => `<div class="swatches roofs">${HOUSE.roofs.map((c, i) => `<button type="button" style="background:${c}" data-x="${pre}:${i}" aria-pressed="${sel === i}" aria-label="지붕 색 ${i + 1}"></button>`).join('')}</div>`;
+  let body = '', foot = '';
+  if (tab === 'town') {
+    const list = [...HOUSES].sort((a, c) => (c.id === me.uid) - (a.id === me.uid) || a.nick.localeCompare(c.nick));
+    body = list.length ? `<ul class="bs-list">${list.map(x => `<li class="bs-row${x.id === me.uid ? ' cur' : ''}"><span class="bs-ri"><span class="roofdot" style="background:${HOUSE.roofs[x.roof] || HOUSE.roofs[0]}"></span></span><div><b class="t">${esc(x.nick)}님의 집${x.id === me.uid ? chip('내 집', 'up') : ''}</b><div class="cs">${chip(HOUSE_TIERS[x.lv || 0]?.n || '일반 집')}</div></div><div class="bs-act">${bbtn(`visit:${x.id}`, '구경 가기')}</div></li>`).join('')}</ul>`
+      : '<p class="muted">아직 집이 없어요. 첫 번째 주인이 되어 보세요!</p>';
+  } else if (!h) {
+    body = `<div class="bs-card hero"><h4>🏗️ 아직 내 집이 없어요</h4><p class="muted">광장 주변만 빼고 어디든 지을 수 있어요. 집은 언제나 모두에게 공개예요.</p>
+      <div class="bs-sec">지붕 색</div>${sw('roof', S.roof)}<div class="bs-sec">필요한 재료</div><div class="cs">${costChips(cost)}</div></div>`;
+    foot = bbtn('place', '📍 집 지을 자리 고르기', can ? '' : '재료가 모자라요', { wide: true, main: true, dis: !can });
+  } else {
+    const lv = h.lv || 0, nx = HOUSE_TIERS[lv + 1], ok = nx && canPay(nx.cost), inc = houseSettle({ ...h }, Date.now());
+    body = `<div class="bs-card hero"><h4>🏠 ${HOUSE_TIERS[lv].n} <small>${lv + 1} / ${HOUSE_TIERS.length}단계</small></h4>${steps(lv + 1, HOUSE_TIERS.length)}
+      ${inc.rate ? `${pbar(inc.have / inc.cap, `💰 ${fmtN(inc.have)} / ${fmtN(inc.cap)}`)}<div class="cs">${chip(`1시간에 🪙 ${fmtN(inc.rate)}`, 'gold')}${chip(`최대 ${HOUSE_INC_CAP}시간`)}</div>${bbtn('collect', '💰 임대 수입 받기', '', { wide: true, main: inc.have >= 1, dis: inc.have < 1 })}` : '<p class="muted">빌라(4단계)부터 임대 수입(골드)이 들어와요.</p>'}</div>
+      ${nx ? `<div class="bs-card"><h4>⬆️ 다음 단계: ${nx.n}</h4><div class="cs">${costChips(nx.cost)}${nx.inc ? chip(`수입 1시간 🪙 ${fmtN(nx.inc)}`, 'up') : ''}</div>${bbtn('up', `${nx.n}(으)로 올리기`, ok ? '' : '재료가 모자라요', { wide: true, dis: !ok })}</div>` : '<div class="bs-card"><h4>🏆 가장 높은 단계예요</h4></div>'}
+      <div class="bs-card"><h4>🎨 지붕 색 <small>무료</small></h4>${sw('reroof', h.roof)}</div>
+      <div class="bs-card"><h4>🚚 이사하기</h4><div class="cs">${costChips(cost)}</div>${bbtn('place', '새 자리 고르기', '', { wide: true, dis: !can })}</div>`;
+    foot = bbtn(`visit:${me.uid}`, '🚪 내 집에 들어가기', '', { wide: true, main: true });
+  }
+  bsOpen(b, { tag: '집 짓기 · 키우기 · 이웃 집 구경', wal: ['gold', 'wood', 'stone'], tabs: [['my', '🏠 내 집'], ['town', '🏘️ 이웃 집', HOUSES.length || '']], tab, body, foot,
+    help: '<p>마을 가운데(광장 주변) · 길 · 물가만 빼고 어디든 집을 지을 수 있어요.</p><p>목재·석재는 마을의 🌳 나무와 🪨 바위를 눌러 모으거나, 벌목소·채광소 알바를 고용해서 모아요.</p><p>집은 언제나 모두에게 공개라서 누구나 구경 올 수 있어요. 가구는 곧 들어와요.</p>' },
+    async x => {
+      const [a, v] = x.split(':');
+      if (a === 'roof') { S.roof = +v; return reopen?.(); }
+      if (a === 'reroof') { const j = await act('/api/house/roof', { roof: +v }); if (j) { await loadHouses(); toast('🎨 지붕 색을 바꿨어요'); reopen?.(); } return; }
+      if (a === 'visit') { const t = HOUSES.find(k => k.id === +v); if (t) visitHouse(t); return; }
+      if (a === 'up') { const nx = HOUSE_TIERS[(h.lv || 0) + 1]; if (!confirm(`집을 ${nx.n}(으)로 올릴까요? (${costText(nx.cost)})`)) return; const j = await act('/api/house/up', {}); if (j) { await loadHouses(); toast(`🏗️ ${nx.n}(으)로 올렸어요!`); emote(me, '🎉'); reopen?.(); } return; }
+      if (a === 'collect') { const j = await act('/api/house/collect', {}); if (j) { toast(`💰 임대 수입 +${j.got.toLocaleString()} 골드`); logAct(`임대 수입 +${j.got}`); reopen?.(); } return; }
+      if (a === 'place') startPlace(h ? h.roof : S.roof);
+    }, keep);
 }
 function startPlace(roof) {
   closeModal(); closePanel(); GA = null;
