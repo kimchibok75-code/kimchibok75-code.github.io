@@ -22,7 +22,7 @@ async function sha256(s) {   // index.js 와 같은 방식 (base64url)
 }
 
 // 다른 사람에게 보이는 겉모습
-export const lookRow = r => ({ lv: r.lv, title: r.title, intro: r.intro, face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, hair: r.hair || 'none', hairC: r.hair_c, cls: r.cls || 'sword', enh: JSON.parse(r.enh || '{}'), equip: (e => ('weapon' in e ? {} : e))(JSON.parse(r.equip || '{}')) });
+export const lookRow = r => ({ lv: r.lv, title: r.title, intro: r.intro, face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, hair: r.hair || 'none', hairC: r.hair_c, suit: r.suit || '', wsk: JSON.parse(r.wsk || '{}'), cls: r.cls || 'sword', enh: JSON.parse(r.enh || '{}'), equip: (e => ('weapon' in e ? {} : e))(JSON.parse(r.equip || '{}')) });
 // 모든 채널에 알리기 (관리자: 공지·내보내기·채팅 금지 등). skip = 지금 방(자기 자신은 부르지 않음)
 export async function toRooms(env, body, skip) {
   await Promise.all(Array.from({ length: MAX_CH }, (_, i) => i + 1).filter(ch => ch !== skip).map(ch =>
@@ -220,7 +220,8 @@ export class Town extends DurableObject {
   async admin(b) {
     if (b.act === 'notice') this.all({ t: 'notice', text: b.text });
     if (b.act === 'house') this.all({ t: 'house', h: b.h });   // 누가 집을 짓거나 옮김 → 그 집만 고쳐 그림
-    if (b.act === 'event') this.all({ t: 'event', e: b.e });   // 마을 사건·공동 건설 소식
+    if (b.act === 'event') this.all({ t: 'event', e: b.e });
+    if (b.act === 'raid') this.all({ t: 'raid', start: b.start });   // 관리자가 레이드를 엶   // 마을 사건·공동 건설 소식
     for (const w of this.members()) {
       const a = this.info(w); if (a.id !== b.id) continue;
       if (b.act === 'dup') { a.gone = true; a.dup = true; this.save(w, a); this.send(w, { t: 'dup' }); try { w.close(4002, 'dup'); } catch {} this.all({ t: 'leave', id: a.id }, w); }

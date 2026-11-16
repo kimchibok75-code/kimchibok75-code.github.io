@@ -171,6 +171,8 @@ for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
   road([[27, 35.6], [29.5, 36.7], [32.6, 36.2]], .95, 25);              // 가챠센터 문 → 광장 남서쪽 길
   const sc = { id: 'screen', name: '광장 대형 전광판', icon: '📺', x: 35, y: 22, w: 10, h: 2 };
   SPOTS.push(sc); for (let y = sc.y; y < sc.y + sc.h; y++) for (let x = sc.x; x < sc.x + sc.w; x++) block(x, y);
+  const bi = SPOTS.findIndex(s => s.id === 'board');   // 작은 광장 전광판은 없앰 (큰 전광판이 대신함)
+  if (bi >= 0) { const s = SPOTS[bi]; for (let y = s.y; y < s.y + s.h; y++) for (let x = s.x; x < s.x + s.w; x++) solid[y * MW + x] = 0; SPOTS.splice(bi, 1); }
 }
 
 // ───── 부드러운 바닥 ─────

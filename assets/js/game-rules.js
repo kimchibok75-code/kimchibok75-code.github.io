@@ -79,9 +79,49 @@ export const ENH_RATE = [100, 95, 90, 80, 70, 60, 50, 40, 35, 30];
 export const enhRate = (enh, D) => Math.min(100, ENH_RATE[enh] + (D?.enhB || 0));
 export const ENH_COST = [700, 1400, 2400, 3600, 5600, 8400, 12000, 17000, 22000, 30000];
 // fx = 보유 효과 (가지고만 있어도 붙음. 쓰고 있지 않아도 됨)
-export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'ribbon', n: '🎀 리본', price: 300, fx: { expP: 2 } }, { id: 'sprout', n: '🌱 새싹', price: 500, fx: { farmP: 5 } }, { id: 'cat', n: '🐱 고양이 귀', price: 800, fx: { crit: 1 } }, { id: 'straw', n: '👒 밀짚모자', price: 1200, fx: { fishP: 4 } }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 2000, fx: { atkP: 2, goldP: 2 } }];
+export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'ribbon', n: '🎀 리본', price: 300, fx: { expP: 2 } }, { id: 'sprout', n: '🌱 새싹', price: 500, fx: { farmP: 5 } }, { id: 'cat', n: '🐱 고양이 귀', price: 800, fx: { crit: 1 } }, { id: 'straw', n: '👒 밀짚모자', price: 1200, fx: { fishP: 4 } }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 2000, fx: { atkP: 2, goldP: 2 } },
+  { id: 'rdragon', n: '🐉 용의 뿔', price: 0, raid: 'rdragon', fx: { atkP: 5, crit: 2 } }];   // raid = 레이드에서만 얻음 (상점에 안 팖)
 // 눈 모양 스킨 (가진 것은 hats 목록에 'eye:별' 처럼 저장). dot은 기본
-export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 400, fx: { defP: 3 } }, { id: 'star', n: '⭐ 별 눈', price: 700, fx: { expP: 3 } }, { id: 'wink', n: '😉 윙크', price: 800, fx: { crit: 1 } }, { id: 'heart', n: '💗 하트 눈', price: 1000, fx: { hpP: 3 } }, { id: 'cat', n: '🐱 고양이 눈', price: 1200, fx: { fishC: 5 } }, { id: 'big', n: '✨ 반짝 큰 눈', price: 1500, fx: { goldP: 3 } }];
+export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 400, fx: { defP: 3 } }, { id: 'star', n: '⭐ 별 눈', price: 700, fx: { expP: 3 } }, { id: 'wink', n: '😉 윙크', price: 800, fx: { crit: 1 } }, { id: 'heart', n: '💗 하트 눈', price: 1000, fx: { hpP: 3 } }, { id: 'cat', n: '🐱 고양이 눈', price: 1200, fx: { fishC: 5 } }, { id: 'big', n: '✨ 반짝 큰 눈', price: 1500, fx: { goldP: 3 } },
+  { id: 'rdragon', n: '🐉 용의 눈', price: 0, raid: 'rdragon', fx: { crit: 3, expP: 5 } }];
+// 의상 스킨 (몸 전체 겉모습, 입으면 갑옷 그림 대신 보임). 가진 것은 c.hats 에 'suit:id', 입은 것은 c.suit
+export const SUITS = [
+  { id: 'hoodie', n: '🧥 후드티', price: 3000, fx: { spdP: 3 } },
+  { id: 'hanbok', n: '🌷 한복', price: 5000, fx: { goldP: 3 } },
+  { id: 'apron', n: '☕ 카페 앞치마', price: 6000, fx: { farmP: 6 } },
+  { id: 'tux', n: '⭐ 턱시도', price: 9000, fx: { crit: 2 } },
+  { id: 'knight', n: '🛡️ 기사 망토', price: 14000, fx: { defP: 5 } },
+  { id: 'cabbage', n: '🥬 배추 옷', price: 22000, fx: { hpP: 4, expP: 3 } },
+  { id: 'rdragon', n: '🐉 레드 드래곤 갑옷', price: 0, raid: 'rdragon', fx: { hpP: 8, defP: 6 } },
+];
+// 무기 스킨 (그 무기의 겉모습만). 가진 것은 'wsk:무기:id', 쓰는 것은 c.wsk = { sword, bow, staff }
+export const WSKINS = [
+  { t: 'sword', id: 'leek', n: '🌱 대파 검', price: 2500, fx: { farmP: 4 } },
+  { t: 'sword', id: 'fish', n: '🐟 생선 검', price: 3500, fx: { fishP: 4 } },
+  { t: 'sword', id: 'candy', n: '🍓 사탕 검', price: 5000, fx: { expP: 2 } },
+  { t: 'sword', id: 'bamboo', n: '🌲 대나무 검', price: 7000, fx: { eva: 1 } },
+  { t: 'sword', id: 'ladle', n: '⭐ 국자 검', price: 9000, fx: { goldP: 2 } },
+  { t: 'sword', id: 'laser', n: '⚡ 광선검', price: 15000, fx: { atkP: 3 } },
+  { t: 'bow', id: 'leaf', n: '🌱 나뭇잎 활', price: 2500, fx: { gather: 5 } },
+  { t: 'bow', id: 'bone', n: '🎯 뼈 활', price: 3500, fx: { bossP: 3 } },
+  { t: 'bow', id: 'candy', n: '🍓 사탕 활', price: 5000, fx: { expP: 2 } },
+  { t: 'bow', id: 'ice', n: '❄️ 얼음 활', price: 7000, fx: { crit: 1 } },
+  { t: 'bow', id: 'rainbow', n: '🌈 무지개 활', price: 10000, fx: { goldP: 2 } },
+  { t: 'bow', id: 'star', n: '🌟 별빛 활', price: 15000, fx: { atkP: 3 } },
+  { t: 'staff', id: 'candle', n: '🔥 촛불 지팡이', price: 2500, fx: { hpP: 2 } },
+  { t: 'staff', id: 'mushroom', n: '🍀 버섯 지팡이', price: 3500, fx: { farmP: 4 } },
+  { t: 'staff', id: 'heart', n: '💗 하트 지팡이', price: 5000, fx: { hpP: 3 } },
+  { t: 'staff', id: 'moon', n: '🌙 달 지팡이', price: 7000, fx: { expP: 2 } },
+  { t: 'staff', id: 'paw', n: '🐱 고양이 발 지팡이', price: 9000, fx: { fishC: 4 } },
+  { t: 'staff', id: 'cabbage', n: '🥬 배추 지팡이', price: 15000, fx: { atkP: 3 } },
+  { t: 'sword', id: 'rdragon', n: '🐉 레드 드래곤 검', price: 0, raid: 'rdragon', fx: { atkP: 5, bossP: 5 } },
+  { t: 'bow', id: 'rdragon', n: '🐉 레드 드래곤 활', price: 0, raid: 'rdragon', fx: { atkP: 5, bossP: 5 } },
+  { t: 'staff', id: 'rdragon', n: '🐉 레드 드래곤 지팡이', price: 0, raid: 'rdragon', fx: { atkP: 5, bossP: 5 } },
+];
+export const wskKey = w => `wsk:${w.t}:${w.id}`;
+// 레이드 전용 스킨 한 벌 (가진 것 키 목록): 머리·눈·의상·검·활·지팡이
+export const raidSet = set => [...HATS.filter(h => h.raid === set).map(h => h.id), ...EYE_SKINS.filter(e => e.raid === set).map(e => 'eye:' + e.id),
+  ...SUITS.filter(s => s.raid === set).map(s => 'suit:' + s.id), ...WSKINS.filter(w => w.raid === set).map(wskKey)];
 
 let seq = 1;
 const newId = () => (globalThis.crypto?.randomUUID ? crypto.randomUUID().slice(0, 8) : `i${Date.now().toString(36)}${seq++}`);
@@ -394,6 +434,8 @@ export function skinFx(c) {
   const fx = {}, own = Array.isArray(c.hats) ? c.hats : [];
   for (const h of HATS) if (h.fx && own.includes(h.id)) addFx(fx, h.fx);
   for (const e of EYE_SKINS) if (e.fx && own.includes('eye:' + e.id)) addFx(fx, e.fx);
+  for (const s of SUITS) if (own.includes('suit:' + s.id)) addFx(fx, s.fx);
+  for (const w of WSKINS) if (own.includes(wskKey(w))) addFx(fx, w.fx);
   return fx;
 }
 export function titleFx(c) { const fx = {}; for (const id of c.life?.titles || []) addFx(fx, titleOf(id)?.fx || {}); return fx; }
@@ -555,4 +597,77 @@ export function rollSkill(lv = 1) {
   const o = SKILL_GACHA.odds[Math.min(lv, SKILL_GACHA.odds.length) - 1];
   let r = Math.random() * 100, rare = 3; for (const k of [1, 2]) { r -= o[k - 1]; if (r < 0) { rare = k; break; } }
   return pick(SKILLS.filter(s => s.r === rare));
+}
+
+// ───────── 레이드 (매시 정각, 기획서 4-9) ─────────
+// 정각에 30초 모집 → 신청한 사람만 레이드 맵으로. 보스는 무조건 잡힘(시간이 지나면 저절로 체력이 깎임), 1~2분.
+// 끝날 때까지 나갈 수 없음. 쓰러져도 끝까지 기다리면 보상(조금 적게)
+export const RAID = {
+  every: 3600e3, recruit: 30e3,      // 매시 정각부터 30초 모집 → 30초에 시작
+  max: 150e3,                        // 아무리 늦어도 2분 30초면 끝
+  drain: 120,                        // 아무도 안 때려도 120초면 보스 체력이 0 (무조건 잡힘)
+  hpSec: 100,                        // 보스 체력 = 참가자 초당 피해 합 × 100초 → 다 같이 열심히 치면 약 55초
+  cap: 60,                           // 한 번에 최대 인원
+  drop: .12, dropDead: .06,          // 전용 스킨이 나올 확률 (끝까지 버팀 / 쓰러짐)
+  deadMul: .7,                       // 쓰러진 사람 보상 배율
+  W: 30, H: 20,                      // 레이드 맵 크기 (칸)
+};
+export const RAID_BOSS = { rdragon: { n: '레드 드래곤', i: '🐉', set: 'rdragon' } };
+export const raidSlotStart = t => Math.floor(t / RAID.every) * RAID.every + RAID.recruit;   // 이번 시간 레이드 시작 시각
+export const isHourlyRaid = start => (start - RAID.recruit) % RAID.every === 0;
+// 보상: 사냥 약 25분어치 골드 + 지금 레벨의 30% 경험치
+export const raidReward = lv => ({ gold: Math.round((1500 * lv + 8000) * .4), exp: Math.round(needExp(lv) * .3) });
+// 초당 피해 (서버가 화면이 보낸 피해를 이 값으로 막음)
+export const raidDps = D => Math.max(1, Math.round(D.hit / D.gap * (1 + Math.min(70, D.crit) / 100 * ((D.critM || 1.5) - 1)) * (1 + (D.bossP || 0) / 100) * (1 + (D.sp || 0) / 100 * ((D.spMul || 2) - 1))));
+// 보스 공격 순서 (시작 시각으로 정해짐 → 모두의 화면이 같음). at = 시작 뒤 초, k = 종류, x·y = 칸 좌표, warn = 미리 보여 주는 초
+export function raidPattern(start) {
+  let sd = (start / 1000) % 2147483647 | 0; const rnd = () => ((sd = (sd * 16807) % 2147483647) - 1) / 2147483646;
+  const out = []; let t = 4;
+  while (t < RAID.max / 1000) {
+    const k = ['breath', 'meteor', 'tail', 'breath', 'meteor', 'roar'][Math.floor(rnd() * 6)];
+    if (k === 'breath') out.push({ at: t, k, a: (rnd() - .5) * 1.6, warn: 1.6 });                     // 입에서 부채꼴 불길 (a = 방향)
+    if (k === 'meteor') { const n = 5 + Math.floor(rnd() * 4); for (let i = 0; i < n; i++) out.push({ at: t + i * .25, k, x: 2 + rnd() * (RAID.W - 4), y: 8 + rnd() * (RAID.H - 10), r: 1.6, warn: 1.5 }); }
+    if (k === 'tail') out.push({ at: t, k, y: 8 + rnd() * (RAID.H - 12), warn: 1.5 });                  // 가로로 한 줄 꼬리 휩쓸기
+    if (k === 'roar') out.push({ at: t, k, warn: 1.2 });                                                // 맵 전체 약한 피해
+    t += 3.2 + rnd() * 2;
+  }
+  return out;
+}
+// 보스 공격 피해 (최대 체력 비율): 3번 맞으면 쓰러짐
+export const RAID_HIT = { breath: .36, meteor: .3, tail: .4, roar: .12 };
+
+// ───────── 자동 생활 (마을에서 벌목·채광·알바·낚시·농사를 알아서 돌아가며 함) ─────────
+// 직접 하는 것보다 효율이 낮음. 창을 닫아도 최대 8시간까지 계속. life.auto = { on, at, acc(소수점 남은 양) }
+export const AUTO_LIFE = { max: 8 * 3600,
+  perHour: lv => ({ wood: 36, stone: 24, fish: 6, farm: 5, gold: 6 * JOB.pay(lv) + 30 * lv + 300 }) };   // 1시간에 모이는 양
+// 마지막 정산 뒤 흐른 시간만큼 쌓아 줌. 받은 양(정수)을 돌려줌 (없으면 null)
+export function autoSettle(c, now) {
+  const A = c.life.auto; if (!A?.on) return null;
+  const sec = Math.max(0, Math.min(AUTO_LIFE.max, (now - (A.at || now)) / 1000)); A.at = now; if (!sec) return null;
+  const D = derive(c), P = AUTO_LIFE.perHour(c.lv), acc = A.acc || (A.acc = {}), got = {};
+  const add = (k, v) => { acc[k] = (acc[k] || 0) + v * sec / 3600; const n = Math.floor(acc[k]); if (n > 0) { acc[k] -= n; got[k] = n; } };
+  add('wood', P.wood); add('stone', P.stone); add('fish', P.fish); add('farm', P.farm); add('gold', P.gold * (1 + D.goldB / 100));
+  const L = c.life;
+  if (got.wood) L.res.wood += got.wood; if (got.stone) L.res.stone += got.stone;
+  if (got.fish) L.coins.fish += got.fish; if (got.farm) L.coins.farm += got.farm; if (got.gold) c.gold += got.gold;
+  return Object.keys(got).length ? { ...got, sec: Math.round(sec) } : null;
+}
+
+// ───────── 집 업그레이드 (마을회관): 일반 집 → 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩 ─────────
+// inc = 1시간 임대 수입(골드, 빌라부터). 수입은 최대 HOUSE_INC_CAP 시간까지만 쌓임 → 마을회관에서 받기
+export const HOUSE_TIERS = [
+  { n: '일반 집' },
+  { n: '2층 집', cost: { gold: 20000, wood: 150, stone: 100 } },
+  { n: '큰 집', cost: { gold: 60000, wood: 300, stone: 220 } },
+  { n: '빌라', cost: { gold: 180000, wood: 500, stone: 400 }, inc: 5000 },
+  { n: '4층 건물', cost: { gold: 500000, wood: 800, stone: 650 }, inc: 12000 },
+  { n: '빌딩', cost: { gold: 1500000, wood: 1200, stone: 1000 }, inc: 30000 },
+];
+export const HOUSE_INC_CAP = 12;
+// 임대 수입 정산 (h = life.house). 돌려줌: { have(받을 수 있는 골드), cap, rate }
+export function houseSettle(h, now) {
+  const rate = HOUSE_TIERS[h?.lv || 0]?.inc || 0, cap = rate * HOUSE_INC_CAP;
+  if (!h || !rate) return { have: 0, cap: 0, rate: 0 };
+  if (h.at) h.acc = Math.min(cap, (h.acc || 0) + rate * Math.max(0, now - h.at) / 3600e3);
+  h.at = now; return { have: Math.floor(h.acc || 0), cap, rate };
 }

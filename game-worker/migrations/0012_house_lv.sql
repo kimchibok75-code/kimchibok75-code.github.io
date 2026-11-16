@@ -1,0 +1,2 @@
+-- 집 단계 (0 일반 집 ~ 5 빌딩)
+ALTER TABLE houses ADD COLUMN lv INTEGER NOT NULL DEFAULT 0;

@@ -137,7 +137,7 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; lette
 .app { position: fixed; inset: 0; display: grid; grid-template-columns: 300px minmax(0, 1fr); }
 .panel { background: var(--paper); border-right: 2px solid var(--ink); display: flex; flex-direction: column; min-height: 0; z-index: 5; }
 .peek { display: none; }
-.panel-body { overflow-y: auto; padding: 16px; display: grid; gap: 14px; align-content: start; padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)); }
+.panel-body { overflow-y: auto; scrollbar-gutter: stable; padding: 16px; display: grid; gap: 14px; align-content: start; padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)); }
 .me { display: grid; justify-items: center; gap: 4px; text-align: center; }
 #meCanvas { width: 150px; height: 170px; }
 .me h2 { margin: 0; font-size: calc(26px * var(--fs)); }
@@ -371,6 +371,18 @@ body.hunting .side { display: none; }
 .skgrid button { position: relative; aspect-ratio: 1; border: 2px solid var(--line); border-radius: 10px; background: linear-gradient(#eef7fb, #e3f0e2); padding: 0; overflow: hidden; }
 .skgrid button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 2px var(--gold); }
 .skgrid.shop { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
+.housetier { background: #fff8ec; border: 1.5px solid #ecd3a6; border-radius: 12px; padding: 8px 10px; margin: 8px 0; display: grid; gap: 6px; } .housetier p { margin: 0; }
+.iconbtn.adm { background: #efe7ff; border-color: #6c4fc2; }
+.raidbox { position: absolute; top: 62px; left: 50%; transform: translateX(-50%); width: min(440px, calc(100% - 24px)); background: rgba(38,24,24,.94); color: #fff; border: 2px solid var(--ink); border-radius: 14px; padding: 8px 12px; z-index: 6; box-shadow: var(--shadow); }
+.raidbox .rb-top { display: flex; justify-content: space-between; align-items: center; font-size: calc(14px * var(--fs)); }
+.raidbox .rb-bar { position: relative; height: 18px; background: #4a3030; border-radius: 9px; overflow: hidden; margin: 6px 0; border: 1.5px solid #1f1414; }
+.raidbox .rb-bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: linear-gradient(90deg, #ff4a2a, #ffb02e); transition: width .4s; }
+.raidbox .rb-bar span { position: relative; display: block; text-align: center; font-size: 12px; font-weight: 800; line-height: 16px; text-shadow: 0 1px 2px #000; }
+.raidbox p { margin: 0; font-size: calc(12.5px * var(--fs)); opacity: .92; }
+body.raiding .huntbox, body.raiding .placebar, body.raiding .roombtn { display: none !important; }
+.raidask { display: flex; align-items: baseline; justify-content: center; gap: 4px; margin: 4px 0 8px; } .raidask b { font-size: 44px; color: #e8553a; line-height: 1; } .raidask small { font-weight: 700; }
+.raidinfo { margin: 8px 0; padding-left: 18px; display: grid; gap: 4px; font-size: calc(14px * var(--fs)); } .raidinfo .raidskin { color: #b8392f; }
+.skgrid.raid button { background: linear-gradient(#ffe9d6, #f6c9a8); border-color: #d9734e; }
 .skgrid em { position: absolute; top: 3px; right: 3px; font-style: normal; font-size: calc(10.5px * min(var(--fs), 1.15)); font-weight: 700; background: rgba(251,252,247,.92); border: 1px solid var(--line); border-radius: 7px; padding: 0 4px; line-height: 1.5; white-space: nowrap; }
 .skgrid .skfx { display: block; font-style: normal; font-size: .88em; font-weight: 800; color: #2f7a3a; white-space: normal; line-height: 1.2; }
 .skfxsum { margin: 4px 0 8px; padding: 7px 10px; border-radius: 10px; background: #eef7e6; border: 1.5px solid #bfe0b0; font-size: calc(13.5px * var(--fs)); }
@@ -479,7 +491,7 @@ body.hunting .chat-log { height: 64px; }
 }
 @media (min-width: 761px) { .feed { display: none; } .chatexp { display: none; }
   .app { grid-template-columns: calc(300px * var(--ui)) minmax(0, 1fr); }
-  .panel, .hud, .side, .zoom, .chat, .huntbox, .banner, .roombtn, .placebar, .modal, .away, .toast { zoom: var(--ui); }
+  .panel, .hud, .side, .zoom, .chat, .huntbox, .raidbox, .banner, .roombtn, .placebar, .modal, .away, .toast { zoom: var(--ui); }
   .hud { flex-wrap: wrap; }
   .hud .chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 }
@@ -719,6 +731,8 @@ a.iconbtn { color: inherit; text-decoration: none; }
         <p class="skfxsum" id="skinFxSum"></p>
         <div class="field"><label>머리 장식</label><div class="skgrid" id="hatList"></div></div>
         <div class="field"><label>눈 모양</label><div class="skgrid" id="eyeList"></div></div>
+        <div class="field"><label>의상</label><div class="skgrid" id="suitList"></div></div>
+        <div class="field"><label>무기 스킨</label><div class="skgrid" id="wskList"></div></div>
         <p class="muted">스킨은 가지고만 있어도 보유 효과가 붙어요 (안 써도 돼요). 스킨샵에서 더 살 수 있어요.</p>
       </div>
       <div class="pane" data-pane="bag" hidden>
@@ -740,6 +754,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
       <span class="chip" id="coinChip">🪙 1,230</span>
       <button type="button" class="chip" id="fishChip" hidden title="자동 낚시 중 (누르면 낚시터)"></button>
       <span class="chip" id="jobChip" hidden>☕ 알바 1:00</span>
+      <button type="button" class="chip" id="autoChip" hidden title="자동 생활 중 (누르면 멈춤)">🧺 자동 생활</button>
       <span class="chip" id="buffChip" hidden title="분수 버프"></span>
       <span class="chip ev" id="evChip" hidden></span>
       <span class="spacer"></span>
@@ -747,11 +762,16 @@ a.iconbtn { color: inherit; text-decoration: none; }
       <button class="iconbtn" id="fsBtn" aria-label="전체화면" title="전체화면 (Esc로 나가기)">⛶</button>
       <button class="iconbtn" id="setBtn" aria-label="설정">⚙️</button>
     </div>
-    <div class="side"><button class="iconbtn" id="newsBtn" aria-label="마을 소식판" title="마을 소식판: 오늘 의뢰 · 공동 건설 · 마을 소식">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn" id="townBtn" aria-label="마을 바로가기" title="마을 바로가기">🏘️</button><button class="iconbtn" id="roamBtn" aria-label="자유 행동" title="자유 행동: 켜 두면 캐릭터가 알아서 돌아다니고 인사해요" aria-pressed="false">🚶</button></div>
+    <div class="side"><button class="iconbtn adm" id="admBtn" hidden aria-label="관리자 화면" title="관리자 화면 (관리자만 보여요)">🛡️</button><button class="iconbtn" id="newsBtn" aria-label="마을 소식판" title="마을 소식판: 오늘 의뢰 · 공동 건설 · 마을 소식">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn" id="townBtn" aria-label="마을 바로가기" title="마을 바로가기">🏘️</button><button class="iconbtn" id="autoBtn" aria-label="자동 생활" title="자동 생활: 벌목·채광·알바·낚시·농사를 알아서 해요 (효율은 낮아요)" aria-pressed="false">🧺</button><button class="iconbtn" id="roamBtn" aria-label="자유 행동" title="자유 행동: 켜 두면 캐릭터가 알아서 돌아다니고 인사해요" aria-pressed="false">🚶</button></div>
     <div class="zoom"><button class="iconbtn" id="zIn" aria-label="크게 보기">＋</button><button class="iconbtn" id="zOut" aria-label="작게 보기">－</button></div>
     <div class="banner" id="liveBanner" hidden>🔴 김치복 생방송 중!</div>
     <button class="roombtn" id="roomBtn" type="button" hidden>🚪 집에서 나가기</button>
     <div class="placebar" id="placeBar" hidden><span id="placeMsg"></span><button class="mini main" id="placeOk" type="button">여기에 짓기</button><button class="mini" id="placeNo" type="button">취소</button></div>
+    <section class="raidbox" id="raidBox" hidden aria-label="레이드">
+      <div class="rb-top"><b>🐉 레드 드래곤 레이드</b><span id="raidN">1명</span></div>
+      <div class="rb-bar"><i id="raidHp"></i><span id="raidHpT">100%</span></div>
+      <p id="raidMsg"></p>
+    </section>
     <section class="huntbox" id="huntBox" hidden aria-label="자동 사냥">
       <div class="hb-top"><b id="hbField">🌾 바람 들판</b><span id="hbTime">자동 사냥 00:00</span><button class="hbmin" id="hbMin" type="button" aria-label="현황판 접기" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg></button></div>
       <div class="hb-stats">
@@ -798,7 +818,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, AUTO_LIFE, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx } from './assets/js/game-rules.js?v=__BUILD__';
@@ -888,6 +908,95 @@ function staffParts(st, gem) {
   }
   return P;
 }
+// ───── 무기 스킨 (기본 무기와 같은 자리: 손잡이 (0,0), 날은 위로) ─────
+function bowArc(ro, th, col, cx = 4 - ro) {
+  const ri = ro - th, out = [], inn = [];
+  for (let i = 0; i <= 14; i++) { const a = -1.1 + 2.2 * i / 14; out.push([cx + ro * Math.cos(a), ro * Math.sin(a)]); inn.unshift([cx + ri * Math.cos(a), ri * Math.sin(a)]); }
+  const half = (ro - 1.8) * Math.sin(1.1), sx = cx + (ro - 1.8) * Math.cos(1.1);
+  return { arc: { path: PG([...out, ...inn]), c: col }, str: { path: R(sx - .55, -half, 1.1, half * 2, 0), c: '#f3ead2' }, tx: cx + ro * Math.cos(1.1), ty: ro * Math.sin(1.1), cx };
+}
+const swirl = (cx, cy, r, c) => g => { g.save(); g.strokeStyle = c; g.lineWidth = 1.8; g.beginPath(); for (let a = 0; a < 12.6; a += .25) g.lineTo(cx + Math.cos(a) * a * r / 12.6, cy + Math.sin(a) * a * r / 12.6); g.stroke(); g.restore(); };
+function wskParts(type, id) {
+  const P = [], glint = (x, y) => ({ flat: 1, path: E(x, y, 1.3, 1.3), c: 'rgba(255,255,255,.8)' });
+  if (type === 'bow') {
+    const col = { leaf: '#6cc35a', bone: '#efe6cf', candy: '#ff8fab', ice: '#9fdcff', rainbow: '#ff6b6b', star: '#34407a', rdragon: '#9c2a22' }[id] || '#b07a45';
+    const B = bowArc(17, id === 'rdragon' ? 4.4 : 3.6, col); P.push(B.str);
+    for (const k of [-1, 1]) {
+      if (id === 'leaf') P.push({ path: E(B.tx + 2, k * (B.ty + 2), 4.8, 2.2, k * .8), c: '#8fd36e' });
+      if (id === 'bone') P.push({ path: E(B.tx - 1.6, k * (B.ty + 1), 2.5, 2.5), c: '#efe6cf' }, { path: E(B.tx + 1.8, k * (B.ty + .5), 2.5, 2.5), c: '#efe6cf' });
+      if (id === 'candy') P.push({ path: E(B.tx + 1, k * (B.ty + 1.5), 3.4, 3.4), c: '#ffd166' });
+      if (id === 'ice') P.push({ path: PG([[B.tx - 2.5, k * (B.ty - 2)], [B.tx + 1, k * (B.ty + 8)], [B.tx + 3, k * (B.ty - 1)]]), c: '#e8fdff' });
+      if (id === 'star') P.push({ path: g => starPath(g, B.tx + .5, k * (B.ty + 1), 4.2), c: '#ffd45a' });
+      if (id === 'rdragon') P.push({ path: PG([[B.tx - 3, k * (B.ty - 3)], [B.tx + 7, k * (B.ty + 6)], [B.tx + 1, k * (B.ty + 1.5)], [B.tx + 4, k * (B.ty - 5)]]), c: '#e2552f' });
+    }
+    P.push(B.arc);
+    if (id === 'rainbow') P.push({ flat: 1, path: bowArc(15.8, 1.2, '', B.cx).arc.path, c: '#ffd166' }, { flat: 1, path: bowArc(14.6, 1.2, '', B.cx).arc.path, c: '#5b86e0' });
+    if (id === 'candy' || id === 'star' || id === 'rdragon') for (let i = 1; i < 7; i++) { const a = -1.1 + 2.2 * i / 7; P.push({ flat: 1, path: E(B.cx + 15.2 * Math.cos(a), 15.2 * Math.sin(a), id === 'candy' ? 1.8 : .9, id === 'candy' ? 1 : .9, a + 1.57), c: id === 'candy' ? '#fff' : id === 'star' ? '#fff3b0' : '#ffb02e' }); }
+    if (id === 'ice') P.push({ flat: 1, path: bowArc(16, .8, '', B.cx).arc.path, c: 'rgba(255,255,255,.7)' });
+    P.push({ path: R(-.8, -4, 5.2, 8, 2), c: id === 'rdragon' ? '#3a2420' : id === 'bone' ? '#8a6a4a' : WOOD }, { path: E(1.8, 0, 1.7, 1.7), c: id === 'rdragon' ? '#ffd45a' : id === 'ice' ? '#e8fdff' : '#ffcf5a' });
+    return P;
+  }
+  if (type === 'staff') {
+    const shaft = { candle: '#8a5a30', mushroom: '#efe3c2', heart: '#ff8fab', moon: '#3a3f4b', paw: '#f7f3ea', cabbage: '#5fae4a', rdragon: '#5a2a24' }[id] || '#8a5a30';
+    P.push({ path: R(-1.4, -23, 2.8, 33, 1.4), c: shaft });
+    if (id === 'candle') P.push({ path: E(0, -23, 5.5, 2), c: '#f2c14e' }, { path: R(-2.4, -32, 4.8, 9, 1.5), c: '#fff3d6' },
+      { path: g => { g.beginPath(); g.moveTo(0, -43); g.quadraticCurveTo(4, -36, 0, -33.5); g.quadraticCurveTo(-4, -36, 0, -43); g.closePath(); }, c: '#ffb02e' }, { flat: 1, path: E(0, -36, 1.2, 2), c: '#fff3b0' });
+    if (id === 'mushroom') P.push({ path: g => { g.beginPath(); g.ellipse(0, -24, 10, 8.5, 0, Math.PI, 0); g.closePath(); }, c: '#e0533c' },
+      ...[[-4.5, -28.5, 1.8], [2.5, -30.5, 2], [6, -26, 1.3], [-.5, -25.8, 1.2]].map(([x, y, r]) => ({ flat: 1, path: E(x, y, r, r * .85), c: '#fff' })));
+    if (id === 'heart') P.push({ path: g => heartPath(g, 0, -29, 6.4), c: '#ff4d6d' }, glint(-2.6, -31.5));
+    if (id === 'moon') P.push({ path: g => { g.beginPath(); g.arc(0, -30, 6.8, 0, Math.PI * 2); g.arc(3.2, -31.8, 5.6, 0, Math.PI * 2, true); }, c: '#ffe27a' }, { flat: 1, path: g => starPath(g, 5, -37, 2.2), c: '#fff3b0' });
+    if (id === 'paw') P.push(...[[-4.4, -33.5], [0, -36], [4.4, -33.5]].map(([x, y]) => ({ path: E(x, y, 2.3, 2.5), c: '#fff' })), { path: E(0, -28, 6.2, 5.6), c: '#fff' },
+      { flat: 1, path: E(0, -27.4, 2.8, 2.3), c: '#ff9fbf' }, ...[[-4.4, -33.5], [0, -36], [4.4, -33.5]].map(([x, y]) => ({ flat: 1, path: E(x, y, 1.1, 1.3), c: '#ff9fbf' })));
+    if (id === 'cabbage') P.push({ path: E(0, -29, 7.5, 7), c: '#d4ecae' }, { path: E(-4.6, -27, 3.6, 6.6, -.5), c: '#7fcf6a' }, { path: E(4.6, -27, 3.6, 6.6, .5), c: '#7fcf6a' },
+      { flat: 1, path: R(-.4, -35, .8, 9, .4), c: 'rgba(255,255,255,.7)' }, { flat: 1, path: R(-5, -28, .7, 5, .3), c: 'rgba(255,255,255,.6)' });
+    if (id === 'rdragon') P.push({ path: PG([[-6, -21], [-7, -34], [-3, -25]]), c: '#3a2420' }, { path: PG([[6, -21], [7, -34], [3, -25]]), c: '#3a2420' },
+      { path: E(0, -29, 5.6, 5.6), c: '#ff5a2a' }, { flat: 1, path: E(0, -29, 2.6, 2.6), c: '#ffd45a' }, glint(-2, -31));
+    return P;
+  }
+  switch (id) {   // 검
+    case 'leek': return [{ path: E(0, 9, 3.2, 1.8), c: '#efe3c2' }, { path: PG([[-2.2, -11], [-.2, -11], [-3.8, -34], [-6, -32]]), c: '#4f9d3a' }, { path: PG([[.2, -11], [2.2, -11], [5, -36], [2.6, -36.5]]), c: '#5fae4a' },
+      { path: R(-2.3, -12, 4.6, 21, 2), c: '#f6f7ec' }, { flat: 1, path: R(-2.3, -13, 4.6, 5, 1.5), c: '#cfe8a8' }];
+    case 'fish': return [{ path: PG([[-5, -13], [-9.5, -8], [-4.6, -6]]), c: '#6f97b0' }, { path: PG([[-5.5, 10], [5.5, 10], [0, 2]]), c: '#6f97b0' }, { path: E(0, -12, 5.2, 14.5), c: '#8fb3c9' },
+      { flat: 1, path: E(1.8, -12, 2.3, 10.5), c: '#d6e6ee' }, { flat: 1, path: E(-1, -22, 1.7, 1.7), c: '#fff' }, { flat: 1, path: E(-1, -22, .85, .85), c: INK }];
+    case 'candy': return [{ path: R(-1.1, -14, 2.2, 23, 1), c: '#fff' }, { path: E(0, -23, 8.8, 8.8), c: '#ff8fab', after: swirl(0, -23, 7.5, '#fff') }];
+    case 'bamboo': return [{ path: E(5.5, -31, 5.2, 1.9, -.6), c: '#6cc35a' }, { path: R(-2.4, -33, 4.8, 42, 2), c: '#8cc56a' },
+      ...[-25, -15, -5].map(y => ({ flat: 1, path: R(-2.4, y, 4.8, 1.5, 0), c: '#5f9a45' })), { flat: 1, path: R(-1.2, -32, .9, 38, .4), c: 'rgba(255,255,255,.3)' }];
+    case 'ladle': return [{ path: R(-1.4, -22, 2.8, 31, 1.4), c: '#c9d2dc' }, { path: E(0, -27.5, 6.8, 5.4), c: '#c9d2dc' }, { flat: 1, path: E(0, -28.2, 4.8, 3.4), c: '#8d99a6' }, glint(-3, -29)];
+    case 'laser': return [{ flat: 1, path: R(-4.2, -36, 8.4, 34, 4.2), c: 'rgba(127,247,255,.3)' }, { path: R(-2, -3, 4, 12, 1.5), c: '#3a3f4b' }, { path: R(-3.6, -4.5, 7.2, 2.8, 1), c: '#8a929c' },
+      { path: R(-1.8, -34, 3.6, 30, 1.8), c: '#7ff7ff' }, { flat: 1, path: R(-.6, -33, 1.2, 28, .6), c: '#fff' }, { flat: 1, path: E(0, 2.5, 1, 1), c: '#e8553a' }];
+    case 'rdragon': return [{ path: R(-1.8, -2, 3.6, 11, 1.4), c: '#3a2420' }, { path: E(0, 9.5, 2.8, 2.8), c: '#ffcf5a' }, { path: PG([[-10, -9], [-3, -4], [3, -4], [10, -9], [7, -2], [-7, -2]]), c: '#7a1f1a' },
+      { path: PG([[-4, -4.5], [4, -4.5], [5.5, -14], [3, -18], [5, -24], [0, -37], [-5, -24], [-3, -18], [-5.5, -14]]), c: '#e2552f' },
+      { flat: 1, path: PG([[-1.5, -6], [1.5, -6], [2.5, -15], [0, -31], [-2.5, -15]]), c: '#ffb02e' }, { path: E(0, -4, 2.4, 2.4), c: '#ffd45a' }];
+  }
+  return [];
+}
+// ───── 의상 스킨: 뒤(망토·날개) · 앞(몸) · 소매 색 ─────
+function suitParts(id, bob, hy) {
+  const y = -20 - bob, body = c => ({ path: R(-9, y, 18, 14, 5), c }), F = [], B = []; let sl = null;
+  switch (id) {
+    case 'hoodie': sl = '#7b8fd6'; F.push(body('#7b8fd6'), { path: R(-10.5, y - 1.5, 21, 5, 2.5), c: '#6a7ec4' }, { flat: 1, path: R(-5, y + 8.5, 10, 4.5, 2), c: '#6a7ec4' },
+      { flat: 1, path: R(-3.4, y + 2.5, 1.1, 5, .5), c: '#f3ead2' }, { flat: 1, path: R(2.3, y + 2.5, 1.1, 5, .5), c: '#f3ead2' }); break;
+    case 'hanbok': sl = '#f7e3a1'; F.push({ path: R(-10.5, -9.5 - bob, 21, 9.5, [2, 2, 5, 5]), c: '#d9485f' }, body('#f7e3a1'),
+      { flat: 1, path: PG([[-3.5, y], [-.5, y], [4.5, y + 7], [1.8, y + 7]]), c: '#fff' }, { flat: 1, path: R(2.4, y + 7, 1.5, 6, .6), c: '#c0392b' }, { flat: 1, path: E(3.4, y + 7.2, 2.8, 1.5), c: '#c0392b' },
+      { flat: 1, path: R(-9, y + 11, 18, 1.6, 0), c: '#5b86e0' }); break;
+    case 'apron': sl = '#f7f7f2'; F.push(body('#f7f7f2'), { path: R(-6.5, y + 3, 13, 13, [2, 2, 4, 4]), c: '#8a5a32' }, { flat: 1, path: R(-6.5, y, 1.4, 3.5, 0), c: '#8a5a32' }, { flat: 1, path: R(5.1, y, 1.4, 3.5, 0), c: '#8a5a32' },
+      { flat: 1, path: R(-3.5, y + 8, 7, 3.5, 1), c: '#6b4226' }, { flat: 1, path: E(0, y + 5.2, 1.6, 1.3), c: '#f2c14e' }); break;
+    case 'tux': sl = '#2b2f3a'; F.push(body('#2b2f3a'), { flat: 1, path: PG([[-3.6, y], [3.6, y], [0, y + 10.5]]), c: '#fff' },
+      { flat: 1, path: PG([[-3.6, y + .6], [0, y + 2.2], [-3.6, y + 3.8]]), c: '#c0392b' }, { flat: 1, path: PG([[3.6, y + .6], [0, y + 2.2], [3.6, y + 3.8]]), c: '#c0392b' },
+      { flat: 1, path: E(0, y + 6.5, .8, .8), c: INK }, { flat: 1, path: E(0, y + 8.6, .8, .8), c: INK }); break;
+    case 'knight': sl = '#b9c3ce'; B.push({ path: PG([[-9, y + 1], [9, y + 1], [12, -.5], [-12, -.5]]), c: '#c0392b' });
+      F.push(body('#c9d2dc'), { flat: 1, path: R(-3.6, y + 2, 7.2, 12, 1), c: '#2f5fb3' }, { flat: 1, path: R(-.7, y + 4, 1.4, 6.5, 0), c: '#f2c14e' }, { flat: 1, path: R(-2.6, y + 6, 5.2, 1.4, 0), c: '#f2c14e' },
+        { path: E(-8.6, y + 2, 3.8, 3), c: '#9aa5b1' }, { path: E(8.6, y + 2, 3.8, 3), c: '#9aa5b1' }); break;
+    case 'cabbage': sl = '#bfe39a'; F.push(body('#bfe39a'), { flat: 1, path: R(-.5, y + 2, 1, 11, .5), c: 'rgba(255,255,255,.6)' }, { flat: 1, path: PG([[0, y + 7], [-5, y + 4], [-5, y + 5.2], [0, y + 8.5]]), c: 'rgba(255,255,255,.45)' },
+      ...[-8, -3, 3, 8].map(x => ({ path: E(x, y + 1, 3.8, 2.6, x * .06), c: '#7fcf6a' }))); break;
+    case 'rdragon': sl = '#a8322a';
+      for (const s of [-1, 1]) B.push({ path: PG([[s * 5, y + 3], [s * 21, y - 9], [s * 18, y + 1], [s * 23, y + 3], [s * 15, y + 8], [s * 7, y + 10]]), c: '#7a1f1a' }, { flat: 1, path: PG([[s * 8, y + 4], [s * 19, y - 6], [s * 14, y + 6]]), c: '#a8322a' });
+      F.push(body('#b8392f'), { flat: 1, path: R(-3.2, y + 2.5, 6.4, 11, 2), c: '#f2c14e' }, ...[5.5, 8.5, 11.5].map(d => ({ flat: 1, path: R(-3.2, y + d, 6.4, .9, 0), c: '#c98a2e' })));
+      for (let i = 0; i < 2; i++) for (const s of [-1, 1]) { const x = s * 6.3, yy = y + 3 + i * 4; F.push({ flat: 1, path: PG([[x - 1.8, yy], [x, yy + 2.4], [x + 1.8, yy]]), c: '#7a1f1a' }); }
+      for (const s of [-1, 1]) F.push({ path: PG([[s * 10.5, y + 2], [s * 13, y - 5], [s * 6.5, y + .5]]), c: '#3a2420' }); break;
+  }
+  return { back: B, front: F, sleeve: sl };
+}
 // 갑옷 (몸 위에 덧그림)
 function armorParts(it, bob) {
   const st = it.st, c = ARMOR_C[st - 1], y = -17.5 - bob, gem = gemOf(it), P = [{ flat: 1, path: R(-7.6, y, 15.2, 11, [3, 3, 4, 4]), c }];
@@ -932,6 +1041,8 @@ function helmParts(it, hy) {
 }
 // 머리 장식 스킨
 function hatParts(kind, hy, face) {
+  if (kind === 'rdragon') return [...[-1, 1].flatMap(s => [{ path: PG([[s * 5, hy + 3], [s * 9, hy - 5], [s * 17, hy - 13], [s * 13, hy - 3], [s * 11.5, hy + 4]]), c: '#4a2a20' }, { flat: 1, path: PG([[s * 13.5, hy - 8], [s * 17, hy - 13], [s * 14.5, hy - 6]]), c: '#f3e6cf' }]),
+    { path: PG([[-3.5, hy + 1], [0, hy - 8], [3.5, hy + 1]]), c: '#d4473b' }, { flat: 1, path: E(0, hy - 1, 1.3, 1.3), c: '#ffd45a' }];
   if (kind === 'ribbon') return [
     { path: PG([[8, hy + 1], [0, hy - 5], [0, hy + 6]]), c: '#ff6fa0' }, { path: PG([[8, hy + 1], [16, hy - 5], [16, hy + 6]]), c: '#ff6fa0' },
     { path: E(8, hy + 1, 2.8, 2.8), c: '#e8487f' }];
@@ -957,11 +1068,12 @@ function drawEyes(g, c, ey, t) {
   for (const ex of [-6, 6]) {
     const kind = eye === 'wink' ? (ex > 0 ? 'happy' : 'dot') : eye;
     if (kind === 'happy') { g.beginPath(); g.arc(ex, ey + 1.5, 3, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); }
-    else if (kind === 'sleep' || kind === 'line' || (blink && ['dot', 'big', 'cat'].includes(kind))) { g.beginPath(); g.moveTo(ex - 3, ey); g.lineTo(ex + 3, ey); g.stroke(); }
+    else if (kind === 'sleep' || kind === 'line' || (blink && ['dot', 'big', 'cat', 'rdragon'].includes(kind))) { g.beginPath(); g.moveTo(ex - 3, ey); g.lineTo(ex + 3, ey); g.stroke(); }
     else if (kind === 'wow') { g.beginPath(); g.arc(ex, ey, 3, 0, Math.PI * 2); g.lineWidth = 1.8; g.stroke(); g.lineWidth = 2.2; }
     else if (kind === 'star') { starPath(g, ex, ey, 4); g.fill(); }
     else if (kind === 'heart') { g.fillStyle = '#ff4f7a'; heartPath(g, ex, ey, 3.3); g.fill(); g.fillStyle = INK; }
     else if (kind === 'big') { g.beginPath(); g.ellipse(ex, ey, 3.5, 4.5, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(ex + 1.2, ey - 1.5, 1.4, 0, 7); g.arc(ex - 1.1, ey + 1.6, .7, 0, 7); g.fill(); g.fillStyle = INK; }
+    else if (kind === 'rdragon') { g.fillStyle = '#ffb02e'; g.beginPath(); g.ellipse(ex, ey, 3.4, 3.8, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = INK; g.beginPath(); g.ellipse(ex, ey, .9, 3.4, 0, 0, Math.PI * 2); g.fill(); g.strokeStyle = '#d4473b'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(ex - 3.5 * Math.sign(ex), ey - 5.5); g.lineTo(ex + 3 * Math.sign(ex), ey - 4.3); g.stroke(); g.strokeStyle = INK; g.lineWidth = 2.2; }
     else if (kind === 'cat') { g.fillStyle = '#9ad94f'; g.beginPath(); g.ellipse(ex, ey, 3.3, 3.8, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = INK; g.beginPath(); g.ellipse(ex, ey, 1, 3.4, 0, 0, Math.PI * 2); g.fill(); }
     else { g.beginPath(); g.ellipse(ex, ey, 2.4, 3.2, 0, 0, Math.PI * 2); g.fill(); }
   }
@@ -977,6 +1089,8 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   // 뒷머리(긴 머리·묶은 머리)는 몸·팔보다 먼저 그려서 몸 뒤로
   const hp = hairParts(c.hair, c.hairC || HAIR_COLORS[0], hy);
   P.push(...hp.back);
+  const su = c.suit ? suitParts(c.suit, bob, hy) : null;   // 의상 스킨 (갑옷 그림 대신)
+  if (su) P.push(...su.back);
   // 다리 + 신발
   for (const [lx, w] of [[-6, walk * 1.2], [1, -walk * 1.2]]) {
     if (sit) {   // 앉음: 허벅지가 앞으로 나오고 발이 벤치 아래로
@@ -988,10 +1102,11 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
     if (eq.shoes) P.push({ path: R(lx - 1, -4 + w, 7, 4.6, [1.5, 2.5, 2.3, 2.3]), c: SHOE_C[eq.shoes.st - 1] });
   }
   // 왼팔 (몸 뒤)
-  P.push({ path: at(-9, -17 - bob, .25 + walk * .45, R(-2.5, 0, 5, 10, 2.5)), c: c.face });
-  // 몸 + 갑옷 + 장신구
-  P.push({ path: R(-9, -20 - bob, 18, 14, 5), c: c.body });
-  if (eq.armor?.st) P.push(...armorParts(eq.armor, bob));
+  P.push({ path: at(-9, -17 - bob, .25 + walk * .45, R(-2.5, 0, 5, 10, 2.5)), c: su?.sleeve || c.face });
+  if (su?.sleeve) P.push({ path: at(-9, -17 - bob, .25 + walk * .45, E(0, 9, 3.1, 3.1)), c: c.face });
+  // 몸 + 갑옷 (의상 스킨을 입으면 의상만)
+  if (su) P.push(...su.front);
+  else { P.push({ path: R(-9, -20 - bob, 18, 14, 5), c: c.body }); if (eq.armor?.st) P.push(...armorParts(eq.armor, bob)); }
   // 머리 + 눈 (+ 헤어: 뒷머리는 얼굴 뒤, 앞머리는 얼굴 위)
   P.push({ path: R(-14, hy, 28, 26, 9), c: c.face, after: g => drawEyes(g, c, hy + 16, t) });
   P.push(...hp.front);
@@ -999,10 +1114,10 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   if (eq.hat?.st) P.push(...helmParts(eq.hat, hy));
   // 오른팔 (몸 앞) + 무기: 손(팔 끝)이 손잡이를 쥠
   // 근접: 위에서 아래로 내려침 · 원거리(지팡이·활): 팔을 앞으로 뻗고 반동
-  const W = eq[c.cls || 'sword']?.st ? eq[c.cls || 'sword'] : null, wt = W?.slot, far = wt === 'staff' || wt === 'bow', sw = c.swing > 0 ? c.swing / .18 : 0;
+  const cl = c.cls || 'sword', wk = c.wsk?.[cl], W = eq[cl]?.st ? eq[cl] : wk ? { slot: cl, st: 1 } : null, wt = W?.slot, far = wt === 'staff' || wt === 'bow', sw = c.swing > 0 ? c.swing / .18 : 0;
   const arm = sw ? (far ? -1.5 + sw * .35 : -2.6 + (1 - sw) * 2.1) : -.25 - walk * .45, sx = 9, sy = -17 - bob;
-  P.push({ path: at(sx, sy, arm, R(-2.5, 0, 5, 10, 2.5)), c: c.face });
-  if (W) { const tilt = wt === 'bow' ? -arm : wt === 'staff' ? (sw ? -arm + .5 : .3) : 1.2; for (const p of weaponParts(W)) P.push({ ...p, path: at(sx, sy, arm, at(0, 9, tilt, p.path)) }); }
+  P.push({ path: at(sx, sy, arm, R(-2.5, 0, 5, 10, 2.5)), c: su?.sleeve || c.face });
+  if (W) { const tilt = wt === 'bow' ? -arm : wt === 'staff' ? (sw ? -arm + .5 : .3) : 1.2; for (const p of (wk ? wskParts(wt, wk) : weaponParts(W))) P.push({ ...p, path: at(sx, sy, arm, at(0, 9, tilt, p.path)) }); }
   P.push({ path: at(sx, sy, arm, E(0, 9, 3.1, 3.1)), c: c.face });
   inkDraw(ctx, P, 2.2);
   ctx.restore();
@@ -1269,7 +1384,7 @@ function stepChar(ch, dt) {
 // ───────── 다른 유저 (실시간: 서버의 마을 방에서 받아 옴) ─────────
 let people = [];
 function mkPerson(d) {
-  return { id: d.id, name: d.n, adm: d.adm, lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {},
+  return { id: d.id, name: d.n, adm: d.adm, lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {},
     x: d.tx ?? d.x, y: d.ty ?? d.y, path: [], seed: (d.id % 17) * .37, speed: 130, hunt: !!d.hunt, room: d.room || 0, sit: -1, bubble: null, emote: null };
 }
 const personOf = id => people.find(p => p.id === id);
@@ -1431,12 +1546,38 @@ function houseParts(roof) {
     { path: PG([[-6, 28], [W + 6, 28], [W - 14, -12], [14, -12]]), c: roof }, { flat: 1, path: R(16, -12, W - 32, 5, 2), c: 'rgba(0,0,0,.18)' },
     ...winP(12, 32, 16, 13), ...winP(W - 28, 32, 16, 13), ...doorP(W / 2 - 10, H - 28, 20, 28), { path: R(W / 2 - 14, H - 2, 28, 4, 2), c: '#c9a06a' }];
 }
-const houseSprite = roof => sprite('h:' + roof, HOUSE_W * T + 24, HOUSE_H * T + 50, 12, 40, g => inkDraw(g, houseParts(HOUSE.roofs[roof] || HOUSE.roofs[0]), 2.2));
+const HOUSE_EX = [0, 34, 40, 66, 96, 150];   // 단계마다 위로 더 필요한 높이
+function towerParts(lv, roof) {
+  const W = HOUSE_W * T, H = HOUSE_H * T, win = (x, y, w = 12, h = 10, c = '#bfe3f2') => [{ path: R(x, y, w, h, 2), c }, { flat: 1, path: R(x + 1.5, y + 1.5, w / 2 - 2, h - 3, 1), c: 'rgba(255,255,255,.45)' }];
+  const P = [];
+  if (lv === 1) {   // 2층 집
+    P.push({ path: R(W - 28, -50, 12, 24, 2), c: '#9a7a6a' }, { path: R(6, -4, W - 12, H + 4, 3), c: '#f6f1e6' }, { flat: 1, path: R(6, 26, W - 12, 3, 0), c: 'rgba(0,0,0,.08)' },
+      { path: PG([[-6, 2], [W + 6, 2], [W - 14, -40], [14, -40]]), c: roof }, ...win(14, 8, 16, 13), ...win(W - 30, 8, 16, 13), ...win(12, 34, 16, 13), ...win(W - 28, 34, 16, 13));
+  } else if (lv === 2) {   // 큰 집: 양옆으로 조금 넓고 현관 지붕
+    P.push({ path: R(W - 22, -58, 12, 26, 2), c: '#9a7a6a' }, { path: R(-4, -8, W + 8, H + 8, 3), c: '#f3e7d2' }, { path: PG([[-14, -2], [W + 14, -2], [W - 10, -48], [10, -48]]), c: roof },
+      ...win(4, 6, 14, 13), ...win(W / 2 - 7, 4, 14, 13), ...win(W - 18, 6, 14, 13), ...win(2, 34, 16, 13), ...win(W - 18, 34, 16, 13),
+      { path: PG([[W / 2 - 20, H - 26], [W / 2 + 20, H - 26], [W / 2 + 14, H - 36], [W / 2 - 14, H - 36]]), c: roof });
+  } else if (lv === 3) {   // 빌라: 3층, 평평한 지붕, 발코니
+    P.push({ path: R(2, -40, W - 4, H + 40, 3), c: '#f1e2c8' }, { path: R(-2, -46, W + 4, 8, 2), c: roof });
+    for (let f = 0; f < 3; f++) { const y = -32 + f * 24; P.push(...win(10, y, 14, 12), ...win(W / 2 - 7, y, 14, 12), ...win(W - 24, y, 14, 12)); if (f < 2) P.push({ path: R(6, y + 14, W - 12, 4, 1.5), c: '#c9b08a' }); }
+  } else if (lv === 4) {   // 4층 건물: 벽돌
+    P.push({ path: R(W - 26, -84, 16, 14, 3), c: '#8a929c' }, { path: R(2, -70, W - 4, H + 70, 2), c: '#c98a6a' }, { path: R(-2, -74, W + 4, 7, 2), c: roof });
+    for (let f = 0; f < 4; f++) for (let k = 0; k < 4; k++) P.push(...win(8 + k * 21, -62 + f * 24, 12, 13));
+    P.push({ flat: 1, path: R(2, -16, W - 4, 2, 0), c: 'rgba(0,0,0,.12)' });
+  } else {   // 빌딩: 유리 건물 + 안테나
+    P.push({ path: R(W / 2 - 1.5, -150, 3, 26, 1), c: '#5d6b7e' }, { path: E(W / 2, -150, 3, 3), c: '#ff4d4f' }, { path: R(4, -126, W - 8, H + 126, 3), c: '#7aa4c0' }, { path: R(0, -130, W, 9, 2), c: roof });
+    for (let f = 0; f < 6; f++) for (let k = 0; k < 5; k++) P.push({ flat: 1, path: R(10 + k * 16, -116 + f * 22, 11, 15, 1.5), c: (f + k) % 3 ? '#cfe8f5' : '#a9d3ea' });
+    P.push({ flat: 1, path: R(8, -124, 10, H + 120, 0), c: 'rgba(255,255,255,.18)' });
+  }
+  P.push(...doorP(W / 2 - 10, H - 28, 20, 28), { path: R(W / 2 - 14, H - 2, 28, 4, 2), c: '#c9a06a' });
+  return P;
+}
+const houseSprite = (roof, lv = 0) => sprite(`h:${roof}:${lv}`, HOUSE_W * T + 40, HOUSE_H * T + 50 + HOUSE_EX[lv], 20, 40 + HOUSE_EX[lv], g => inkDraw(g, lv ? towerParts(lv, HOUSE.roofs[roof] || HOUSE.roofs[0]) : houseParts(HOUSE.roofs[roof] || HOUSE.roofs[0]), 2.2));
 function drawHouse(h) {
   const X = h.x * T, Y = h.y * T, Wd = HOUSE_W * T;
   ctx.fillStyle = 'rgba(31,42,58,.16)'; ctx.beginPath(); ctx.ellipse(X + Wd / 2 + 3, Y + HOUSE_H * T, Wd / 2 + 4, 5, 0, 0, 7); ctx.fill();
-  blit(houseSprite(h.roof), X, Y);
-  plaque(`🏠 ${h.nick}`, X + Wd / 2, Y + HOUSE_H * T + 12, h.id === me.uid ? '#fff4e0' : '#fbfcf7', 11);
+  blit(houseSprite(h.roof, h.lv || 0), X, Y);
+  plaque(`🏠 ${h.nick}${h.lv ? ` · ${HOUSE_TIERS[h.lv].n}` : ''}`, X + Wd / 2, Y + HOUSE_H * T + 12, h.id === me.uid ? '#fff4e0' : '#fbfcf7', 11);
 }
 // 나무 · 바위 (꾸밈 + 채집 자원)
 const treeP = (k, c1 = '#3f8f4c', c2 = '#2f7a4a') => k === 'pine'
@@ -1518,13 +1659,6 @@ function drawScreen(s, now) {
   ctx.restore();
   const bw = 42 * K, bh = 16 * K; ctx.fillStyle = S.live ? (Math.floor(now / 600) % 2 ? '#ff3b3b' : '#ff6b6b') : '#5d6b7e'; rr(ctx, r.x + 8, r.y + 8, bw, bh, 5 * K); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.font = f(800, 10); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(S.live ? '● LIVE' : 'OFF AIR', r.x + 8 + bw / 2, r.y + 8 + bh / 2 + .5);
-}
-function drawBoard(s, now) {
-  const X = s.x * T, Y = s.y * T, w = s.w * T;
-  inkDraw(ctx, [{ path: R(X + 18, Y - 4, 7, 30, 2), c: '#5b4636' }, { path: R(X + w - 25, Y - 4, 7, 30, 2), c: '#5b4636' }, { path: R(X + 4, Y - 34, w - 8, 40, 7), c: S.live ? '#1f2a3a' : '#33405a' }], 2.2);
-  ctx.font = '700 15px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  if (S.live) { ctx.fillStyle = Math.floor(now / 500) % 2 ? '#ff4d4f' : '#ffd166'; fillTextIco(ctx, '🔴 김치복 생방송 중!', X + w / 2, Y - 14); }
-  else { ctx.fillStyle = '#c9f0d2'; ctx.font = '700 15px "IBM Plex Sans KR", sans-serif'; ctx.fillText(boardText(), X + w / 2, Y - 14); }
 }
 function drawPortal(now) {
   const x = PORTAL.x, y = PORTAL.y, tt = now / 1000;
@@ -1624,6 +1758,7 @@ const TF = [];
 const townFloat = (x, y, text, color = '#fff') => TF.push({ x, y, text, color, t: 0 });
 function update(dt, now) {
   S.barT -= dt; if (S.barT <= 0) { S.barT = .15; syncBars(); }
+  if (RD) { updateRaid(dt); follow(dt, RW(), RH()); return; }
   if (HT) { updateHunt(dt, now); follow(dt, HW * T, HH * T); return; }
   steerTick(dt); if (!STEER.on) stepChar(me, dt); roamTick(dt); gatherTick(dt);
   if (me.room && me.y > (ROOM_H - .55) * T && Math.abs(me.x - (ROOM_DOOR.x + .5) * T) < T * .8) leaveRoom();   // 문으로 걸어 나가기
@@ -1672,6 +1807,7 @@ function drawFishSpot() {
   plaque('🎣 낚시터', FSIGN.x, FSIGN.y - 74);
 }
 function render(now) {
+  if (RD) return renderRaid(now);
   if (HT) return renderHunt(now);
   if (me.room) return renderRoom(now);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -1692,7 +1828,7 @@ function render(now) {
   for (const h of HOUSES) if (vis(h.x * T, (h.y + HOUSE_H) * T)) list.push({ y: (h.y + HOUSE_H) * T, f: () => drawHouse(h) });
   for (const d of DECO) if (vis(d.x * T, d.y * T)) list.push({ y: d.y * T + T - 3, f: () => drawDeco(d) });
   for (const n of NODES) if (vis(n.x * T, n.y * T)) list.push({ y: n.y * T + T - 3, f: () => drawNode(n, now) });
-  for (const s of SPOTS) { if (s.id === 'fountain') list.push({ y: (s.y + 1.6) * T, f: () => drawFountain(s, now) }); if (s.id === 'board') list.push({ y: s.y * T + 26, f: () => drawBoard(s, now) }); if (s.id === 'screen') list.push({ y: (s.y + s.h) * T, f: () => drawScreen(s, now) }); }
+  for (const s of SPOTS) { if (s.id === 'fountain') list.push({ y: (s.y + 1.6) * T, f: () => drawFountain(s, now) }); if (s.id === 'screen') list.push({ y: (s.y + s.h) * T, f: () => drawScreen(s, now) }); }
   if (vis(PORTAL.x, PORTAL.y)) list.push({ y: PORTAL.y, f: () => drawPortal(now) });
   for (const b of BENCHES) list.push({ y: b.y * T + 24, f: () => drawBench(b) });
   if (vis(FSIGN.x, FSIGN.y)) list.push({ y: FSIGN.y, f: () => drawFishSpot(now) });
@@ -1765,7 +1901,7 @@ function paintHunt(f) {
   const A = HUNT_ART[f.id] || HUNT_ART.plain, K = 2, WP = HW * T, HP = HH * T;
   const cvs = document.createElement('canvas'); cvs.width = WP * K; cvs.height = HP * K; const g = cvs.getContext('2d'); g.scale(K, K); seed = 31 + f.tier * 97;
   const r = (a, b) => a + rnd() * (b - a), pick = l => l[Math.floor(rnd() * l.length)];
-  const inner = (x, y) => x > 1.6 * T && x < WP - 1.6 * T && y > 2.4 * T && y < HP - 1.3 * T;
+  const inner = (x, y) => x > 8 && x < WP - 8 && y > 8 && y < HP - 8;
   g.fillStyle = A.base; g.fillRect(0, 0, WP, HP);
   // 1) 부드러운 얼룩 (바둑판 대신 자연스러운 땅)
   for (let i = 0; i < 110; i++) { g.globalAlpha = r(.25, .55); g.fillStyle = pick(A.patch); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(18, 70), r(10, 36), r(0, 3), 0, 7); g.fill(); }
@@ -1811,35 +1947,6 @@ function paintHunt(f) {
       else if (k < .62) { g.strokeStyle = '#2f3742'; g.lineWidth = 2.2; g.beginPath(); g.moveTo(x - 14, y); g.bezierCurveTo(x - 6, y - 8, x + 6, y + 8, x + 14, y); g.stroke(); }
     }
   }
-  // 4) 가장자리 (위는 높게, 양옆·아래는 낮게) — 안쪽 걷는 곳은 비워 둠
-  if (f.id === 'canyon') {   // 위: 줄무늬 절벽
-    const top = x => 2.1 * T + Math.sin(x / 33) * 6 + Math.sin(x / 11) * 3;
-    const pts = [[0, 0], [WP, 0]]; for (let x = WP; x >= 0; x -= 8) pts.push([x, top(x)]);
-    inkDraw(g, [{ path: PG(pts), c: '#b9805a', after: q => { q.save(); q.beginPath(); pts.forEach(([a, b], i) => i ? q.lineTo(a, b) : q.moveTo(a, b)); q.closePath(); q.clip();
-      [['#a86e4c', 18], ['#c99368', 34], ['#9c6343', 50]].forEach(([c, yy]) => { q.fillStyle = c; q.beginPath(); q.moveTo(0, yy); for (let x = 0; x <= WP; x += 8) q.lineTo(x, yy + Math.sin(x / 40 + yy) * 4); q.lineTo(WP, yy + 9); for (let x = WP; x >= 0; x -= 8) q.lineTo(x, yy + 9 + Math.sin(x / 40 + yy) * 4); q.fill(); });
-      q.restore(); } }], 2.4);
-  } else if (f.id === 'factory') {   // 위: 공장 벽 + 파이프 + 환풍구
-    inkDraw(g, [{ path: R(-4, -4, WP + 8, 2.1 * T + 4, 0), c: '#6b7684', after: q => { q.fillStyle = 'rgba(0,0,0,.12)'; for (let x = 0; x < WP; x += 48) q.fillRect(x, 0, 2, 2.1 * T); } },
-      { path: R(-4, 1.25 * T, WP + 8, 9, 4), c: '#c8553d' }, { path: R(-4, .45 * T, WP + 8, 7, 3), c: '#8a929c' },
-      ...[1, 5, 9, 13, 17, 21, 25].map(i => ({ path: R(i * T, 1.12 * T, 10, 15, 2), c: '#8a929c' })),
-      ...[3, 11, 19].map(i => ({ path: R(i * T, .25 * T, 40, 22, 3), c: '#3a434f', after: q => { q.strokeStyle = '#8a929c'; q.lineWidth = 2; for (let k = 0; k < 4; k++) { q.beginPath(); q.moveTo(i * T + 5, .25 * T + 5 + k * 4.5); q.lineTo(i * T + 35, .25 * T + 5 + k * 4.5); q.stroke(); } } }))], 2.4);
-  }
-  const edgeSprite = f.id === 'forest' ? () => pick([SP_TREE.pine, SP_TREE.pine, SP_TREE.round, SP_TREE.birch, SP_TREE.maple])() : f.id === 'plain' ? () => pick([SP_TREE.round, SP_TREE.cherry, SP_TREE.pine, SP_TREE.birch, SP_TREE.round])() : () => SP_TREE.stone();
-  const items = [];
-  if (f.id === 'plain' || f.id === 'forest') for (let x = -6; x < WP + 20; x += r(26, 38)) { items.push([x, r(1.1, 1.9) * T, r(.95, 1.25)]); if (f.id === 'forest') items.push([x + 14, r(.4, .9) * T, r(.9, 1.15)]); }
-  for (let y = 2.4 * T; y < HP; y += r(30, 44)) { items.push([r(-4, .5 * T), y, r(.8, 1.05)]); items.push([WP - r(-4, .5 * T), y, r(.8, 1.05)]); }
-  items.sort((a, b) => a[1] - b[1]);
-  for (const [x, y, sc] of items) {
-    if (f.id === 'factory') { const k = rnd(); if (k < .5) inkDraw(g, [{ path: R(x - 13, y - 26, 26, 26, 3), c: '#b9824f', after: q => { q.strokeStyle = 'rgba(80,50,25,.5)'; q.lineWidth = 2; q.beginPath(); q.moveTo(x - 13, y - 26); q.lineTo(x + 13, y); q.moveTo(x + 13, y - 26); q.lineTo(x - 13, y); q.stroke(); } }], 2); else inkDraw(g, [{ path: R(x - 11, y - 28, 22, 28, 6), c: pick(['#3d7bd9', '#c8553d', '#4f9d5a']) }, { flat: 1, path: R(x - 11, y - 20, 22, 3, 0), c: 'rgba(0,0,0,.22)' }, { flat: 1, path: R(x - 11, y - 10, 22, 3, 0), c: 'rgba(0,0,0,.22)' }], 2); continue; }
-    g.fillStyle = 'rgba(31,42,58,.16)'; g.beginPath(); g.ellipse(x, y, 14 * sc, 4, 0, 0, 7); g.fill(); blitTo(g, edgeSprite(), x, y, sc);
-  }
-  // 아래 가장자리: 낮은 덤불 · 바위 줄 (캐릭터를 가리지 않게)
-  for (let x = -10; x < WP + 20; x += r(20, 30)) {
-    const y = HP - r(2, 8);
-    if (f.id === 'factory') inkDraw(g, [{ path: R(x - 14, y - 10, 28, 12, 3), c: '#8a929c' }, { flat: 1, path: R(x - 14, y - 6, 28, 3, 0), c: '#e9b949' }], 1.8);
-    else if (f.id === 'canyon') inkDraw(g, [{ path: E(x, y - 4, r(10, 16), r(7, 10)), c: pick(['#a39a8c', '#b5a48c', '#9c8b76']) }], 2);
-    else inkDraw(g, [{ path: E(x, y - 4, r(13, 18), r(9, 12)), c: f.id === 'forest' ? '#3f7a3c' : '#6fb35e' }, { flat: 1, path: E(x - 4, y - 8, 6, 3), c: 'rgba(255,255,255,.18)' }], 2);
-  }
   // 5) 가장자리 어둡게 (가운데로 시선)
   const v = g.createRadialGradient(WP / 2, HP / 2, Math.min(WP, HP) * .35, WP / 2, HP / 2, Math.max(WP, HP) * .72);
   v.addColorStop(0, A.vig + '0)'); v.addColorStop(1, A.vig + '.28)'); g.fillStyle = v; g.fillRect(0, 0, WP, HP);
@@ -1874,6 +1981,310 @@ function openHuntSelect() {
 }
 let huntBusy = false, syncT = null;
 // 서버의 사냥 상태(h)로 사냥 화면 열기. 화면의 전투는 보여 주기용이고, 실제 결과는 서버가 30초마다 계산
+// ───────── 레이드 (매시 정각 · 레드 드래곤) ─────────
+// 정각에 모두에게 참여 창 → 30초 안에 누른 사람만 레이드 맵으로. 끝날 때까지 못 나감. 쓰러지면 끝까지 구경
+// 보스 공격 순서는 시작 시각으로 정해져서 모두의 화면이 같음 (raidPattern). 보스 체력은 레이드 방(서버)이 1초마다 알려 줌
+let RD = null;                   // 지금 레이드 중인 상태
+const RAIDQ = { asked: 0, skew: 0, t: null, tick: null };   // asked = 이미 물어본 레이드, skew = 서버 시계 - 내 시계
+const RW = () => RAID.W * T, RH = () => RAID.H * T;
+const srvNow = () => Date.now() + RAIDQ.skew;
+const DRAGON = () => ({ x: RW() / 2, y: 7 * T });   // 드래곤 발 (가운데 위)
+// 정각마다 확인 (내 시계 기준 다음 정각 + 0.6초). 관리자가 열면 마을 방이 {t:'raid'}로 알려 줌
+function raidWatch() {
+  clearTimeout(RAIDQ.t);
+  const t = srvNow(), next = Math.ceil(t / RAID.every) * RAID.every;
+  RAIDQ.t = setTimeout(() => { raidCheck(); raidWatch(); }, Math.max(1000, next - t + 600));
+}
+async function raidCheck() {
+  if (RD || !token || $('#app').hidden) return;
+  let j; try { j = await api('/api/raid'); } catch { return; }
+  RAIDQ.skew = j.now - Date.now();
+  let mine = 0; try { mine = +localStorage.getItem('cbt-raid') || 0; } catch {}
+  if (mine && j.run === mine) return enterRaid(mine);   // 레이드 중에 새로고침 → 다시 들어감
+  if (mine && j.last === mine) { RD = null; return raidClaim(mine); }   // 끝났는데 보상을 못 받았음
+  if (mine && mine < j.now - RAID.every) try { localStorage.removeItem('cbt-raid'); } catch {}
+  if (!j.open || j.open <= j.now + 1500 || RAIDQ.asked === j.open) return;
+  RAIDQ.asked = j.open; raidAsk(j.open, j.joined);
+}
+function raidAsk(start, joined) {
+  const R = raidReward(me.lv), B = RAID_BOSS.rdragon;
+  sysMsg(`${B.i} ${B.n} 레이드 모집 중! 30초 안에 참여하세요`);
+  openModal(`<h3>${B.i} ${B.n} 레이드!</h3>
+    <div class="raidask"><b id="raidLeft">30</b><small>초 남음</small></div>
+    <p>마을 사람들과 다 같이 <b>${B.n}</b>를 잡아요. 약 1~2분이면 끝나요.</p>
+    <ul class="raidinfo"><li>🪙 골드 약 <b>${R.gold.toLocaleString()}</b> · 경험치 약 <b>${R.exp.toLocaleString()}</b></li><li>🐉 확률로 <b>레드 드래곤 전용 스킨</b> (머리·눈·의상·무기 6종, 효과가 좋아요)</li>
+      <li>⚠️ 참여하면 <b>끝날 때까지 나올 수 없어요.</b> 바닥이 빨개지면 피하세요! 쓰러져도 끝까지 있으면 보상을 받아요</li></ul>
+    <p class="muted" id="raidJoined">${joined ? `지금 ${joined}명 참여` : ''}</p>
+    <div class="actions"><button class="btn main" data-y="join">⚔️ 참여하기</button><button class="btn" data-y="no">이번엔 안 할래요</button></div>`, el => {
+    el.querySelector('.actions').onclick = e => { const y = e.target.closest('[data-y]')?.dataset.y; if (y === 'join') raidJoin(start); if (y === 'no') closeModal(); };
+    clearInterval(RAIDQ.tick);
+    RAIDQ.tick = setInterval(() => {
+      const l = Math.ceil((start - srvNow()) / 1000), b = document.getElementById('raidLeft');
+      if (!b || RD) return clearInterval(RAIDQ.tick);
+      if (l <= 0) { clearInterval(RAIDQ.tick); closeModal(); toast('레이드 모집이 끝났어요'); return; }
+      b.textContent = l;
+    }, 250);
+  });
+}
+async function raidJoin(start) {
+  if (RD || RAIDQ.busy) return; RAIDQ.busy = true;
+  try {
+    if (HT) { took(await api('/api/hunt/leave', {})); if (HT) exitHuntView(); }
+    if (F.auto) autoFishStop();
+    if (me.room) leaveRoom();
+    standUp(me);
+    const j = await api('/api/raid/join', { start }); took(j); closeModal(); closePanel();
+    enterRaid(start);
+  } catch (x) { toast(x.message); } finally { RAIDQ.busy = false; }
+}
+function enterRaid(start) {
+  try { localStorage.setItem('cbt-raid', String(start)); } catch {}
+  RD = { start, back: { x: me.x, y: me.y }, ps: new Map(), hp: 1, max: 1, pat: raidPattern(start), hits: new Set(), fx: [], floats: [], parts: [], atkT: 1, sendT: 0, acc: 0,
+    dead: false, ended: false, goal: null, ctl: 0, shake: 0, flash: 0, ws: null, tries: 0 };
+  me.x = RW() / 2 + (Math.random() - .5) * 6 * T; me.y = RH() - 3 * T; me.path = []; me.moving = false; me.sit = -1; me.hp = derive().maxHp; cam = { x: me.x, y: me.y - 4 * T };
+  S.zoom = Math.max(S.zoom, H / RH() * 1.02, W / RW() * 1.02);   // 맵 밖(검은 곳)이 안 보이게
+  document.body.classList.add('hunting', 'raiding'); $('#raidBox').hidden = false; setPlace(`${RAID_BOSS.rdragon.n} 레이드`);
+  netSend({ t: 'hunt', on: true });
+  raidConnect(); raidHud();
+}
+function raidConnect() {
+  if (!RD) return;
+  let ws; try { ws = new WebSocket(API.replace(/^http/, 'ws') + '/raid-ws'); } catch { return; }
+  RD.ws = ws;
+  ws.onopen = () => ws.send(JSON.stringify({ t: 'auth', token }));
+  ws.onmessage = e => { let m; try { m = JSON.parse(e.data); } catch { return; } raidMsg(m); };
+  ws.onclose = ev => { if (RD && RD.ws === ws && !RD.ended && ev.code !== 4403 && RD.tries++ < 5) setTimeout(raidConnect, 1500); };
+}
+function raidMsg(m) {
+  if (!RD) return;
+  if (m.now) RAIDQ.skew = m.now - Date.now();
+  if (m.t === 'gone') { toast('이 레이드에 들어갈 수 없어요'); return exitRaid(); }
+  if (m.t === 'hi' || m.t === 's' || m.t === 'end') {
+    RD.hp = m.hp; RD.max = m.max || RD.max;
+    for (const p of m.ps) {
+      const [id, x, y, dead, look, n] = Array.isArray(p) ? [...p, null, null] : [p.id, p.x, p.y, p.dead, p.look, p.n];
+      if (id === me.uid) continue;
+      let o = RD.ps.get(id);
+      if (!o && look) { o = { id, name: n, ...look, x, y, tx: x, ty: y, dir: 1, seed: (id % 17) * .37, moving: false, swing: 0 }; RD.ps.set(id, o); }
+      if (o) { o.tx = x; o.ty = y; o.dead = !!dead; }
+    }
+    raidHud();
+  }
+  if (m.t === 'end') raidEnd();
+}
+// 화면 위 레이드 현황 (보스 체력 · 남은 시간 · 인원)
+function raidHud() {
+  if (!RD) return;
+  const e = (srvNow() - RD.start) / 1000, k = RD.max ? Math.max(0, RD.hp / RD.max) : 1;
+  $('#raidHp').style.width = `${(k * 100).toFixed(1)}%`;
+  $('#raidHpT').textContent = RD.ended ? '처치!' : e < 0 ? `${Math.ceil(-e)}초 뒤 시작` : `${Math.ceil(k * 100)}%`;
+  $('#raidN').textContent = `${RD.ps.size + 1}명`;
+  $('#raidMsg').textContent = RD.ended ? '🎉 레드 드래곤을 쓰러뜨렸어요!' : RD.dead ? '💤 쓰러졌어요… 끝날 때까지 응원해 주세요 (보상은 받아요)' : e < 0 ? '곧 드래곤이 깨어나요! 바닥이 빨개지면 피하세요' : '바닥이 빨개지면 피하세요! 공격은 자동이에요';
+}
+// 보스 공격이 닿는 곳인지 (x, y = 픽셀)
+function raidIn(p, x, y) {
+  const D0 = DRAGON();
+  if (p.k === 'breath') { const ox = D0.x, oy = D0.y - 1.2 * T, dx = x - ox, dy = y - oy, a = Math.atan2(dy, dx) - (Math.PI / 2 + p.a); return Math.hypot(dx, dy) < 15 * T && Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) < .32; }
+  if (p.k === 'meteor') return Math.hypot(x - p.x * T, y - p.y * T) < p.r * T;
+  if (p.k === 'tail') return Math.abs(y - p.y * T) < 1.25 * T;
+  return true;   // roar: 모두
+}
+function raidFloat(x, y, text, color, size = 15) { RD.floats.push({ x, y, text, color, size, t: 0, vx: (Math.random() - .5) * 30 }); }
+function raidBurst(x, y, c, n, sp = 160, s = 3.5) { if (RD.parts.length > 300) return; for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = sp * (.3 + Math.random() * .7); RD.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 60, c, s: s * (.6 + Math.random() * .7), t: 0, life: .4 + Math.random() * .4 }); } }
+function updateRaid(dt) {
+  const D = derive(), e = (srvNow() - RD.start) / 1000, D0 = DRAGON(), live = e >= 0 && !RD.ended;
+  RD.shake *= Math.exp(-10 * dt); RD.flash = Math.max(0, RD.flash - dt); me.swing = Math.max(0, (me.swing || 0) - dt); me.hurt = Math.max(0, (me.hurt || 0) - dt);
+  for (const p of RD.parts) { p.t += dt; p.vy += 300 * dt; p.x += p.vx * dt; p.y += p.vy * dt; } RD.parts = RD.parts.filter(p => p.t < p.life);
+  for (const f of RD.floats) { f.t += dt; f.x += f.vx * dt; } RD.floats = RD.floats.filter(f => f.t < 1);
+  for (const f of RD.fx) f.t += dt; RD.fx = RD.fx.filter(f => f.t < f.life);
+  // 다른 참가자: 받은 위치로 부드럽게 + 드래곤 근처면 휘두르는 시늉
+  for (const o of RD.ps.values()) {
+    const dx = o.tx - o.x, dy = o.ty - o.y, d = Math.hypot(dx, dy), sp = 160 * dt;
+    if (d > 1) { const k = Math.min(1, sp / d); o.x += dx * k; o.y += dy * k; o.moving = true; if (Math.abs(dx) > 2) o.dir = dx < 0 ? -1 : 1; } else o.moving = false;
+    o.swing = Math.max(0, o.swing - dt); if (live && !o.dead && !o.moving && Math.random() < dt * 1.2) { o.swing = .18; o.dir = D0.x < o.x ? -1 : 1; }
+  }
+  // 보스 공격: 미리 빨갛게 보여 주고(warn), 그 순간 그 안에 있으면 맞음
+  if (live) for (let i = 0; i < RD.pat.length; i++) {
+    const p = RD.pat[i]; if (p.at > e + .05 || RD.hits.has(i)) continue;
+    RD.hits.add(i); raidStrike(p);
+    if (!RD.dead && raidIn(p, me.x, me.y - 10)) {
+      const dmg = Math.round(D.maxHp * RAID_HIT[p.k] * (D.god ? 0 : 1)); me.hp -= dmg; me.hurt = .3; RD.flash = .35;
+      raidFloat(me.x, me.y - 60, `-${dmg.toLocaleString()}`, '#ff6b6b', 18);
+      if (me.hp <= 0) { me.hp = 0; RD.dead = true; me.moving = false; raidFloat(me.x, me.y - 80, '쓰러짐…', '#ff7b6b', 18); raidSend(); raidHud(); }
+    }
+  }
+  if (!RD.dead) {
+    me.hp = Math.min(D.maxHp, me.hp + D.maxHp * .01 * dt);   // 아주 조금씩 회복
+    // 움직이기: 화살표·끌기 → 그 방향, 바닥 누르기 → 그 자리. 안 움직이면 자동으로 드래곤에게 다가가서 공격
+    const sd = steerDir(); let vx = 0, vy = 0, sp = 125 * D.spd;
+    if (sd) { const l = Math.hypot(sd[0], sd[1]) || 1; vx = sd[0] / l; vy = sd[1] / l; RD.goal = null; RD.ctl = .9; }
+    else if (RD.goal) { const dx = RD.goal.x - me.x, dy = RD.goal.y - me.y, d = Math.hypot(dx, dy); if (d < 4) RD.goal = null; else { vx = dx / d; vy = dy / d; RD.ctl = .9; } }
+    else if ((RD.ctl -= dt) <= 0 && live) {
+      const tx = D0.x + Math.max(-2.2 * T, Math.min(2.2 * T, me.x - D0.x)), ty = D0.y + (D.far ? 5.5 : 1.3) * T, dx = tx - me.x, dy = ty - me.y, d = Math.hypot(dx, dy);
+      if (d > (D.far ? 2.5 : .6) * T) { vx = dx / d; vy = dy / d; sp *= .85; }
+    }
+    if (vx || vy) {
+      me.x = Math.max(.6 * T, Math.min(RW() - .6 * T, me.x + vx * sp * dt)); me.y = Math.max(D0.y + .9 * T, Math.min(RH() - .5 * T, me.y + vy * sp * dt));
+      me.moving = true; if (Math.abs(vx) > .15) me.dir = vx < 0 ? -1 : 1;
+    } else me.moving = false;
+    // 자동 공격 (가만히 있거나 걸으면서도, 닿으면)
+    const dist = Math.hypot(me.x - D0.x, (me.y - D0.y) * 1.3), reach = D.far ? 10 * T : 3.6 * T;
+    RD.atkT -= dt;
+    if (live && dist < reach && RD.atkT <= 0) {
+      RD.atkT = D.gap; me.swing = .18; if (!me.moving) me.dir = D0.x < me.x ? -1 : 1;
+      let dmg = D.hit * (.9 + Math.random() * .2) * (1 + (D.bossP || 0) / 100), kind = '';
+      if (Math.random() * 100 < D.sp) { dmg *= D.spMul; kind = 'sp'; }
+      if (Math.random() * 100 < D.crit) { dmg *= D.critM || 1.5; kind = kind || 'crit'; }
+      dmg = Math.round(dmg); RD.acc += dmg;
+      const hx = D0.x + (Math.random() - .5) * 90, hy = D0.y - 50 - Math.random() * 60;
+      RD.fx.push({ k: D.far ? (D.magic ? 'orb' : 'arrow') : 'slash', x0: me.x, y0: me.y - 30, x: hx, y: hy, t: 0, life: D.far ? .25 : .15 });
+      raidFloat(hx, hy - 10, (kind === 'sp' ? '💥 ' : '') + dmg.toLocaleString(), kind ? '#ffd166' : '#fff', kind ? 19 : 15);
+      raidBurst(hx, hy, kind ? '#ffd166' : '#fff3c4', kind ? 8 : 4, 130, 3);
+    }
+  }
+  if (live && (RD.sendT -= dt) <= 0) raidSend();
+  if ((RD.hudT = (RD.hudT || 0) - dt) <= 0) { RD.hudT = .5; raidHud(); syncBars(); }
+}
+function raidSend() {
+  RD.sendT = 1;
+  if (RD.ws?.readyState === 1) { RD.ws.send(JSON.stringify({ t: 'p', x: Math.round(me.x), y: Math.round(me.y), d: Math.round(RD.acc), dead: RD.dead ? 1 : 0 })); RD.acc = 0; }
+}
+// 보스 공격이 터지는 순간의 그림
+function raidStrike(p) {
+  const D0 = DRAGON();
+  if (p.k === 'breath') { RD.fx.push({ k: 'fire', a: p.a, t: 0, life: .8 }); RD.shake = Math.max(RD.shake, 5); }
+  if (p.k === 'meteor') { RD.fx.push({ k: 'boom', x: p.x * T, y: p.y * T, r: p.r * T, t: 0, life: .5 }); raidBurst(p.x * T, p.y * T, '#ff8a3d', 10, 200, 4); RD.shake = Math.max(RD.shake, 3); }
+  if (p.k === 'tail') { RD.fx.push({ k: 'sweep', y: p.y * T, t: 0, life: .5 }); RD.shake = Math.max(RD.shake, 6); }
+  if (p.k === 'roar') { RD.fx.push({ k: 'roar', x: D0.x, y: D0.y - 3 * T, t: 0, life: .9 }); RD.shake = Math.max(RD.shake, 9); }
+}
+async function raidEnd() {
+  if (!RD || RD.ended) return; RD.ended = true; raidHud(); RD.shake = 12;
+  const D0 = DRAGON(); for (let i = 0; i < 4; i++) setTimeout(() => RD && raidBurst(D0.x + (Math.random() - .5) * 160, D0.y - Math.random() * 140, ['#ffd166', '#ff8a3d', '#fff'][i % 3], 24, 260, 5), i * 250);
+  try { RD.ws?.close(); } catch {}
+  await new Promise(r => setTimeout(r, 2600));
+  raidClaim(RD.start);
+}
+async function raidClaim(start) {
+  let j = null;
+  for (let k = 0; k < 3 && !j; k++) { try { j = await api('/api/raid/claim', { start }); } catch (x) { if (x.status >= 400 && x.status < 500) break; await new Promise(r => setTimeout(r, 1200)); } }
+  exitRaid(); try { localStorage.removeItem('cbt-raid'); } catch {}
+  if (!j) return toast('레이드 보상을 받지 못했어요');
+  took(j); const r = j.raid, sk = r.skin;
+  const skName = sk ? (sk.startsWith('eye:') ? EYE_SKINS.find(e => 'eye:' + e.id === sk) : sk.startsWith('suit:') ? SUITS.find(s => 'suit:' + s.id === sk) : sk.startsWith('wsk:') ? WSKINS.find(w => wskKey(w) === sk) : HATS.find(h => h.id === sk))?.n : '';
+  logAct(`레드 드래곤 레이드 +${r.gold} 골드`); if (sk) { sysMsg(`🐉 레이드 전용 스킨 획득: ${skName}`); emote(me, '🎉'); }
+  openModal(`<h3>🎉 레드 드래곤 처치!</h3><p>${r.n}명이 함께 싸웠어요. 내 피해 <b>${(r.dmg || 0).toLocaleString()}</b> (${r.rank}등)${r.dead ? ' · 쓰러졌지만 끝까지 함께했어요' : ''}</p>
+    <ul class="raidinfo"><li>🪙 골드 <b>+${r.gold.toLocaleString()}</b></li><li>✨ 경험치 <b>+${r.exp.toLocaleString()}</b>${r.up ? ` · <b>레벨 업!</b>` : ''}</li>
+    ${sk ? `<li class="raidskin">🐉 <b>전용 스킨 획득!</b> ${skName}<br><small>캐릭터창 → 스킨에서 쓸 수 있어요</small></li>` : '<li class="muted">전용 스킨은 이번엔 안 나왔어요. 다음 정각에 또 도전!</li>'}</ul>
+    <button class="btn main" data-close>마을로</button>`);
+}
+function exitRaid() {
+  if (!RD) return;
+  try { RD.ws?.close(); } catch {}
+  me.x = RD.back.x; me.y = RD.back.y; me.path = []; me.moving = false; me.swing = 0; me.hurt = 0; RD = null;
+  document.body.classList.remove('hunting', 'raiding'); $('#raidBox').hidden = true; loadZoom(); cam = { x: me.x, y: me.y }; syncBars();
+  netSend({ t: 'hunt', on: false }); netGo();
+}
+// 레이드 바닥 (용암 동굴): 한 번만 그려 둠
+let raidGround = null;
+function paintRaid() {
+  if (raidGround) return raidGround;
+  const K = 2, WP = RW(), HP = RH(), c = document.createElement('canvas'); c.width = WP * K; c.height = HP * K; const g = c.getContext('2d'); g.scale(K, K);
+  let sd = 77; const r = () => ((sd = (sd * 16807) % 2147483647) - 1) / 2147483646;
+  g.fillStyle = '#4a3a3a'; g.fillRect(0, 0, WP, HP);
+  for (let i = 0; i < 140; i++) { g.globalAlpha = .25 + r() * .3; g.fillStyle = ['#584444', '#3e3030', '#5e4a42', '#463838'][i % 4]; g.beginPath(); g.ellipse(r() * WP, r() * HP, 20 + r() * 60, 10 + r() * 30, r() * 3, 0, 7); g.fill(); }
+  g.globalAlpha = 1;
+  // 갈라진 틈에서 용암 빛
+  for (let i = 0; i < 26; i++) { let x = r() * WP, y = 6 * T + r() * (HP - 6 * T); g.strokeStyle = 'rgba(255,120,40,.55)'; g.lineWidth = 2.2; g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 5; k++) { x += (r() - .5) * 40; y += (r() - .5) * 26; g.lineTo(x, y); } g.stroke(); }
+  // 뒤쪽 용암 웅덩이 (드래곤 둥지)
+  const lg = g.createLinearGradient(0, 0, 0, 6 * T); lg.addColorStop(0, '#2a1a1a'); lg.addColorStop(1, 'rgba(42,26,26,0)'); g.fillStyle = lg; g.fillRect(0, 0, WP, 6 * T);
+  for (const [x, w] of [[4, 5], [WP / T - 9, 6]]) { g.fillStyle = '#ff7a2a'; g.beginPath(); g.ellipse(x * T + w * T / 2, 3 * T, w * T / 2, 1.3 * T, 0, 0, 7); g.fill(); g.fillStyle = '#ffd166'; g.beginPath(); g.ellipse(x * T + w * T / 2, 3 * T - 4, w * T / 3.2, .6 * T, 0, 0, 7); g.fill(); }
+  for (let i = 0; i < 40; i++) inkDraw(g, [{ path: E(r() * WP, HP - r() * 14, 8 + r() * 10, 6 + r() * 6), c: ['#5c4a44', '#6a5650', '#4e3e3a'][i % 3] }], 1.8);
+  return (raidGround = c);
+}
+// 레드 드래곤 그림 (발 = x, y). open = 입 벌림(불 뿜기 준비), look = 고개 방향
+function drawDragon(x, y, t, open, look, dead) {
+  const fl = Math.sin(t * 3) * .12, bob = Math.sin(t * 2) * 3, P = [];
+  ctx.save(); ctx.translate(x, y); if (dead) { ctx.globalAlpha = .85; ctx.translate(0, 20); ctx.rotate(.12); }
+  ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(0, 0, 120, 22, 0, 0, 7); ctx.fill();
+  // 날개 (뒤)
+  for (const s of [-1, 1]) {
+    const a = dead ? .5 : fl;
+    P.push({ path: at(s * 40, -110 - bob, s * a, PG([[0, 0], [s * 70, -70], [s * 150, -40], [s * 128, 10], [s * 100, 0], [s * 92, 32], [s * 60, 18], [s * 40, 50], [s * 10, 30]])), c: '#7a1f1a' });
+    P.push({ flat: 1, path: at(s * 40, -110 - bob, s * a, PG([[s * 12, 10], [s * 68, -58], [s * 138, -34], [s * 98, 8], [s * 58, 22]])), c: '#b8392f' });
+  }
+  // 꼬리
+  P.push({ path: g => { g.beginPath(); g.moveTo(40, -30); g.quadraticCurveTo(130, -10 + Math.sin(t * 2) * 8, 150, -60); g.quadraticCurveTo(140, -14, 50, -10); g.closePath(); }, c: '#c0392b' });
+  P.push({ path: PG([[146, -58], [166, -80], [158, -50]]), c: '#3a2420' });
+  // 몸 · 배 · 다리
+  P.push({ path: E(-46, -16, 26, 20), c: '#a8322a' }, { path: E(46, -16, 26, 20), c: '#a8322a' });
+  P.push({ path: E(0, -70 - bob, 78, 62), c: '#c0392b' }, { path: E(0, -60 - bob, 44, 46), c: '#f2c14e' });
+  for (const yy of [-88, -70, -52, -34]) P.push({ flat: 1, path: R(-34, yy - bob, 68, 2.5, 1), c: '#c98a2e' });
+  for (const s of [-1, 1]) for (const k of [-1, 0, 1]) P.push({ path: E(s * 46 + k * 9, -2, 4, 3), c: '#f3e6cf' });
+  for (const s of [-1, 1]) P.push({ path: E(s * 56, -70 - bob, 14, 22, s * .4), c: '#a8322a' });
+  // 등 가시
+  for (let k = 0; k < 5; k++) P.push({ path: PG([[-30 + k * 15, -126 - bob], [-24 + k * 15, -146 - bob], [-18 + k * 15, -124 - bob]]), c: '#3a2420' });
+  // 목 + 머리 (고개는 look 방향으로)
+  const hx = Math.sin(look) * 34, hy = -150 - bob + (open ? 8 : 0), jaw = open ? 12 : 3;
+  P.push({ path: g => { g.beginPath(); g.moveTo(-22, -110 - bob); g.quadraticCurveTo(hx * .5, -140 - bob, hx - 18, hy + 14); g.lineTo(hx + 18, hy + 14); g.quadraticCurveTo(hx * .5 + 10, -130 - bob, 22, -110 - bob); g.closePath(); }, c: '#c0392b' });
+  P.push({ path: PG([[hx - 22, hy - 18], [hx - 38, hy - 58], [hx - 12, hy - 26]]), c: '#f3e6cf' }, { path: PG([[hx + 22, hy - 18], [hx + 38, hy - 58], [hx + 12, hy - 26]]), c: '#f3e6cf' });
+  P.push({ path: R(hx - 26, hy + 10, 52, 14 + jaw, 8), c: '#a8322a' });   // 아래턱
+  if (open) P.push({ flat: 1, path: R(hx - 18, hy + 14, 36, jaw + 6, 6), c: '#ffb02e' });
+  P.push({ path: E(hx, hy, 40, 30), c: '#c0392b' }, { path: R(hx - 24, hy + 4, 48, 16, 8), c: '#d4473b' });
+  for (const s of [-1, 1]) P.push({ flat: 1, path: E(hx + s * 9, hy + 10, 2.4, 1.8), c: '#3a2420' });
+  for (const s of [-1, 1]) P.push({ path: E(hx + s * 17, hy - 8, 7, 7.5), c: dead ? '#a8322a' : '#ffd45a', after: dead ? g => { g.strokeStyle = INK; g.lineWidth = 2.4; g.beginPath(); g.moveTo(hx + s * 17 - 5, hy - 13); g.lineTo(hx + s * 17 + 5, hy - 3); g.moveTo(hx + s * 17 + 5, hy - 13); g.lineTo(hx + s * 17 - 5, hy - 3); g.stroke(); } : g => { g.fillStyle = INK; g.beginPath(); g.ellipse(hx + s * 17, hy - 8, 2, 6.5, 0, 0, 7); g.fill(); } });
+  inkDraw(ctx, P, 3);
+  ctx.restore();
+}
+function renderRaid(now) {
+  const e = (srvNow() - RD.start) / 1000, D0 = DRAGON();
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#2a1a1a'; ctx.fillRect(0, 0, W, H);
+  const z = S.zoom, sh = RD.shake, ox = pxR(W / 2 - cam.x * z + (Math.random() - .5) * 2 * sh), oy = pxR(H / 2 - cam.y * z + (Math.random() - .5) * 2 * sh);
+  ctx.setTransform(DPR * z, 0, 0, DPR * z, ox * DPR, oy * DPR);
+  ctx.drawImage(paintRaid(), 0, 0, RW(), RH());
+  // 경고: 곧 맞는 곳을 빨갛게 (깜빡임이 빨라짐)
+  if (!RD.ended && e > -1) for (let i = 0; i < RD.pat.length; i++) {
+    const p = RD.pat[i], left = p.at - e; if (left > p.warn || left < 0) continue;
+    const k = 1 - left / p.warn, al = .18 + .22 * k + Math.sin(now / (90 - 50 * k)) * .06;
+    ctx.fillStyle = `rgba(255,50,40,${al})`; ctx.strokeStyle = `rgba(255,90,70,${.5 + .4 * k})`; ctx.lineWidth = 2.5; ctx.beginPath();
+    if (p.k === 'breath') { const oy = D0.y - 1.2 * T, a0 = Math.PI / 2 + p.a; ctx.moveTo(D0.x, oy); ctx.arc(D0.x, oy, 15 * T, a0 - .32, a0 + .32); ctx.closePath(); }
+    else if (p.k === 'meteor') { ctx.arc(p.x * T, p.y * T, p.r * T, 0, 7); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(p.x * T, p.y * T, p.r * T * k, 0, 7); }
+    else if (p.k === 'tail') ctx.rect(0, p.y * T - 1.25 * T, RW(), 2.5 * T);
+    else { ctx.rect(0, D0.y, RW(), RH() - D0.y); ctx.fillStyle = `rgba(255,50,40,${al * .45})`; }
+    ctx.fill(); ctx.stroke();
+  }
+  // 터지는 효과 (바닥)
+  for (const f of RD.fx) {
+    const k = f.t / f.life;
+    if (f.k === 'fire') { const oy = D0.y - 1.2 * T, a0 = Math.PI / 2 + f.a, gr = ctx.createRadialGradient(D0.x, oy, 10, D0.x, oy, 15 * T); gr.addColorStop(0, `rgba(255,240,160,${1 - k})`); gr.addColorStop(.5, `rgba(255,130,40,${.85 * (1 - k)})`); gr.addColorStop(1, 'rgba(200,40,20,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(D0.x, oy); ctx.arc(D0.x, oy, 15 * T * Math.min(1, k * 3), a0 - .34, a0 + .34); ctx.closePath(); ctx.fill(); }
+    if (f.k === 'boom') { ctx.fillStyle = `rgba(255,140,50,${.8 * (1 - k)})`; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (.6 + k * .6), 0, 7); ctx.fill(); ctx.fillStyle = `rgba(255,230,150,${1 - k})`; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * .45 * (1 - k), 0, 7); ctx.fill(); }
+    if (f.k === 'sweep') { ctx.fillStyle = `rgba(255,120,60,${.55 * (1 - k)})`; ctx.fillRect(RW() * (k * 1.4 - .4), f.y - 1.25 * T, RW() * .5, 2.5 * T); }
+    if (f.k === 'roar') { ctx.strokeStyle = `rgba(255,200,120,${1 - k})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(f.x, f.y, 40 + k * 500, 20 + k * 250, 0, 0, 7); ctx.stroke(); }
+  }
+  // 떨어지는 운석 (경고 중)
+  if (!RD.ended) for (const p of RD.pat) { if (p.k !== 'meteor') continue; const left = p.at - e; if (left < 0 || left > .6) continue; const k = 1 - left / .6, mx = p.x * T + 120 * (1 - k), my = p.y * T - 400 * (1 - k); inkDraw(ctx, [{ path: E(mx, my, 10, 10), c: '#5c4a44' }], 2); ctx.fillStyle = 'rgba(255,140,50,.6)'; ctx.beginPath(); ctx.ellipse(mx + 14, my - 18, 6, 14, -.5, 0, 7); ctx.fill(); }
+  // 드래곤 · 사람 (아래에 있을수록 앞)
+  const nb = RD.pat.find(p => p.k === 'breath' && p.at - e > 0 && p.at - e < p.warn + .2), fire = RD.fx.find(f => f.k === 'fire');
+  const look = nb ? nb.a : fire ? fire.a : Math.sin(clock * .7) * .25;
+  const list = [{ y: D0.y, f: () => drawDragon(D0.x, D0.y, clock, !!(nb || fire), look, RD.ended) }];
+  for (const o of RD.ps.values()) list.push({ y: o.y, f: () => { ctx.save(); if (o.dead) ctx.globalAlpha = .45; drawChar(ctx, o.x, o.y + 6, o, clock + o.seed); ctx.restore(); } });
+  list.push({ y: me.y, f: () => { ctx.save(); if (RD.dead) ctx.globalAlpha = .5; if (me.hurt > 0) ctx.filter = 'brightness(1.6)'; drawChar(ctx, me.x, me.y + 6, me, clock); ctx.restore(); } });
+  list.sort((a, b) => a.y - b.y).forEach(o => o.f());
+  // 내 공격 (베기 · 화살 · 구슬)
+  for (const f of RD.fx) {
+    const k = f.t / f.life;
+    if (f.k === 'slash') { ctx.strokeStyle = `rgba(255,243,196,${1 - k})`; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(f.x, f.y, 22, -2.2 + k, -.6 + k); ctx.stroke(); }
+    if (f.k === 'arrow' || f.k === 'orb') { const x = f.x0 + (f.x - f.x0) * k, y = f.y0 + (f.y - f.y0) * k; ctx.fillStyle = f.k === 'orb' ? '#c9a2ff' : '#ffe2a0'; ctx.beginPath(); ctx.arc(x, y, f.k === 'orb' ? 6 : 3.5, 0, 7); ctx.fill(); }
+  }
+  for (const p of RD.parts) { ctx.globalAlpha = Math.max(0, 1 - p.t / p.life); ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 7); ctx.fill(); } ctx.globalAlpha = 1;
+  // 이름표 · 숫자
+  for (const o of RD.ps.values()) { ctx.save(); if (o.dead) ctx.globalAlpha = .55; nameTag({ ...o, lv: o.lv, name: o.name }, now); ctx.restore(); }
+  nameTag(me, now);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const f of RD.floats) { ctx.globalAlpha = Math.min(1, (1 - f.t) * 2.5); ctx.font = `900 ${f.size}px "IBM Plex Sans KR", sans-serif`; ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(31,42,58,.9)'; const y = f.y - f.t * 40; ctx.strokeText(f.text, f.x, y); ctx.fillStyle = f.color; fillTextIco(ctx, f.text, f.x, y); }
+  ctx.globalAlpha = 1;
+  // 맞으면 화면 가장자리 빨갛게
+  if (RD.flash > 0) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .7); g.addColorStop(0, 'rgba(255,0,0,0)'); g.addColorStop(1, `rgba(255,40,30,${RD.flash * 1.4})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+}
 function enterHunt(h) {
   const f = FIELDS[h.f]; paintHunt(f);
   HT = { f, mons: [], floats: [], parts: [], fx: [], shots: [], shake: 0, freeze: 0, loc: { kills: 0, exp: 0, gold: 0 }, t0: h.start, srv: h, bossAt: performance.now() + (h.boss - h.t) * 1000, atkT: .4, potCD: 0, target: null, cd: { ...(h.cd || {}) }, q: [], sh: 0, bt: 0, batk: 0, bcrit: 0 };
@@ -2260,6 +2671,7 @@ function drawStick() {
 function tap(sx, sy) {
   closePanel(); ROAM.pause = 15; GA = null;   // 직접 움직이면 자유 행동은 잠깐 쉼
   const w = toWorld(sx, sy);
+  if (RD) { if (!RD.dead) RD.goal = { x: w.x, y: w.y }; return; }   // 레이드: 누른 곳으로 피하기
   // 사냥 중: 몬스터를 누르면 그 몬스터부터 공격
   if (HT) { const m = HT.mons.filter(m => !m.dead).find(m => Math.abs(w.x - m.x) < 20 * m.d.s && w.y > m.y - 40 * m.d.s && w.y < m.y + 8); if (m) HT.target = m; return; }
   const hitP = people.filter(shown).find(p => Math.abs(w.x - p.x) < 16 && w.y > p.y - 66 && w.y < p.y + 10), onMe = Math.abs(w.x - me.x) < 14 && w.y > me.y - 56 && w.y < me.y + 8;
@@ -2277,6 +2689,7 @@ function tap(sx, sy) {
     if (onMe) return openPanelTab('stat');
     const cb = BUILDINGS.find(b => w.x > b.x * T && w.x < (b.x + b.w) * T && w.y > (b.y - 1) * T && w.y < (b.y + b.h) * T);
     if (bk === 'job' && cb?.id === 'cafe') return openBuilding(cb);
+    if (bk === 'auto' && cb) return openBuilding(cb);   // 자동 생활 중에도 건물은 이용 가능
     if (bk === 'fish' && (Math.hypot(w.x - FSPOT.x, w.y - FSPOT.y) < 3 * T || tileAt(Math.floor(w.x / T), Math.floor(w.y / T)) === WATER)) return openFishing();
     return busyToast();
   }
@@ -2304,7 +2717,7 @@ function tap(sx, sy) {
   const b = BUILDINGS.find(b => w.x > b.x * T && w.x < (b.x + b.w) * T && w.y > (b.y - 1) * T && w.y < (b.y + b.h) * T);
   if (b) return openBuilding(b);
   const pi = plotAt(w.x, w.y); if (pi >= 0) return farmTap(pi);
-  const s = SPOTS.find(s => s.id !== 'fountain' && w.x > s.x * T && w.x < (s.x + s.w) * T && w.y > (s.y - (s.id === 'board' ? 1.2 : .2)) * T && w.y < (s.y + s.h) * T);
+  const s = SPOTS.find(s => s.id !== 'fountain' && w.x > s.x * T && w.x < (s.x + s.w) * T && w.y > (s.y - .2) * T && w.y < (s.y + s.h) * T);
   if (s) return openSpot(s);
   if (tileAt(Math.floor(w.x / T), Math.floor(w.y / T)) === WATER) return fishAtWater(w.x, w.y);
   walkNear(me, w.x, w.y);
@@ -2468,7 +2881,7 @@ function openSpot(s) {
   if (s.id === 'river') return openFishing();
   if (s.id === 'farm') return openFarm();
   if (s.id === 'fountain') return openWish();
-  if ((s.id === 'screen' || s.id === 'board') && S.live) {
+  if (s.id === 'screen' && S.live) {
     const src = `https://chzzk.naver.com/embed/live/${(liveInfo?.url || '').split('/live/')[1] || CHZZK_ID}`;
     return openModal(`<h3>🔴 김치복 생방송</h3>${liveInfo?.title ? `<p style="margin:0 0 6px"><b>${esc(liveInfo.title)}</b></p>` : ''}
       <div class="livebox"><iframe src="${src}" title="김치복 치지직 생방송" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
@@ -2476,7 +2889,6 @@ function openSpot(s) {
       <div class="actions"><a class="btn" href="${(liveInfo?.url) || `https://chzzk.naver.com/live/${CHZZK_ID}`}" target="_blank" rel="noopener">치지직에서 크게 보기 · 채팅하기</a></div><button class="close" data-close>닫기</button>`);
   }
   if (s.id === 'screen') return openModal(`<h3>📺 광장 대형 전광판</h3><p>김치복님이 방송을 켜면 이 전광판에서 <b>마을 사람들과 같이</b> 볼 수 있어요.</p><p><b>${boardText()}</b></p><p class="muted">방송 중에 광장 근처에 있으면, 치지직 채팅에 게임 닉네임과 똑같은 닉네임으로 쓴 말이 마을 채팅에도 보여요.</p><button class="close" data-close>닫기</button>`);
-  if (s.id === 'board') openModal(`<h3>📣 광장 전광판</h3><p>${S.live ? '지금 김치복 생방송 중이에요!' : '김치복 방송 일정과 공지가 나오는 전광판.'}</p><div class="actions">${actBtn('sched', '📅 방송 일정 보기', '홈페이지 일정')}</div><button class="close" data-close>닫기</button>`, el => el.querySelector('.actions').addEventListener('click', e => { const a = e.target.closest('[data-a]')?.dataset.a; if (a) doAct(a); }));
 }
 function addGold(n) { me.gold += n; syncBars(); }
 function logAct(t) { S.log.unshift(t); S.log = S.log.slice(0, 6); $('#actLog').innerHTML = S.log.map(l => `<li>· ${esc(l)}</li>`).join(''); }
@@ -2668,21 +3080,31 @@ $('#presetBar').addEventListener('click', async e => {
 });
 // 스킨 미리보기: 정사각형 칸에 내 캐릭터 얼굴이 그 스킨을 쓴 모습
 let skinSig = '';
-function skinTile(cv, look) {
+// 무기 스킨 미리보기용 겉모습 (그 무기를 든 모습)
+const wskLook = (look, t, id) => ({ ...look, cls: t, equip: { [t]: { slot: t, st: 1, g: 'normal' } }, wsk: { [t]: id } });
+// mode: 'eye' = 얼굴 확대 (눈이 이름 띠에 안 가리게), 'weapon' = 무기까지 보이게 작게
+function skinTile(cv, look, mode) {
   const d = Math.min(devicePixelRatio || 1, 2), w = cv.clientWidth || 58, h = cv.clientHeight || 58; cv.width = w * d; cv.height = h * d;
   const g = cv.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, w, h);
-  const sc = w / 40; drawChar(g, w / 2, h * .5 + 38 * sc, { ...look, equip: {}, cls: '', moving: false, still: true }, 0, sc);
+  const sc = mode === 'eye' ? w / 30 : mode === 'weapon' || mode === 'suit' ? w / 62 : w / 40, fy = mode === 'eye' ? h * .3 + 32 * sc : mode === 'weapon' || mode === 'suit' ? h * .8 : h * .5 + 38 * sc;
+  drawChar(g, w / 2 - (mode === 'weapon' ? 7 * sc : 0), fy, { equip: {}, cls: '', ...look, moving: false, still: true }, 0, sc);
 }
 function renderSkins() {
   const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
   const hats = HATS.filter(h => me.hats.includes(h.id)), eyes = EYE_SKINS.filter(e => e.id === 'dot' || me.hats.includes('eye:' + e.id));
-  const sig = JSON.stringify([look, hats.map(h => h.id), eyes.map(e => e.id)]); if (sig === skinSig) return; skinSig = sig;
+  const suits = SUITS.filter(s => me.hats.includes('suit:' + s.id)), wsks = WSKINS.filter(w => me.hats.includes(wskKey(w)));
+  const sig = JSON.stringify([look, hats.map(h => h.id), eyes.map(e => e.id), me.hat, me.eyes, me.suit, me.wsk, suits.length, wsks.length]); if (sig === skinSig) return; skinSig = sig;
   $('#skinFxSum').innerHTML = `✨ 스킨 보유 효과: <b>${fxText(skinFx(me)) || '없음 (스킨샵에서 사면 생겨요)'}</b>`;
   $('#hatList').innerHTML = hats.map(h => `<button type="button" data-h="${h.id}" aria-pressed="${me.hat === h.id}" title="${h.n}" aria-label="${h.n}"><canvas></canvas><small>${h.n}</small></button>`).join('');
   $('#eyeList').innerHTML = eyes.map(e => `<button type="button" data-y="${e.id}" aria-pressed="${(me.eyes || 'dot') === e.id}" title="${e.n}" aria-label="${e.n}"><canvas></canvas><small>${e.n}</small></button>`).join('');
+  const none = '<p class="muted" style="grid-column:1/-1;margin:0">아직 없어요 · 스킨샵에서 살 수 있어요</p>';
+  $('#suitList').innerHTML = suits.map(s => `<button type="button" data-s="${s.id}" aria-pressed="${me.suit === s.id}" title="${s.n}" aria-label="${s.n}"><canvas></canvas><small>${s.n}</small></button>`).join('') || none;
+  $('#wskList').innerHTML = wsks.map(w => `<button type="button" data-w="${w.t}:${w.id}" aria-pressed="${me.wsk?.[w.t] === w.id}" title="${w.n}" aria-label="${w.n}"><canvas></canvas><small>${w.n}</small></button>`).join('') || none;
   requestAnimationFrame(() => {
+    $$('#suitList [data-s]').forEach(b => skinTile(b.firstChild, { ...look, suit: b.dataset.s }, 'suit'));
+    $$('#wskList [data-w]').forEach(b => skinTile(b.firstChild, wskLook(look, ...b.dataset.w.split(':')), 'weapon'));
     $$('#hatList [data-h]').forEach(b => skinTile(b.firstChild, { ...look, hat: b.dataset.h }));
-    $$('#eyeList [data-y]').forEach(b => skinTile(b.firstChild, { ...look, eyes: b.dataset.y }));
+    $$('#eyeList [data-y]').forEach(b => skinTile(b.firstChild, { ...look, eyes: b.dataset.y }, 'eye'));
   });
   for (const f of ARROWS) f();
 }
@@ -2694,6 +3116,8 @@ function arrowPick(el, label, list, key, show, after) {
   ARROWS.push(draw); draw();
 }
 $('#eyeList').addEventListener('click', e => { const y = e.target.closest('[data-y]')?.dataset.y; if (y) { me.eyes = y; syncMe(); saveLook(); } });
+$('#suitList').addEventListener('click', e => { const s = e.target.closest('[data-s]')?.dataset.s; if (s) { me.suit = me.suit === s ? '' : s; syncMe(); saveLook(); } });
+$('#wskList').addEventListener('click', e => { const w = e.target.closest('[data-w]')?.dataset.w; if (!w) return; const [t, id] = w.split(':'); me.wsk = { ...(me.wsk || {}) }; me.wsk[t] = me.wsk[t] === id ? '' : id; syncMe(); saveLook(); });
 $('#hatList').addEventListener('click', e => { const h = e.target.closest('[data-h]')?.dataset.h; if (h) { me.hat = h; syncMe(); saveLook(); } });
 function swatches(el, list, key, after) {
   el.innerHTML = list.map(c => `<button type="button" style="background:${c}" aria-label="색 ${c}" aria-pressed="${me[key] === c}" data-c="${c}"></button>`).join('');
@@ -2756,15 +3180,21 @@ async function api(path, body, opts = {}) {
 // 서버에서 받은 내 정보로 캐릭터 맞추기
 function applyMe(m, keep) {   // keep: 지금 위치 그대로 (서버 저장 위치는 45초마다라서 예전 자리일 수 있음)
   const c = m.char, keepPos = keep || (HT && c.hunt);
-  Object.assign(me, { name: m.nick, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair || 'none', hairC: c.hairC || HAIR_COLORS[0], intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
+  Object.assign(me, { name: m.nick, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair || 'none', hairC: c.hairC || HAIR_COLORS[0], suit: c.suit || '', wsk: c.wsk || {}, intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
     str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp || derive().maxHp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
     cls: c.cls || 'sword', enh: c.enh || {}, presets: c.presets, preset: c.preset || 0, gacha: c.gacha || { w: 0, a: 0 }, life: c.life || me.life, uid: m.id ?? me.uid, gfx: m.gfx || {}, world: m.world || me.world });
   me.job = c.job; me.jobEnd = c.job ? Date.now() + c.job.left * 1000 : 0;
+  if ($('#admBtn')) $('#admBtn').hidden = !m.admin;   // 관리자만 보임
+  if ($('#autoBtn')) setTimeout(autoUi);
   me.hunt = c.hunt; if (!keepPos) { me.path = []; me.moving = false; }
   if ($('#potAt')) setPotAt(me.potAt);
 }
 // 서버 응답 처리: 내 정보 맞추기 + 사냥 결과 알려 주기
 function took(j) {
+  if (j.auto && !$('#app').hidden) {
+    const a = j.auto, parts = [['wood', '🪵'], ['stone', '🪨'], ['gold', '🪙'], ['fish', '🐚'], ['farm', '🌻']].filter(([k]) => a[k]).map(([k, i]) => `${i} +${a[k].toLocaleString()}`);
+    if (parts.length) { townFloat(me.x, me.y - 70, parts.slice(0, 3).join(' '), '#ffe9a8'); if (a.sec >= 600) sysMsg(`🧺 자리 비운 동안 자동 생활: ${parts.join(' · ')}`); else logAct(`자동 생활 ${parts.join(' ')}`); }
+  }
   const lv0 = me.lv, inTown = !$('#app').hidden;
   applyMe(j.me, !(HT && !j.me.char.hunt));   // 버튼 응답으로 순간이동하지 않게. 사냥에서 돌아올 때만 서버 위치로
   const h = j.hunt, srv = j.me.char.hunt;
@@ -2821,7 +3251,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 let lookT = null;
 function saveLook() {
   clearTimeout(lookT);
-  lookT = setTimeout(() => api('/api/character', { face: me.face, body: me.body, eyes: me.eyes, hat: me.hat, hair: me.hair, hairC: me.hairC }).catch(e => toast(e.message)), 700);
+  lookT = setTimeout(() => api('/api/character', { face: me.face, body: me.body, eyes: me.eyes, hat: me.hat, hair: me.hair, hairC: me.hairC, suit: me.suit || '', wsk: me.wsk || {} }).catch(e => toast(e.message)), 700);
 }
 // 실제 김치복 방송 상태 (홈페이지와 같은 Worker)
 const LIVE_IMG = new Image(); let liveInfo = null;
@@ -2949,6 +3379,7 @@ $('#makeDone').onclick = async () => {
 
 let liveT = null;
 function enterTown(first) {   // first: 방금 받은 /api/me 결과 (자리 비운 동안 결과가 들어 있을 수 있음)
+  setTimeout(() => { raidWatch(); raidCheck(); }, 1500);   // 매시 정각 레이드
   $('#gate').hidden = true; $('#app').hidden = false; lastSaved = `${Math.round(me.x)},${Math.round(me.y)}`;
   setTimeout(() => {
     resize(); me.hp = Math.min(me.hp, derive().maxHp); syncMe();
@@ -3039,6 +3470,7 @@ function teleport(px, py, quiet) {
   standUp(me); me.x = px; me.y = py; me.path = []; me.moving = false; GA = null; cam = { x: me.x, y: me.y }; savePos(true); netGo(); if (!quiet) emote(me, '✨');
 }
 $('#townBtn').onclick = () => {
+  if (RD) return toast('레이드가 끝날 때까지 나갈 수 없어요');
   if (HT) return toast('사냥 중에는 현황판의 "마을로 돌아가기"를 눌러 주세요');
   const list = [...PLACES, ...(myHouse() ? [['🏠', '내 집', ...houseDoor(myHouse())]] : [])];
   openModal(`<h3>🏘️ 마을 바로가기</h3><p class="muted">누르면 그 자리로 바로 가서 시설 창이 열려요.</p><div class="placegrid">${list.map(([i, n], k) => `<button class="btn" data-x="${k}"><span style="font-size:22px">${i}</span>${n}</button>`).join('')}</div><button class="close" data-close>닫기</button>`,
@@ -3053,11 +3485,56 @@ setRoam(ROAM.on);
 $('#roamBtn').onclick = () => { setRoam(!ROAM.on); toast(ROAM.on ? '🚶 자유 행동 ON · 캐릭터가 알아서 돌아다니고 인사해요 (바닥을 누르면 잠깐 멈춰요)' : '자유 행동 OFF'); };
 const POI = () => PLACES.map(p => [p[2], p[3]]);
 // ───────── 알바·자동 낚시 중: 그 자리에서만 (카페 앞 서성이기 · 강가에서 낚시) ─────────
-const BUSY = () => (HT ? null : me.job ? 'job' : F.auto ? 'fish' : null);
+const BUSY = () => (HT || RD ? null : me.job ? 'job' : F.auto ? 'fish' : me.life?.auto?.on ? 'auto' : null);
 let busyT = 0;
-function busyToast() { if (performance.now() - busyT < 1500) return; busyT = performance.now(); toast(BUSY() === 'job' ? '☕ 알바 중에는 카페 앞에서만 일해요. 그만두려면 카페를 눌러요' : '🎣 자동 낚시 중에는 강가에서 낚시만 해요. 멈추려면 위쪽 🎣 칩을 눌러요'); }
+function busyToast() { if (performance.now() - busyT < 1500) return; busyT = performance.now(); if (BUSY() === 'auto') return toast('🧺 자동 생활 중이에요. 멈추려면 위쪽 🧺 자동 생활을 눌러요');
+  toast(BUSY() === 'job' ? '☕ 알바 중에는 카페 앞에서만 일해요. 그만두려면 카페를 눌러요' : '🎣 자동 낚시 중에는 강가에서 낚시만 해요. 멈추려면 위쪽 🎣 칩을 눌러요'); }
 const BUSY_PACE = { t: 0 };
+// ───────── 자동 생활: 나무 → 바위 → 카페 → 강가 → 텃밭을 돌며 일하는 모습 (실제로 모이는 양은 서버가 시간으로 계산) ─────────
+const AUTOV = { i: 0, t: 0, work: 0, tick: 0, syncT: null, sum: {} };
+const AUTO_ST = [
+  { k: 'tree', i: '🪓', say: ['🪓 영차!', '🌳 나무 베는 중', '🪵 통나무 하나!'], at: () => autoNode('tree') },
+  { k: 'rock', i: '⛏️', say: ['⛏️ 깡! 깡!', '🪨 돌 캐는 중', '💪 단단하다!'], at: () => autoNode('rock') },
+  { k: 'cafe', i: '☕', say: ['☕ 커피 나왔어요~', '🧋 버블티 한 잔!', '☕ 어서 오세요!'], at: () => door('cafe') },
+  { k: 'fish', i: '🎣', say: ['🎣 입질이 온다…', '🐟 잡았다!', '🎣 오늘은 대어!'], at: () => [FISH_AT.x, FISH_AT.y] },
+  { k: 'farm', i: '🌱', say: ['🌱 쑥쑥 자라라', '💧 물 주는 중', '🥕 수확!'], at: () => [PLOTS[4].x, PLOTS[4].y + T] },
+];
+function autoNode(k) { let b = null, bd = 1e9; for (const n of NODES) { if (n.k !== k) continue; const d = Math.hypot(n.x * T - me.x, n.y * T - me.y); if (d < bd) { bd = d; b = n; } } return b ? [(b.x + .5) * T, (b.y + 1.5) * T] : [me.x, me.y]; }
+function autoPace(dt) {
+  if (me.sit >= 0) standUp(me);
+  if (me.path.length) return;
+  const st = AUTO_ST[AUTOV.i % AUTO_ST.length], [hx, hy] = st.at();
+  if (Math.hypot(me.x - hx, me.y - hy) > 1.6 * T && AUTOV.work <= 0) { if (!walkNear(me, hx, hy)) AUTOV.i++; AUTOV.work = 0; AUTOV.go = 1; return; }
+  if (AUTOV.go) { AUTOV.go = 0; AUTOV.work = 9 + Math.random() * 5; }   // 도착: 9~14초 일함
+  AUTOV.work -= dt; AUTOV.tick -= dt;
+  if (AUTOV.tick <= 0) { AUTOV.tick = 1.3 + Math.random(); me.swing = .18; townFloat(me.x + (Math.random() - .5) * 20, me.y - 50, st.i); if (Math.random() < .25) say(me, pick(st.say), 1800); }
+  if (AUTOV.work <= 0) { AUTOV.i++; AUTOV.work = 0; }
+}
+function autoUi() {
+  const on = !!me.life?.auto?.on; $('#autoBtn').setAttribute('aria-pressed', String(on)); $('#autoChip').hidden = !on || !!HT || !!RD;
+  clearInterval(AUTOV.syncT); AUTOV.syncT = on ? setInterval(() => { if (!HT && !RD && document.visibilityState !== 'hidden') api('/api/auto/sync', {}).then(took).catch(() => {}); }, 60e3) : null;
+}
+async function autoSet(on) {
+  try {
+    if (on) {
+      if (HT) return toast('사냥 중에는 켤 수 없어요. 마을로 돌아온 뒤에 켜 주세요');
+      if (me.job) return toast('카페 알바 중에는 켤 수 없어요');
+      if (F.auto) autoFishStop();
+      if (me.room) leaveRoom();
+      if (ROAM.on) setRoam(false);
+    }
+    took(await api(on ? '/api/auto/start' : '/api/auto/stop', {}));
+    AUTOV.i = Math.floor(Math.random() * AUTO_ST.length); AUTOV.work = 0; me.path = [];
+    const P = AUTO_LIFE.perHour(me.lv);
+    if (on) { toast('🧺 자동 생활 ON · 벌목·채광·알바·낚시·농사를 알아서 해요'); sysMsg(`🧺 자동 생활: 1시간에 약 🪵 ${P.wood} · 🪨 ${P.stone} · 🪙 ${Math.round(P.gold).toLocaleString()} · 🐚 ${P.fish} · 🌻 ${P.farm} (창을 닫아도 최대 8시간)`); }
+    else toast('🧺 자동 생활을 멈췄어요');
+  } catch (x) { toast(x.message); }
+  autoUi();
+}
+$('#autoBtn').onclick = () => autoSet(!me.life?.auto?.on);
+$('#autoChip').onclick = () => autoSet(false);
 function busyPace(dt) {
+  if (BUSY() === 'auto') return autoPace(dt);
   const k = BUSY(), [hx, hy] = k === 'job' ? door('cafe') : [FSPOT.x, FSPOT.y];
   if (me.sit >= 0) standUp(me);
   if (Math.hypot(me.x - hx, me.y - hy) > 3 * T && !me.path.length) { walkNear(me, hx, hy); BUSY_PACE.t = 1; return; }   // 멀리 있으면 그 자리로 걸어감
@@ -3308,28 +3785,45 @@ function skinShop(b, keep) {
   reopen = () => skinShop(b, true);
   const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
   const tile = (key, name, own, on, price, fx) => `<button type="button" data-x="${key}" aria-pressed="${on}" title="${name} · 보유 효과: ${fxText(fx || {})}" aria-label="${name} · 보유 효과 ${fxText(fx || {})}${own ? '' : ` · ${price.toLocaleString()} 골드`}"><canvas></canvas>${own ? `<em class="own">${on ? '착용' : '보유'}</em>` : `<em>🪙 ${price.toLocaleString()}</em>`}<small>${name.replace(/^\S+\s/, '')}<i class="skfx">${fxText(fx || {})}</i></small></button>`;
-  const hats = HATS.filter(h => h.id !== 'none'), eyes = EYE_SKINS.filter(e => e.price);
+  const hats = HATS.filter(h => h.id !== 'none' && !h.raid), eyes = EYE_SKINS.filter(e => e.price), suits = SUITS.filter(s => !s.raid);
+  const WT = [['sword', '검'], ['bow', '활'], ['staff', '지팡이']], rset = raidSet('rdragon');
+  const rItem = k => k.startsWith('eye:') ? EYE_SKINS.find(e => 'eye:' + e.id === k) : k.startsWith('suit:') ? SUITS.find(s => 'suit:' + s.id === k) : k.startsWith('wsk:') ? WSKINS.find(w => wskKey(w) === k) : HATS.find(h => h.id === k);
+  const worn = k => { const [a, b, c2] = k.split(':'); return a === 'eye' ? me.eyes === b : a === 'suit' ? me.suit === b : a === 'wsk' ? me.wsk?.[b] === c2 : me.hat === k; };
   openModal(`${sheetHead(b, '스킨을 팔아요. <b>가지고만 있어도 보유 효과</b>가 붙어요 (안 써도 돼요). 현금 결제는 없어요. 칸을 누르면 미리보기·구매, 가진 스킨은 바로 쓰기/벗기.')}
     <p class="skfxsum">✨ 지금 보유 효과: <b>${fxText(skinFx(me)) || '없음'}</b></p>
     <h3 class="sub">머리 장식</h3><div class="skgrid shop" id="shopHats">${hats.map(h => tile('hat:' + h.id, h.n, me.hats.includes(h.id), me.hat === h.id, h.price, h.fx)).join('')}</div>
     <h3 class="sub">눈 모양</h3><div class="skgrid shop" id="shopEyes">${eyes.map(e => tile('eye:' + e.id, e.n, me.hats.includes('eye:' + e.id), me.eyes === e.id, e.price, e.fx)).join('')}</div>
+    <h3 class="sub">의상</h3><div class="skgrid shop" id="shopSuits">${suits.map(s => tile('suit:' + s.id, s.n, me.hats.includes('suit:' + s.id), me.suit === s.id, s.price, s.fx)).join('')}</div>
+    ${WT.map(([t, tn]) => `<h3 class="sub">무기 스킨 · ${tn}</h3><div class="skgrid shop shopW">${WSKINS.filter(w => w.t === t && !w.raid).map(w => tile(wskKey(w), w.n, me.hats.includes(wskKey(w)), me.wsk?.[t] === w.id, w.price, w.fx)).join('')}</div>`).join('')}
+    <h3 class="sub">🐉 레드 드래곤 레이드 전용</h3><p class="muted" style="margin:0 0 6px">매시 정각 레이드에서만 확률로 얻어요. 팔지 않아요.</p>
+    <div class="skgrid shop raid" id="shopRaid">${rset.map(k => { const it = rItem(k); return tile('raid|' + k, it.n, me.hats.includes(k), worn(k), 0, it.fx); }).join('')}</div>
     <p class="muted">머리 장식을 안 쓰면 장착한 모자(장비)가 보여요.</p><button class="close" data-close>닫기</button>`, el => {
     requestAnimationFrame(() => {
       el.querySelectorAll('#shopHats [data-x]').forEach(t => skinTile(t.querySelector('canvas'), { ...look, hat: t.dataset.x.slice(4) }));
-      el.querySelectorAll('#shopEyes [data-x]').forEach(t => skinTile(t.querySelector('canvas'), { ...look, eyes: t.dataset.x.slice(4) }));
+      el.querySelectorAll('#shopSuits [data-x]').forEach(t => skinTile(t.querySelector('canvas'), { ...look, suit: t.dataset.x.slice(5) }, 'suit'));
+      el.querySelectorAll('.shopW [data-x]').forEach(t => { const [, a, b2] = t.dataset.x.split(':'); skinTile(t.querySelector('canvas'), wskLook(look, a, b2), 'weapon'); });
+      el.querySelectorAll('#shopRaid [data-x]').forEach(t => { const k = t.dataset.x.slice(5), [a, b2, c2] = k.split(':'); skinTile(t.querySelector('canvas'), a === 'eye' ? { ...look, eyes: b2 } : a === 'suit' ? { ...look, suit: b2 } : a === 'wsk' ? wskLook(look, b2, c2) : { ...look, hat: k }, a === 'eye' ? 'eye' : a === 'wsk' ? 'weapon' : a === 'suit' ? 'suit' : undefined); });
+      el.querySelectorAll('#shopEyes [data-x]').forEach(t => skinTile(t.querySelector('canvas'), { ...look, eyes: t.dataset.x.slice(4) }, 'eye'));
     });
     wire(el, async x => {
-      const [a, id] = x.split(':'), isEye = a === 'eye', item = isEye ? EYE_SKINS.find(k => k.id === id) : HATS.find(k => k.id === id); if (!item) return;
-      const own = me.hats.includes(isEye ? 'eye:' + id : id);
-      if (own) { if (isEye) me.eyes = me.eyes === id ? 'dot' : id; else me.hat = me.hat === id ? 'none' : id; syncMe(); saveLook(); return reopen?.(); }
+      const raid = x.startsWith('raid|'); if (raid) x = x.slice(5);
+      const [a, id, id2] = x.split(':'), isEye = a === 'eye', kind = a === 'eye' ? '눈 모양' : a === 'suit' ? '의상' : a === 'wsk' ? '무기 스킨' : '머리 장식';
+      const key = a === 'hat' ? id : x, item = a === 'hat' ? HATS.find(k => k.id === id) : rItem(x); if (!item) return;
+      const wear = () => { if (isEye) me.eyes = id; else if (a === 'suit') me.suit = id; else if (a === 'wsk') me.wsk = { ...(me.wsk || {}), [id]: id2 }; else me.hat = id; };
+      if (me.hats.includes(key)) {   // 가진 것: 쓰기/벗기
+        if (worn(key)) { if (isEye) me.eyes = 'dot'; else if (a === 'suit') me.suit = ''; else if (a === 'wsk') me.wsk = { ...(me.wsk || {}), [id]: '' }; else me.hat = 'none'; } else wear();
+        syncMe(); saveLook(); return reopen?.();
+      }
+      if (raid || item.raid) return toast('🐉 레드 드래곤 레이드에서만 얻을 수 있어요 (매시 정각)');
+      const big = isEye ? { ...look, eyes: id } : a === 'suit' ? { ...look, suit: id } : a === 'wsk' ? wskLook(look, id, id2) : { ...look, hat: id };
       // 구매 확인: 큰 미리보기
       openModal(`<h3>🛍️ ${item.n}</h3><div class="skbig"><canvas id="skBig"></canvas></div>
-        <p style="text-align:center;margin:0">${isEye ? '눈 모양' : '머리 장식'} · <b>${goldTxt(item.price)}</b><br><span class="skfxline">보유 효과: <b>${fxText(item.fx || {})}</b></span><br><small class="muted">가진 골드 ${goldTxt(me.gold)}</small></p>
+        <p style="text-align:center;margin:0">${kind} · <b>${goldTxt(item.price)}</b><br><span class="skfxline">보유 효과: <b>${fxText(item.fx || {})}</b></span><br><small class="muted">가진 골드 ${goldTxt(me.gold)}</small></p>
         <div class="actions"><button class="btn main" data-y="buy" ${me.gold < item.price ? 'disabled' : ''}>${me.gold < item.price ? '골드가 모자라요' : '구매하고 바로 쓰기'}</button><button class="btn" data-y="back">돌아가기</button></div>`, el2 => {
-        requestAnimationFrame(() => skinTile(el2.querySelector('#skBig'), isEye ? { ...look, eyes: id } : { ...look, hat: id }));
+        requestAnimationFrame(() => skinTile(el2.querySelector('#skBig'), big, isEye ? 'eye' : a === 'wsk' ? 'weapon' : a === 'suit' ? 'suit' : undefined));
         el2.querySelector('.actions').onclick = async e => {
           const y = e.target.closest('[data-y]')?.dataset.y; if (!y) return;
-          if (y === 'buy') { const j = await act('/api/skin', { id: isEye ? 'eye:' + id : id }); if (!j) return; logAct(`${item.n} 구입 −${item.price}`); toast(`${item.n} 샀어요!`); emote(me, '❤️'); if (isEye) me.eyes = id; else me.hat = id; syncMe(); saveLook(); }
+          if (y === 'buy') { const j = await act('/api/skin', { id: key }); if (!j) return; logAct(`${item.n} 구입 −${item.price}`); toast(`${item.n} 샀어요!`); emote(me, '❤️'); wear(); syncMe(); saveLook(); }
           skinShop(b);
         };
       });
@@ -3349,6 +3843,12 @@ function hallSheet(b, keep) {
       ${h ? `<button class="btn" data-x="visit:${me.uid}">🚪 내 집에 들어가기</button>` : ''}
       <button class="btn${h ? '' : ' main'}" data-x="place" ${can ? '' : 'disabled'}>${h ? '🚚 이사하기 (자리 옮기기)' : '📍 집 지을 자리 고르기'}<small>${costText(cost)}${can ? '' : ' · 부족해요'}</small></button>
     </div>
+    ${h ? (() => {
+      const lv = h.lv || 0, nx = HOUSE_TIERS[lv + 1], ok = nx && me.gold >= nx.cost.gold && L.res.wood >= nx.cost.wood && L.res.stone >= nx.cost.stone, inc = houseSettle({ ...h }, Date.now());
+      return `<div class="housetier"><p>🏠 지금: <b>${HOUSE_TIERS[lv].n}</b> <small class="muted">(${lv + 1}/${HOUSE_TIERS.length}단계)</small></p>
+        ${inc.rate ? `<p>💰 임대 수입 <b>${inc.have.toLocaleString()}</b> / ${inc.cap.toLocaleString()} 골드 <small class="muted">· 1시간에 ${inc.rate.toLocaleString()} · 최대 ${HOUSE_INC_CAP}시간</small></p><button class="btn main" data-x="collect" ${inc.have >= 1 ? '' : 'disabled'}>💰 임대 수입 받기</button>` : '<p class="muted">빌라부터 일정 시간마다 임대 수입(골드)이 들어와요.</p>'}
+        ${nx ? `<button class="btn" data-x="up" ${ok ? '' : 'disabled'}>⬆️ ${nx.n}(으)로 올리기${nx.inc ? ` · 1시간에 ${nx.inc.toLocaleString()} 골드` : ''}<small>${costText(nx.cost)}${ok ? '' : ' · 부족해요'}</small></button>` : '<p>🏆 가장 높은 단계예요!</p>'}</div>`;
+    })() : ''}
     ${h ? `<label class="muted">지붕 색 바꾸기 (무료)</label><div class="swatches roofs">${HOUSE.roofs.map((c, i) => `<button type="button" style="background:${c}" data-x="reroof:${i}" aria-pressed="${h.roof === i}" aria-label="지붕 색 ${i + 1}"></button>`).join('')}</div>` : `<p class="muted">목재·석재는 마을의 🌳 나무와 🪨 바위를 눌러 모으거나, 벌목소·채광소 알바를 고용해서 모아요.</p>`}
     <h3 class="sub">🏘️ 마을의 집 ${HOUSES.length}채</h3>
     <ul class="ilist">${list.map(x => row(`<span class="roofdot" style="background:${HOUSE.roofs[x.roof] || HOUSE.roofs[0]}"></span>`, `${esc(x.nick)}님의 집${x.id === me.uid ? ' <span class="tagok">내 집</span>' : ''}`, '', `<button class="mini" data-x="visit:${x.id}">구경 가기</button>`)).join('') || '<li><span></span><span class="muted">아직 집이 없어요. 첫 번째 주인이 되어 보세요!</span><span></span></li>'}</ul>`, el => wire(el, async x => {
@@ -3356,6 +3856,8 @@ function hallSheet(b, keep) {
     if (a === 'roof') { S.roof = +v; return reopen?.(); }
     if (a === 'reroof') { const j = await act('/api/house/roof', { roof: +v }); if (j) { await loadHouses(); toast('🎨 지붕 색을 바꿨어요'); reopen?.(); } return; }
     if (a === 'visit') { const t = HOUSES.find(k => k.id === +v); if (t) visitHouse(t); return; }
+    if (a === 'up') { const nx = HOUSE_TIERS[(h.lv || 0) + 1]; if (!confirm(`집을 ${nx.n}(으)로 올릴까요? (${costText(nx.cost).replace(/<[^>]+>/g, '')})`)) return; const j = await act('/api/house/up', {}); if (j) { await loadHouses(); toast(`🏗️ ${nx.n}(으)로 올렸어요!`); emote(me, '🎉'); reopen?.(); } return; }
+    if (a === 'collect') { const j = await act('/api/house/collect', {}); if (j) { toast(`💰 임대 수입 +${j.got.toLocaleString()} 골드`); logAct(`임대 수입 +${j.got}`); reopen?.(); } return; }
     if (a === 'place') startPlace(h ? h.roof : S.roof);
   }), keep);
 }
@@ -3533,7 +4035,7 @@ function onNet(m) {
   else if (m.t === 'go') { const p = personOf(m.id); if (p) { standUp(p); netMove(p, m); } }
   else if (m.t === 'hunt') { const p = personOf(m.id); if (p) { p.hunt = m.on; p.path = []; p.sit = -1; } }
   else if (m.t === 'emo') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) emote(p, m.e); }
-  else if (m.t === 'look') { const p = personOf(m.p.id), d = m.p; if (p) Object.assign(p, { lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {} }); }
+  else if (m.t === 'look') { const p = personOf(m.p.id), d = m.p; if (p) Object.assign(p, { lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {} }); }
   else if (m.t === 'say') {
     if (S.blocked.has(m.id)) return;
     const mine = m.id === NET.me, p = mine ? me : personOf(m.id);
@@ -3544,12 +4046,13 @@ function onNet(m) {
   else if (m.t === 'note') m.notes.forEach(n => sysMsg(n));
   else if (m.t === 'sys') sysMsg(m.text);
   else if (m.t === 'event' && m.e?.k === 'village') { sysMsg(`🎉 마을 사람들이 힘을 모아 「${String(m.e.n).slice(0, 20)}」을(를) 완성했어요! 이제 마을 모두에게 효과가 생겨요`); toast(`🎉 「${String(m.e.n).slice(0, 20)}」 완성!`); NEWS.at = 0; emote(me, '🎉'); act('/api/me'); }
+  else if (m.t === 'raid') raidCheck();   // 관리자가 레이드를 엶
   else if (m.t === 'notice') { sysMsg(`📢 공지: ${m.text}`); toast(`📢 ${m.text}`); }
   else if (m.t === 'kick' || m.t === 'bye') { NET.want = false; sysMsg(m.why); toast(m.why); }
   setOnline();
 }
 // 내 겉모습·레벨이 바뀌면 다른 사람 화면에도 (서버가 저장된 값을 다시 읽음)
-const lookSig = () => JSON.stringify([me.lv, me.title, me.intro, me.face, me.body, me.eyes, me.hat, me.hair, me.hairC, me.cls, me.enh, Object.values(me.equip || {}).map(it => it?.id)]);
+const lookSig = () => JSON.stringify([me.lv, me.title, me.intro, me.face, me.body, me.eyes, me.hat, me.hair, me.hairC, me.suit, me.wsk, me.cls, me.enh, Object.values(me.equip || {}).map(it => it?.id)]);
 function lookChanged() { if (!NET.ready) return; const s = lookSig(); if (s === NET.sig) return; NET.sig = s; clearTimeout(NET.lookT); NET.lookT = setTimeout(() => netSend({ t: 'look' }), 1600); }
 
 // ───────── 차단 목록 (설정) ─────────
@@ -3563,6 +4066,7 @@ function openBlocks() {
 // ───────── 관리자 화면 (김치복님): 신고함 · 채팅 기록 · 사람 찾기 · 공지 ─────────
 const fmtT = t => new Date(t).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 const ADM = { tab: 'reports', done: false, chat: null, user: null, q: { nick: '', text: '', who: '' } };
+$('#admBtn').onclick = () => openAdmin('cheat');
 async function openAdmin(tab = ADM.tab) {
   ADM.tab = tab;
   const tabs = [['reports', '🚨 신고함'], ['chat', '💬 채팅'], ['user', '🔎 사람'], ['notice', '📢 공지'], ['cheat', '🧪 치트']];
@@ -3617,6 +4121,7 @@ async function openAdmin(tab = ADM.tab) {
   if (tab === 'cheat') {   // 관리자 시험용 치트 (내 캐릭터만 바뀜, 서버 기록에 남음)
     const god = !!me.life?.god, B = (k, n, label) => `<button class="mini" data-x="${k}:${n}">${label}</button>`;
     return show(`<p class="muted">시험용이에요. <b>내 캐릭터만</b> 바뀌고, 쓴 기록은 서버에 남아요.</p>
+      <div class="btns cheat">${B('raid', 0, '🐉 레이드 지금 열기 (30초 모집, 모두에게 창이 떠요)')}</div>
       <div class="btns cheat">${B('god', 0, god ? '😇 갓모드 끄기' : '😇 갓모드 켜기 (안 맞음 · 공격력 10배)')}</div>
       <div class="btns cheat">${B('gold', 1e6, '🪙 골드 +100만')}${B('gold', 1e8, '🪙 골드 +1억')}${B('lv', 55, '🌟 55레벨')}${B('lv', 1, '🌱 1레벨로')}</div>
       <div class="btns cheat">${B('gear', 0, '🗡️ 최고 장비 + 최고 강화')}${B('titles', 0, '🏷️ 칭호 모두')}${B('skins', 0, '👕 스킨 모두')}${B('pots', 0, '🥤 물약·체력 가득')}</div>
@@ -3626,6 +4131,7 @@ async function openAdmin(tab = ADM.tab) {
       <div class="admform"><input id="cN" type="number" placeholder="숫자" value="1000"><select id="cK"><option value="gold">골드 더하기</option><option value="exp">경험치 더하기</option><option value="lv">레벨 정하기</option><option value="wood">목재 더하기</option><option value="stone">석재 더하기</option><option value="fishCoin">낚시 코인 더하기</option><option value="farmCoin">텃밭 코인 더하기</option></select><button class="mini main" data-x="custom">적용</button></div>`,
       async (x, el) => {
         let [k, n] = x.split(':');
+        if (k === 'raid') { const j = await api('/api/admin/raid', {}); closeModal(); toast('🐉 레이드 모집을 열었어요 (30초)'); RAIDQ.asked = 0; setTimeout(raidCheck, 300); return; }
         if (k === 'custom') { k = el.querySelector('#cK').value; n = el.querySelector('#cN').value; }
         if (k === 'lv' && !confirm(`${n}레벨로 바꿀까요? 능력치가 다시 계산돼요.`)) return;
         const j = await act('/api/admin/cheat', { k, n: Number(n) }); if (!j) return;
@@ -3822,6 +4328,7 @@ function showGuide() {
     : [['끌기', '화면을 끌면 그 방향으로 걸어요'], ['💬', '채팅 기록 펼치기 · ⚙️로 채팅 글씨 크기'], ['⚙️ 설정', '내 정보 · 비밀번호 · 차단 목록'], ['＋ －', '지도 크게 · 작게 보기']];
   openModal(`<div class="guide"><h3>🥬 치복 타운에 어서 와요, ${esc(me.name)}님!</h3>
     <h4>🎯 오늘의 목표</h4><ul>${goals}</ul>
+    <h4 style="margin-top:12px">🗺️ 이런 것도 있어요</h4><ul class="tips">${[['🏛️ 마을회관', '내 집을 지을 수 있어요. 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩으로 올리면 빌라부터 임대 수입!'], ['🐉 매시 정각', '레드 드래곤 레이드! 30초 안에 참여하면 큰 보상 + 확률로 전용 스킨'], ['🧺 자동 생활', '오른쪽 🧺 버튼: 벌목·채광·알바·낚시·농사를 알아서 해요 (효율은 낮아요)']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
     <h4 style="margin-top:12px">⚙️ 알아 두면 편해요</h4><ul class="tips">${tips.map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul></div>
     <label class="skip guide"><input type="checkbox" id="guideSkip"> 오늘 하루 보지 않기</label>
     <div class="actions"><button class="btn" data-g="news">📋 오늘 의뢰 · 마을 소식 보기</button><button class="btn main" data-g="go">시작하기</button></div>`, el => {

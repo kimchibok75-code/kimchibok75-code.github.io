@@ -32,6 +32,15 @@ class_name = "Chzzk"
 tag = "v2"
 new_sqlite_classes = ["Chzzk"]
 
+# 레이드 (매시 정각, 하나만 씀)
+[[durable_objects.bindings]]
+name = "RAID"
+class_name = "Raid"
+
+[[migrations]]
+tag = "v3"
+new_sqlite_classes = ["Raid"]
+
 [vars]
 CHZZK_CHANNEL = "d44a982c742226605f4fcf3b6b4e7629"   # 김치복 치지직 채널 (config/site.json과 같음)
 

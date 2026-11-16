@@ -1,10 +1,10 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, FISH_GRADES, rollFish,
+import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, FISH_GRADES, rollFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, AUTO_FISH, FISH_SHOP, fishZone, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
-  dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText } from '../../assets/js/game-rules.js';
+  dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidDps, raidSet, autoSettle, HOUSE_TIERS, houseSettle } from '../../assets/js/game-rules.js';
 import { canHouse, isSolid, NODES, BACK } from '../../assets/js/game-map.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
@@ -12,6 +12,9 @@ import { Town, MAX_CH, toRooms, lookRow } from './town.js';
 export { Town };
 import { Chzzk } from './chzzk.js';
 export { Chzzk };
+import { Raid } from './raid.js';
+export { Raid };
+const raidDO = env => env.RAID.get(env.RAID.idFromName('main'));   // 레이드 방은 하나
 
 const ORIGINS = ['https://kimchibok75-code.github.io', 'http://localhost:5173', 'http://127.0.0.1:5173'];
 const PBKDF2_ITER = 30000;            // 비밀번호 해시 반복 횟수 (무료 요금제 CPU 한도 안에서)
@@ -37,6 +40,11 @@ export default {
       const ch = Math.min(MAX_CH, Math.max(1, parseInt(new URL(req.url).searchParams.get('ch')) || 1));
       return env.TOWN.get(env.TOWN.idFromName('town-' + ch)).fetch(req);
     }
+    if (new URL(req.url).pathname === '/raid-ws') {   // 레이드 (로그인·참가자 확인은 레이드 방이 첫 메시지로 함)
+      if (req.headers.get('Upgrade') !== 'websocket') return new Response('websocket only', { status: 426 });
+      if (!ORIGINS.includes(origin)) return new Response('forbidden', { status: 403 });
+      return raidDO(env).fetch(new Request('https://raid/ws', req));
+    }
     let res;
     try { res = await route(req, env, new URL(req.url)); }
     catch (e) {
@@ -60,9 +68,10 @@ async function route(req, env, url) {
   if (m === 'POST' && p === '/api/character') return saveLook(req, env, s.user);
   if (m === 'POST' && p === '/api/move') return saveMove(req, env, s.user);
   if (m === 'GET' && p === '/api/fish/rank') return fishRank(env, s.user);
-  if (m === 'GET' && p === '/api/houses') return json({ houses: (await env.DB.prepare('SELECT h.user_id AS id, u.nick, h.x, h.y, h.roof FROM houses h JOIN users u ON u.id = h.user_id WHERE u.banned = 0').all()).results });
+  if (m === 'GET' && p === '/api/houses') return json({ houses: (await env.DB.prepare('SELECT h.user_id AS id, u.nick, h.x, h.y, h.roof, h.lv FROM houses h JOIN users u ON u.id = h.user_id WHERE u.banned = 0').all()).results });
   if (m === 'POST' && p === '/api/fish/reel') return fishReel(req, env, s.user);
   if (m === 'GET' && p === '/api/news') return json(await news(env));
+  if (m === 'GET' && p === '/api/raid') { const j = await (await raidDO(env).fetch('https://raid/state')).json(); return json({ ...j, now: now() }); }
   if (p.startsWith('/api/admin/')) return admin(p, m, req, env, s.user, url);
   if (m === 'GET' && p === '/api/blocks') return json({ blocks: (await env.DB.prepare('SELECT b.target_id AS id, u.nick FROM blocks b JOIN users u ON u.id = b.target_id WHERE b.user_id = ?').bind(s.user.id).all()).results });
   if (m === 'POST' && p === '/api/block') return block(req, env, s.user);
@@ -188,7 +197,7 @@ async function recover(req, env) {
 // ───────── 로그인한 뒤 ─────────
 // DB 한 줄 ↔ 캐릭터
 function toChar(r) {
-  const c = { face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, hair: r.hair, hairC: r.hair_c, intro: r.intro, title: r.title, x: r.x, y: r.y, lv: r.lv, exp: r.exp, gold: r.gold,
+  const c = { face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, hair: r.hair, hairC: r.hair_c, suit: r.suit || '', wsk: jp(r.wsk, {}), intro: r.intro, title: r.title, x: r.x, y: r.y, lv: r.lv, exp: r.exp, gold: r.gold,
     str: r.s_str, dex: r.s_dex, int: r.s_int, luk: r.s_luk, points: r.points, hp: r.hp, hpAt: r.hp_at,
     equip: JSON.parse(r.equip), bag: JSON.parse(r.bag), hats: JSON.parse(r.hats), pots: JSON.parse(r.pots), potAt: r.pot_at,
     hunt: r.hunt ? JSON.parse(r.hunt) : null, bonusDay: r.bonus_day, jobAt: r.job_at, ver: r.ver,
@@ -211,7 +220,7 @@ function meOut(user, c) {
   const h = c.hunt;
   return {
     id: user.id, nick: user.nick, admin: !!user.is_admin, gfx: c.gfx || {}, world: c._w ? { lv: c._w.lv, live: c._w.live } : null,
-    char: { face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair, hairC: c.hairC, intro: c.intro, title: c.title, x: c.x, y: c.y, lv: c.lv, exp: c.exp, gold: c.gold,
+    char: { face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair, hairC: c.hairC, suit: c.suit, wsk: c.wsk, intro: c.intro, title: c.title, x: c.x, y: c.y, lv: c.lv, exp: c.exp, gold: c.gold,
       str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
       cls: c.cls, enh: c.enh, gacha: c.gacha, preset: c.preset, life: c.life, presets: c.presets.map((p, i) => (i === c.preset ? { ...p, s: [c.str, c.dex, c.int, c.luk] } : p)),
       hunt: h ? { f: h.f, start: h.start, t: Math.round(h.t), boss: h.boss, kills: h.kills, exp: h.exp, gold: h.gold, drops: h.drops } : null,
@@ -254,7 +263,9 @@ async function play(env, user, fn) {
       const max = derive(c).maxHp;
       c.hp = Math.min(max, Math.round(c.hp + Math.max(0, (at - (c.hpAt || at)) / 1000) * max * HUNT.townRegen)); c.hpAt = at;
     } else out.hunt = settle(c, at);
+    if (c.life.auto?.on) { const g = autoSettle(c, at); if (g) out.auto = g; }   // 자동 생활
     const res = (await fn(c, at, out)) || {};
+    if (c.life.auto?.on && (c.hunt || c.jobAt)) c.life.auto.on = 0;   // 사냥·알바를 시작하면 자동 생활은 꺼짐
     const dq = checkDaily(c, at); if (dq.length) out.daily = dq;   // 매일 의뢰 · 도장
     const got = checkTitles(c); if (got.length) out.newTitles = got;   // 새로 깬 칭호
     const w = await env.DB.prepare(`UPDATE characters SET title = ?, x = ?, y = ?, lv = ?, exp = ?, gold = ?, s_str = ?, s_dex = ?, s_int = ?, s_luk = ?, points = ?, hp = ?, hp_at = ?,
@@ -404,6 +415,37 @@ const GAME = {
     c.points += n; c.str = c.dex = c.int = c.luk = 5; c.hp = Math.min(c.hp, derive(c).maxHp);
     return { n, log: ['reset-stats', String(n)] };
   },
+  // 자동 생활 켜기 · 끄기 · 정산 (정산은 play()가 매번 함)
+  '/api/auto/start'(c, b, at) { townOnly(c); notWorking(c); c.life.auto = { on: 1, at, acc: c.life.auto?.acc || {} }; return { log: ['auto', 'on'] }; },
+  '/api/auto/stop'(c) { if (c.life.auto) c.life.auto.on = 0; return { log: ['auto', 'off'] }; },
+  '/api/auto/sync'() {},
+  // 레이드 참가 (정각 30초 모집 중에만). 체력은 가득 채워서 시작
+  async '/api/raid/join'(c, b, at, out, env, user) {
+    townOnly(c);
+    const D = derive(c), dps = raidDps(D);
+    const look = { lv: c.lv, title: c.title, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair, hairC: c.hairC, suit: c.suit, wsk: c.wsk, cls: c.cls, enh: c.enh, equip: c.equip };
+    const res = await raidDO(env).fetch('https://raid/join', { method: 'POST', body: JSON.stringify({ start: Number(b.start), uid: user.id, nick: user.nick, lv: c.lv, dps, maxHp: D.maxHp, look }) });
+    const j = await res.json(); if (!res.ok) fail(400, j.error || '참여하지 못했어요');
+    c.hp = D.maxHp;
+    return { raid: { start: j.start, n: j.n, dps } };
+  },
+  // 레이드 보상: 레이드 방에서 기록을 읽고 → 골드·경험치 + 확률로 전용 스킨. life.raidGot 으로 한 번만
+  async '/api/raid/claim'(c, b, at, out, env, user) {
+    const start = Number(b.start); if (!Number.isFinite(start)) fail(400, '잘못된 요청이에요');
+    if (c.life.raidGot === start) fail(400, '이미 보상을 받았어요');
+    const res = await raidDO(env).fetch(`https://raid/result?start=${start}&uid=${user.id}`), j = await res.json();
+    if (!res.ok) fail(res.status, j.error || '보상을 받지 못했어요');
+    const D = derive(c), RW = raidReward(c.lv), m = (j.dead ? RAID.deadMul : 1) * (.85 + .3 * Math.min(1, j.share * j.n));
+    let gold = Math.round(RW.gold * m * (1 + D.goldB / 100)); const exp = Math.round(RW.exp * m * (1 + D.expB / 100));
+    let skin = null;
+    if (Math.random() < (j.dead ? RAID.dropDead : RAID.drop)) {
+      const left = raidSet(RAID_BOSS[j.boss]?.set || 'rdragon').filter(k => !c.hats.includes(k));
+      if (left.length) { skin = left[Math.floor(Math.random() * left.length)]; c.hats.push(skin); } else gold += Math.round(RW.gold * .5);   // 다 모았으면 골드로
+    }
+    c.gold += gold; const up = addExp(c, exp); c.life.raidGot = start; c.hp = D.maxHp; c.hpAt = at;
+    return { raid: { gold, exp, up, skin, dead: j.dead, rank: j.rank, n: j.n, dmg: j.dmg }, log: ['raid', `${gold} ${exp} ${skin || ''}`.trim()],
+      chron: skin ? ['raid', `${RAID_BOSS[j.boss]?.n || '레이드'} 레이드에서 전용 스킨을 얻었어요!`] : null };
+  },
   // 스킨샵 (겉모습만, 현금 결제 없음)
   '/api/skin'(c, b) {
     townOnly(c);
@@ -414,7 +456,14 @@ const GAME = {
       spend(c, e.price); c.hats.push(id); c.eyes = e.id;
       return { log: ['skin', id] };
     }
-    const h = HATS.find(x => x.id === id && x.id !== 'none'); if (!h) fail(400, '없는 스킨이에요');
+    if (id.startsWith('suit:') || id.startsWith('wsk:')) {   // 의상 · 무기 스킨 (입기는 /api/character 로)
+      const s = id.startsWith('suit:') ? SUITS.find(x => 'suit:' + x.id === id) : WSKINS.find(x => wskKey(x) === id);
+      if (!s || s.raid) fail(400, s ? '레이드에서만 얻을 수 있어요' : '없는 스킨이에요');
+      if (c.hats.includes(id)) fail(400, '이미 가지고 있어요');
+      spend(c, s.price); c.hats.push(id);
+      return { log: ['skin', id] };
+    }
+    const h = HATS.find(x => x.id === id && x.id !== 'none' && !x.raid); if (!h) fail(400, '없는 스킨이에요');
     if (c.hats.includes(h.id)) fail(400, '이미 가지고 있어요');
     spend(c, h.price); c.hats.push(h.id); c.hat = h.id;
     return { log: ['skin', h.id] };
@@ -622,10 +671,31 @@ const GAME = {
     if (c.gold < cost.gold) fail(400, '골드가 부족해요');
     for (const r of ['wood', 'stone']) if (c.life.res[r] < cost[r]) fail(400, `${r === 'wood' ? '목재' : '석재'}가 부족해요`);
     c.gold -= cost.gold; c.life.res.wood -= cost.wood; c.life.res.stone -= cost.stone;
-    c.life.house = { x, y, roof: had ? c.life.house.roof : roof }; if (!had) cntAdd(c, 'house');
+    c.life.house = { ...(had ? c.life.house : { lv: 0 }), x, y, roof: had ? c.life.house.roof : roof }; if (!had) cntAdd(c, 'house');
     const h = c.life.house;
     return { moved: had, log: ['house', `${x},${y}`], chron: had ? null : ['house', '마을에 집을 지었어요'],
-      after: async () => { await env.DB.prepare('INSERT INTO houses (user_id, x, y, roof, at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET x = excluded.x, y = excluded.y, roof = excluded.roof, at = excluded.at').bind(user.id, h.x, h.y, h.roof, at).run(); await toRooms(env, { act: 'house', h: { id: user.id, nick: user.nick, ...h } }); } };
+      after: async () => { await env.DB.prepare('INSERT INTO houses (user_id, x, y, roof, at, lv) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET x = excluded.x, y = excluded.y, roof = excluded.roof, at = excluded.at, lv = excluded.lv').bind(user.id, h.x, h.y, h.roof, at, h.lv || 0).run(); await toRooms(env, { act: 'house', h: { id: user.id, nick: user.nick, ...h } }); } };
+  },
+  // 집 업그레이드 (한 단계씩, 점점 비쌈). 수입이 바뀌기 전에 먼저 정산
+  async '/api/house/up'(c, b, at, out, env, user) {
+    townOnly(c);
+    const h = c.life.house; if (!h) fail(400, '먼저 집을 지어 주세요');
+    const nx = HOUSE_TIERS[(h.lv || 0) + 1]; if (!nx) fail(400, '이미 가장 높은 단계예요');
+    const cost = nx.cost;
+    if (c.gold < cost.gold) fail(400, '골드가 부족해요');
+    for (const r of ['wood', 'stone']) if (c.life.res[r] < cost[r]) fail(400, `${r === 'wood' ? '목재' : '석재'}가 부족해요`);
+    houseSettle(h, at);
+    c.gold -= cost.gold; c.life.res.wood -= cost.wood; c.life.res.stone -= cost.stone; h.lv = (h.lv || 0) + 1; if (nx.inc && !h.at) h.at = at;
+    return { log: ['house-up', String(h.lv)], chron: h.lv >= 3 ? ['house', `집을 ${nx.n}(으)로 올렸어요!`] : null,
+      after: async () => { await env.DB.prepare('UPDATE houses SET lv = ? WHERE user_id = ?').bind(h.lv, user.id).run(); await toRooms(env, { act: 'house', h: { id: user.id, nick: user.nick, ...h } }); } };
+  },
+  // 임대 수입 받기 (빌라부터)
+  '/api/house/collect'(c, b, at) {
+    const h = c.life.house; if (!h) fail(400, '먼저 집을 지어 주세요');
+    const s = houseSettle(h, at); if (!s.rate) fail(400, '빌라부터 임대 수입이 생겨요');
+    if (s.have < 1) fail(400, '아직 모인 수입이 없어요');
+    c.gold += s.have; h.acc -= s.have;
+    return { got: s.have, log: ['house-inc', String(s.have)] };
   },
   async '/api/house/roof'(c, b, at, out, env, user) {
     if (!c.life.house) fail(400, '먼저 집을 지어 주세요');
@@ -650,6 +720,13 @@ async function saveLook(req, env, user) {
   const eyes = b.eyes === 'dot' || (EYE_SKINS.some(e => e.id === b.eyes) && owned.includes('eye:' + b.eyes)) ? b.eyes : null;
   const hat = typeof b.hat === 'string' && owned.includes(b.hat) ? b.hat : null;
   const hair = HAIRS.some(h => h.id === b.hair) ? b.hair : null, hairC = HAIR_COLORS.includes(b.hairC) ? b.hairC : null;
+  const suit = b.suit === '' || (typeof b.suit === 'string' && SUITS.some(s => s.id === b.suit) && owned.includes('suit:' + b.suit)) ? b.suit : null;
+  let wsk = null;
+  if (b.wsk && typeof b.wsk === 'object') {   // { sword, bow, staff }: 빈 값 = 기본 무기 그림
+    wsk = {};
+    for (const t of ['sword', 'bow', 'staff']) { const v = b.wsk[t]; if (typeof v === 'string' && v && WSKINS.some(w => w.t === t && w.id === v) && owned.includes(`wsk:${t}:${v}`)) wsk[t] = v; }
+    wsk = JSON.stringify(wsk);
+  }
   let intro = null;
   if (typeof b.intro === 'string') {
     intro = b.intro.replace(/\s+/g, ' ').trim();
@@ -657,8 +734,8 @@ async function saveLook(req, env, user) {
     const r = scanBad(intro); if (r.hard) fail(400, '한 줄 소개에 쓸 수 없는 말이 있어요'); intro = r.text;
   }
   // ver + 1: 같은 때 다른 요청(사냥 정산 등)이 옛 값으로 덮어쓰지 않게
-  await env.DB.prepare('UPDATE characters SET face = COALESCE(?, face), body = COALESCE(?, body), eyes = COALESCE(?, eyes), hat = COALESCE(?, hat), hair = COALESCE(?, hair), hair_c = COALESCE(?, hair_c), intro = COALESCE(?, intro), ver = ver + 1, updated_at = ? WHERE user_id = ?')
-    .bind(face, body, eyes, hat, hair, hairC, intro, now(), user.id).run();
+  await env.DB.prepare('UPDATE characters SET face = COALESCE(?, face), body = COALESCE(?, body), eyes = COALESCE(?, eyes), hat = COALESCE(?, hat), hair = COALESCE(?, hair), hair_c = COALESCE(?, hair_c), suit = COALESCE(?, suit), wsk = COALESCE(?, wsk), intro = COALESCE(?, intro), ver = ver + 1, updated_at = ? WHERE user_id = ?')
+    .bind(face, body, eyes, hat, hair, hairC, suit, wsk, intro, now(), user.id).run();
   return json({ me: await loadMe(env, user) });
 }
 async function saveMove(req, env, user) {
@@ -779,7 +856,7 @@ function cheat(c, k, b, at, env, user) {
   if (k === 'fishCoin' || k === 'farmCoin') { add(L.coins, k === 'fishCoin' ? 'fish' : 'farm'); return { msg: `${k === 'fishCoin' ? '낚시' : '텃밭'} 코인 +${n}` }; }
   if (k === 'pots') { for (const p of ['s', 'l', 'xl']) c.pots[p] = (c.pots[p] || 0) + 50; c.hp = derive(c).maxHp; return { msg: '물약 50개씩 + 체력 가득' }; }
   if (k === 'titles') { L.titles = TITLES.map(x => x.id); return { msg: `칭호 ${TITLES.length}개 모두 받음` }; }
-  if (k === 'skins') { c.hats = [...new Set([...c.hats, ...HATS.map(h => h.id), ...EYE_SKINS.filter(e => e.price).map(e => 'eye:' + e.id)])]; return { msg: '스킨 모두 받음' }; }
+  if (k === 'skins') { c.hats = [...new Set([...c.hats, ...HATS.map(h => h.id), ...EYE_SKINS.filter(e => e.id !== 'dot').map(e => 'eye:' + e.id), ...SUITS.map(s => 'suit:' + s.id), ...WSKINS.map(wskKey)])]; return { msg: '스킨 모두 받음' }; }
   if (k === 'gear') {   // 모든 칸에 최고 단계·최고 등급 + 최고 강화
     const g = Object.keys(GRADES).at(-1);
     for (const slot of Object.keys(SLOTS)) { c.equip[slot] = makeItem(slot, STAGES, g, null, rollOpts(slot, STAGES, g)); c.enh[slot] = ENH_MAX; }
@@ -807,6 +884,11 @@ async function admin(p, m, req, env, user, url) {
     const min = Math.max(0, Math.min(600, Math.floor(Number(body.min) || 0)));
     await DB.prepare('UPDATE village SET live_until = ? WHERE id = 1').bind(min ? t + min * 60e3 : 0).run(); WORLD.at = 0; await done('live', String(min));
     return json({ ok: true, until: min ? t + min * 60e3 : 0 });
+  }
+  if (m === 'POST' && p === '/api/admin/raid') {   // 지금부터 30초 모집하는 레이드를 엶 (시험용)
+    const res = await raidDO(env).fetch('https://raid/force', { method: 'POST' }), j = await res.json(); if (!res.ok) fail(400, j.error);
+    await toRooms(env, { act: 'raid', start: j.start }); await done('raid', String(j.start));
+    return json({ ok: true, start: j.start });
   }
   if (m === 'POST' && p === '/api/admin/cheat') {
     const k = String(body.k || ''); await done('cheat', `${k} ${body.n ?? ''}`.trim());
