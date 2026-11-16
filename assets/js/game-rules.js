@@ -120,6 +120,15 @@ export const WSKINS = [
 ];
 export const wskKey = w => `wsk:${w.t}:${w.id}`;
 // 레이드 전용 스킨 한 벌 (가진 것 키 목록): 머리·눈·의상·검·활·지팡이
+// 레이드 스킨 레벨: 같은 스킨을 또 얻으면 모임 (life.rsk = { 키: 모은 개수 })
+// Lv1 = 1개, Lv2 = 2개(1개 더), Lv3 = 4개(2개 더), Lv4 = 8개(4개 더) … 다음 레벨까지 필요한 수가 2배씩
+// 효과는 레벨마다 처음 효과의 +50%씩 (Lv10 = 5.5배)
+export const RSK = { max: 10, step: .5 };
+export const rskCount = (c, key) => (Array.isArray(c.hats) && c.hats.includes(key) ? Math.max(1, c.life?.rsk?.[key] || 1) : 0);
+export const rskLv = n => (n <= 0 ? 0 : Math.min(RSK.max, Math.floor(Math.log2(n)) + 1));
+export const rskNeed = lv => (lv >= RSK.max ? 0 : 2 ** lv);   // 다음 레벨이 되는 총 개수
+export const rskMul = lv => 1 + RSK.step * Math.max(0, lv - 1);
+export const rskFx = (fx, lv) => Object.fromEntries(Object.entries(fx || {}).map(([k, v]) => [k, Math.round(v * rskMul(lv) * 10) / 10]));
 export const raidSet = set => [...HATS.filter(h => h.raid === set).map(h => h.id), ...EYE_SKINS.filter(e => e.raid === set).map(e => 'eye:' + e.id),
   ...SUITS.filter(s => s.raid === set).map(s => 'suit:' + s.id), ...WSKINS.filter(w => w.raid === set).map(wskKey)];
 
@@ -208,7 +217,7 @@ export const spentPoints = c => c.str + c.dex + c.int + c.luk - 20;
 
 // ───────── 사냥터 (기획서 4장) ─────────
 export const LV_CAP = 55;            // 지금 열린 최고 레벨 (사냥터를 추가하면 올리기)
-export const HUNT = { offlineMax: 8 * 3600, offlineEff: .7, onlineGap: 90, bossEvery: 1800, deathLoss: .1, townRegen: .02, huntRegen: .02, goldMul: 1.15 };   // goldMul: 사냥에서 장비가 안 떨어지는 대신 골드 +15%
+export const HUNT = { offlineMax: 8 * 3600, offlineEff: .7, onlineGap: 90, bossEvery: 1800, deathLoss: .1, townRegen: .02, huntRegen: .02, goldMul: .6 };   // 2026-11-16 1.15 → .6 (사냥 골드가 낚시·알바보다 너무 많아서 절반쯤으로)   // goldMul: 사냥에서 장비가 안 떨어지는 대신 골드 +15%
 export const POTS = { s: { n: '작은 음료', i: '🥤', d: '체력 +50', price: 20, heal: () => 50 }, l: { n: '큰 음료', i: '🧋', d: '체력 +200', price: 70, heal: () => 200 }, xl: { n: '특대 음료', i: '🍹', d: '최대 체력의 50%', price: 200, heal: max => Math.round(max * .5) } };
 // 몬스터: n 이름, lv, hp, atk, exp, gold, c 색, s 크기, f 생김새
 // mg: 마법 공격 (마법 방어력으로 막음), 없으면 물리 공격 (물리 방어력으로 막음)
@@ -432,10 +441,11 @@ const addFx = (fx, o) => { for (const [k, v] of Object.entries(o)) fx[k] = Math.
 // 스킨 보유 효과 합계 (c.hats 에 가진 머리 장식 id 와 'eye:눈id')
 export function skinFx(c) {
   const fx = {}, own = Array.isArray(c.hats) ? c.hats : [];
-  for (const h of HATS) if (h.fx && own.includes(h.id)) addFx(fx, h.fx);
-  for (const e of EYE_SKINS) if (e.fx && own.includes('eye:' + e.id)) addFx(fx, e.fx);
-  for (const s of SUITS) if (own.includes('suit:' + s.id)) addFx(fx, s.fx);
-  for (const w of WSKINS) if (own.includes(wskKey(w))) addFx(fx, w.fx);
+  const add = (it, key) => { if (it.fx && own.includes(key)) addFx(fx, it.raid ? rskFx(it.fx, rskLv(rskCount(c, key))) : it.fx); };   // 레이드 스킨은 레벨만큼 세짐
+  for (const h of HATS) add(h, h.id);
+  for (const e of EYE_SKINS) add(e, 'eye:' + e.id);
+  for (const s of SUITS) add(s, 'suit:' + s.id);
+  for (const w of WSKINS) add(w, wskKey(w));
   return fx;
 }
 export function titleFx(c) { const fx = {}; for (const id of c.life?.titles || []) addFx(fx, titleOf(id)?.fx || {}); return fx; }

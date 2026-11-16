@@ -93,6 +93,13 @@ button { cursor: pointer; }
 h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.01em; text-wrap: balance; }
 
 /* ───── 로그인 화면 ───── */
+.boot { position: fixed; inset: 0; z-index: 9000; display: grid; place-items: center; background: linear-gradient(#bfe6ff, #e6f6d8); transition: opacity .35s; }
+.boot.done { opacity: 0; pointer-events: none; }
+.boot-in { display: grid; gap: 10px; justify-items: center; width: min(320px, 80vw); }
+.boot-t { font-family: Jua, sans-serif; font-size: 30px; color: #2b3a4a; }
+.boot-bar { width: 100%; height: 14px; border-radius: 99px; background: #fff; border: 2.5px solid #2b3a4a; overflow: hidden; }
+.boot-bar i { display: block; height: 100%; width: 3%; background: linear-gradient(90deg, #ffb36b, #e8553a); border-radius: 99px; transition: width .25s; }
+.boot small { color: #4a5a6a; font-size: 14px; }
 .gate { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; overflow-y: auto;
   padding-block: max(20px, env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-bottom, 0px));
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
@@ -279,9 +286,10 @@ body.hunting .side { display: none; }
 .bar span { position: relative; display: block; text-align: center; font-size: calc(12px * var(--fs)); font-weight: 700; line-height: 16px; font-variant-numeric: tabular-nums; }
 .lv { font-family: var(--font-display); color: var(--kimchi); margin-right: 5px; }
 .points { display: flex; justify-content: space-between; align-items: center; background: #fff4e0; border: 1px solid #f1d29c; border-radius: 10px; padding: 7px 10px; font-size: calc(14px * var(--fs)); font-weight: 700; font-variant-numeric: tabular-nums; }
-.stat { display: grid; grid-template-columns: minmax(0, 1fr) auto 36px; gap: 8px; align-items: center; padding: 7px 8px 7px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.stat { display: grid; grid-template-columns: minmax(0, 1fr) auto 36px 44px; gap: 8px; align-items: center; padding: 7px 8px 7px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
 .stat b { font-size: calc(15px * var(--fs)); }
 .stat { position: relative; }
+.stat .plus.p10 { font-size: 13px; padding: 0; }
 .stat .stn { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .stat .info { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--ink-soft); background: #fff; color: var(--ink-soft); font: italic 700 calc(12px * min(var(--fs), 1.15)) Georgia, serif; line-height: 1; padding: 0; display: grid; place-items: center; cursor: help; }
 .stat .info:hover, .stat .stn.open .info { background: var(--ink); border-color: var(--ink); color: #fff; }
@@ -377,6 +385,7 @@ body.hunting .side { display: none; }
 .sndset label { display: grid; grid-template-columns: 7.5em 1fr; align-items: center; gap: 8px; font-weight: 700; }
 .sndset label.chk { display: flex; gap: 6px; font-weight: 600; }
 .sndset input[type=range] { width: 100%; accent-color: #e8553a; }
+.skgrid.raid button { position: relative; } .skgrid.raid .rlv { position: absolute; left: 4px; top: 4px; z-index: 1; background: #b8392f; color: #fff; border-radius: 7px; padding: 1px 5px; font-size: 10.5px; line-height: 1.3; pointer-events: none; }
 .iconbtn.adm { background: #efe7ff; border-color: #6c4fc2; }
 .raidbox { position: absolute; top: 62px; left: 50%; transform: translateX(-50%); width: min(440px, calc(100% - 24px)); background: rgba(38,24,24,.94); color: #fff; border: 2px solid var(--ink); border-radius: 14px; padding: 8px 12px; z-index: 6; box-shadow: var(--shadow); }
 .raidbox .rb-top { display: flex; justify-content: space-between; align-items: center; font-size: calc(14px * var(--fs)); }
@@ -594,6 +603,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 <body>
 
 <!-- ─────────── 로그인 · 가입 ─────────── -->
+<div class="boot" id="boot" role="status" aria-live="polite"><div class="boot-in"><b class="boot-t">🥬 치복 타운</b><div class="boot-bar"><i id="bootBar"></i></div><small id="bootMsg">불러오는 중…</small></div></div>
 <section class="gate" id="gate">
   <div class="gate-inner">
     <div class="logo">
@@ -767,7 +777,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
       <button class="iconbtn" id="fsBtn" aria-label="전체화면" title="전체화면 (Esc로 나가기)">⛶</button>
       <button class="iconbtn" id="setBtn" aria-label="설정">⚙️</button>
     </div>
-    <div class="rcol"><div class="side"><button class="iconbtn adm" id="admBtn" hidden aria-label="관리자 화면" title="관리자 화면 (관리자만 보여요)">🛡️</button><button class="iconbtn" id="newsBtn" aria-label="마을 소식판" title="마을 소식판: 오늘 의뢰 · 공동 건설 · 마을 소식">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn" id="townBtn" aria-label="마을 바로가기" title="마을 바로가기">🏘️</button><button class="iconbtn" id="autoBtn" aria-label="자동 생활" title="자동 생활: 벌목·채광·알바·낚시·농사를 알아서 해요 (효율은 낮아요)" aria-pressed="false">🧺</button><button class="iconbtn" id="roamBtn" aria-label="자유 행동" title="자유 행동: 켜 두면 캐릭터가 알아서 돌아다니고 인사해요" aria-pressed="false">🚶</button></div>
+    <div class="rcol"><div class="side"><button class="iconbtn adm" id="admBtn" hidden aria-label="관리자 화면" title="관리자 화면 (관리자만 보여요)">🛡️</button><button class="iconbtn" id="newsBtn" aria-label="마을 소식판" title="마을 소식판: 오늘 의뢰 · 공동 건설 · 마을 소식">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn" id="townBtn" aria-label="마을 바로가기" title="마을 바로가기">🏘️</button><button class="iconbtn" id="autoBtn" aria-label="자동 생활" title="자동 생활: 벌목·채광·알바·낚시·농사 + 산책하며 인사까지 알아서 해요 (효율은 낮아요)" aria-pressed="false">🧺</button></div>
     <div class="zoom"><button class="iconbtn" id="zIn" aria-label="크게 보기">＋</button><button class="iconbtn" id="zOut" aria-label="작게 보기">－</button></div></div>
     <div class="banner" id="liveBanner" hidden>🔴 김치복 생방송 중!</div>
     <button class="roombtn" id="roomBtn" type="button" hidden>🚪 집에서 나가기</button>
@@ -823,7 +833,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, AUTO_LIFE, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx } from './assets/js/game-rules.js?v=__BUILD__';
@@ -1205,11 +1215,19 @@ let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 214748364
 
 // 바닥을 미리 한 장으로 그려 두기 (픽셀 바닥 + 둥근 모서리)
 // GK: 바닥 그림 해상도 배율 (확대해도 덜 흐리게). 휴대폰은 메모리 때문에 조금 낮게 (iOS 캔버스 한도 1,670만 픽셀 안)
-const GK = innerWidth <= 760 ? 1.45 : 1.6;
-const ground = document.createElement('canvas'); ground.width = Math.round(MW * T * GK); ground.height = Math.round(MH * T * GK);
+let GK = innerWidth <= 760 ? 1.2 : 1.6, ground = null;
+// 로딩 막대 (pct = 0~100)
+function bootStep(pct, msg) {
+  const b = document.getElementById('bootBar'), m = document.getElementById('bootMsg');
+  if (b) b.style.width = Math.max(parseFloat(b.style.width) || 0, pct) + '%'; if (m && msg) m.textContent = msg;
+  return new Promise(r => setTimeout(r));   // 화면이 막대를 다시 그릴 틈
+}
+function bootDone() { bootStep(100, '준비 끝!'); setTimeout(() => { const el = document.getElementById('boot'); if (el) { el.classList.add('done'); setTimeout(() => el.remove(), 400); } }, 150); }
 const GCOL = { [G]: ['#93cf74', '#8bc96c'], [PATH]: ['#ead6a6', '#e4cf9b'], [WATER]: ['#5db5dc', '#57aed6'], [STONE]: ['#ddd7ca', '#d4cdbf'], [SOIL]: ['#9b6b43', '#916340'], [DOCK]: ['#bb8752', '#b07c49'], [SAND]: ['#f0e2b6', '#eadaa9'], [GRAVEL]: ['#c9bfa9', '#c1b7a0'], [FOREST]: ['#72b05e', '#6aa857'] };
-(function paintGround() {
-  const g = ground.getContext('2d'), WP = MW * T, HP = MH * T; seed = 11; g.scale(GK, GK);
+async function paintGround(step) {
+  const cv = document.createElement('canvas'); cv.width = Math.round(MW * T * GK); cv.height = Math.round(MH * T * GK);
+  const g = cv.getContext('2d'); if (!g) throw new Error('캔버스를 못 만듦');
+  const WP = MW * T, HP = MH * T; seed = 11; g.scale(GK, GK);
   const r = (a, b) => a + rnd() * (b - a), pick = l => l[Math.floor(rnd() * l.length)];
   // 바닥 모양: soft(종류) 값을 4px 격자로 재고, 경계선을 선(벡터)으로 따서 칠함 → 확대해도 가장자리가 또렷함
   const ST = 4, NX = WP / ST + 1, NY = HP / ST + 1;
@@ -1237,6 +1255,7 @@ const GCOL = { [G]: ['#93cf74', '#8bc96c'], [PATH]: ['#ead6a6', '#e4cf9b'], [WAT
   }
   const blobs = (P, n, cols, rx, ry, al) => { g.save(); g.clip(P); for (let i = 0; i < n; i++) { g.globalAlpha = r(al[0], al[1]); g.fillStyle = pick(cols); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(rx[0], rx[1]), r(ry[0], ry[1]), r(0, 3), 0, 7); g.fill(); } g.restore(); g.globalAlpha = 1; };
 
+  await step(1);
   // 1) 풀밭: 큰 얼룩 → 작은 얼룩 → 풀잎
   g.fillStyle = '#8fcb70'; g.fillRect(0, 0, WP, HP);
   for (let i = 0; i < 260; i++) { g.globalAlpha = r(.12, .26); g.fillStyle = pick(['#a7db86', '#7fbd62', '#9ad37b', '#86c468']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(120, 260), r(70, 150), r(0, 3), 0, 7); g.fill(); }
@@ -1246,20 +1265,24 @@ const GCOL = { [G]: ['#93cf74', '#8bc96c'], [PATH]: ['#ead6a6', '#e4cf9b'], [WAT
     const x = r(0, WP), y = r(0, HP), dk = rnd() < .7; g.strokeStyle = dk ? 'rgba(52,120,48,.32)' : 'rgba(225,250,200,.35)'; g.lineWidth = r(1, 1.6);
     g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x - 1, y - 3, x - 2.5, y - r(4, 7)); g.moveTo(x + 2, y); g.quadraticCurveTo(x + 2.5, y - 3, x + 3.5, y - r(3, 6)); g.stroke();
   }
+  await step(2);
   // 2) 숲 바닥 (진한 풀, 가장자리는 서서히)
   { const f = field(FOREST); for (const [th, al] of [[.36, .3], [.46, .35], [.56, .4]]) { g.globalAlpha = al; g.fillStyle = '#5f9e4f'; g.fill(shape(f, th)); }
     g.globalAlpha = 1; const P = shape(f, .5); blobs(P, 260, ['#4f8d45', '#6eaa5c', '#578f48'], [10, 40], [6, 22], [.2, .4]);
     g.save(); g.clip(P); for (let i = 0; i < 500; i++) { const x = r(0, WP), y = r(0, HP); g.fillStyle = pick(['rgba(140,95,45,.35)', 'rgba(200,140,60,.3)', 'rgba(60,110,50,.5)']); g.beginPath(); g.ellipse(x, y, r(1.5, 3), r(1, 1.8), r(0, 3), 0, 7); g.fill(); } g.restore(); }
+  await step(3);
   // 3) 자갈 언덕
   { const f = field(GRAVEL), O = shape(f, .5), I = shape(f, .56);
     g.fillStyle = '#ad9f84'; g.fill(O); g.fillStyle = '#c8bda5'; g.fill(I);
     blobs(I, 260, ['#d3c9b2', '#bcb096', '#c2b69c'], [12, 40], [8, 24], [.3, .55]);
     g.save(); g.clip(I); for (let i = 0; i < 1400; i++) { const x = r(0, WP), y = r(0, HP), rr = r(1.2, 3.2); g.fillStyle = rnd() < .55 ? 'rgba(95,82,62,.35)' : 'rgba(255,255,255,.4)'; g.beginPath(); g.ellipse(x, y, rr, rr * .7, 0, 0, 7); g.fill(); } g.restore(); }
+  await step(4);
   // 4) 모래 (물가)
   { const f = field(SAND), O = shape(f, .5), I = shape(f, .55);
     g.fillStyle = '#d9c086'; g.fill(O); g.fillStyle = '#f1e2b4'; g.fill(I);
     blobs(I, 140, ['#f7ecc8', '#e8d6a0'], [10, 34], [6, 18], [.35, .6]);
     g.save(); g.clip(I); for (let i = 0; i < 900; i++) { g.fillStyle = rnd() < .5 ? 'rgba(170,135,80,.35)' : 'rgba(255,255,255,.5)'; g.beginPath(); g.arc(r(0, WP), r(0, HP), r(.7, 1.4), 0, 7); g.fill(); } g.restore(); }
+  await step(5);
   // 5) 물: 물가 거품 → 얕은 물 → 깊은 물 → 물결
   { const f = field(WATER), O = shape(f, .5), I = shape(f, .56), D = shape(f, .85);
     g.fillStyle = '#eaf7fb'; g.fill(O); g.fillStyle = '#62b9de'; g.fill(I); g.fillStyle = '#4aa6d2'; g.fill(D);
@@ -1267,12 +1290,14 @@ const GCOL = { [G]: ['#93cf74', '#8bc96c'], [PATH]: ['#ead6a6', '#e4cf9b'], [WAT
     g.save(); g.clip(D); g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 2;
     for (let i = 0; i < 520; i++) { const x = r(0, WP), y = r(0, HP), w = r(6, 12); g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + w / 2, y - 3, x + w, y); g.stroke(); }
     g.restore(); }
+  await step(6);
   // 6) 길: 테두리 → 흙 → 얼룩 · 자갈
   { const f = field(PATH), O = shape(f, .5), I = shape(f, .56);
     g.fillStyle = 'rgba(60,45,25,.12)'; g.save(); g.translate(0, 2); g.fill(O); g.restore();   // 살짝 그림자
     g.fillStyle = '#c9a96f'; g.fill(O); g.fillStyle = '#e6d09c'; g.fill(I);
     blobs(I, 420, ['#efdcae', '#dcc28a', '#e9d4a2', '#d8bd84'], [10, 34], [6, 16], [.35, .6]);
     g.save(); g.clip(I); for (let i = 0; i < 2600; i++) { const x = r(0, WP), y = r(0, HP), rr = r(.9, 2.4); g.fillStyle = pick(['rgba(140,105,60,.35)', 'rgba(255,248,225,.55)', 'rgba(170,130,80,.3)']); g.beginPath(); g.ellipse(x, y, rr, rr * .75, 0, 0, 7); g.fill(); } g.restore(); }
+  await step(7);
   // 7) 둥근 광장 (분수가 정가운데)
   { const X = PLAZA_C.x * T, Y = PLAZA_C.y * T, RR = (PLAZA_R + .45) * T;
     g.fillStyle = 'rgba(60,50,35,.18)'; g.beginPath(); g.arc(X, Y + 3, RR + 2, 0, 7); g.fill();
@@ -1291,11 +1316,13 @@ const GCOL = { [G]: ['#93cf74', '#8bc96c'], [PATH]: ['#ead6a6', '#e4cf9b'], [WAT
     g.fillStyle = '#cbc1ad'; g.beginPath(); g.arc(X, Y, 44, 0, 7); g.fill();
     g.strokeStyle = '#a99f8b'; g.lineWidth = 3; g.beginPath(); g.arc(X, Y, 44, 0, 7); g.stroke();
     g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 2; g.beginPath(); g.arc(X, Y, RR - 8, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); }
+  await step(8);
   // 8) 선착장 다리 (칸 그대로)
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (tileAt(x, y) === DOCK) {
     const X = x * T, Y = y * T; g.fillStyle = GCOL[DOCK][(x + y) % 2]; g.fillRect(X, Y, T, T);
     g.fillStyle = 'rgba(70,40,20,.35)'; for (let k = 7; k < T; k += 8) g.fillRect(X, Y + k, T, 1.5); if (x % 2 === 0) { g.fillStyle = 'rgba(70,40,20,.5)'; g.fillRect(X + 3, Y + 3, 2, 2); }
   }
+  await step(9);
   // 9) 꽃 (풀밭에만, 무리 지어)
   const bare = (x, y) => soft(PATH, x / T, y / T) < .35 && soft(SAND, x / T, y / T) < .35 && soft(GRAVEL, x / T, y / T) < .4 && Math.hypot(x / T - PLAZA_C.x, y / T - PLAZA_C.y) > PLAZA_R + .8;
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
@@ -1308,6 +1335,7 @@ const GCOL = { [G]: ['#93cf74', '#8bc96c'], [PATH]: ['#ead6a6', '#e4cf9b'], [WAT
       g.fillStyle = '#f2a33a'; g.beginPath(); g.arc(fx, fy, 1.2, 0, 7); g.fill();
     }
   }
+  await step(10);
   // 10) 텃밭: 귀퉁이가 둥근 밭 하나
   { let x0 = MW, y0 = MH, x1 = 0, y1 = 0; for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (tileAt(x, y) === SOIL) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
     if (x1 >= x0) {
@@ -1319,6 +1347,15 @@ const GCOL = { [G]: ['#93cf74', '#8bc96c'], [PATH]: ['#ead6a6', '#e4cf9b'], [WAT
         q.restore(); } },
         { flat: 1, path: R(X + 7, Y + 7, Wd - 14, Hh - 14, 16), c: 'rgba(90,55,25,.18)' }], 2.4);
     } }
+  if (!g.getImageData(cv.width >> 1, cv.height >> 1, 1, 1).data[3]) throw new Error('빈 그림');   // 메모리가 모자라면 휴대폰이 조용히 빈 그림을 줌
+  return cv;
+}
+// 바닥 그리기: 실패하면 해상도를 낮춰 다시 (휴대폰 메모리 부족 대비)
+const groundReady = (async () => {
+  for (const k of [GK, 1, .75, .5]) {
+    if (k > GK) continue; GK = k;
+    try { ground = await paintGround(n => bootStep(8 + n * 7, '마을 그리는 중…')); return; } catch (x) { console.warn('바닥 다시 그리기', k, x.message); }
+  }
 })();
 
 // ───────── 길 찾기 (칸 단위 A* + 직선으로 줄이기) ─────────
@@ -1747,7 +1784,6 @@ function bubbleAt(x, y, text, mine) {
 let last = performance.now(), clock = 0;
 function frame(now) {
   const dt = Math.min(.05, (now - last) / 1000); last = now; clock += dt;
-  if (!$('#app').hidden && !S.away) { update(dt, now); render(now); drawStick(); }
   requestAnimationFrame(frame);
 }
 // 화면 이동은 실제 화면 점(기기 픽셀) 단위로 맞춤: 배율 125%·150% 화면에서 1칸·2칸씩 들쭉날쭉 움직이며 떨리던 것 해결
@@ -1824,7 +1860,7 @@ function render(now) {
   // 화면에 보이는 부분만 바닥 그림
   const vx0 = cam.x - W / z / 2, vy0 = cam.y - H / z / 2, vw = W / z, vh = H / z;
   const sx = Math.max(0, Math.floor(vx0)), sy = Math.max(0, Math.floor(vy0)), sw = Math.min(MW * T - sx, Math.ceil(vw) + 2), sh = Math.min(MH * T - sy, Math.ceil(vh) + 2);
-  if (sw > 0 && sh > 0) ctx.drawImage(ground, sx * GK, sy * GK, sw * GK, sh * GK, sx, sy, sw, sh);
+  if (ground && sw > 0 && sh > 0) ctx.drawImage(ground, sx * GK, sy * GK, sw * GK, sh * GK, sx, sy, sw, sh);
   drawPlots(now);
   if (S.place) drawPlaceGhost();
   if (me.path.length && !STEER.on) { const d = me.path[me.path.length - 1]; ctx.strokeStyle = 'rgba(232,85,58,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(d.x, d.y + 6, 9 + Math.sin(now / 150) * 2, 4, 0, 0, 7); ctx.stroke(); }
@@ -1904,6 +1940,7 @@ const HUNT_ART = {
 const blitTo = (g, sp, x, y, sc = 1) => g.drawImage(sp.c, x - sp.ox * sc, y - sp.oy * sc, sp.w * sc, sp.h * sc);
 function paintHunt(f) {
   if (huntGround[f.id]) return huntGround[f.id];
+  if (innerWidth <= 760) for (const k in huntGround) delete huntGround[k];
   const A = HUNT_ART[f.id] || HUNT_ART.plain, K = 2, WP = HW * T, HP = HH * T;
   const cvs = document.createElement('canvas'); cvs.width = WP * K; cvs.height = HP * K; const g = cvs.getContext('2d'); g.scale(K, K); seed = 31 + f.tier * 97;
   const r = (a, b) => a + rnd() * (b - a), pick = l => l[Math.floor(rnd() * l.length)];
@@ -2180,10 +2217,10 @@ async function raidClaim(start) {
   if (!j) return toast('레이드 보상을 받지 못했어요');
   took(j); const r = j.raid, sk = r.skin;
   const skName = sk ? (sk.startsWith('eye:') ? EYE_SKINS.find(e => 'eye:' + e.id === sk) : sk.startsWith('suit:') ? SUITS.find(s => 'suit:' + s.id === sk) : sk.startsWith('wsk:') ? WSKINS.find(w => wskKey(w) === sk) : HATS.find(h => h.id === sk))?.n : '';
-  logAct(`레드 드래곤 레이드 +${r.gold} 골드`); if (sk) { sysMsg(`🐉 레이드 전용 스킨 획득: ${skName}`); emote(me, '🎉'); }
+  logAct(`레드 드래곤 레이드 +${r.gold} 골드`); if (sk) { sysMsg(`🐉 레이드 전용 스킨: ${skName} Lv.${r.skinLv || 1} (${r.skinN || 1}개)`); emote(me, '🎉'); }
   openModal(`<h3>🎉 레드 드래곤 처치!</h3><p>${r.n}명이 함께 싸웠어요. 내 피해 <b>${(r.dmg || 0).toLocaleString()}</b> (${r.rank}등)${r.dead ? ' · 쓰러졌지만 끝까지 함께했어요' : ''}</p>
     <ul class="raidinfo"><li>🪙 골드 <b>+${r.gold.toLocaleString()}</b></li><li>✨ 경험치 <b>+${r.exp.toLocaleString()}</b>${r.up ? ` · <b>레벨 업!</b>` : ''}</li>
-    ${sk ? `<li class="raidskin">🐉 <b>전용 스킨 획득!</b> ${skName}<br><small>캐릭터창 → 스킨에서 쓸 수 있어요</small></li>` : '<li class="muted">전용 스킨은 이번엔 안 나왔어요. 다음 정각에 또 도전!</li>'}</ul>
+    ${sk ? `<li class="raidskin">🐉 <b>${r.skinLv > 1 ? '전용 스킨 한 개 더!' : '전용 스킨 획득!'}</b> ${skName} <b>Lv.${r.skinLv || 1}</b>${r.skinLv > 1 && r.skinN === 2 ** (r.skinLv - 1) ? ' ⬆️ 레벨 업!' : ''}<br><small>${rskNeed(r.skinLv || 1) ? `다음 레벨까지 ${r.skinN || 1} / ${rskNeed(r.skinLv || 1)}개 · ` : ''}가지고만 있어도 효과 · 스킨샵에서 레벨 확인</small></li>` : '<li class="muted">전용 스킨은 이번엔 안 나왔어요. 다음 정각에 또 도전!</li>'}</ul>
     <button class="btn main" data-close>마을로</button>`);
 }
 function exitRaid() {
@@ -2634,7 +2671,7 @@ cv.addEventListener('wheel', e => { e.preventDefault(); setZoom(S.zoom * (e.delt
 const zoomKey = () => (innerWidth <= 760 ? 'cbt-zoom-m' : 'cbt-zoom-pc') + (HT ? '-hunt' : '');
 let zoomT = null;
 function setZoom(z) { S.zoom = Math.max(.7, Math.min(2.6, z)); clearTimeout(zoomT); zoomT = setTimeout(() => { try { localStorage.setItem(zoomKey(), S.zoom.toFixed(2)); } catch {} }, 300); }
-function loadZoom() { clearTimeout(zoomT); let z = 0; try { z = +localStorage.getItem(zoomKey()); } catch {} S.zoom = z ? Math.max(.7, Math.min(2.6, z)) : 1.6; }
+function loadZoom() { clearTimeout(zoomT); let z = 0; try { z = +localStorage.getItem(zoomKey()); } catch {} S.zoom = z ? Math.max(.7, Math.min(2.6, z)) : HT && innerWidth <= 760 ? 1.15 : 1.6; }
 loadZoom();
 $('#zIn').onclick = () => setZoom(S.zoom * 1.2); $('#zOut').onclick = () => setZoom(S.zoom / 1.2);
 
@@ -2980,11 +3017,12 @@ function addChat(m) {
 }
 function sysMsg(t) { addChat({ sys: true, text: t }); return false; }
 // ───────── 크기 설정: 화면(UI) · 글씨 · 채팅창 ─────────
-const UI_STEPS = [[.8, '80%'], [.9, '90%'], [1, '100%'], [1.1, '110%'], [1.2, '120%'], [1.3, '130%']];
+// PC 화면 크기: 예전 120%를 새 기본(100%)으로. 값은 실제 배율, 글자는 기본 대비
+const UI_STEPS = [[.96, '80%'], [1.08, '90%'], [1.2, '100%'], [1.32, '110%'], [1.44, '120%'], [1.56, '130%']];
 const FS_STEPS = [[.9, '작게'], [1, '보통'], [1.15, '크게'], [1.3, '아주 크게']];
 const CHAT_FS = [[.9, '작게'], [1, '보통'], [1.15, '크게'], [1.3, '아주 크게']];
 const SZ = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem('cbt-size') || '{}') || {}; } catch {} const pick = (v, list, d) => list.some(([x]) => x === v) ? v : d;
-  return { ui: pick(o.ui, UI_STEPS, 1), fs: pick(o.fs, FS_STEPS, 1), cfs: pick(o.cfs, CHAT_FS, 1), cw: +o.cw || 460, ch: +o.ch || 132 }; })();
+  return { ui: pick(o.ui, UI_STEPS, 1.2), fs: pick(o.fs, FS_STEPS, 1), cfs: pick(o.cfs, CHAT_FS, 1), cw: +o.cw || 460, ch: +o.ch || 132 }; })();
 const isPC = () => innerWidth > 760;
 function applySize(save) {
   const r = document.documentElement.style, pc = isPC(), ui = pc ? SZ.ui : 1;
@@ -3071,7 +3109,7 @@ function renderStats() {
   const D = derive();
   $('#ptsLeft').textContent = me.points;
   $('#presetBar').innerHTML = (me.presets || []).map((p, i) => `<button type="button" data-pr="${i}" aria-pressed="${i === me.preset}">${esc(p.n)}</button>`).join('') + '<button type="button" data-pr="name" aria-label="지금 프리셋 이름 바꾸기">✏️</button>';
-  $('#statRows').innerHTML = Object.entries(STATS).map(([k, s]) => `<div class="stat"><span class="stn"><b>${s.i} ${s.n}</b><button type="button" class="info" aria-label="${s.n}: 무엇이 오르는지 보기" aria-expanded="false">i</button><span class="tip" role="tooltip">${s.d}</span></span><span class="val">${D[k]}${D.b[k] ? `<em> (+${D.b[k]})</em>` : ''}</span><button class="plus" data-s="${k}" aria-label="${s.n} 올리기" ${me.points ? '' : 'disabled'}>+</button></div>`).join('');
+  $('#statRows').innerHTML = Object.entries(STATS).map(([k, s]) => `<div class="stat"><span class="stn"><b>${s.i} ${s.n}</b><button type="button" class="info" aria-label="${s.n}: 무엇이 오르는지 보기" aria-expanded="false">i</button><span class="tip" role="tooltip">${s.d}</span></span><span class="val">${D[k]}${D.b[k] ? `<em> (+${D.b[k]})</em>` : ''}</span><button class="plus" data-s="${k}" aria-label="${s.n} 올리기" ${me.points ? '' : 'disabled'}>+</button><button class="plus p10" data-s="${k}" data-n="10" aria-label="${s.n} 10 올리기 (포인트가 모자라면 남은 만큼)" title="한 번에 10 (모자라면 남은 만큼)" ${me.points ? '' : 'disabled'}>+10</button></div>`).join('');
   const rows = [[D.magic ? '공격력' : '공격력 ⚔️', D.atk], [D.magic ? '마력 ⚔️' : '마력', D.mag], ['물리 방어', D.def], ['마법 방어', D.mdef], ['최대 체력', D.maxHp.toLocaleString()], ['공격 간격', `${D.gap.toFixed(2)}초`], ['이동 속도', `${Math.round(D.spd * 100)}%`], ['치명타', `${D.crit.toFixed(1)}%`], ['치명타 피해', `×${D.critM.toFixed(2)}`], ['회피', `${D.eva.toFixed(1)}%`], ['필살기 확률', `${D.sp.toFixed(1)}%`], ['필살기 피해', `×${D.spMul.toFixed(2)}`], ['골드 보너스', `+${D.goldB.toFixed(1)}%`], ['강화 확률', `+${D.enhB.toFixed(2)}%p`]];
   $('#derived').innerHTML = rows.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('');
   $('#resetStats').textContent = `🔄 능력치 초기화 · ${goldTxt(me.lv * 100)}`; $('#resetStats').disabled = !spentPoints(me);
@@ -3080,7 +3118,7 @@ function renderStats() {
 $('#statRows').addEventListener('click', e => {
   const inf = e.target.closest('.info');
   if (inf) { const on = !inf.parentElement.classList.contains('open'); document.querySelectorAll('#statRows .stn.open').forEach(x => { x.classList.remove('open'); x.querySelector('.info').setAttribute('aria-expanded', 'false'); }); if (on) { inf.parentElement.classList.add('open'); inf.setAttribute('aria-expanded', 'true'); } return; }
-  const k = e.target.closest('[data-s]')?.dataset.s; if (k) addStat(k);
+  const b = e.target.closest('[data-s]'); if (b) addStat(b.dataset.s, +b.dataset.n || 1);
 });
 addEventListener('pointerdown', e => { if (!e.target.closest('#statRows .stn')) document.querySelectorAll('#statRows .stn.open').forEach(x => { x.classList.remove('open'); x.querySelector('.info').setAttribute('aria-expanded', 'false'); }); });
 function renderEquip() {
@@ -3293,9 +3331,9 @@ function laterSheet(id, icon, name) {
 }
 // 능력치 찍기 (서버가 남은 포인트를 확인)
 let statBusy = false;
-async function addStat(k) {
+async function addStat(k, n = 1) {
   if (statBusy || !me.points) return; statBusy = true;
-  try { took(await api('/api/stats', { add: { [k]: 1 } })); } catch (e) { toast(e.message); } finally { statBusy = false; }
+  try { took(await api('/api/stats', { add: { [k]: Math.min(n, me.points) } })); } catch (e) { toast(e.message); } finally { statBusy = false; }
 }
 
 $('#setBtn').onclick = () => openModal(`<h3>⚙️ 설정</h3>${soundSetHtml()}${sizeSetHtml()}<div class="actions">
@@ -3512,10 +3550,8 @@ $('#townBtn').onclick = () => {
 
 // ───────── 자유 행동: 켜 두면 캐릭터가 알아서 돌아다니고, 근처 사람에게 인사 ─────────
 const ROAM = { on: false, next: 2, pause: 0 };
-try { ROAM.on = localStorage.getItem('cbt-roam') === '1'; } catch {}
-function setRoam(on) { ROAM.on = on; ROAM.next = 1; ROAM.pause = 0; $('#roamBtn').setAttribute('aria-pressed', String(on)); try { localStorage.setItem('cbt-roam', on ? '1' : '0'); } catch {} }
-setRoam(ROAM.on);
-$('#roamBtn').onclick = () => { setRoam(!ROAM.on); toast(ROAM.on ? '🚶 자유 행동 ON · 캐릭터가 알아서 돌아다니고 인사해요 (바닥을 누르면 잠깐 멈춰요)' : '자유 행동 OFF'); };
+function setRoam(on) { ROAM.on = on; ROAM.next = 1; ROAM.pause = 0; }   // 자유 행동은 자동 생활에 합쳐짐 (산책 차례)
+try { localStorage.removeItem('cbt-roam'); } catch {}
 const POI = () => PLACES.map(p => [p[2], p[3]]);
 // ───────── 알바·자동 낚시 중: 그 자리에서만 (카페 앞 서성이기 · 강가에서 낚시) ─────────
 const BUSY = () => (HT || RD ? null : me.job ? 'job' : F.auto ? 'fish' : me.life?.auto?.on ? 'auto' : null);
@@ -3531,12 +3567,20 @@ const AUTO_ST = [
   { k: 'cafe', i: '☕', say: ['☕ 커피 나왔어요~', '🧋 버블티 한 잔!', '☕ 어서 오세요!'], at: () => door('cafe') },
   { k: 'fish', i: '🎣', say: ['🎣 입질이 온다…', '🐟 잡았다!', '🎣 오늘은 대어!'], at: () => [FISH_AT.x, FISH_AT.y] },
   { k: 'farm', i: '🌱', say: ['🌱 쑥쑥 자라라', '💧 물 주는 중', '🥕 수확!'], at: () => [PLOTS[4].x, PLOTS[4].y + T] },
+  { k: 'walk', i: '🚶', walk: 1 },   // 산책: 돌아다니며 인사 (예전 자유 행동)
 ];
 function autoNode(k) { let b = null, bd = 1e9; for (const n of NODES) { if (n.k !== k) continue; const d = Math.hypot(n.x * T - me.x, n.y * T - me.y); if (d < bd) { bd = d; b = n; } } return b ? [(b.x + .5) * T, (b.y + 1.5) * T] : [me.x, me.y]; }
 function autoPace(dt) {
   if (me.sit >= 0) standUp(me);
   if (me.path.length) return;
-  const st = AUTO_ST[AUTOV.i % AUTO_ST.length], [hx, hy] = st.at();
+  const st = AUTO_ST[AUTOV.i % AUTO_ST.length];
+  if (st.walk) {   // 산책 12~20초
+    if (!AUTOV.walkT) { AUTOV.walkT = 12 + Math.random() * 8; ROAM.next = 0; }
+    if ((AUTOV.walkT -= dt) <= 0) { AUTOV.walkT = 0; AUTOV.i++; return; }
+    if (modal.hidden && !GA && !S.place && (ROAM.next -= dt) <= 0) roamStep();
+    return;
+  }
+  const [hx, hy] = st.at();
   if (Math.hypot(me.x - hx, me.y - hy) > 1.6 * T && AUTOV.work <= 0) { if (!walkNear(me, hx, hy)) AUTOV.i++; AUTOV.work = 0; AUTOV.go = 1; return; }
   if (AUTOV.go) { AUTOV.go = 0; AUTOV.work = 9 + Math.random() * 5; }   // 도착: 9~14초 일함
   AUTOV.work -= dt; AUTOV.tick -= dt;
@@ -3559,7 +3603,7 @@ async function autoSet(on) {
     took(await api(on ? '/api/auto/start' : '/api/auto/stop', {}));
     AUTOV.i = Math.floor(Math.random() * AUTO_ST.length); AUTOV.work = 0; me.path = [];
     const P = AUTO_LIFE.perHour(me.lv);
-    if (on) { toast('🧺 자동 생활 ON · 벌목·채광·알바·낚시·농사를 알아서 해요'); sysMsg(`🧺 자동 생활: 1시간에 약 🪵 ${P.wood} · 🪨 ${P.stone} · 🪙 ${Math.round(P.gold).toLocaleString()} · 🐚 ${P.fish} · 🌻 ${P.farm} (창을 닫아도 최대 8시간)`); }
+    if (on) { toast('🧺 자동 생활 ON · 벌목·채광·알바·낚시·농사, 틈틈이 산책하며 인사도 해요'); sysMsg(`🧺 자동 생활: 1시간에 약 🪵 ${P.wood} · 🪨 ${P.stone} · 🪙 ${Math.round(P.gold).toLocaleString()} · 🐚 ${P.fish} · 🌻 ${P.farm} (창을 닫아도 최대 8시간)`); }
     else toast('🧺 자동 생활을 멈췄어요');
   } catch (x) { toast(x.message); }
   autoUi();
@@ -3585,6 +3629,9 @@ function roamTick(dt) {
   if (BUSY()) return busyPace(dt);
   if (!ROAM.on || HT || !modal.hidden || me.path.length || GA || S.place) return;
   if ((ROAM.pause -= dt) > 0 || (ROAM.next -= dt) > 0) return;
+  roamStep();
+}
+function roamStep() {
   ROAM.next = 3 + Math.random() * 6;
   const vis = people.filter(shown), near = vis.filter(p => Math.hypot(p.x - me.x, p.y - me.y) < 2.5 * T), far = vis.filter(p => Math.hypot(p.x - me.x, p.y - me.y) < 10 * T);
   const r = Math.random();
@@ -3829,7 +3876,9 @@ function skinShop(b, keep) {
     <h3 class="sub">의상</h3><div class="skgrid shop" id="shopSuits">${suits.map(s => tile('suit:' + s.id, s.n, me.hats.includes('suit:' + s.id), me.suit === s.id, s.price, s.fx)).join('')}</div>
     ${WT.map(([t, tn]) => `<h3 class="sub">무기 스킨 · ${tn}</h3><div class="skgrid shop shopW">${WSKINS.filter(w => w.t === t && !w.raid).map(w => tile(wskKey(w), w.n, me.hats.includes(wskKey(w)), me.wsk?.[t] === w.id, w.price, w.fx)).join('')}</div>`).join('')}
     <h3 class="sub">🐉 레드 드래곤 레이드 전용</h3><p class="muted" style="margin:0 0 6px">매시 정각 레이드에서만 확률로 얻어요. 팔지 않아요.</p>
-    <div class="skgrid shop raid" id="shopRaid">${rset.map(k => { const it = rItem(k); return tile('raid|' + k, it.n, me.hats.includes(k), worn(k), 0, it.fx); }).join('')}</div>
+    <p class="muted" style="margin:0 0 6px">같은 스킨을 또 얻으면 <b>레벨이 올라 효과가 세져요</b> (레벨마다 +${RSK.step * 100}%). 다음 레벨까지 1개 → 2개 → 4개 → 8개 …</p>
+    <div class="skgrid shop raid" id="shopRaid">${rset.map(k => { const it = rItem(k), n = rskCount(me, k), lv = rskLv(n), need = rskNeed(lv);
+      return tile('raid|' + k, it.n, !!n, worn(k), 0, rskFx(it.fx, Math.max(1, lv))).replace(/<\/button>$/, `<b class="rlv">${n ? `Lv.${lv}${need ? ` · ${n}/${need}` : ' · 최고'}` : '🔒 미보유'}</b></button>`); }).join('')}</div>
     <p class="muted">머리 장식을 안 쓰면 장착한 모자(장비)가 보여요.</p><button class="close" data-close>닫기</button>`, el => {
     requestAnimationFrame(() => {
       el.querySelectorAll('#shopHats [data-x]').forEach(t => skinTile(t.querySelector('canvas'), { ...look, hat: t.dataset.x.slice(4) }));
@@ -4457,11 +4506,17 @@ $('#newsBtn').onclick = () => openNews(); $('#evChip').onclick = () => openNews(
 
 let toastT; function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2600); }
 // 이모지 → 직접 그린 그림 (화면 글자는 자동, 캔버스는 fillTextIco)
-preloadIcons(); iconize(document.body);
 
 // 처음 열 때: 로그인 유지 중이면 바로 마을로
 showAuth('login');
-if (token) api('/api/me').then(j => { applyMe(j.me); enterTown(j); }).catch(() => {});
+{
+  const meP = token ? groundReady.then(() => bootStep(82, '내 정보 불러오는 중…')).then(() => api('/api/me')).catch(() => null) : null;
+  Promise.all([groundReady, meP]).then(async ([, j]) => {
+    if (j) { await bootStep(92, '마을에 들어가는 중…'); applyMe(j.me); enterTown(j); await new Promise(r => setTimeout(r, 200)); }   // 첫 화면을 한 번 그린 뒤에 걷음
+    bootDone();
+  });
+  setTimeout(bootDone, 25e3);   // 혹시 멈춰도 25초 뒤에는 걷음
+}
 </script>
 </body>
 </html>
