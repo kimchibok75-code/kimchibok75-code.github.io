@@ -483,18 +483,6 @@ export function worldFx(w, t) {
   return fx;
 }
 
-// ───── 시간 (하루 = 실제 30분, 모두 같은 시계) ─────
-export const DAY_MS = 30 * 60e3;
-export const gameHour = t => ((t / DAY_MS + .25) % 1) * 24;   // 0~24 (실제 시각 0에 아침 6시)
-// 어두운 정도 0~1: 7~17시 낮, 17~20시 해 질 녘, 20~4시 밤, 4~7시 새벽
-export function darkness(h) {
-  const N = .66;
-  if (h >= 7 && h < 17) return 0;
-  if (h >= 17 && h < 20) return (h - 17) / 3 * N;
-  if (h >= 4 && h < 7) return (1 - (h - 4) / 3) * N;
-  return N;
-}
-
 // ───── 스킬 (직업마다 6종, 사냥터에서 쿨타임마다 자동 시전, 마나 없음) ─────
 // k: hit(피해: m 배 × x 번, stun 초 동안 몬스터 멈춤, dot 독 피해 배율) · heal(최대 체력 v%) · shield(다음 공격 x번 막음) · buff(dur 초 동안 atk% · crit%p)
 // r: 희귀도 1 보통 · 2 희귀 · 3 전설 (뽑기 확률이 다름)

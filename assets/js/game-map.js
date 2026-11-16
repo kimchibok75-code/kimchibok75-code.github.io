@@ -22,7 +22,7 @@ export const noise2 = n2;
 
 // ───── 지역 ─────
 export const PLAZA = { x: 40, y: 31 };                     // 광장 한가운데 (분수)
-export const PLAZA_C = { x: 40.5, y: 31.5 }, PLAZA_R = 7.4;   // 둥근 광장 (칸 단위 가운데·반지름)
+export const PLAZA_C = { x: 40, y: 31.3 }, PLAZA_R = 7.4;   // 분수 그림의 가운데와 같게   // 둥근 광장 (칸 단위 가운데·반지름)
 // 핵심 구역 (집을 지을 수 없는 곳): 광장 둘레 타원
 export const inCore = (x, y) => ((x + .5 - 40) / 18) ** 2 + ((y + .5 - 31) / 15) ** 2 < 1;
 const forestZ = (x, y) => ((x + .5 - 21) / 14) ** 2 + ((y + .5 - 9) / 8) ** 2 + .28 * n2(x / 5, y / 5, 3) < 1;
@@ -143,6 +143,7 @@ for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
   let k = v === GRAVEL ? 'stone' : r2 < (v === FOREST ? .55 : .25) ? 'pine' : 'round';
   // 둥근 나무 일부를 자작나무·벚나무·단풍나무로 (좌표로 정해서 난수 순서는 그대로 → 자원·집 자리 안 바뀜)
   if (k === 'round') k = ['round', 'round', 'birch', 'cherry', 'maple'][(x * 7 + y * 13) % 5];
+  if (v === G && (x * 11 + y * 17) % 5 === 0) k = 'stone';   // 풀밭에도 돌
   const d = { x, y, k, s: .85 + R() * .35 }; block(x, y);
   if (edge < 2) DECO.push(d); else NODES.push({ i: NODES.length, k: d.k === 'stone' ? 'rock' : 'tree', x, y, v: d.k, s: d.s });
 }
@@ -190,5 +191,16 @@ export function canHouse(x, y, houses = []) {
 }
 // 집 안 (방 하나). 위쪽 2줄은 벽
 export const ROOM_W = 11, ROOM_H = 8, ROOM_DOOR = { x: 5, y: 7 };
+// 물가: 이 칸 둘레(8방향)에 물이 있으면 낚시할 수 있음
+export const nearWater = (tx, ty) => tileAt(tx, ty) !== WATER && [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]].some(([a, b]) => tileAt(tx + a, ty + b) === WATER);
+// 물을 누른 자리(픽셀)에서 가장 가까운, 걸을 수 있는 물가 칸
+export function shoreNear(px, py, r = 9) {
+  const cx = px / T, cy = py / T; let best = null, bd = 1e9;
+  for (let y = Math.floor(cy) - r; y <= Math.floor(cy) + r; y++) for (let x = Math.floor(cx) - r; x <= Math.floor(cx) + r; x++) {
+    if (isSolid(x, y) || !nearWater(x, y)) continue;
+    const d = Math.hypot(x + .5 - cx, y + .5 - cy); if (d < bd) { bd = d; best = { x, y }; }
+  }
+  return best;
+}
 // 걸을 수 있는 곳인지 (픽셀 좌표)
 export const walkablePx = (px, py) => !isSolid(Math.floor(px / T), Math.floor(py / T));
