@@ -514,6 +514,34 @@ body.raiding .huntbox, body.raiding .placebar, body.raiding .roombtn { display: 
 .tagok { font-size: calc(12px * var(--fs)); font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--paper-2); white-space: nowrap; }
 .tagok.good { background: #dff3e2; color: #2e7a3a; } .tagok.bad { background: #fde3dd; color: #b8371f; }
 /* 사냥 상황판 */
+/* 임무창 (마을 주민 NPC 임무, 2026-11-17) */
+.qbox { position: absolute; left: 10px; top: 58px; width: 236px; background: rgba(251, 252, 247, .94); border: 2px solid var(--ink); border-radius: var(--r); box-shadow: var(--shadow); padding: 8px 10px; display: grid; gap: 6px; font-size: calc(13px * var(--fs)); z-index: 3; }
+.qbox .qb-top { display: flex; align-items: center; gap: 6px; }
+.qbox .qb-top b { white-space: nowrap; font-family: var(--font-display); font-size: calc(16px * var(--fs)); }
+.qbox .qb-top span { margin-left: auto; color: #6b7480; font-size: calc(11.5px * var(--fs)); white-space: nowrap; }
+.qbox .qbmin { border: 0; background: none; padding: 2px; width: 24px; height: 24px; cursor: pointer; color: var(--ink); }
+.qbox .qbmin svg { width: 18px; height: 18px; }
+.qbox.min .qbmin { transform: rotate(180deg); }
+.qbox.min ul, .qbox.min .qhint { display: none; }
+.qbox ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.qbox li { display: grid; grid-template-columns: 24px 1fr; gap: 6px; align-items: center; padding: 5px 6px; border-radius: 9px; background: rgba(31, 42, 58, .06); cursor: pointer; }
+.qbox li:hover { background: rgba(31, 42, 58, .12); }
+.qbox li.ok { background: #fff1c9; box-shadow: inset 0 0 0 1.5px #f2a516; }
+.qbox li .ic { font-size: 18px; text-align: center; }
+.qbox li b { display: block; font-weight: 700; line-height: 1.3; }
+.qbox li small { display: block; color: #6b7480; font-size: calc(11.5px * var(--fs)); }
+.qbox li.ok small { color: #9a5f00; font-weight: 700; }
+.qbox .qhint { margin: 0; color: #6b7480; font-size: calc(12px * var(--fs)); line-height: 1.4; }
+body.hunting .qbox { display: none; }
+.npcd { display: grid; grid-template-columns: 92px 1fr; gap: 12px; align-items: center; margin: 4px 0 10px; }
+.npcd canvas { width: 92px; height: 104px; background: #eef4e6; border-radius: 14px; border: 2px solid var(--ink); }
+.npcd b { font-family: var(--font-display); font-size: 1.15em; }
+.npcsay { position: relative; margin: 6px 0 0; background: #fff; border: 2px solid var(--ink); border-radius: 12px; padding: 9px 11px; line-height: 1.45; }
+.npcq { display: grid; gap: 4px; padding: 10px 12px; border-radius: 12px; background: rgba(31, 42, 58, .06); margin-bottom: 10px; }
+.npcq .qn { font-weight: 700; }
+.npcq small { color: #6b7480; }
+.npcbtns { display: flex; gap: 8px; }
+.npcbtns .btn { flex: 1; }
 .huntbox { position: absolute; right: 10px; top: 60px; width: 264px; background: rgba(251, 252, 247, .96); border: 2px solid var(--ink); border-radius: var(--r); box-shadow: var(--shadow); padding: 12px; display: grid; gap: 8px; font-size: calc(14px * var(--fs)); }
 .hb-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-family: var(--font-display); font-size: calc(19px * var(--fs)); }
 .hb-top span { font-family: var(--font-body); font-size: calc(13px * var(--fs)); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
@@ -558,6 +586,7 @@ body.hunting .chat-log { height: 64px; }
   .mbar i { display: block; height: 100%; width: 0; background: var(--gold); }
   .mbar.hp i { background: #ef6a50; }
   .rcol { top: 54px; }
+  .qbox { top: 54px; width: min(210px, calc(100vw - 86px)); padding: 6px 8px; }
   .huntbox { left: 10px; right: 10px; top: 56px; width: auto; padding: 8px 10px; gap: 5px; font-size: calc(13px * var(--fs)); }
   .hb-top { font-size: calc(16px * var(--fs)); }
   .hb-stats { grid-template-columns: repeat(2, 1fr); gap: 2px 12px; }
@@ -885,6 +914,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
     <div class="banner" id="liveBanner" hidden>🔴 김치복 생방송 중!</div>
     <button class="roombtn" id="roomBtn" type="button" hidden>🚪 집에서 나가기</button>
     <div class="placebar" id="placeBar" hidden><span id="placeMsg"></span><button class="mini main" id="placeOk" type="button">여기에 짓기</button><button class="mini" id="placeNo" type="button">취소</button></div>
+    <section class="qbox" id="questBox" hidden aria-label="임무"></section>
     <section class="raidbox" id="raidBox" hidden aria-label="레이드">
       <div class="rb-top"><b>🐉 레드 드래곤 레이드</b><span id="raidN">1명</span></div>
       <div class="rb-bar"><i id="raidHp"></i><span id="raidHpT">100%</span></div>
@@ -940,7 +970,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, fishHit, FISH_RIVER, FISH_SEA, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
-  dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx } from './assets/js/game-rules.js?v=__BUILD__';
+  dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp } from './assets/js/game-rules.js?v=__BUILD__';
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
 import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico, icoImgFlat } from './assets/js/game-icons.js?v=__BUILD__';
 import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSolid, noise2, inCore, BUILDINGS as MAP_BUILDINGS, SPOTS, PORTAL, BACK, FISH_AT, PLOTS, BENCHES, NODES, DECO,
@@ -2038,6 +2068,7 @@ function update(dt, now) {
   rodTick(now);
   for (const f of TF) f.t += dt; while (TF.length && TF[0].t > 1.4) TF.shift();
   if (me.room) { follow(dt, ROOM_W * T, ROOM_H * T); setPlace(`${S.roomNick || ''}님의 집`); return; }
+  npcTick(dt);
   follow(dt, MW * T, MH * T);
   const tx0 = Math.floor(me.x / T), ty0 = Math.floor(me.y / T), v = tileAt(tx0, ty0);
   const place = ty0 >= 58 && (v === SAND || seaAt(tx0, ty0 + 1) || seaAt(tx0, ty0 + 2)) ? '바닷가' : v === STONE ? '광장' : v === DOCK ? '강가 선착장' : v === SOIL ? '텃밭' : v === FOREST ? '벌목 숲' : v === GRAVEL ? '채굴 언덕' : tx0 >= 70 ? '사냥터 포탈' : inCore(tx0, ty0) ? '마을 가운데' : '마을 외곽';
@@ -2143,8 +2174,10 @@ function render(now) {
   if (vis(FSIGN.x, FSIGN.y)) list.push({ y: FSIGN.y, f: () => drawFishSpot(now) });
   const chars = [me, ...people.filter(shown)];
   for (const c of chars) if (vis(c.x, c.y)) list.push({ y: c.y, f: () => drawChar(ctx, c.x, c.y + 6, c, clock + (c.seed || 0)) });
+  for (const p of NPC.list) if (vis(p.x, p.y)) list.push({ y: p.y, f: () => drawChar(ctx, p.x, p.y + 6, p, clock + p.seed) });
   list.sort((a, b) => a.y - b.y).forEach(o => o.f());
   drawTool(); drawRods(chars.filter(c => vis(c.x, c.y)), now);
+  for (const p of NPC.list) if (vis(p.x, p.y)) npcTag(p, now);
   for (const c of chars) if (vis(c.x, c.y)) nameTag(c, now);
   drawTownFloats();
 }
@@ -3273,6 +3306,8 @@ function tap(sx, sy) {
     return;
   }
   if (S.place) return setPlaceAt(w.x, w.y);   // 집 자리 고르는 중
+  const hitN = NPC.list.find(p => Math.abs(w.x - p.x) < 22 && w.y > p.y - 108 && w.y < p.y + 14);
+  if (hitN) return openNpc(hitN);   // 주민: 바로 대화 (알바·자동 중에도)
   const bk = BUSY();
   if (bk) {   // 알바 중엔 카페 앞, 자동 낚시 중엔 강가에서만
     if (hitP) return openProfile(hitP);
@@ -3312,6 +3347,149 @@ function tap(sx, sy) {
   if (tileAt(Math.floor(w.x / T), Math.floor(w.y / T)) === WATER) return fishAtWater(w.x, w.y);
   walkNear(me, w.x, w.y);
 }
+
+// ───────── 마을 주민 NPC · 임무 (2026-11-17) ─────────
+// 주민과 임무는 game-rules.js의 npcList (3시간마다 새 주민 5명). 진행 상황은 서버의 life.npc + life.cnt
+// 머리 위 말풍선: ❗ 임무 있음 · 회색 ❓ 하는 중 · 노란 ❓ 다 함(보상 받으러 오기) · 💌 안부 받을 사람
+const NPC = { blk: -1, list: [], sig: '' };
+let NPC_TILES = null;
+function npcTiles() {   // 주민이 서 있을 자리: 마을 가운데의 길·광장 칸 (사방이 트인 곳)
+  if (NPC_TILES) return NPC_TILES;
+  NPC_TILES = [];
+  for (let y = 2; y < MH - 2; y++) for (let x = 2; x < MW - 2; x++) {
+    const v = tileAt(x, y); if ((v !== PATH && v !== STONE) || !inCore(x, y)) continue;
+    let ok = true; for (let dy = -1; dy <= 1 && ok; dy++) for (let dx = -1; dx <= 1; dx++) if (TOWN.bad(x + dx, y + dy)) { ok = false; break; }
+    if (ok) NPC_TILES.push([x, y]);
+  }
+  return NPC_TILES;
+}
+function npcSync() {
+  const blk = npcBlk(Date.now()); if (blk === NPC.blk) return;
+  const tiles = npcTiles(); if (!tiles.length) return;
+  NPC.blk = blk; const used = [];
+  NPC.list = npcList(blk).map(d => {
+    let tile = tiles[d.sp % tiles.length];
+    for (let n = 0; n < tiles.length; n++) { const t2 = tiles[(d.sp + n * 37) % tiles.length]; if (used.every(u => Math.hypot(u[0] - t2[0], u[1] - t2[1]) >= 7)) { tile = t2; break; } }
+    used.push(tile);
+    const hx = tile[0] * T + T / 2, hy = tile[1] * T + T / 2;
+    return { ...d, npc: true, hx, hy, x: hx, y: hy, path: [], moving: false, dir: d.sp % 2 ? 1 : -1, seed: d.sp % 100 / 30, speed: 70, sit: -1, equip: {}, cls: 'sword', wsk: {}, hat: d.sp % 5 === 0 ? 'sprout' : 'none', next: 1 + Math.random() * 5, bubble: null };
+  });
+  NPC.sig = ''; renderQuests();
+}
+const npcQ = i => { const st = me.life?.npc; return st && st.blk === NPC.blk && st.q ? st.q[i] || null : null; };
+const talkFor = i => NPC.list.find(p => p.task.to === i && npcQ(p.i)?.s === 0 && !npcQ(p.i).t);   // 나에게 안부를 전해 달라고 한 주민
+const npcDone = p => { const q = npcQ(p.i); return !!q && q.s === 0 && npcProg(me, q, p.task) >= p.task.v; };
+function npcMark(p) {
+  if (talkFor(p.i)) return '💌';
+  const q = npcQ(p.i);
+  if (!q) return '!';
+  if (q.s === 1) return '';
+  return npcDone(p) ? '?' : '…';
+}
+const NPC_IDLE = ['오늘 날씨 좋다~', '김치복님 방송 언제 하지?', '분수 소리 듣기 좋네요', '어제 큰 물고기 봤어요!', '텃밭 작물이 잘 자라네', '레이드 드래곤 무섭다…', '흥얼흥얼~ ♪', '이 마을 정말 좋아요'];
+function npcTick(dt) {
+  npcSync();
+  for (const p of NPC.list) {
+    stepChar(p, dt);
+    if (!p.moving && Math.hypot(me.x - p.x, me.y - p.y) < 3 * T) { p.dir = me.x < p.x ? -1 : 1; p.next = Math.max(p.next, 2); continue; }   // 가까이 오면 멈춰서 쳐다봄
+    if (p.moving || (p.next -= dt) > 0) continue;
+    p.next = 4 + Math.random() * 7;
+    if (!npcMark(p) && Math.random() < .35) { say(p, NPC_IDLE[Math.floor(Math.random() * NPC_IDLE.length)], 3500); continue; }   // 할 일 다 하면 가끔 혼잣말
+    walkTo(p, p.hx + (Math.random() - .5) * 5 * T, p.hy + (Math.random() - .5) * 4 * T);   // 제자리 근처를 천천히 서성임
+  }
+}
+function npcTag(p, now) {
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '700 11.5px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(p.name).width + 12;
+  ctx.fillStyle = 'rgba(46,125,74,.94)'; rr(ctx, p.x - tw / 2, p.y - 66, tw, 17, 8.5); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.fillText(p.name, p.x, p.y - 57.5);
+  const m = npcMark(p);
+  if (!m) { if (p.bubble && p.bubble.until > now) bubbleAt(p.x, p.y - 68, p.bubble.text); return; }
+  // 머리 위 말풍선: ❗ / ❓ (위아래로 살랑살랑)
+  const y = p.y - 88 + Math.sin(now / 260 + p.seed * 3) * 2.5, x = p.x, w = 26, h = 26, gold = m !== '…';
+  ctx.fillStyle = m === '?' ? '#fff4cf' : '#fff'; ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 2;
+  rr(ctx, x - w / 2, y - h / 2, w, h, 9); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x - 5, y + h / 2 - .5); ctx.lineTo(x, y + h / 2 + 6); ctx.lineTo(x + 5, y + h / 2 - .5); ctx.fill(); ctx.stroke();
+  ctx.fillRect(x - 4, y + h / 2 - 2.5, 8, 3);
+  if (m === '💌') { ctx.font = '16px sans-serif'; fillTextIco(ctx, '💌', x, y + 1); return; }
+  ctx.font = '900 19px "IBM Plex Sans KR", sans-serif'; ctx.lineWidth = 3.5; ctx.lineJoin = 'round';
+  const ch = m === '…' ? '?' : m; ctx.strokeStyle = gold ? '#7a4a00' : '#5d6670'; ctx.strokeText(ch, x, y + 1); ctx.fillStyle = gold ? '#ffc21a' : '#c9ced5'; ctx.fillText(ch, x, y + 1);
+}
+// 주민 대화 창
+async function openNpc(p) {
+  p.path = []; p.moving = false; p.dir = me.x < p.x ? -1 : 1; p.next = 8;
+  const tf = talkFor(p.i);
+  if (tf) {   // 안부 전하기 임무의 받는 사람
+    const j = await act('/api/npc/talk', { i: p.i }); if (!j) return;
+    sfx('pop'); say(p, '어머, 고마워요! 😊', 3000); renderQuests();
+    return npcSheet(p, `${tf.name}님이 안부를 전했다고요? 정말 고마워요! 저도 잘 지낸다고 전해 주세요 😊`);
+  }
+  npcSheet(p);
+}
+const NPC_WHERE = { fish: '물가를 누르면 낚시해요', wood: '벌목 숲의 나무를 누르세요', stone: '채굴 언덕의 바위를 누르세요', crops: '텃밭에서 다 자란 작물을 거둬요', water: '텃밭에서 물을 줘요', wish: '광장 분수를 누르세요', job: '카페에서 알바를 해요', gacha: '가챠센터에서 장비를 뽑아요', talk: '그 주민을 찾아가서 누르면 돼요 (머리 위 💌)' };
+function npcSheet(p, said) {
+  const q = npcQ(p.i), t = p.task, st = me.life?.npc, n = st && st.blk === NPC.blk ? npcActive(st) : 0, prog = q ? Math.min(t.v, npcProg(me, q, t)) : 0, done = npcDone(p);
+  let line, btns;
+  if (!q) { line = t.ask; btns = '<button class="btn" data-close>다음에</button><button class="btn main" data-x="take">📜 임무 받기</button>'; }
+  else if (q.s === 1) { line = `${t.thx} 다음에 또 놀러 와요~`; btns = '<button class="btn main" data-close>잘 있어요!</button>'; }
+  else if (done) { line = '벌써 다 했어요? 정말 고마워요! 이건 제 작은 성의예요.'; btns = '<button class="btn main" data-x="done">🎁 보상 받기</button>'; }
+  else { line = t.k === 'talk' ? `${NPC.list[t.to]?.name || ''}에게 안부 전하는 거, 잊지 말아 주세요!` : '천천히 해도 괜찮아요~ 기다리고 있을게요.'; btns = '<button class="btn" data-x="drop">포기하기</button><button class="btn main" data-close>알겠어요</button>'; }
+  const rew = `${goldTxt(npcGold(me.lv))} · ✨ ${npcExp(me.lv).toLocaleString()} · 🐚 또는 🌻 1~2`;
+  openModal(`<div class="npcd"><canvas id="npcPic"></canvas><div><b>${esc(p.name)}</b><p class="npcsay">${esc(said || line)}</p></div></div>
+    <div class="npcq"><span class="qn">${t.i} ${esc(t.n)}</span>${q && q.s === 0 ? `<small>진행 ${prog} / ${t.v}</small>${bar(prog, t.v, done ? 'ok' : '')}` : ''}<small>보상: ${rew}</small>${q?.s === 1 ? '' : `<small>💡 ${NPC_WHERE[t.k] || ''}</small>`}</div>
+    ${!q && n >= NPC_MAX ? `<p class="muted">임무는 한 번에 ${NPC_MAX}개까지 받을 수 있어요. 하던 임무를 먼저 끝내 주세요.</p>` : ''}
+    <div class="npcbtns">${btns}</div>`, el => {
+    portrait(el.querySelector('#npcPic'), { ...p, dir: 1 }, 1.5);
+    wire(el, async x => {
+      if (x === 'take') {
+        const j = await act('/api/npc/take', { i: p.i }); if (!j) return;
+        sfx('pop'); say(p, '부탁해요!', 2500); toast(`📜 임무를 받았어요: ${t.i} ${t.n}`); logAct(`임무 받음: ${t.n}`); closeModal(); renderQuests(); return;
+      }
+      if (x === 'done') {
+        const j = await act('/api/npc/done', { i: p.i }); if (!j) return;
+        const d = j.npcDone; sfx('coin'); emote(me, '🎉'); say(p, t.thx, 4000);
+        toast(`📜 임무 완료! ${goldTxt(d.gold)} · ${d.ck === 'fish' ? '🐚' : '🌻'} +${d.coin}`); sysMsg(`📜 ${p.name}의 임무 완료: ${t.n} (+${d.gold.toLocaleString()} 골드)`); logAct(`임무 완료: ${t.n}`);
+        closeModal(); renderQuests(); return;
+      }
+      if (x === 'drop') {
+        if (!confirm('이 임무를 포기할까요? 지금까지 한 것은 사라져요.')) return;
+        const j = await act('/api/npc/drop', { i: p.i }); if (!j) return;
+        say(p, '아쉽지만 괜찮아요…', 2500); closeModal(); renderQuests();
+      }
+    });
+  });
+}
+// 임무창 (화면 왼쪽 위): 받은 임무 · 진행 · 다음 주민이 오기까지. 줄을 누르면 그 주민에게 걸어감
+function renderQuests() {
+  const box = $('#questBox'); if (!box) return;
+  const st = me.life?.npc, on = !$('#app').hidden && !HT && !RD && NPC.list.length > 0;
+  const mine = on && st && st.blk === NPC.blk ? NPC.list.filter(p => npcQ(p.i)?.s === 0) : [];
+  const avail = NPC.list.filter(p => !npcQ(p.i)).length;
+  const left = Math.ceil(npcLeft(Date.now()) / 1000), lt = left >= 3600 ? `${Math.floor(left / 3600)}:${String(Math.floor(left % 3600 / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}` : fmtSec(left);
+  const rows = mine.map(p => {
+    const t = p.task, q = npcQ(p.i), pr = Math.min(t.v, npcProg(me, q, t)), ok = pr >= t.v, go = t.k === 'talk' && !ok ? NPC.list[t.to] : p;
+    return [ok, t.i, t.n, ok ? `❓ ${p.name}에게 보상 받으러 가기` : t.k === 'talk' ? `💌 ${go?.name || ''} 찾아가기` : `${p.name} · ${pr} / ${t.v}`, go?.i];
+  });
+  const sig = JSON.stringify([on, NPC.blk, rows, avail, lt]); if (sig === NPC.sig) return; NPC.sig = sig;
+  box.hidden = !on || (!mine.length && !avail);
+  if (box.hidden) return;
+  box.innerHTML = `<div class="qb-top"><b>📜 임무 ${mine.length}/${NPC_MAX}</b><span title="새 주민이 오면 받은 임무는 사라져요">⏳ ${lt}</span><button class="qbmin" type="button" aria-label="임무창 접기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-7 7 7"/></svg></button></div>
+    ${rows.length ? `<ul>${rows.map(([ok, ic, n, sub, gi]) => `<li class="${ok ? 'ok' : ''}" data-go="${gi}"><span class="ic">${ic}</span><span><b>${esc(n)}</b><small>${esc(sub)}</small></span></li>`).join('')}</ul>` : ''}
+    ${avail && mine.length < NPC_MAX ? `<p class="qhint">머리 위에 ❗ 말풍선이 있는 주민을 누르면 임무를 받아요 (${avail}명)</p>` : ''}`;
+  iconize(box);
+}
+setInterval(renderQuests, 1000);
+document.addEventListener('click', e => {
+  const box = $('#questBox'); if (!box || !box.contains(e.target)) return;
+  if (e.target.closest('.qbmin')) { box.classList.toggle('min'); try { localStorage.setItem('cbt-qmin', box.classList.contains('min') ? '1' : '0'); } catch {} return; }
+  const li = e.target.closest('[data-go]'); if (!li) return;
+  const p = NPC.list[+li.dataset.go]; if (!p) return;
+  if (BUSY()) return busyToast();
+  if (me.room) return toast('집에서 나간 뒤에 찾아가 주세요');
+  if (Math.hypot(me.x - p.x, me.y - p.y) < 2 * T) return openNpc(p);
+  walkNear(me, p.x, p.y + T, () => openNpc(p)); toast(`🚶 ${p.name}에게 가는 중`);
+});
+try { if (localStorage.getItem('cbt-qmin') === '1') $('#questBox').classList.add('min'); } catch {}
 
 // ───────── 모달 ─────────
 const modal = $('#modal'), sheet = $('#sheet');
@@ -3893,7 +4071,7 @@ function took(j) {
     for (const id of j.newTitles || []) { const x = titleOf(id); toast(`🏷️ 새 칭호 「${x.n}」!`); sysMsg(`🏷️ 새 칭호를 얻었어요: 「${x.n}」 · ${fxText(x.fx) || '효과 없음'} · 캐릭터창의 칭호를 눌러 달 수 있어요`); emote(me, '🎉'); }
     if (j.bonus) { toast(`🎁 오늘 첫 접속 보너스 🪙 ${j.bonus.toLocaleString()}`); sysMsg(`🎁 오늘 첫 접속 보너스: 골드 ${j.bonus.toLocaleString()} (레벨 × 20) · 📋 소식판에서 오늘 의뢰를 확인해 보세요!`); setTimeout(() => { if (modal.hidden && !guideOn()) openNews('daily'); }, 900); }
     if (j.daily?.length) tookDaily(j.daily);
-    renderNewsDot();
+    renderNewsDot(); renderQuests();
     if (me.lv > lv0) {
       sfx('levelup'); emote(me, '🎉'); if (HT) floatText(me.x, me.y - 90, 'LEVEL UP!', '#ffd166', 22, 1.8);
       toast(`🎉 레벨 ${me.lv}! 능력치 포인트 +${(me.lv - lv0) * 4}`); sysMsg(`레벨 ${me.lv} 달성! 캐릭터창 → 능력치에서 포인트를 찍어 보세요`); logAct(`레벨 ${me.lv} 달성`);
@@ -5100,6 +5278,7 @@ const GUIDE = () => [
     ['🏘️ 바로가기', '오른쪽 버튼. 가고 싶은 곳을 누르면 그 자리로 바로 이동하고 시설 창도 열려요.'],
     ['채팅·이모트', '아래 채팅 칸은 같은 채널의 모두에게 보여요. 😊 버튼으로 이모트. 귓속말·친구·거래는 없어요.'],
     ['캐릭터창', '내 캐릭터를 누르면 능력치·장비·스킬·스킨·칭호를 볼 수 있어요.'],
+    ['📜 주민 임무', '마을에 주민 5명이 돌아다녀요(3시간마다 새 주민). 머리 위 ❗ 말풍선을 누르면 소소한 임무를 받고, 다 하면 ❓로 바뀌어요. 다시 찾아가면 보상! 받은 임무는 왼쪽 위 임무창에 보여요 (한 번에 3개까지).'],
   ]],
   ['⚔️', '사냥', [
     ['시작', '마을 오른쪽 끝 보라색 포탈을 눌러 사냥터를 골라요. 사냥은 자동으로 해요.'],

@@ -4,7 +4,7 @@ import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BOD
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, AUTO_FISH, FISH_SHOP, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
-  dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle } from '../../assets/js/game-rules.js';
+  dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp } from '../../assets/js/game-rules.js';
 import { canHouse, isSolid, NODES, BACK, tileAt, WATER, seaAt } from '../../assets/js/game-map.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
@@ -260,7 +260,7 @@ async function play(env, user, fn) {
   for (let tries = 0; tries < 4; tries++) {
     const r = await env.DB.prepare('SELECT * FROM characters WHERE user_id = ?').bind(user.id).first();
     const W = await world(env), c = toChar(r), at = now(), out = {}; c._adm = !!user.is_admin; c.gfx = worldFx(W, at); c._w = W;
-    const lv0 = c.lv; dailyState(c, at);
+    const lv0 = c.lv; dailyState(c, at); npcState(c, at);
     if (!c.hunt) {   // 마을: 체력이 1초에 2%씩 참
       const max = derive(c).maxHp;
       c.hp = Math.min(max, Math.round(c.hp + Math.max(0, (at - (c.hpAt || at)) / 1000) * max * HUNT.townRegen)); c.hpAt = at;
@@ -536,6 +536,35 @@ const GAME = {
   },
   // ───── 4단계 ─────
   // 칭호 달기 (가진 것만)
+  // 마을 주민 임무: 받기 · 안부 전하기 · 보상 받기 · 포기 (주민과 임무는 시간으로 정해짐 → npcList)
+  '/api/npc/take'(c, b, at) {
+    const st = npcState(c, at), p = npcList(st.blk)[Number(b.i)];
+    if (!p) fail(400, '지금 마을에 없는 주민이에요');
+    if (own(st.q, String(p.i))) fail(400, '이미 받은 임무예요');
+    if (npcActive(st) >= NPC_MAX) fail(400, `임무는 한 번에 ${NPC_MAX}개까지 받을 수 있어요`);
+    st.q[p.i] = { b: p.task.k === 'talk' ? 0 : c.life.cnt[p.task.k] || 0, s: 0 };
+    return { log: ['npc-take', p.task.n] };
+  },
+  '/api/npc/talk'(c, b, at) {
+    const st = npcState(c, at), L = npcList(st.blk), to = Number(b.i);
+    const p = L.find(p => p.task.to === to && st.q[p.i]?.s === 0 && !st.q[p.i].t);
+    if (!p) fail(400, '전할 안부가 없어요');
+    st.q[p.i].t = 1;
+    return { talked: p.i };
+  },
+  '/api/npc/done'(c, b, at) {
+    const st = npcState(c, at), p = npcList(st.blk)[Number(b.i)], q = p && own(st.q, String(p.i)) ? st.q[p.i] : null;
+    if (!q || q.s !== 0) fail(400, '받은 임무가 없어요');
+    if (npcProg(c, q, p.task) < p.task.v) fail(400, '아직 임무를 다 하지 못했어요');
+    q.s = 1; const gold = npcGold(c.lv), exp = Math.round(npcExp(c.lv) * (1 + (derive(c).expB || 0) / 100)), ck = Math.random() < .5 ? 'fish' : 'farm', coin = 1 + (Math.random() < .5 ? 1 : 0);
+    c.gold += gold; addExp(c, exp); c.life.coins[ck] += coin; cntAdd(c, 'npc');
+    return { npcDone: { i: p.i, gold, coin, ck }, lexp: exp, log: ['npc-done', p.task.n] };
+  },
+  '/api/npc/drop'(c, b, at) {
+    const st = npcState(c, at), i = String(Number(b.i));
+    if (!own(st.q, i) || st.q[i].s !== 0) fail(400, '받은 임무가 없어요');
+    delete st.q[i];
+  },
   '/api/title'(c, b) { const id = String(b.id || ''); if (!c.life.titles.includes(id)) fail(400, '아직 없는 칭호예요'); c.title = id; },
   // 낚시점: 낚싯대 · 미끼 올리기 (낚시 코인)
   '/api/fish/shop'(c, b) {

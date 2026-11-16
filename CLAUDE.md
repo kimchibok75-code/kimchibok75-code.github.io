@@ -417,6 +417,17 @@
   - 새 건물을 만들면 이 틀로: `bsOpen(b, { tag, wal, tabs, tab, body, help, foot, live, ready }, 버튼 처리 함수, keep)`
 - 예전 `sheetHead`, `skBox`, `#farmSheet` 1초 갱신은 없앰. 소원 분수·낚시터(물가) 창은 아직 예전 모양
 
+### 마을 주민 NPC 임무 — 2026-11-17
+- **3시간마다 새 주민 5명** (이름·생김새·임무가 시간으로 정해짐 → 화면·서버 같은 계산). game-rules.js `NPC_BLOCK, NPC_N, NPC_MAX(3), NPC_NAMES, NPC_TASKS, npcList, npcState, npcProg, npcGold, npcExp`
+  - 임무 종류: 물고기·목재·석재·작물·물 주기·소원·카페 알바·장비 뽑기(모두 `cnt` 기록으로 셈) + **안부 전하기**(`talk`: 다른 주민을 찾아가 누르기)
+  - 저장 `life.npc = { blk, q: { 주민 번호: { b: 받을 때 cnt, s: 0 하는 중 / 1 끝, t: 안부 전함 } } }`. 새 주민이 오면(blk 바뀜) 받은 임무는 사라짐
+  - 보상: 골드 `400 + 레벨×80`, 경험치 사냥 방치 3분어치(`huntIdleExp ÷ 20`), 🐚/🌻 1~2
+  - 서버 `/api/npc/take|talk|done|drop` (index.js), `play()`가 매번 `npcState`로 시간대를 맞춤
+- 화면(game.html "마을 주민 NPC · 임무"): 주민은 마을 가운데 길·광장 칸(`npcTiles`)에 서서 근처를 서성임, 내가 가까이 가면 멈춰서 쳐다봄
+  - 머리 위 말풍선(`npcTag`): ❗ 임무 있음 · 회색 ❓ 하는 중 · 노란 ❓ 다 함 · 💌 안부 받을 사람. 할 일이 없으면 가끔 혼잣말
+  - 누르면 대화창(`openNpc`, `npcSheet`). 알바·자동 중에도 대화는 됨
+  - **임무창** `#questBox` (왼쪽 위, `renderQuests`, 1초마다): 받은 임무·진행·새 주민까지 남은 시간. 줄을 누르면 그 주민에게 걸어감. ▲로 접기(localStorage `cbt-qmin`)
+
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감
 - 다 지은 공동 건설(꽃밭·등대 등)을 지도에 그림으로 보여 주기

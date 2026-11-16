@@ -519,6 +519,52 @@ export function checkDaily(c, t) {
   return got;
 }
 
+// ───────── 마을 주민 NPC 임무 (2026-11-17) ─────────
+// 3시간마다 주민 5명이 새로 옴 (시간으로 정해져서 화면·서버가 똑같이 계산). 주민마다 소소한 임무 하나, 한 번에 3개까지 받음
+// 저장: life.npc = { blk, q: { 주민 번호: { b: 받을 때의 cnt 값, s: 0 하는 중 / 1 끝, t: 안부 전함 } } }
+export const NPC_BLOCK = 3 * 3600e3, NPC_N = 5, NPC_MAX = 3;
+export const NPC_NAMES = ['떡집 할머니', '우체부 민수', '꼬마 하늘이', '어부 박씨', '꽃집 수아', '나무꾼 철이', '여행자 루루', '고양이 집사 은비', '농부 덕배', '화가 모네', '제빵사 호두', '기자 나래',
+  '탐정 콩이', '음유시인 솔', '약초꾼 다래', '견습 대장장이 쇠돌', '산책하는 할아버지', '수다쟁이 봄이', '모험가 지호', '낚시광 도리'];
+// k = 세는 기록(cnt) · v = [최소, 최대] · ask = 부탁하는 말 · thx = 끝났을 때 말 ({v} = 개수, {to} = 안부 받을 주민)
+export const NPC_TASKS = [
+  { k: 'fish', n: '물고기 {v}마리 낚기', v: [2, 4], i: '🎣', ask: ['오늘 저녁은 생선구이가 먹고 싶어… 물고기 {v}마리만 낚아 줄래?', '강가에서 물고기 {v}마리만 잡아다 줘요!'], thx: '와, 싱싱하다! 고마워요!' },
+  { k: 'wood', n: '목재 {v}개 모으기', v: [8, 16], i: '🪵', ask: ['울타리가 부서졌어요. 목재 {v}개만 모아 줄래요?', '장작이 다 떨어졌네… 나무 좀 베어 줄 수 있어? 목재 {v}개!'], thx: '덕분에 따뜻하게 지내겠어요!' },
+  { k: 'stone', n: '석재 {v}개 모으기', v: [6, 12], i: '🪨', ask: ['돌담을 쌓고 싶은데 석재 {v}개만 캐다 줄래요?', '채굴 언덕에서 석재 {v}개만 부탁해요!'], thx: '튼튼한 돌담이 되겠어요!' },
+  { k: 'crops', n: '작물 {v}개 수확하기', v: [2, 4], i: '🌾', ask: ['잔치 음식을 만들 거예요. 텃밭 작물 {v}개만 거둬 줄래요?', '신선한 채소가 필요해! 작물 {v}개만 수확해 줘'], thx: '이걸로 맛있는 걸 만들게요!' },
+  { k: 'water', n: '텃밭에 물 {v}번 주기', v: [1, 2], i: '💧', ask: ['요즘 비가 안 와서 걱정이에요. 텃밭에 물 좀 줄래요?', '텃밭 작물들이 목말라 보여… 물 {v}번만 부탁해!'], thx: '작물들이 좋아하겠어요!' },
+  { k: 'wish', n: '분수에 소원 빌기', v: [1, 1], i: '⛲', ask: ['광장 분수에 소원을 빌면 이루어진대요. 저 대신 한 번 빌어 줄래요?'], thx: '제 소원도 이루어지겠죠? 헤헤' },
+  { k: 'job', n: '카페 알바 하기', v: [1, 1], i: '☕', ask: ['카페 사장님이 일손이 모자라대요. 알바 한 번만 도와줄래요?'], thx: '사장님이 엄청 고마워하셨어요!' },
+  { k: 'gacha', n: '장비 뽑기 {v}번', v: [1, 3], i: '🎰', ask: ['가챠센터 새 상자가 궁금해! 대신 {v}번만 뽑아 봐 줄래?'], thx: '오, 뭐 나왔어? 다음엔 나도 해 봐야지!' },
+  { k: 'talk', n: '{to}에게 안부 전하기', v: [1, 1], i: '💌', ask: ['{to}에게 안부 좀 전해 줄래요? 요즘 통 못 봤거든요', '이 편지를 {to}에게 전해 주세요!'], thx: '안부 잘 전해 줬군요! 고마워요' },
+];
+export const npcBlk = t => Math.floor(t / NPC_BLOCK);
+export const npcLeft = t => (npcBlk(t) + 1) * NPC_BLOCK - t;
+// 그 시간대 주민 목록: { i, name, face, body, eyes, hair, hairC, sp(자리 번호 씨앗), task: { k, n, v, i, ask, thx, to } }
+export function npcList(blk) {
+  const r = seeded('npc' + blk), names = [...NPC_NAMES], pick = a => a[Math.floor(r() * a.length)], out = [];
+  for (let i = 0; i < NPC_N; i++) {
+    const name = names.splice(Math.floor(r() * names.length), 1)[0];
+    out.push({ i, name, face: pick(FACES), body: pick(BODIES), eyes: pick(['dot', 'dot', 'happy']), hair: pick(HAIRS.filter(h => h.id !== 'none')).id, hairC: pick(HAIR_COLORS), sp: Math.floor(r() * 1e6), tk: Math.floor(r() * NPC_TASKS.length), vr: r(), ar: r() });
+  }
+  for (const p of out) {
+    const T0 = NPC_TASKS[p.tk], v = T0.v[0] + Math.floor(p.vr * (T0.v[1] - T0.v[0] + 1));
+    const to = T0.k === 'talk' ? out[(p.i + 1 + Math.floor(p.ar * (NPC_N - 1))) % NPC_N] : null;
+    const fill = s => s.replace('{v}', v).replace('{to}', to?.name || '');
+    p.task = { k: T0.k, v, i: T0.i, n: fill(T0.n), ask: fill(T0.ask[Math.floor(p.ar * T0.ask.length)]), thx: T0.thx, to: to ? to.i : -1 };
+  }
+  return out;
+}
+export function npcState(c, t) {
+  const L = c.life, blk = npcBlk(t);
+  if (!L.npc || typeof L.npc !== 'object' || L.npc.blk !== blk || !L.npc.q || typeof L.npc.q !== 'object') L.npc = { blk, q: {} };
+  return L.npc;
+}
+export const npcProg = (c, q, task) => task.k === 'talk' ? (q.t ? 1 : 0) : Math.max(0, (c.life.cnt[task.k] || 0) - q.b);
+export const npcActive = st => Object.values(st.q).filter(q => q.s === 0).length;
+// 보상: 골드 (사냥 약 2분어치) + 경험치 (사냥 방치 약 3분어치) + 코인 1~2
+export const npcGold = lv => 400 + lv * 80;
+export const npcExp = lv => Math.round(huntIdleExp(lv) / 20);
+
 // 마을 사건: 2시간마다 한 번, 40분 동안. 시간으로 정해져서 화면·서버가 똑같이 계산 (저장할 것 없음)
 export const EVENT_BLOCK = 2 * 3600e3, EVENT_LEN = 40 * 60e3;
 export const EVENTS = [
