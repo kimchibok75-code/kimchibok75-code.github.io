@@ -3,7 +3,6 @@
 //   node scripts/update.mjs live youtube → 일부만
 // 새 영상 / 방송 시작을 감지하면 OneSignal 푸시를 보냅니다.
 import { config, get, readJson, writeJson, decodeXml, steamDetails, sendPush } from './lib.mjs';
-import { syncSheet, enrichAndSave } from './sheet.mjs';
 import { koreanSummaries } from './translate.mjs';
 
 const tasks = process.argv.slice(2);
@@ -163,9 +162,14 @@ async function updateWorkshop() {
 }
 
 // ───────────────────────────── 모드 저장소 ─────────────────────────────
+// data/mods.json이 원본 (구글 시트와 연동하지 않음). 목록 추가·삭제는 add-mod.mjs로.
+// 여기서는 스팀 정보(썸네일·구독자·태그)만 새로 가져와 붙임
 async function updateMods() {
-  const db = await syncSheet();
-  await enrichAndSave(db);
+  const db = readJson('mods.json', { categories: [], items: [] });
+  const details = await steamDetails(db.items.map(m => m.steamId));
+  for (const m of db.items) if (m.steamId && details[m.steamId]) m.steam = details[m.steamId];
+  const changed = writeJson('mods.json', { ...db, updatedAt: Date.now() });
+  console.log(`[mods] ${db.items.length}개 (${changed ? '변경됨' : '변경 없음'})`);
 }
 
 // ───────────────────────────── 팬카페 최신글 ─────────────────────────────

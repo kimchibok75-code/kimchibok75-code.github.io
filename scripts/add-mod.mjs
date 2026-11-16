@@ -16,9 +16,9 @@ if (args[0] === '--remove') {
   const key = args[1];
   const id = steamIdOf(key) || key;
   const before = db.items.length;
-  db.items = db.items.filter(m => !(m.source === 'manual' && (m.steamId === id || m.url === key)));
+  db.items = db.items.filter(m => !(m.steamId === id || m.url === key));
   writeJson('mods.json', { ...db, updatedAt: Date.now() });
-  console.log(`삭제 ${before - db.items.length}개 (시트에서 온 모드는 시트에서 지워 주세요)`);
+  console.log(`삭제 ${before - db.items.length}개`);
   process.exit(0);
 }
 
@@ -80,19 +80,19 @@ if (!desc && raw) {
 }
 
 // 같은 스팀 모드가 이미 있으면 그 항목을 수정
-const existing = db.items.find(m => steamId && m.steamId === steamId && (m.source === 'manual' || !catArg)) || db.items.find(m => m.id === `${category}-${steamId}`);
+const existing = db.items.find(m => steamId && m.steamId === steamId && (!catArg || m.category === category)) || db.items.find(m => m.id === `${category}-${steamId}`);
 const id = existing?.id || `${category}-${steamId || Buffer.from(url).toString('base64url').slice(-12)}`;
 const versions = (steam?.tags || []).filter(t => /^\d+\.\d+$/.test(t)).sort();
 const item = {
   id, steamId, url: steamId ? `https://steamcommunity.com/sharedfiles/filedetails/?id=${steamId}` : url,
   name: steam?.title || url,
   desc: desc || existing?.desc || '',
-  category: existing?.source === 'sheet' ? existing.category : category,
-  section: existing?.source === 'sheet' ? existing.section : section,
+  category,
+  section,
   version: versions.at(-1) || '',
   kind: steam?.collection ? 'collection' : 'mod',
   order: existing?.order ?? db.items.filter(m => m.category === category).length,
-  source: existing?.source || 'manual',
+  source: 'manual',
   addedAt: existing?.addedAt || Date.now(),
   steam: steam || undefined,
 };
@@ -102,6 +102,6 @@ if (!db.categories.some(c => c.key === item.category)) {
   db.categories.push({ key: item.category, label: item.category, icon: item.category === '추천' ? '👍' : '🧩', desc: item.category === '추천' ? '김치복 추천 모드' : '', notes: [] });
 }
 writeJson('mods.json', { ...db, updatedAt: Date.now() });
-console.log(`${existing ? (existing.source === 'sheet' ? '이미 시트에 있음 (정보만 갱신)' : '수정') : '추가'}: [${item.category} > ${item.section}] ${item.name}`);
+console.log(`${existing ? '수정' : '추가'}: [${item.category} > ${item.section}] ${item.name}`);
 console.log(`  설명: ${item.desc || '(없음)'}`);
 console.log(`  버전: ${versions.filter(v => ['1.6', '1.7'].includes(v)).join(', ') || '1.6/1.7 표시 없음'} · 구독 ${steam?.subs ?? '-'}`);

@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1794817031471,
+  "updatedAt": 1794817094125,
   "categories": [
     {
       "key": "김치복제작",
@@ -96,7 +96,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 0,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "Kimchianz Xenotype (Beta)",
@@ -127,7 +127,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 1,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] Kimchi and Kimchi Fried Rice",
@@ -161,7 +161,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 2,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] Mini Expeditions",
@@ -193,7 +193,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 3,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] Idle RimWorld",
@@ -225,7 +225,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 4,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] Mod Folders",
@@ -257,7 +257,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 5,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] 나만의 편의성",
@@ -289,7 +289,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 6,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] Liftoff Effects (이륙 이펙트)",
@@ -321,7 +321,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 7,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] RimStory",
@@ -354,7 +354,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 8,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] Plant Pot Deco",
@@ -386,7 +386,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 9,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] Joseon Costume (Hanbok)",
@@ -420,7 +420,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 10,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] Traditional Korean Mask (Tal)",
@@ -453,7 +453,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 11,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] South Korean Military Locker",
@@ -487,7 +487,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 12,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] Chibonoid",
@@ -520,7 +520,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 13,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] Crownoid",
@@ -553,7 +553,7 @@
       "version": "1.6 1.7",
       "kind": "mod",
       "order": 14,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794603538636,
       "steam": {
         "title": "[KCB] EBnoid",
@@ -585,7 +585,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 0,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Pick Up And Haul",
@@ -622,7 +622,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 3,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "RandomPlus",
@@ -657,7 +657,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 4,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "FasterRandomPlus",
@@ -689,15 +689,15 @@
       "version": "",
       "kind": "mod",
       "order": 5,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Auto Translation",
         "preview": "https://images.steamusercontent.com/ugc/2547430415512675402/EBA22A0A87D22DD41A45E385C3FAFFA1EE8A3434/",
-        "subs": 136938,
+        "subs": 136939,
         "current": 78017,
         "favorited": 4536,
-        "views": 101227,
+        "views": 101228,
         "tags": [
           "Mod",
           "1.7",
@@ -723,7 +723,7 @@
       "version": "",
       "kind": "mod",
       "order": 6,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Rimworld Mod Korean",
@@ -758,7 +758,7 @@
       "version": "",
       "kind": "mod",
       "order": 7,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Replace Stuff - Continued",
@@ -795,15 +795,15 @@
       "version": "1.6",
       "kind": "mod",
       "order": 8,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "RimHUD",
         "preview": "https://images.steamusercontent.com/ugc/1687146164330163452/43BA9FD0FD6A3123B367C2FDAC84A663856CC242/",
         "subs": 2264545,
-        "current": 1579568,
+        "current": 1579567,
         "favorited": 91444,
-        "views": 1395064,
+        "views": 1395065,
         "tags": [
           "Mod",
           "1.6",
@@ -831,15 +831,15 @@
       "version": "",
       "kind": "mod",
       "order": 9,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Smart Speed",
         "preview": "https://images.steamusercontent.com/ugc/943956721785254210/63F5531CF52E76A07584ACD1D23927504A16DC2F/",
-        "subs": 1358289,
+        "subs": 1358290,
         "current": 882477,
         "favorited": 45509,
-        "views": 642956,
+        "views": 642958,
         "tags": [
           "Mod",
           "1.7",
@@ -864,13 +864,13 @@
       "version": "",
       "kind": "mod",
       "order": 10,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Smarter Construction",
         "preview": "https://images.steamusercontent.com/ugc/1485579161693749136/DAC8E9DDF6F2DBE278495305E1327BAE842FD14D/",
-        "subs": 1555180,
-        "current": 1018370,
+        "subs": 1555181,
+        "current": 1018368,
         "favorited": 61591,
         "views": 829775,
         "tags": [
@@ -901,7 +901,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 11,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "WeaponStats",
@@ -938,15 +938,15 @@
       "version": "",
       "kind": "mod",
       "order": 12,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "[FSF] Filth Vanishes With Rain And Time",
         "preview": "https://images.steamusercontent.com/ugc/785252933986033934/9B9C1E4D1FB2034C9CD8185330463A4F8380C323/",
         "subs": 1306918,
-        "current": 725777,
+        "current": 725776,
         "favorited": 50693,
-        "views": 512129,
+        "views": 512130,
         "tags": [
           "Mod",
           "1.7",
@@ -976,7 +976,7 @@
       "version": "",
       "kind": "mod",
       "order": 13,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "[sbz] Neat Storage",
@@ -1009,13 +1009,13 @@
       "version": "",
       "kind": "mod",
       "order": 14,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "[sbz] Fridge",
         "preview": "https://images.steamusercontent.com/ugc/17319367856010552755/0A4519A5F229DBD84AEDC9BE2A0482333DA44A33/",
         "subs": 545397,
-        "current": 414574,
+        "current": 414571,
         "favorited": 12331,
         "views": 333178,
         "tags": [
@@ -1042,7 +1042,7 @@
       "version": "",
       "kind": "mod",
       "order": 15,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "All Memories Fade",
@@ -1077,7 +1077,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 16,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Allow Tool",
@@ -1114,7 +1114,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 17,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Auto-Cut Blight - 1.6",
@@ -1151,7 +1151,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 18,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Common Sense",
@@ -1188,7 +1188,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 19,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Mad Skills",
@@ -1225,7 +1225,7 @@
       "version": "",
       "kind": "mod",
       "order": 20,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Map Preview",
@@ -1260,7 +1260,7 @@
       "version": "",
       "kind": "mod",
       "order": 21,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "No Burn Metal",
@@ -1298,13 +1298,13 @@
       "version": "1.6",
       "kind": "mod",
       "order": 22,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "No Random Relations",
         "preview": "https://images.steamusercontent.com/ugc/1906737387763444862/F2668F2211FBA48F3A4588E16A397F699D05866A/",
-        "subs": 431977,
-        "current": 235687,
+        "subs": 431978,
+        "current": 235686,
         "favorited": 11435,
         "views": 202089,
         "tags": [
@@ -1332,7 +1332,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 23,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Pawn Target Fix",
@@ -1368,13 +1368,13 @@
       "version": "1.6",
       "kind": "mod",
       "order": 24,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "RPG Style Inventory Revamped",
         "preview": "https://images.steamusercontent.com/ugc/1818868999006044640/15EBEA15CF9F5A4D2129A95849A64BE4B3E3DDED/",
         "subs": 979655,
-        "current": 578589,
+        "current": 578592,
         "favorited": 36107,
         "views": 569857,
         "tags": [
@@ -1403,7 +1403,7 @@
       "version": "",
       "kind": "mod",
       "order": 25,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Show Buildable Material Count",
@@ -1436,7 +1436,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 26,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Storage Memory",
@@ -1467,7 +1467,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 27,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Visible Raid Points",
@@ -1475,7 +1475,7 @@
         "subs": 444548,
         "current": 279206,
         "favorited": 9990,
-        "views": 166735,
+        "views": 166736,
         "tags": [
           "Mod",
           "1.5",
@@ -1501,13 +1501,13 @@
       "version": "1.6",
       "kind": "mod",
       "order": 28,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "What's That Mod",
         "preview": "https://images.steamusercontent.com/ugc/1795226391456360710/3A378C1A3D6B7DC44D0B5BEF0C078156FF29E3BD/",
         "subs": 576279,
-        "current": 291491,
+        "current": 291488,
         "favorited": 17422,
         "views": 188609,
         "tags": [
@@ -1537,7 +1537,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 0,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Missile Girl - Performance Mod",
@@ -1568,13 +1568,13 @@
       "version": "1.6",
       "kind": "mod",
       "order": 1,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Performance Optimizer",
         "preview": "https://images.steamusercontent.com/ugc/1878589354358474828/9D4FD40ACFF0ADD2ADD0668485E11FB693E10AE7/",
-        "subs": 742694,
-        "current": 402761,
+        "subs": 742695,
+        "current": 402757,
         "favorited": 23656,
         "views": 443974,
         "tags": [
@@ -1603,15 +1603,15 @@
       "version": "",
       "kind": "mod",
       "order": 2,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Performance Esmolas",
         "preview": "https://images.steamusercontent.com/ugc/11168265956897758873/271A814BD120B7D761D6C357D11FCE5DDAB72357/",
-        "subs": 177605,
+        "subs": 177606,
         "current": 120632,
         "favorited": 3238,
-        "views": 89303,
+        "views": 89304,
         "tags": [
           "Mod",
           "1.7",
@@ -1635,13 +1635,13 @@
       "version": "",
       "kind": "mod",
       "order": 3,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Performance - Slower Pawn Tick Rate",
         "preview": "https://images.steamusercontent.com/ugc/18023100607465491463/595A52B9881D0128D14208524FF40F2BDF8B4C27/",
         "subs": 350405,
-        "current": 239790,
+        "current": 239787,
         "favorited": 8169,
         "views": 221643,
         "tags": [
@@ -1667,13 +1667,13 @@
       "version": "1.6",
       "kind": "mod",
       "order": 4,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Red's Performance Fixes (aka. Comp EggLayer Fix)",
         "preview": "https://images.steamusercontent.com/ugc/2443856326772570242/CB6BC299D1A4569AD99A852648C74906D81BD2F6/",
         "subs": 176162,
-        "current": 49988,
+        "current": 49986,
         "favorited": 4408,
         "views": 152307,
         "tags": [
@@ -1699,7 +1699,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 5,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Butter++ (Smooth FPS)",
@@ -1732,13 +1732,13 @@
       "version": "1.6",
       "kind": "mod",
       "order": 0,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "More Vanilla Textures",
         "preview": "https://images.steamusercontent.com/ugc/1823394494201607454/FC5E73DF06533BB728C6CA7B2A4303202CA600A0/",
         "subs": 317161,
-        "current": 124892,
+        "current": 124890,
         "favorited": 7339,
         "views": 215314,
         "tags": [
@@ -1766,7 +1766,7 @@
       "version": "",
       "kind": "mod",
       "order": 1,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Vanilla Pawns Retextured",
@@ -1801,7 +1801,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 2,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "[CF] Anomaly Upscaled 4x",
@@ -1833,7 +1833,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 3,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "[CF] Better Looking Plants",
@@ -1866,7 +1866,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 4,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "[CF] Odyssey Upscaled 4x",
@@ -1897,7 +1897,7 @@
       "version": "",
       "kind": "mod",
       "order": 5,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "[S16] Royalty Weapons HD",
@@ -1931,7 +1931,7 @@
       "version": "",
       "kind": "mod",
       "order": 6,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "[S16] Vanilla Weapons HD",
@@ -1965,7 +1965,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 7,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Morphs Assorted Biotech Retex",
@@ -1998,13 +1998,13 @@
       "version": "1.6",
       "kind": "mod",
       "order": 8,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Oracle + Erin's HD Tattoos",
         "preview": "https://images.steamusercontent.com/ugc/1782883326012950249/2BA30A35AEA4C3FF0E56CA62A13A29632F9DD00E/",
         "subs": 119585,
-        "current": 36845,
+        "current": 36842,
         "favorited": 2921,
         "views": 55936,
         "tags": [
@@ -2035,7 +2035,7 @@
       "version": "1.5",
       "kind": "mod",
       "order": 9,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Retextured Apparel 1.5",
@@ -2071,7 +2071,7 @@
       "version": "",
       "kind": "mod",
       "order": 10,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Vanilla Beards Retextured",
@@ -2106,7 +2106,7 @@
       "version": "",
       "kind": "mod",
       "order": 11,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Vanilla Hair Retextured",
@@ -2141,7 +2141,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 12,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Clean Textures",
@@ -2175,7 +2175,7 @@
       "version": "",
       "kind": "mod",
       "order": 13,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Blood Animations",
@@ -2209,13 +2209,13 @@
       "version": "",
       "kind": "mod",
       "order": 14,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Show Me Your Hands",
         "preview": "https://images.steamusercontent.com/ugc/13333445553219349937/4D748944EB9D401A6BF52D614ECB63224E093BBB/",
         "subs": 573338,
-        "current": 336796,
+        "current": 336797,
         "favorited": 17538,
         "views": 332044,
         "tags": [
@@ -2246,13 +2246,13 @@
       "version": "1.6",
       "kind": "mod",
       "order": 15,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Bionic icons",
         "preview": "https://images.steamusercontent.com/ugc/992387515497429366/424C35D80825FCB9D8A90B0FD4A51E986E8551D2/",
         "subs": 1117687,
-        "current": 628814,
+        "current": 628813,
         "favorited": 38276,
         "views": 423578,
         "tags": [
@@ -2283,7 +2283,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 16,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Biotech Mechanoid Retexture",
@@ -2316,7 +2316,7 @@
       "version": "",
       "kind": "mod",
       "order": 17,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Muzzle Flash",
@@ -2350,13 +2350,13 @@
       "version": "",
       "kind": "mod",
       "order": 18,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "No Gray Eyes",
         "preview": "https://images.steamusercontent.com/ugc/2508016938391274921/AF0EC2EE94A9129B15BE11F464BEDBF14E40280C/",
-        "subs": 117316,
-        "current": 53986,
+        "subs": 117318,
+        "current": 53987,
         "favorited": 2099,
         "views": 44974,
         "tags": [
@@ -2383,13 +2383,13 @@
       "version": "",
       "kind": "mod",
       "order": 19,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "No Red Eyes",
         "preview": "https://images.steamusercontent.com/ugc/2508016938391532019/8FB5A66E36810E9DF41D5BA5D0F7AD55C62846D8/",
-        "subs": 98091,
-        "current": 42536,
+        "subs": 98092,
+        "current": 42537,
         "favorited": 1532,
         "views": 31126,
         "tags": [
@@ -2416,13 +2416,13 @@
       "version": "1.6",
       "kind": "mod",
       "order": 20,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Simple FX: Smoke Continued",
         "preview": "https://images.steamusercontent.com/ugc/2493384508221046284/FBA7EE79DC39FB98C06DAC9A51DD327ACFCD22DB/",
         "subs": 273033,
-        "current": 129225,
+        "current": 129223,
         "favorited": 3136,
         "views": 71562,
         "tags": [
@@ -2450,7 +2450,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 21,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Scattered Flames Continued",
@@ -2484,7 +2484,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 22,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Van's Retexture : Mechanitor",
@@ -2517,7 +2517,7 @@
       "version": "",
       "kind": "mod",
       "order": 23,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Yet Another Research Tree (YART)",
@@ -2549,13 +2549,13 @@
       "version": "",
       "kind": "mod",
       "order": 24,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "[NL] Facial Animation - WIP",
         "preview": "https://images.steamusercontent.com/ugc/1017193655265345108/B24544D5CDB8934EA49E904FC03946A6BAFA5205/",
         "subs": 1238711,
-        "current": 823195,
+        "current": 823191,
         "favorited": 50808,
         "views": 867359,
         "tags": [
@@ -2587,12 +2587,12 @@
       "version": "",
       "kind": "mod",
       "order": 25,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Vanilla Textures Expanded - [NL] Facial Animation",
         "preview": "https://images.steamusercontent.com/ugc/1915743953585262123/D80B8C2DB34F07E7FAE374C38E7336D79FC6FEDB/",
-        "subs": 365552,
+        "subs": 365553,
         "current": 174160,
         "favorited": 12263,
         "views": 284558,
@@ -2625,7 +2625,7 @@
       "version": "",
       "kind": "mod",
       "order": 26,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Erin's Baldur's Gate 3 Hairs",
@@ -2659,7 +2659,7 @@
       "version": "",
       "kind": "mod",
       "order": 27,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Erin's Hairstyles 2",
@@ -2694,7 +2694,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 28,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "ScrubDaddy's Hairstyles",
@@ -2725,7 +2725,7 @@
       "version": "",
       "kind": "mod",
       "order": 29,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "UNAGI_Hair1",
@@ -2759,15 +2759,15 @@
       "version": "",
       "kind": "mod",
       "order": 30,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "UNAGI_Hair2",
         "preview": "https://images.steamusercontent.com/ugc/2474243029691354056/91451C583BA1D9C32EC988AB12F9E5BE6A79C7F9/",
-        "subs": 169118,
-        "current": 92658,
+        "subs": 169119,
+        "current": 92660,
         "favorited": 2859,
-        "views": 64569,
+        "views": 64570,
         "tags": [
           "Mod",
           "1.7",
@@ -2793,7 +2793,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 31,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Malang Face",
@@ -2827,7 +2827,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 32,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Malang Eye Wounds ",
@@ -2861,7 +2861,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 33,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Malang Face add-on: Biotech Gene expanded",
@@ -2894,7 +2894,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 34,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Malang More Faces: Another",
@@ -2927,7 +2927,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 35,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Malang More Faces: Male",
@@ -2960,7 +2960,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 36,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Malang Faces: Anomaly",
@@ -2992,7 +2992,7 @@
       "version": "",
       "kind": "mod",
       "order": 37,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "[KCB] Malang Face Upscale",
@@ -3024,7 +3024,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 38,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Yayo's Animation (Continued)",
@@ -3058,7 +3058,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 39,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Show Me Your Tools - Forked",
@@ -3089,7 +3089,7 @@
       "version": "",
       "kind": "mod",
       "order": 40,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "[WG] Event Image Popup",
@@ -3121,13 +3121,13 @@
       "version": "",
       "kind": "mod",
       "order": 41,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "AB's Head Apparel Tweaker",
         "preview": "https://images.steamusercontent.com/ugc/2058755434782368063/5A2405417F955A8F4ACC9EEB92E62EA76AB99126/",
         "subs": 177608,
-        "current": 120421,
+        "current": 120424,
         "favorited": 4556,
         "views": 111170,
         "tags": [
@@ -3155,7 +3155,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 42,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Change Style Anytime",
@@ -3188,7 +3188,7 @@
       "version": "",
       "kind": "mod",
       "order": 43,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Layered Apparel 2.0",
@@ -3220,13 +3220,13 @@
       "version": "1.6",
       "kind": "mod",
       "order": 44,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Melee Animation",
         "preview": "https://images.steamusercontent.com/ugc/2036228562259917108/486BF8D98ED6F78D79F45FF571A704621590FC87/",
-        "subs": 737124,
-        "current": 478465,
+        "subs": 737126,
+        "current": 478459,
         "favorited": 26120,
         "views": 455981,
         "tags": [
@@ -3253,7 +3253,7 @@
       "version": "",
       "kind": "mod",
       "order": 45,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "PawnRenderExport",
@@ -3286,7 +3286,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 46,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Sense Of Depth For Tall Buildings",
@@ -3318,7 +3318,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 47,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Simple Glasses",
@@ -3350,15 +3350,15 @@
       "version": "",
       "kind": "mod",
       "order": 48,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "SimpleCameraSetting",
         "preview": "https://images.steamusercontent.com/ugc/2486626571316733737/9F7E33022AD1DF805361B83412CDD7420766D549/",
         "subs": 544381,
-        "current": 396340,
+        "current": 396338,
         "favorited": 10100,
-        "views": 187324,
+        "views": 187325,
         "tags": [
           "Mod",
           "1.7",
@@ -3383,13 +3383,13 @@
       "version": "1.6",
       "kind": "mod",
       "order": 49,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Toggleable Overlays Continued",
         "preview": "https://images.steamusercontent.com/ugc/2493384508221062135/EC297C8033D9EAF2BD3512D3D32C6634F609CD9A/",
         "subs": 175465,
-        "current": 80957,
+        "current": 80956,
         "favorited": 2883,
         "views": 71070,
         "tags": [
@@ -3417,7 +3417,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 0,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Medieval Overhaul",
@@ -3450,7 +3450,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 1,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "World Tech Level",
@@ -3482,7 +3482,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 2,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Medieval Adventures: Hunts",
@@ -3514,13 +3514,13 @@
       "version": "1.6",
       "kind": "mod",
       "order": 3,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Medieval Overhaul - Adaptive Storage Graphic Patch",
         "preview": "https://images.steamusercontent.com/ugc/2488880908581965154/CD87CC7B00F4328FE2CD59D6953BD89F029B8F9E/",
-        "subs": 79349,
-        "current": 22248,
+        "subs": 79350,
+        "current": 22249,
         "favorited": 1178,
         "views": 47422,
         "tags": [
@@ -3546,13 +3546,13 @@
       "version": "",
       "kind": "mod",
       "order": 4,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Medieval Backstories Patch",
         "preview": "https://images.steamusercontent.com/ugc/17303028311895041830/0960F5C3A95805FE84EA027D7E905C45EA72562C/",
-        "subs": 124784,
-        "current": 49995,
+        "subs": 124785,
+        "current": 49998,
         "favorited": 1560,
         "views": 40162,
         "tags": [
@@ -3580,7 +3580,7 @@
       "version": "",
       "kind": "mod",
       "order": 5,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Tribal Backstories - Medieval Patch",
@@ -3614,15 +3614,15 @@
       "version": "",
       "kind": "mod",
       "order": 6,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Auto Translation",
         "preview": "https://images.steamusercontent.com/ugc/2547430415512675402/EBA22A0A87D22DD41A45E385C3FAFFA1EE8A3434/",
-        "subs": 136938,
+        "subs": 136939,
         "current": 78017,
         "favorited": 4536,
-        "views": 101227,
+        "views": 101228,
         "tags": [
           "Mod",
           "1.7",
@@ -3648,7 +3648,7 @@
       "version": "",
       "kind": "mod",
       "order": 7,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Rimworld Mod Korean",
@@ -3683,7 +3683,7 @@
       "version": "",
       "kind": "mod",
       "order": 8,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Medieval Adventures: Implants",
@@ -3716,7 +3716,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 9,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Medieval Medicines",
@@ -3752,7 +3752,7 @@
       "version": "",
       "kind": "mod",
       "order": 10,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "RimTraits - Medieval Talents",
@@ -3790,7 +3790,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 11,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Medieval Fantasy Themed Quest Rewards",
@@ -3823,7 +3823,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 12,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Possessed Weapons",
@@ -3856,13 +3856,13 @@
       "version": "",
       "kind": "mod",
       "order": 13,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "RimFantasy - Medieval Overhaul Edition",
         "preview": "https://images.steamusercontent.com/ugc/2502391334636413230/0C3530B337C719C3E525FB4B5FDD94197F3E154D/",
         "subs": 245380,
-        "current": 88974,
+        "current": 88973,
         "favorited": 6662,
         "views": 219124,
         "tags": [
@@ -3890,7 +3890,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 14,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Dark Ages : Medieval Tools",
@@ -3924,7 +3924,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 15,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Medieval Madness: Tools of the Trade",
@@ -3961,12 +3961,12 @@
       "version": "1.6",
       "kind": "mod",
       "order": 16,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Medieval Fantasy Themed Relic Quests",
         "preview": "https://images.steamusercontent.com/ugc/23186198869744791/2F7A676E6E186B37A079831D600474DC2040318C/",
-        "subs": 224911,
+        "subs": 224912,
         "current": 90301,
         "favorited": 3575,
         "views": 96595,
@@ -3994,7 +3994,7 @@
       "version": "",
       "kind": "mod",
       "order": 17,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Medieval Overhaul: Toggleable Stuff",
@@ -4028,7 +4028,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 18,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Ancient Armory",
@@ -4061,7 +4061,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 19,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Ancient Armory for Ancients",
@@ -4094,7 +4094,7 @@
       "version": "",
       "kind": "mod",
       "order": 20,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577770,
       "steam": {
         "title": "Dark Ages : Beasts and Monsters",
@@ -4127,7 +4127,7 @@
       "version": "",
       "kind": "mod",
       "order": 21,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Erin's Final Fantasy Animals",
@@ -4161,7 +4161,7 @@
       "version": "",
       "kind": "mod",
       "order": 22,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Erin's Valheim Creatures",
@@ -4195,7 +4195,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 23,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "FEB's Biopunk Livestock",
@@ -4226,7 +4226,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 24,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Prosthetics",
@@ -4262,7 +4262,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 25,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Trader Airships (Legacy) (Discontinued)",
@@ -4294,7 +4294,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 26,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Divine Order",
@@ -4327,7 +4327,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 27,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "The Profaned",
@@ -4360,7 +4360,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 28,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Overhaul: Barbarians",
@@ -4393,7 +4393,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 29,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Legacy of The Rim - Core",
@@ -4424,7 +4424,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 30,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Legacy of The Rim - Men of the West",
@@ -4455,7 +4455,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 31,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Legacy of The Rim - Shadow of the East",
@@ -4486,7 +4486,7 @@
       "version": "",
       "kind": "mod",
       "order": 32,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Elves of the Rim",
@@ -4520,7 +4520,7 @@
       "version": "",
       "kind": "mod",
       "order": 33,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Dwarves of the Rim",
@@ -4554,7 +4554,7 @@
       "version": "",
       "kind": "mod",
       "order": 34,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Orks of the Rim",
@@ -4588,7 +4588,7 @@
       "version": "",
       "kind": "mod",
       "order": 35,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Goblins of the Rim",
@@ -4621,7 +4621,7 @@
       "version": "",
       "kind": "mod",
       "order": 36,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Dragons of the Rim",
@@ -4654,7 +4654,7 @@
       "version": "",
       "kind": "mod",
       "order": 37,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Cats of the Rim",
@@ -4687,7 +4687,7 @@
       "version": "",
       "kind": "mod",
       "order": 38,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Gnolls of the Rim",
@@ -4719,7 +4719,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 39,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Clean Textures",
@@ -4753,7 +4753,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 40,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Misc. Training Medieval Retexture",
@@ -4786,7 +4786,7 @@
       "version": "",
       "kind": "mod",
       "order": 41,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Van's Retexture : Misc. Training",
@@ -4821,7 +4821,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 42,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Overhaul: WMBP",
@@ -4855,7 +4855,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 43,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Chemfuel Retextured : For Medieval and Tribal",
@@ -4887,7 +4887,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 44,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Fantasy Quest Rewards Retexture",
@@ -4919,7 +4919,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 45,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Repair",
@@ -4952,7 +4952,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 46,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Melee Sounds",
@@ -4985,7 +4985,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 47,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Music",
@@ -5022,7 +5022,7 @@
       "version": "",
       "kind": "mod",
       "order": 48,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Overhaul: Adaptive Storage",
@@ -5055,7 +5055,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 49,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Adaptive Primitive Storage",
@@ -5087,7 +5087,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 50,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Fortifications - Medieval",
@@ -5122,7 +5122,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 51,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Fortifications - Medieval - Material",
@@ -5157,7 +5157,7 @@
       "version": "",
       "kind": "mod",
       "order": 52,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Architecture of the Rim (incl. corners)",
@@ -5190,7 +5190,7 @@
       "version": "",
       "kind": "mod",
       "order": 53,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Signs",
@@ -5223,7 +5223,7 @@
       "version": "",
       "kind": "mod",
       "order": 54,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Overhaul Extra Signs",
@@ -5257,7 +5257,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 55,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Dark Ages : Crypts and Tombs",
@@ -5290,13 +5290,13 @@
       "version": "1.6",
       "kind": "mod",
       "order": 56,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Epochs - Incense",
         "preview": "https://images.steamusercontent.com/ugc/2162350909929453326/C868F956C760E737B7A71F9621CC22D9B337C4BB/",
         "subs": 143037,
-        "current": 54988,
+        "current": 54989,
         "favorited": 2097,
         "views": 66780,
         "tags": [
@@ -5324,7 +5324,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 57,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Fireplace",
@@ -5356,7 +5356,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 58,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Tool Cabinet (Continued)",
@@ -5389,7 +5389,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 59,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Flooring Floors",
@@ -5421,7 +5421,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 60,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Expert Stairs",
@@ -5452,7 +5452,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 61,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "SimpleStairs (Fork)",
@@ -5485,7 +5485,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 62,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[MUS]哥特式吸血鬼家具 Gothicstyle Vampire Furniture",
@@ -5520,7 +5520,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 63,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[MUS]捕鱼装饰 FishingDecorative",
@@ -5556,7 +5556,7 @@
       "version": "",
       "kind": "mod",
       "order": 64,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Blue Archive Furniture",
@@ -5589,7 +5589,7 @@
       "version": "",
       "kind": "mod",
       "order": 65,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Blue Archive Furniture 2",
@@ -5622,7 +5622,7 @@
       "version": "",
       "kind": "mod",
       "order": 66,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Blue Archive Furniture 3",
@@ -5655,7 +5655,7 @@
       "version": "",
       "kind": "mod",
       "order": 67,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Pawns on Display",
@@ -5688,7 +5688,7 @@
       "version": "",
       "kind": "mod",
       "order": 68,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[KCB] Plant Pot Deco",
@@ -5720,7 +5720,7 @@
       "version": "",
       "kind": "mod",
       "order": 69,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Coastal Outfits",
@@ -5753,7 +5753,7 @@
       "version": "",
       "kind": "mod",
       "order": 70,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Tailor Continued",
@@ -5786,7 +5786,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 71,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Bags Pack",
@@ -5819,7 +5819,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 72,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Hospitality",
@@ -5856,7 +5856,7 @@
       "version": "",
       "kind": "mod",
       "order": 73,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Hospitality: Storefront",
@@ -5890,7 +5890,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 74,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Transport",
@@ -5921,7 +5921,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 75,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Overhaul: Air Vehicles",
@@ -5954,13 +5954,13 @@
       "version": "",
       "kind": "mod",
       "order": 76,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Alpha Vehicles - Age of Sail",
         "preview": "https://images.steamusercontent.com/ugc/13680875625832693677/33D5D4BB3590ABF47FA7EDB966B0B0BC320E3F35/",
         "subs": 153547,
-        "current": 56994,
+        "current": 56996,
         "favorited": 4388,
         "views": 152019,
         "tags": [
@@ -5987,7 +5987,7 @@
       "version": "",
       "kind": "mod",
       "order": 77,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Alpha Vehicles - Neolithic",
@@ -6020,7 +6020,7 @@
       "version": "",
       "kind": "mod",
       "order": 78,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Overhaul: Royalty",
@@ -6055,7 +6055,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 79,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Fantasy Biotech",
@@ -6086,7 +6086,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 80,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "Medieval Anomaly",
@@ -6117,7 +6117,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 81,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[Odyssey] Aethric Ship",
@@ -6148,7 +6148,7 @@
       "version": "1.6",
       "kind": "mod",
       "order": 82,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[Odyssey] Necrotic Ship",
@@ -6179,7 +6179,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 0,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 방화광, 약물광, 난사광 플레이 모드 모음",
@@ -6210,7 +6210,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 1,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 고열사막 플레이 모드 모음",
@@ -6241,7 +6241,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 2,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 선 성향 플레이 모드 모음집",
@@ -6272,7 +6272,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 3,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 별의 여객선 모드 모음집",
@@ -6303,7 +6303,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 4,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 이세계 RPG 모드 모음집",
@@ -6334,7 +6334,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 5,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 밀리터 100 생존기 모드 모음집",
@@ -6365,7 +6365,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 6,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "상점 모드 모음",
@@ -6396,7 +6396,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 7,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 황무지 생존기 모드 모음집",
@@ -6427,7 +6427,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 8,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 감자 10만 개 캐기 모드 모음집",
@@ -6458,7 +6458,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 9,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 소행성 생존기 모드 모음집",
@@ -6489,7 +6489,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 10,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 식인 부족 모드 모음집",
@@ -6520,7 +6520,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 11,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 바익 중붕선 챕터 2 생방송 모드 모음집",
@@ -6551,7 +6551,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 12,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 벌레 림월드 생방송",
@@ -6582,7 +6582,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 13,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 테란vs저그 생방송",
@@ -6613,7 +6613,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 14,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 밀리라 생방송 모드 모음집",
@@ -6644,7 +6644,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 15,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 랫킨 생방송 모드 모음집",
@@ -6675,7 +6675,7 @@
       "version": "1.6",
       "kind": "collection",
       "order": 16,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771,
       "steam": {
         "title": "[1.6] 김치복 군대vs좀비 생방송 모드 모음집",
@@ -6706,7 +6706,7 @@
       "version": "1.6",
       "kind": "mapfile",
       "order": 0,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771
     },
     {
@@ -6720,7 +6720,7 @@
       "version": "1.6",
       "kind": "mapfile",
       "order": 1,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771
     },
     {
@@ -6734,7 +6734,7 @@
       "version": "1.6",
       "kind": "mapfile",
       "order": 2,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771
     },
     {
@@ -6748,7 +6748,7 @@
       "version": "1.6",
       "kind": "mapfile",
       "order": 3,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771
     },
     {
@@ -6762,7 +6762,7 @@
       "version": "1.6",
       "kind": "mapfile",
       "order": 4,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771
     },
     {
@@ -6776,7 +6776,7 @@
       "version": "1.6",
       "kind": "mapfile",
       "order": 5,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771
     },
     {
@@ -6790,7 +6790,7 @@
       "version": "1.6",
       "kind": "mapfile",
       "order": 6,
-      "source": "sheet",
+      "source": "manual",
       "addedAt": 1794567577771
     },
     {
@@ -6809,10 +6809,10 @@
       "steam": {
         "title": "SQUISHY Ranged",
         "preview": "https://images.steamusercontent.com/ugc/16017527096507693559/B9CB66768B339B13F3525D9E658780EB7F78F413/",
-        "subs": 25589,
-        "current": 21996,
+        "subs": 25591,
+        "current": 21997,
         "favorited": 2934,
-        "views": 63605,
+        "views": 63608,
         "tags": [
           "Mod",
           "1.7"
@@ -6840,10 +6840,10 @@
       "steam": {
         "title": "SQUISHY Melee",
         "preview": "https://images.steamusercontent.com/ugc/10794798281109748820/43C158FAE832AC939AE5CE8EB9B385380D32363E/",
-        "subs": 7418,
-        "current": 6993,
+        "subs": 7419,
+        "current": 6995,
         "favorited": 928,
-        "views": 17763,
+        "views": 17772,
         "tags": [
           "Mod",
           "1.7"
@@ -6904,6 +6904,5 @@
         "a": "No 자캐에 가까움/ 30대 어딘가/ 와이프, 딸"
       }
     ]
-  },
-  "sheetUrl": "https://docs.google.com/spreadsheets/d/1M3PlQORO09Iq6TK3lePosZZAHgLNkuH6poy_QV3PYps/edit?gid=128028032#gid=128028032"
+  }
 }

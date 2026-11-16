@@ -30,9 +30,10 @@
   - `liveApi`가 설정돼 있으면 update.mjs는 푸시를 보내지 않음(중복 방지).
   - 배포 방법: `worker` 폴더에서 `npx --yes wrangler@4 deploy`. 끝에 종료 코드 -1073740791이 떠도 배포는 성공한 것.
 - 네이버 카페 새 글: 로그인 없이 쓰는 공개 API. 카페 id는 31260801.
-- 모드 추천 데이터: 구글 시트 → `scripts/sheet.mjs` → `data/mods.json`
-  - 탭 목록은 `config.modSheet.tabs`에 있음: 개요, 김치복제작, 필수, 렉개선, 그래픽, 중세, 모음집, 맵파일.
-  - **탭 이름이 틀리면 구글이 조용히 첫 탭(개요)을 돌려줌.** 실제 탭 이름은 시트의 `/htmlview`에서 확인.
+- 모드 추천 데이터: **`data/mods.json` 자체가 원본** (2026-11-16 구글 시트 연동 끊음. 원본 시트는 찾지 말 것)
+  - 추가·수정·삭제는 `add-mod.mjs`로 (아래). 소분류 옮기기 같은 건 mods.json의 `section`을 직접 고침
+  - 자동 갱신(`update.mjs mods`)은 스팀 정보(썸네일·구독자·태그)만 새로 붙임
+  - 목록 순서: 대분류 → 소분류(그 소분류에서 가장 작은 `order`) → `order`
 
 ## 모드 URL을 받으면 (사용자가 스팀 창작마당 링크만 줌)
 묻지 말고 알아서 처리:
@@ -42,7 +43,8 @@
 3. `node scripts/add-mod.mjs "<url>" "<설명>" <대분류> "<소분류>"` 실행
 4. 커밋 → `git pull -q --rebase --autostash` → `git push`. 배포 확인은 `gh run watch`
 - 삭제: `node scripts/add-mod.mjs --remove "<url>"`
-- 버전 표시는 1.6과 1.7만 남김 (`app.js`의 `VERSIONS`).
+- 같은 모드를 다른 대분류에도 넣으려면 대분류를 지정해서 한 번 더 추가 (대분류마다 항목 하나)
+- 버전 표시는 1.6과 1.7만 남김 (`app.js`의 `VERSIONS`). 모음집·맵파일은 해당하는 버전 칸만 보임
 
 ## 새 컴퓨터(사무실 등)에서 처음 시작할 때
 1. Git과 Node.js가 있는지 확인. 없으면 설치 안내 (git-scm.com, nodejs.org)
@@ -62,7 +64,7 @@
 - 미리보기 서버: `node scripts/serve.mjs`
 - `wrangler deploy`가 시작 줄(⛅️ wrangler …)만 찍고 아무것도 안 하고 끝나면: 예전에 켠 `wrangler dev`(node·workerd·esbuild)가 남아 있는 것. 그 프로세스들을 끄고 다시 배포 (`serve.mjs`는 끄지 않기)
 - push하기 전에 항상 `git pull --rebase` 하기. 자동 갱신 봇이 data 파일을 자주 커밋함.
-  - `data/mods.json`이 충돌하면: `git checkout --theirs data/mods.json` → `node scripts/update.mjs mods` → add → rebase 계속.
+  - `data/mods.json`이 충돌하면: 이제 이 파일이 원본이라 봇 쪽으로 덮으면 내 수정이 사라짐. 봇 쪽(`--ours`, rebase 중엔 원격 쪽)을 받은 뒤 내 add-mod 명령을 다시 실행 → add → rebase 계속.
 - PowerShell에서 `node -e`에 복잡한 정규식을 넣으면 깨짐. 이럴 땐 임시 .mjs 파일을 만들어 실행.
 
 ## 지금까지 한 일 (2026-11-14 기준, 모두 배포 완료)
