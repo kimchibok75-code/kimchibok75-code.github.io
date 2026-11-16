@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1794831707097,
+  "updatedAt": 1794832832717,
   "source": "https://steamcommunity.com/workshop/browse/?appid=294100&section=readytouseitems&days=7",
   "items": [
     {
@@ -8,10 +8,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837808326",
       "title": "Supply Shelf",
       "preview": "https://images.steamusercontent.com/ugc/14471707077254728827/8049B12204A704E4E24CC450B8DFDD66618F7D8B/",
-      "subs": 7586,
-      "current": 7154,
-      "favorited": 766,
-      "views": 23968,
+      "subs": 7618,
+      "current": 7184,
+      "favorited": 770,
+      "views": 24064,
       "tags": [
         "Mod",
         "1.7",
@@ -31,10 +31,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839642536",
       "title": "SQUISHY Melee",
       "preview": "https://images.steamusercontent.com/ugc/10794798281109748820/43C158FAE832AC939AE5CE8EB9B385380D32363E/",
-      "subs": 7895,
-      "current": 7438,
-      "favorited": 981,
-      "views": 18872,
+      "subs": 7943,
+      "current": 7483,
+      "favorited": 984,
+      "views": 18959,
       "tags": [
         "Mod",
         "1.7"
@@ -53,10 +53,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839580086",
       "title": "PAWN DEPTH ORDER",
       "preview": "https://images.steamusercontent.com/ugc/13391398177189960626/E5C8828C7E874F3A82BE1B555BFBD77FC6D4B13B/",
-      "subs": 4656,
-      "current": 4426,
+      "subs": 4684,
+      "current": 4453,
       "favorited": 425,
-      "views": 8093,
+      "views": 8138,
       "tags": [
         "Mod",
         "1.7"
@@ -75,10 +75,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838987100",
       "title": "Cardboard Warcasket",
       "preview": "https://images.steamusercontent.com/ugc/12366862982721752899/0E8DAEF573E214769A8B9962EE3E287A8544751E/",
-      "subs": 272,
-      "current": 255,
+      "subs": 273,
+      "current": 256,
       "favorited": 117,
-      "views": 6608,
+      "views": 6660,
       "tags": [
         "Mod",
         "1.7",
@@ -98,10 +98,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839399827",
       "title": "The Dead Man's Switch - Compatibility Fixes",
       "preview": "https://images.steamusercontent.com/ugc/17482907610690873833/B7F4669CF8A39D4D744719928527FA59C9FA62B4/",
-      "subs": 1495,
-      "current": 1429,
-      "favorited": 182,
-      "views": 3808,
+      "subs": 1520,
+      "current": 1452,
+      "favorited": 184,
+      "views": 3895,
       "tags": [
         "Mod",
         "1.7",
@@ -112,7 +112,7 @@
       "size": 553873,
       "collection": false,
       "summary": "This standalone compatibility patch for *The Dead Man's Switch* base mod and its expansions fixes load errors, mech collision, weapon configs, sound issues, and cross-mod bugs in both vanilla and Combat Extended (CE) set",
-      "prevRank": 6,
+      "prevRank": 5,
       "ko": "*The Dead Man's Switch* 기본 모드 및 확장판을 위한 이 독립형 호환성 패치는 바닐라와 Comb 모두에서 로드 오류, 기계 충돌, 무기 구성, 사운드 문제 및 크로스 모드 버그를 수정합니다."
     },
     {
@@ -121,10 +121,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837063832",
       "title": "Seamless Pockets",
       "preview": "https://images.steamusercontent.com/ugc/11610367328486528479/BA821761713939E81E69C50A956EE8A56EBAC3D6/",
-      "subs": 4539,
-      "current": 4254,
+      "subs": 4549,
+      "current": 4264,
       "favorited": 804,
-      "views": 15464,
+      "views": 15494,
       "tags": [
         "Mod",
         "1.7",
@@ -135,7 +135,7 @@
       "size": 528223,
       "collection": false,
       "summary": "Seamless Pockets Pocket maps stop being disconnected side rooms. A cave, vault or undercave behaves like part of the map its portal stands on: colonists walk through on their own whenever what they need is on the other s",
-      "prevRank": 8,
+      "prevRank": 6,
       "ko": "포켓 맵은 연결이 끊긴 사이드 룸을 중지합니다."
     },
     {
@@ -144,10 +144,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837906824",
       "title": "Wayward Biomes: Tangled Hollows",
       "preview": "https://images.steamusercontent.com/ugc/9617940594054675953/E0B5CAA5143193FEBE472BC1CB1DD27AF12F5D87/",
-      "subs": 2084,
-      "current": 1983,
+      "subs": 2096,
+      "current": 1994,
       "favorited": 170,
-      "views": 6561,
+      "views": 6580,
       "tags": [
         "Mod",
         "1.7",
@@ -167,10 +167,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837981505",
       "title": "[KCB] Liftoff Effects (이륙 이펙트)",
       "preview": "https://images.steamusercontent.com/ugc/9889155727940097281/3595704D9EF4C97D316B91FABD4EFDD21AC23DA1/",
-      "subs": 3227,
-      "current": 3017,
+      "subs": 3234,
+      "current": 3023,
       "favorited": 273,
-      "views": 5342,
+      "views": 5354,
       "tags": [
         "Mod",
         "1.7",
@@ -181,7 +181,7 @@
       "size": 1699920,
       "collection": false,
       "summary": "Liftoff Effects Transport pods and shuttles lift off like rockets: engine flames from each nozzle, launch smoke and a smoke trail, a slow rise, then acceleration away from the map. Save-safe, and it can be added to or re",
-      "prevRank": 9,
+      "prevRank": 8,
       "ko": "수송 포드와 왕복선이 로켓처럼 이륙합니다. 분사구마다 엔진 불꽃이 나오고, 발사 연기와 연기 꼬리를 남기며 천천히 떠올랐다가 점점 빨라지며 날아갑니다."
     },
     {
@@ -190,10 +190,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3840043127",
       "title": "[OPEN BETA] These Are Our People",
       "preview": "https://images.steamusercontent.com/ugc/10653866610571298481/25AAD42163A77E98A8126383FADF813B2B0A44CE/",
-      "subs": 653,
-      "current": 627,
-      "favorited": 211,
-      "views": 3917,
+      "subs": 660,
+      "current": 633,
+      "favorited": 214,
+      "views": 3965,
       "tags": [
         "Mod",
         "1.7"
@@ -203,19 +203,41 @@
       "size": 2804676,
       "collection": false,
       "summary": "MOD AND INFOGRAPHICS ARE UNDER CONSTRUCTION. ANYTHING CAN CHANGE AT ANY TIME. THINK OF THE CURRENT BETA AS AN ADVENTURE WITHOUT THE INFOGRAPHICS A lightweight take on world diplomacy focused on pawns over menus. Assume a",
-      "prevRank": 5,
+      "prevRank": 9,
       "ko": "모드와 인포그래픽이 제작 중입니다. 언제든지 무엇이든 바뀔 수 있습니다. 현재 베타를 인포그래픽이 없는 모험으로 생각하세요"
     },
     {
       "rank": 10,
+      "id": "3838082034",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838082034",
+      "title": "Super Awesome Epic Weapons",
+      "preview": "https://images.steamusercontent.com/ugc/16549108290925420817/C20D313CED0549AF0E6799E0F7145C1949A44CC8/",
+      "subs": 65,
+      "current": 53,
+      "favorited": 32,
+      "views": 2762,
+      "tags": [
+        "Mod",
+        "1.7"
+      ],
+      "created": 1794431211000,
+      "updated": 1794431211000,
+      "size": 150885,
+      "collection": false,
+      "summary": "I know this has been the most anticipated mod since Vanilla Gravships 2. Its finally here. This is the best art of all time.",
+      "prevRank": 15,
+      "ko": "저는 이것이 Vanilla Gravships 2 이후 가장 기대되는 모드라는 것을 알고 있습니다. 드디어 출시되었습니다."
+    },
+    {
+      "rank": 11,
       "id": "3837314353",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837314353",
       "title": "The Dead Man's Switch - RatkinExpand",
       "preview": "https://images.steamusercontent.com/ugc/18425955992400237621/C09023863A63BC8253E2700E3181D016E1AEF0BF/",
-      "subs": 3835,
-      "current": 3545,
+      "subs": 3841,
+      "current": 3550,
       "favorited": 546,
-      "views": 12762,
+      "views": 12785,
       "tags": [
         "Mod",
         "1.7",
@@ -231,15 +253,15 @@
       "ko": "구식 기술과 어려움을 겪고 있는 경제로 인해 쥐족 왕국은 행성 전역에 흩어져 있는 불량 기계체에 맞서 싸울 가능성이 거의 없었습니다."
     },
     {
-      "rank": 11,
+      "rank": 12,
       "id": "3836456822",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836456822",
       "title": "Realistic Water",
       "preview": "https://images.steamusercontent.com/ugc/13719210184732251735/0F88BEFA137E9F085190A53760107AA9D21EBCDA/",
-      "subs": 5985,
-      "current": 5271,
+      "subs": 6010,
+      "current": 5293,
       "favorited": 736,
-      "views": 15461,
+      "views": 15482,
       "tags": [
         "Mod",
         "1.7"
@@ -253,15 +275,15 @@
       "ko": "Realistic Water는 성능을 저하시키지 않으면서 물의 모양과 동작을 완전히 재구성합니다."
     },
     {
-      "rank": 12,
+      "rank": 13,
       "id": "3837999796",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837999796",
       "title": "Titan Vehicles (Continued)",
       "preview": "https://images.steamusercontent.com/ugc/12020440468032264668/58EC5135462E56CBAAFF9C4E7F16BB2999BAD71A/",
-      "subs": 1338,
-      "current": 1257,
+      "subs": 1339,
+      "current": 1258,
       "favorited": 183,
-      "views": 8051,
+      "views": 8078,
       "tags": [
         "Mod",
         "1.7",
@@ -276,15 +298,15 @@
       "ko": "원본 작성자가 요청하면 이 업데이트를 삭제하겠습니다."
     },
     {
-      "rank": 13,
+      "rank": 14,
       "id": "3836765380",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836765380",
       "title": "Cherokee Sling - Vehicle and Container Airlift",
       "preview": "https://images.steamusercontent.com/ugc/16776818813964644570/EA8EBB69E0ACE2E9B9EEB4594A5177017FF32C21/",
-      "subs": 5123,
-      "current": 4777,
+      "subs": 5125,
+      "current": 4778,
       "favorited": 686,
-      "views": 13142,
+      "views": 13148,
       "tags": [
         "Mod",
         "1.7",
@@ -299,15 +321,15 @@
       "ko": "장갑차를 전장에 배달하거나 적재된 트럭을 두 번째 식민지로 운반하세요."
     },
     {
-      "rank": 14,
+      "rank": 15,
       "id": "3835595282",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3835595282",
       "title": "Windows (Continued) Continued",
       "preview": "https://images.steamusercontent.com/ugc/17909829238785531899/C79CED98007874F390D1421986FA02232D6E5A53/",
-      "subs": 3111,
-      "current": 2950,
-      "favorited": 339,
-      "views": 10314,
+      "subs": 3118,
+      "current": 2957,
+      "favorited": 340,
+      "views": 10325,
       "tags": [
         "Mod",
         "1.7",
@@ -324,37 +346,15 @@
       "ko": "Yap의 매끄러운 벽 통합 텍스처와 Owlchemist의 재료 인식 창 구성을 보존합니다. 금속, 나무, 돌로 만든 창 프레임이 주변 벽과 일치합니다."
     },
     {
-      "rank": 15,
-      "id": "3838082034",
-      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838082034",
-      "title": "Super Awesome Epic Weapons",
-      "preview": "https://images.steamusercontent.com/ugc/16549108290925420817/C20D313CED0549AF0E6799E0F7145C1949A44CC8/",
-      "subs": 65,
-      "current": 53,
-      "favorited": 32,
-      "views": 2756,
-      "tags": [
-        "Mod",
-        "1.7"
-      ],
-      "created": 1794431211000,
-      "updated": 1794431211000,
-      "size": 150885,
-      "collection": false,
-      "summary": "I know this has been the most anticipated mod since Vanilla Gravships 2. Its finally here. This is the best art of all time.",
-      "prevRank": 15,
-      "ko": "저는 이것이 Vanilla Gravships 2 이후 가장 기대되는 모드라는 것을 알고 있습니다. 드디어 출시되었습니다."
-    },
-    {
       "rank": 16,
       "id": "3838940648",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838940648",
       "title": "Divine Hand",
       "preview": "https://images.steamusercontent.com/ugc/12104527558986125222/F4938AA47D713B44166FCBCA9A735C728963719E/",
-      "subs": 726,
-      "current": 693,
+      "subs": 738,
+      "current": 705,
       "favorited": 197,
-      "views": 3615,
+      "views": 3659,
       "tags": [
         "Mod",
         "1.7",
@@ -365,7 +365,7 @@
       "size": 1459720,
       "collection": false,
       "summary": "Divine Hand Inspired by the divine hand from the Black & White (Lionhead, 2001), this mod lets you interact directly with your colonists using two very different hands: an angelic hand and a demonic hand. Angelic Hand ge",
-      "prevRank": 18,
+      "prevRank": 16,
       "ko": "Black & White(Lionhead, 2001)의 신성한 손에서 영감을 받은 이 모드를 사용하면 매우 다른 두 손, 즉 천사의 손과 악마의 손을 사용하여 식민지 주민과 직접 상호 작용할 수 있습니다."
     },
     {
@@ -374,10 +374,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837808238",
       "title": "Repeatable Technologies",
       "preview": "https://images.steamusercontent.com/ugc/14206298098965558478/90D8BBFCEF1D366AF714A314DA1A6148FCF90A06/",
-      "subs": 731,
-      "current": 701,
+      "subs": 735,
+      "current": 705,
       "favorited": 73,
-      "views": 2340,
+      "views": 2351,
       "tags": [
         "Mod",
         "1.7",
@@ -397,10 +397,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837774191",
       "title": "Kiiro Race - Devon Rex Xenotype (绮罗德文异种)",
       "preview": "https://images.steamusercontent.com/ugc/12082137762489397892/8DF91BB0448353191DA67B343B68C9B15BE4E229/",
-      "subs": 5394,
-      "current": 5106,
+      "subs": 5411,
+      "current": 5120,
       "favorited": 296,
-      "views": 8274,
+      "views": 8292,
       "tags": [
         "Mod",
         "1.7",
@@ -411,7 +411,7 @@
       "size": 4423418,
       "collection": false,
       "summary": "【模组简介】 为 Kiiro Race（绮罗种）增加全新的异种分支：德文种。她们有着柔软的卷毛，非常黏人，也擅长照顾伤员。这是我绮罗异种系列的第五位。各位也可以试试我的大型种族模组——渡鸦族啦~ 【新增基因】 1. “黏人卷毛小可爱”： 德文绮罗更不容易厌倦社交娱乐，也更偏好选择社交娱乐；随机交流时更倾向于关系好的人，冒犯等扣关系的权重降低。殖民地中若有一位双方好感均达到40的好友，获得“安心”（心情+5）；否则感到“安全感缺失”（心情",
-      "prevRank": 20,
+      "prevRank": 18,
       "ko": "Kiiro 레이스에 새로운 이국적인 계통인 독일 종족을 추가했습니다. 그들은 부드러운 곱슬머리를 가지고 있고, 매우 달라붙으며, 상처 입은 사람을 잘 돌보는 데 능숙합니다. 이것은 Qiluo Xenomorph 시리즈의 다섯 번째입니다."
     },
     {
@@ -420,10 +420,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838111458",
       "title": "Weather Reimagined",
       "preview": "https://images.steamusercontent.com/ugc/13986746735857019235/6AD9C49781067A81B5739D9E29539A6094671BB1/",
-      "subs": 3647,
-      "current": 3274,
-      "favorited": 530,
-      "views": 9673,
+      "subs": 3659,
+      "current": 3285,
+      "favorited": 532,
+      "views": 9689,
       "tags": [
         "Mod",
         "1.7"
@@ -442,10 +442,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838039525",
       "title": "Orc Facial Animation",
       "preview": "https://images.steamusercontent.com/ugc/17618971733562983623/6BD35CBF36485733670DD0A94C282DED4C7CC7BA/",
-      "subs": 300,
-      "current": 259,
-      "favorited": 64,
-      "views": 2458,
+      "subs": 302,
+      "current": 260,
+      "favorited": 65,
+      "views": 2466,
       "tags": [
         "Mod",
         "1.7"
@@ -455,7 +455,7 @@
       "size": 605129,
       "collection": false,
       "summary": "Info Adds Facial Animation support for orcs xenotype from Legacy of The Rim. Ears are upscaled to 512x512 Compatibility All facial animation types Eyegenes Credits Galahad - For the damn incredible LOTR work he is doing,",
-      "prevRank": null,
+      "prevRank": 20,
       "ko": "Legacy of The Rim의 오크 이종형에 대한 얼굴 애니메이션 지원을 추가합니다. 귀는 512x512로 업스케일됩니다."
     }
   ]
