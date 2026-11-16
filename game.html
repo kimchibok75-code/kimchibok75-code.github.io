@@ -2379,7 +2379,7 @@ function enterHunt(h) {
   bgm('hunt'); sfx('warp');
   const f = FIELDS[h.f]; paintHunt(f);
   HT = { f, mons: [], floats: [], parts: [], fx: [], shots: [], shake: 0, freeze: 0, loc: { kills: 0, exp: 0, gold: 0 }, t0: h.start, srv: h, bossAt: performance.now() + (h.boss - h.t) * 1000, atkT: .4, potCD: 0, target: null, cd: { ...(h.cd || {}) }, q: [], sh: 0, bt: 0, batk: 0, bcrit: 0 };
-  setHbMin(true);   // 현황판은 접힌 채로 시작
+  setHbMin(false);   // 현황판은 펼친 채로 시작
   loadZoom();   // 사냥터 확대 값
   me.sit = -1; me.x = HW * T / 2; me.y = HH * T / 2; me.path = []; me.moving = false; cam = { x: me.x, y: me.y };
   for (let i = 0; i < 8; i++) spawnMon(false);
@@ -2611,7 +2611,7 @@ function huntSummary(h) {
 // 현황판 접기 (상태 기억)
 function setHbMin(on) { $('#huntBox').classList.toggle('min', on); $('#hbMin').setAttribute('aria-expanded', String(!on)); $('#hbMin').setAttribute('aria-label', on ? '현황판 펼치기' : '현황판 접기'); try { localStorage.setItem('cbt-hbmin', on ? '1' : '0'); } catch {} }
 $('#hbMin').onclick = () => setHbMin(!$('#huntBox').classList.contains('min'));
-setHbMin(true);   // 처음엔 접힌 채로
+setHbMin(false);   // 처음엔 펼친 채로
 $('#hbBack').onclick = async () => {
   if (huntBusy) return; huntBusy = true;
   try { const j = await api('/api/hunt/leave', {}); const died = j.hunt?.died; took(j); if (!died && j.summary) { openModal(`<h3>🏠 마을로 돌아왔어요</h3>${huntSummary(j.summary)}<button class="btn main" data-close>확인</button>`); logAct(`${FIELDS[j.summary.f].n} 사냥: ${j.summary.kills}마리, +${j.summary.exp} EXP`); } }
