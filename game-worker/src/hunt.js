@@ -1,6 +1,6 @@
 // 자동 사냥 계산 (기획서 4장). 화면의 전투는 보여 주기용이고, 실제 결과는 여기서 정해짐.
 // 흐른 시간만큼 몬스터를 한 마리씩 잡는 과정을 빠르게 흉내 냄.
-import { FIELDS, MONS, HUNT, POTS, FAR, derive, expPenalty, addExp, pick, biteDmg, cntAdd } from '../../assets/js/game-rules.js';
+import { FIELDS, MONS, HUNT, POTS, FAR, derive, expPenalty, addExp, pick, biteDmg, cntAdd, gimOf, gimDmg } from '../../assets/js/game-rules.js';
 
 const MAX_STEPS = 300000;   // 한 번 계산할 때 최대 반복 (안전장치)
 
@@ -10,6 +10,8 @@ function fight(st, D, mon, boss) {
   let t = boss ? 0 : (1 + Math.random()) / D.spd * (D.far ? FAR.walk : 1);  // 다음 몬스터까지 걸어가는 시간 (민첩이 높으면 빠름, 원거리는 멀리서 쏘니 덜 걸음)
   let hp = mon.hp, nextHit = .4, nextBite = 1.2 + (D.far ? FAR.lead : 0), steps = 0, healed = 0;   // 원거리: 몬스터가 다가오는 동안 먼저 공격
   const bite = boss ? 1.3 : 1.6, regen = D.maxHp * D.regen, sk = D.skills || [];
+  const gm = gimOf(mon, boss);   // 기믹: 쿨타임마다 큰 공격 (첫 번째는 조금 뒤에)
+  let nextGim = gm ? (D.far ? FAR.lead : 0) + 1.5 + Math.random() * gm.cd * .6 : Infinity;
   const cd = st.cd ||= {};
   const tick = dt => { for (const k of sk) cd[k.s.id] = (cd[k.s.id] || 0) - dt; if (st.bt > 0) st.bt -= dt; };
   tick(t);
@@ -27,19 +29,28 @@ function fight(st, D, mon, boss) {
     let ready = null; for (const k of sk) if ((cd[k.s.id] || 0) <= 0 && (!ready || k.p.cd > ready.p.cd)) ready = k;
     if (ready) {
       const { s: S, p: P } = ready; cd[S.id] = P.cd; st.casts = (st.casts || 0) + 1;
-      if (S.k === 'hit') { for (let i = 0; i < P.n && hp > 0; i++) roll(P.m); if (P.dot && hp > 0) hp -= Math.round(D.hit * P.dot); if (P.stun) nextBite += P.stun; }
+      if (S.k === 'hit') { for (let i = 0; i < P.n && hp > 0; i++) roll(P.m); if (P.dot && hp > 0) hp -= Math.round(D.hit * P.dot); if (P.stun) { nextBite += P.stun; nextGim += P.stun; } }
       else if (S.k === 'heal') { heal(); st.hp = Math.min(D.maxHp, st.hp + D.maxHp * P.v / 100); }
       else if (S.k === 'shield') st.sh = Math.max(st.sh || 0, P.sh);
       else { st.bt = P.dur; st.batk = P.atk; st.bcrit = P.crit; }
       continue;
     }
     let nextSk = Infinity; for (const k of sk) nextSk = Math.min(nextSk, cd[k.s.id]);
-    if (nextSk < nextHit && nextSk < nextBite) { t += nextSk; nextHit -= nextSk; nextBite -= nextSk; tick(nextSk); continue; }
+    if (nextSk < nextHit && nextSk < nextBite && nextSk < nextGim) { t += nextSk; nextHit -= nextSk; nextBite -= nextSk; nextGim -= nextSk; tick(nextSk); continue; }
+    if (nextGim < nextHit && nextGim <= nextBite) {   // 기믹 큰 공격 (막기·회피는 보통 공격과 같음)
+      const dt = nextGim; t += dt; nextHit -= dt; nextBite = bite; nextGim = gm.cd; tick(dt); heal();
+      if (st.sh > 0) { st.sh--; continue; }
+      if (Math.random() * 100 >= D.eva) st.hp -= gimDmg(mon, D, gm);
+      if (st.hp <= D.maxHp * st.potAt / 100) drink(st, D);
+      if (st.hp <= D.maxHp * st.potAt / 100) drink(st, D);   // 크게 맞으면 한 번 더 마실 수 있음
+      if (st.hp <= 0) return { t, dead: true };
+      continue;
+    }
     if (nextHit <= nextBite) {
-      const dt = nextHit; t += dt; nextBite -= dt; nextHit = D.gap; tick(dt);
+      const dt = nextHit; t += dt; nextBite -= dt; nextGim -= dt; nextHit = D.gap; tick(dt);
       roll(1);   // 지팡이는 마력, 나머지는 공격력
     } else {
-      const dt = nextBite; t += dt; nextHit -= dt; nextBite = bite; tick(dt); heal();
+      const dt = nextBite; t += dt; nextHit -= dt; nextGim -= dt; nextBite = bite; tick(dt); heal();
       // 원거리(궁수·마법사): 거리를 유지하며 싸움 → 몬스터가 다시 붙을 때까지 한 번 더 쏠 시간이 생김
       if (D.far && Math.random() < Math.min(FAR.kiteMax, FAR.kite + D.dex * .0008)) nextBite += FAR.back;
       if (st.sh > 0) { st.sh--; continue; }   // 방패·구르기·보호막
@@ -53,7 +64,7 @@ function fight(st, D, mon, boss) {
 }
 function drink(st, D) {
   const p = st.pots, miss = D.maxHp - st.hp;
-  const k = miss >= 200 && p.l ? 'l' : p.s ? 's' : p.l ? 'l' : p.xl ? 'xl' : null;
+  const k = p.xl && D.maxHp > 1150 && miss >= D.maxHp * .45 ? 'xl' : miss >= 200 && p.l ? 'l' : p.s ? 's' : p.l ? 'l' : p.xl ? 'xl' : null;   // 체력이 많을 때(특대가 큰 음료보다 싸게 먹힘) 많이 다쳤으면 특대(50%)부터
   if (!k) return;
   p[k]--; st.used++; st.hp = Math.min(D.maxHp, st.hp + POTS[k].heal(D.maxHp) * (1 + D.potP / 100));
 }

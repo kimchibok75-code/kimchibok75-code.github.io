@@ -217,7 +217,7 @@ export const spentPoints = c => c.str + c.dex + c.int + c.luk - 20;
 
 // ───────── 사냥터 (기획서 4장) ─────────
 export const LV_CAP = 55;            // 지금 열린 최고 레벨 (사냥터를 추가하면 올리기)
-export const HUNT = { offlineMax: 8 * 3600, offlineEff: .7, onlineGap: 90, bossEvery: 300, deathLoss: .1, townRegen: .02, huntRegen: .02, goldMul: .6 };   // 2026-11-16 1.15 → .6 (사냥 골드가 낚시·알바보다 너무 많아서 절반쯤으로)   // goldMul: 사냥에서 장비가 안 떨어지는 대신 골드 +15%
+export const HUNT = { offlineMax: 8 * 3600, offlineEff: .7, onlineGap: 90, bossEvery: 300, deathLoss: .1, townRegen: .02, huntRegen: .015, goldMul: .6 };   // huntRegen 2026-11-17 .02 → .015 (몬스터 기믹과 함께: 물약이 필요하게)   // 2026-11-16 1.15 → .6 (사냥 골드가 낚시·알바보다 너무 많아서 절반쯤으로)   // goldMul: 사냥에서 장비가 안 떨어지는 대신 골드 +15%
 export const POTS = { s: { n: '작은 음료', i: '🥤', d: '체력 +50', price: 20, heal: () => 50 }, l: { n: '큰 음료', i: '🧋', d: '체력 +200', price: 70, heal: () => 200 }, xl: { n: '특대 음료', i: '🍹', d: '최대 체력의 50%', price: 200, heal: max => Math.round(max * .5) } };
 // 몬스터: n 이름, lv, hp, atk, exp, gold, c 색, s 크기, f 생김새
 // mg: 마법 공격 (마법 방어력으로 막음), 없으면 물리 공격 (물리 방어력으로 막음)
@@ -243,6 +243,19 @@ export function addExp(c, n) {
   if (c.lv >= LV_CAP) c.exp = Math.min(c.exp, needExp(c.lv) - 1);
   return up;
 }
+// ───────── 몬스터 기믹 (2026-11-17): 가끔 예고(warn초) 뒤 큰 공격 → 물약이 필요하게 ─────────
+// cd 쿨타임(초, 보스는 bossCd배), m 피해 배율(보통 공격의 몇 배), hp 최대 체력의 몇 %를 더 깎음(방어로 못 줄임). 화면은 예고를 보여 주고, 서버 hunt.js도 같은 쿨타임·배율로 계산
+export const GIMMICK = {
+  dash: { n: '돌진', i: '💨', cd: 6, m: 2.2, hp: .07, warn: .75 },     // 빨간 줄로 예고 → 일직선으로 들이받음
+  run: { n: '달려들기', i: '💢', cd: 5, m: 1.7, hp: .05, warn: .4 },    // 멀리서도 아주 빠르게 달려와 물기
+  fly: { n: '급강하', i: '🪶', cd: 7, m: 2.5, hp: .08, warn: .8 },      // 하늘로 날아올랐다가 내리꽂기
+  jump: { n: '내려찍기', i: '💥', cd: 8, m: 2.8, hp: .1, warn: .9 },   // 높이 뛰어 떨어질 자리에 빨간 원 → 쾅 (범위)
+  bossCd: 1, bossHp: .4,   // 보스: 쿨타임 그대로, 체력 % 피해는 40%만 (보스는 원래 세서)
+};
+export const MON_GIM = { rat: 'run', hen: 'fly', boar: 'dash', wolf: 'run', shroom: 'jump', vine: 'dash', eagle: 'fly', turtle: 'dash', golem: 'jump', drone: 'fly', guard: 'dash', fixbot: 'jump', kingboar: 'dash', bear: 'jump', lord: 'jump', boss: 'fly' };
+export const gimOf = (mon, boss) => { const k = MON_GIM[mon.k]; if (!k || GIMMICK.off) return null; const G = GIMMICK[k]; return { k, ...G, cd: G.cd * (boss ? GIMMICK.bossCd : 1), hp: G.hp * (boss ? GIMMICK.bossHp : 1) }; };
+// 기믹 한 번의 피해 = 보통 공격 × m + 최대 체력 × hp
+export const gimDmg = (mon, D, gm) => D.god ? 0 : Math.round(biteDmg(mon, D) * gm.m + D.maxHp * gm.hp);
 // 몬스터 한 번 공격의 피해 (물리/마법 방어력, 무작위 ±15%)
 export const biteDmg = (mon, D) => D.god ? 0 : Math.max(1, Math.round(mon.atk * 100 / (100 + (mon.mg ? D.mdef : D.def)) * (.85 + Math.random() * .3)));
 
