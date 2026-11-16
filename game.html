@@ -467,9 +467,10 @@ body.hunting .chat-log { height: 64px; }
   .feed li { justify-self: start; max-width: 100%; background: rgba(31, 42, 58, .62); color: #fff; padding: 4px 9px; border-radius: 9px; font-size: calc(13px * var(--fs)); overflow-wrap: anywhere; animation: fade 6s forwards; }
   .zoom { top: auto; bottom: calc(var(--dock-h) + 70px + env(safe-area-inset-bottom, 0px)); }
   .hud .chip.hide-m { display: none; }
-  .hud { flex-wrap: wrap; padding-right: 46px; row-gap: 5px; }
+  .hud { flex-wrap: wrap; padding-right: 90px; row-gap: 5px; }
   .hud .spacer { display: none; }
   .hud #setBtn { position: absolute; top: 0; right: 0; }
+  .hud #homeBtn { position: absolute; top: 0; right: 44px; }
   .hud .chip { font-size: calc(13px * var(--fs)); padding: 5px 9px; }
   .chip.ev .evn { display: none; }
   .banner { top: 56px; font-size: calc(13px * var(--fs)); }
@@ -520,6 +521,7 @@ body.hunting .chat-log { height: 64px; }
 .pull { width: 100%; font-size: calc(18px * var(--fs)); padding: 14px; }
 /* 마을 소식판 */
 .iconbtn { position: relative; }
+a.iconbtn { color: inherit; text-decoration: none; }
 .iconbtn .dot { position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; border-radius: 50%; background: var(--kimchi); border: 2px solid #fff; }
 .chip.ev { cursor: pointer; background: #fff4d6; border-color: #b7791f; color: #7a4a00; }
 .pbar { display: block; height: 9px; border-radius: 99px; background: #e4e9e0; overflow: hidden; border: 1px solid #cfd8cb; }
@@ -741,6 +743,7 @@ body.hunting .chat-log { height: 64px; }
       <span class="chip" id="buffChip" hidden title="분수 버프"></span>
       <span class="chip ev" id="evChip" hidden></span>
       <span class="spacer"></span>
+      <a class="iconbtn" id="homeBtn" href="./" aria-label="김치복 홈페이지로" title="김치복 홈페이지로 돌아가기">🏠</a>
       <button class="iconbtn" id="fsBtn" aria-label="전체화면" title="전체화면 (Esc로 나가기)">⛶</button>
       <button class="iconbtn" id="setBtn" aria-label="설정">⚙️</button>
     </div>
