@@ -1,0 +1,19 @@
+{
+  "id": "./game.html",
+  "name": "치복 타운",
+  "short_name": "치복 타운",
+  "description": "김치복 팬들이 사는 작은 마을 — 사냥, 낚시, 텃밭, 레이드",
+  "start_url": "./game.html",
+  "scope": "./game.html",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#cfe8f3",
+  "theme_color": "#cfe8f3",
+  "lang": "ko",
+  "icons": [
+    { "src": "assets/img/game-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/img/game-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/img/game-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
