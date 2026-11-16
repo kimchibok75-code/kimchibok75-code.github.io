@@ -8,3 +8,5 @@ worker/.wrangler/
 worker/node_modules/
 game-worker/.wrangler/
 game-worker/node_modules/
+game-worker/.dev.vars
+worker/.dev.vars

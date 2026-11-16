@@ -72,6 +72,8 @@ async function route(req, env, url) {
   if (m === 'POST' && p === '/api/fish/reel') return fishReel(req, env, s.user);
   if (m === 'GET' && p === '/api/news') return json(await news(env));
   if (m === 'GET' && p === '/api/raid') { const j = await (await raidDO(env).fetch('https://raid/state')).json(); return json({ ...j, now: now() }); }
+  if (m === 'GET' && p === '/api/whoami') return json({ nick: s.user.nick, admin: !!s.user.is_admin });   // 홈페이지(모드 추천 편집 버튼)용. 게임 정산은 안 함
+  if (m === 'POST' && p === '/api/admin/mods-order') return modsOrder(req, env, s.user);
   if (p.startsWith('/api/admin/')) return admin(p, m, req, env, s.user, url);
   if (m === 'GET' && p === '/api/blocks') return json({ blocks: (await env.DB.prepare('SELECT b.target_id AS id, u.nick FROM blocks b JOIN users u ON u.id = b.target_id WHERE b.user_id = ?').bind(s.user.id).all()).results });
   if (m === 'POST' && p === '/api/block') return block(req, env, s.user);
@@ -879,6 +881,45 @@ function cheat(c, k, b, at, env, user) {
   if (k === 'god') { L.god = !L.god; if (L.god) c.hp = derive(c).maxHp; return { msg: L.god ? '갓모드 켬: 안 맞고 공격력 10배' : '갓모드 끔' }; }
   fail(400, '없는 치트예요');
 }
+// ───────── 홈페이지 모드 추천: 순서 저장 (관리자만) ─────────
+// 깃허브의 data/mods.json을 직접 고쳐서 올림 → 올라가면 사이트가 1~2분 뒤 새로 배포됨
+// 열쇠: GITHUB_TOKEN (이 저장소의 Contents 읽기·쓰기만 되는 fine-grained 토큰, wrangler secret으로 넣음)
+const GH_REPO = 'kimchibok75-code/kimchibok75-code.github.io', GH_FILE = 'data/mods.json';
+const utf8ToB64 = s => { const b = enc.encode(s); let out = ''; for (let i = 0; i < b.length; i += 0x8000) out += String.fromCharCode(...b.subarray(i, i + 0x8000)); return btoa(out); };
+const b64ToUtf8 = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, '')), c => c.charCodeAt(0)));
+async function gh(env, path, init = {}) {
+  const base = env.GH_API || 'https://api.github.com';   // GH_API는 내 컴퓨터 시험용(.dev.vars)에서만 씀
+  const r = await fetch(`${base}/repos/${GH_REPO}/${path}`, { ...init, headers: { Authorization: `Bearer ${env.GITHUB_TOKEN}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'kimchibok-game', ...(init.body ? { 'Content-Type': 'application/json' } : {}) } });
+  return r;
+}
+async function modsOrder(req, env, user) {
+  if (!user.is_admin) fail(403, '관리자만 쓸 수 있어요');
+  if (!env.GITHUB_TOKEN) fail(503, '저장 열쇠(GITHUB_TOKEN)가 아직 서버에 없어요');
+  const t = await req.text(); if (t.length > 30000) fail(413, '보낸 내용이 너무 커요');
+  let b; try { b = JSON.parse(t); } catch { fail(400, '잘못된 요청이에요'); }
+  const cat = String(b?.cat || ''), ids = Array.isArray(b?.ids) ? b.ids.map(String) : null;
+  if (!cat || !ids?.length || new Set(ids).size !== ids.length) fail(400, '잘못된 요청이에요');
+  for (let tries = 0; tries < 3; tries++) {
+    const r = await gh(env, `contents/${GH_FILE}?ref=main`);
+    if (!r.ok) { console.error('github get', r.status, await r.text()); fail(502, `깃허브에서 목록을 못 읽었어요 (${r.status})`); }
+    const f = await r.json(), db = JSON.parse(b64ToUtf8(f.content));
+    const items = db.items.filter(m => m.category === cat);
+    const have = new Set(items.map(m => m.id));
+    if (!items.length) fail(404, '없는 대분류예요');
+    if (ids.length !== have.size || ids.some(id => !have.has(id))) fail(409, '그사이 모드 목록이 바뀌었어요. 새로고침한 뒤 다시 해 주세요');
+    const pos = new Map(ids.map((id, i) => [id, i]));
+    if (items.every(m => m.order === pos.get(m.id))) return json({ ok: true, same: true });   // 바뀐 게 없음
+    for (const m of items) m.order = pos.get(m.id);
+    db.updatedAt = now();
+    const put = await gh(env, `contents/${GH_FILE}`, { method: 'PUT', body: JSON.stringify({ message: `모드 추천: ${cat} 순서 바꿈 (사이트에서 ${user.nick})`, content: utf8ToB64(JSON.stringify(db, null, 2) + '\n'), sha: f.sha, branch: 'main' }) });
+    if (put.status === 409) continue;   // 그사이 봇이 파일을 바꿈 → 다시 읽어서 한 번 더
+    if (!put.ok) { console.error('github put', put.status, await put.text()); fail(502, `깃허브에 저장하지 못했어요 (${put.status})`); }
+    await log(env, user.id, 'admin-mods-order', `${cat} ${ids.length}`);
+    return json({ ok: true });
+  }
+  fail(409, '저장이 자꾸 겹쳐요. 잠시 뒤에 다시 해 주세요');
+}
+
 async function admin(p, m, req, env, user, url) {
   if (!user.is_admin) fail(403, '관리자만 쓸 수 있어요');
   const DB = env.DB, t = now(), q = k => url.searchParams.get(k) || '';

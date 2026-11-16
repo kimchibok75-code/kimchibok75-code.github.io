@@ -34,6 +34,13 @@
   - 추가·수정·삭제는 `add-mod.mjs`로 (아래). 소분류 옮기기 같은 건 mods.json의 `section`을 직접 고침
   - 자동 갱신(`update.mjs mods`)은 스팀 정보(썸네일·구독자·태그)만 새로 붙임
   - 목록 순서: 대분류 → 소분류(그 소분류에서 가장 작은 `order`) → `order`
+  - **사이트에서 드래그로 순서 편집** (2026-11-16): 김치복 관리자 계정(치복 타운과 같은 계정)만
+    - 들어가는 곳: 모드 추천 맨 아래 "✏️ 추천 순서 편집" (관리자로 로그인돼 있을 때만 보임). 로그인 안 돼 있으면 `mods.html?edit`
+    - 화면: `assets/js/mod-edit.js` (SortableJS를 cdnjs에서 편집할 때만 불러옴, `forceFallback`). 소분류 안에서 순서 + 소분류 묶음 순서. 다른 소분류로 옮기기는 안 됨
+    - 서버: 게임 서버 `POST /api/admin/mods-order {cat, ids}` (`index.js`의 `modsOrder`) → 깃허브 API로 `data/mods.json`의 `order`만 고쳐 커밋 → push라서 자동 배포
+    - 열쇠: Worker 비밀 값 `GITHUB_TOKEN` (fine-grained, 이 저장소 Contents 읽기·쓰기만). 사용자가 `npx --yes wrangler@4 secret put GITHUB_TOKEN`으로 직접 넣음
+    - `GET /api/whoami` → `{nick, admin}` (게임 정산 없이 확인만)
+    - 내 컴퓨터 시험: `game-worker/.dev.vars`에 `GITHUB_TOKEN=아무거나`, `GH_API=http://localhost:8799` + 깃허브 흉내 서버(contents GET/PUT)를 띄움. 끝나면 `.dev.vars` 지우기
 
 ## 모드 URL을 받으면 (사용자가 스팀 창작마당 링크만 줌)
 묻지 말고 알아서 처리:

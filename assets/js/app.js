@@ -365,6 +365,7 @@ function modRow(m, q) {
   </a>`;
 }
 function renderMods() {
+  if (M.editor) return M.editor.render();   // 순서 편집 중 (mod-edit.js)
   const list = filteredMods();
   const q = M.q.trim();
   $('#modCount').textContent = `김치복이 직접 쓰고 추천하는 림월드 모드 · ${list.length}개`;
@@ -386,13 +387,19 @@ function renderMods() {
 function initMods() {
   if (!S.mods?.items?.length) { $('#modGrid').innerHTML = '<div class="empty">모드 목록을 불러오지 못했어요</div>'; return; }
   const reset = () => { M.limit = 60; renderMods(); };
-  $('#modCats').onclick = e => { const b = e.target.closest('.cat'); if (!b) return; M.cat = b.dataset.cat; M.section = ''; renderModFilters(); reset(); };
+  $('#modCats').onclick = e => {
+    const b = e.target.closest('.cat'); if (!b) return;
+    if (M.editor) { if (!b.dataset.cat) { toast('편집할 대분류를 하나 골라 주세요'); return; } if (b.dataset.cat === M.cat || !M.editor.leave()) return; }
+    M.cat = b.dataset.cat; M.section = ''; renderModFilters(); reset(); };
   $('#modSubs').onclick = e => { const b = e.target.closest('.sub'); if (!b) return; M.section = b.dataset.sec; renderModFilters(); reset(); };
   $('#modVersion').onclick = e => { const b = e.target.closest('button'); if (!b) return; M.version = b.dataset.v; $$('#modVersion button').forEach(x => x.classList.toggle('on', x === b)); renderModFilters(); reset(); };
   $('#modSort').onchange = e => { M.sort = e.target.value; reset(); };
   let t; $('#modSearch').oninput = e => { clearTimeout(t); t = setTimeout(() => { M.q = e.target.value; reset(); }, 120); };
   $('#modMore').onclick = () => { M.limit += 60; renderMods(); };
   renderModFilters(); renderMods();
+  // 추천 순서 편집 (김치복 관리자 계정만, 따로 불러옴)
+  import(new URL('./mod-edit.js' + new URL(import.meta.url).search, import.meta.url).href)
+    .then(m => m.initModEdit({ S, M, $, esc, toast, renderMods, renderModFilters })).catch(e => console.warn('편집 기능 불러오기 실패', e));
   const g = S.mods.guide;
   if (g?.greeting || g?.faq?.length) {
     $('#guide').hidden = false;
