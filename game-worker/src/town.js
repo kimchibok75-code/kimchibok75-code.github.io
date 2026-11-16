@@ -144,7 +144,7 @@ export class Town extends DurableObject {
     if (!r.ok) return r.warn ? this.warn(ws, a, r.why) : r.why && no(r.why);
     if (k.last.length >= 2 && k.last.slice(-2).every(x => x === r.text)) return no('같은 말을 3번 연속 보낼 수 없어요');
     k.last = [...k.last, r.text].slice(-3); k.sent.push(t); k.n++;
-    const out = JSON.stringify({ t: 'say', id: a.id, n: a.n, text: r.text, ch });
+    const out = JSON.stringify({ t: 'say', id: a.id, n: a.n, adm: a.adm ? 1 : 0, text: r.text, ch });
     for (const w of this.members()) {
       try { w.send(out); } catch {}
     }

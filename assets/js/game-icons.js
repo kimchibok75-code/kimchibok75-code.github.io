@@ -157,6 +157,8 @@ export const ICONS = {
   chat: [P('M5.5 5.5 L26.5 5.5 Q29 5.5 29 8 L29 19.5 Q29 22 26.5 22 L14 22 L7.5 27.5 L8.8 22 L5.5 22 Q3 22 3 19.5 L3 8 Q3 5.5 5.5 5.5Z', WHITE), C(10, 14, 1.7, '#8a96a3', 'd'), C(16, 14, 1.7, '#8a96a3', 'd'), C(22, 14, 1.7, '#8a96a3', 'd')],
   live: [C(16, 16, 9.5, '#ff3b3b'), C(13, 13, 2.6, '#ff9a9a', 'f')],
   tv: [S('M11 3.5 L16 8.5 L21 3.5', DARK, 2.2), R(3.5, 8, 25, 18, DARK, 4), R(6.5, 11, 15.5, 12, SKY, 2.5, 'f'), P('M8.5 20 Q12 14 15.5 18 L19 15 L20 21Z', '#c9ecff', 'f'), C(25, 14, 1.6, RED, 'f'), C(25, 19.5, 1.6, GOLD, 'f'), R(8, 26, 3, 2.5, DARK, 1), R(21, 26, 3, 2.5, DARK, 1)],
+  target: [C(16, 16, 12.5, WHITE), C(16, 16, 9, RED, 'f'), C(16, 16, 5.5, WHITE, 'f'), C(16, 16, 2.5, RED, 'f'), S('M16 16 L27 5', BROWN, 2.4), P('M24 4 L28 4 L28 8Z', RED)],
+  monitor: [R(3.5, 5, 25, 17, DARK, 2.5), R(6, 7.5, 20, 12, SKY, 1.5, 'f'), R(13.5, 22, 5, 4, GREY, 1), R(9, 26, 14, 2.5, DARK, 1.2)],
   paper: [R(4, 6, 24, 21, WHITE, 2.5), R(7, 9, 18, 4, DARK, 1, 'f'), R(7, 15.5, 8, 7.5, SKY, 1.2, 'f'), R(17, 15.5, 8, 1.8, GREY, .8, 'f'), R(17, 18.5, 8, 1.8, GREY, .8, 'f'), R(17, 21.5, 6, 1.8, GREY, .8, 'f')],
   thumb: [P('M11 14 L15.5 5 Q19 4.5 18.5 9 L17.5 13 L25.5 13 Q28.5 13 28 16.5 L26.5 25.5 Q26 28 23 28 L11 28Z', '#ffc9a0'), R(4, 13.5, 6.5, 14.5, BLUE, 1.5)],
   gold1: medal(GOLD, GOLD2), gold2: medal('#d6dde5', '#aab4bf'), gold3: medal('#e09a5a', '#b9733a'),
@@ -176,7 +178,7 @@ export const ICONS = {
 
 // 이모지 → 그림 이름
 export const EMOJI = {
-  '🪙': 'coin', '🏷️': 'tag', '🏷': 'tag', '💰': 'money', '🪵': 'wood', '🪨': 'stone', '🐚': 'shell', '🌻': 'sunflower', '📘': 'book', '⭐': 'star', '🌟': 'star', '✨': 'sparkle',
+  '🪙': 'coin', '🏷️': 'tag', '🏷': 'tag', '💰': 'money', '🪵': 'wood', '🪨': 'stone', '🐚': 'shell', '🌻': 'sunflower', '📘': 'book', '⭐': 'star', '🎯': 'target', '🖥️': 'monitor', '🖥': 'monitor', '🌟': 'star', '✨': 'sparkle',
   '🗡️': 'sword', '🗡': 'sword', '⚔️': 'swords', '⚔': 'swords', '🏹': 'bow', '🪄': 'staff', '🛡️': 'shield', '🛡': 'shield', '⛑️': 'helmet', '⛑': 'helmet', '🧥': 'armor', '👢': 'boots', '👒': 'hat', '🎀': 'ribbon', '👑': 'crown',
   '🔨': 'hammer', '⚒️': 'hammer', '⚒': 'hammer', '🪓': 'axe', '⛏️': 'pick', '⛏': 'pick', '🔥': 'fire', '🔮': 'orb', '🌀': 'portal', '💪': 'muscle', '🏃': 'run', '🧠': 'brain', '🍀': 'clover',
   '❤️': 'heart', '❤': 'heart', '♥': 'heart', '💗': 'heartPink',
