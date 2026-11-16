@@ -136,7 +136,7 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; lette
 .me .intro { margin: 2px 0 0; color: var(--ink-soft); font-size: calc(14px * var(--fs)); }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; }
 .mood select { border: 1px solid var(--line); border-radius: 999px; padding: 4px 8px; background: #fff; font-size: calc(13px * var(--fs)); }
-.ptabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--paper-2); padding: 4px; border-radius: 12px; }
+.ptabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; background: var(--paper-2); padding: 4px; border-radius: 12px; }
 .ptabs button { border: 0; background: transparent; padding: 8px 2px; border-radius: 9px; font-weight: 700; font-size: calc(13px * var(--fs)); color: var(--ink-soft); }
 .ptabs button[aria-selected="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 .pane { display: grid; gap: 10px; }
@@ -376,6 +376,24 @@ body.hunting .zoom { display: none; }
 .hbmin svg { width: 22px; height: 22px; }
 .huntbox.min .hb-stats, .huntbox.min .hb-row, .huntbox.min #hbBack { display: none; }
 .huntbox.min { width: auto; }
+.hb-sk { display: flex; gap: 4px; flex-wrap: wrap; }
+.hb-sk .sk { position: relative; width: 32px; height: 32px; border: 2px solid var(--ink); border-radius: 9px; background: #fff; display: grid; place-items: center; overflow: hidden; font-size: 17px; }
+.hb-sk .sk img.ico { width: 22px; height: 22px; }
+.hb-sk .sk i { position: absolute; left: 0; right: 0; bottom: 0; background: rgba(31,42,58,.6); pointer-events: none; }
+.hb-sk .sk.on { box-shadow: 0 0 0 2px #ffd45a; }
+.hb-sk small { color: var(--ink-soft); }
+.huntbox.min .hb-sk { display: none; }
+.skcls { margin-bottom: 8px; }
+.sklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sklist li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; align-items: center; border: 2px solid var(--line); border-radius: 12px; padding: 7px 8px; background: #fff; }
+.sklist li.off { opacity: .55; background: var(--paper-2); }
+.sklist .ski { width: 40px; height: 40px; border-radius: 10px; border: 2px solid var(--rc); display: grid; place-items: center; font-size: 22px; background: #fff; }
+.sklist .ski img.ico { width: 28px; height: 28px; }
+.sklist b { font-size: calc(14.5px * var(--fs)); } .sklist .rt { color: var(--rc); font-weight: 800; font-size: calc(11.5px * var(--fs)); margin-left: 4px; }
+.sklist .lvb { float: right; font-weight: 800; font-size: calc(12.5px * var(--fs)); }
+.sklist p { margin: 2px 0 0; font-size: calc(12px * var(--fs)); color: var(--ink-soft); line-height: 1.35; }
+.sklist .skbar { height: 6px; border-radius: 3px; background: var(--paper-2); overflow: hidden; margin-top: 4px; } .sklist .skbar i { display: block; height: 100%; background: var(--rc); }
+.gcard.sk { --gc: var(--rc); } .gcard .ski2 { font-size: 28px; line-height: 1; } .gcard .ski2 img.ico { width: 34px; height: 34px; }
 .huntbox.min .hbmin { transform: rotate(180deg); }
 body.hunting .chat-log { height: 64px; }
 
@@ -640,6 +658,7 @@ body.hunting .chat-log { height: 64px; }
       <div class="ptabs" role="tablist" id="ptabs">
         <button role="tab" data-p="stat" aria-selected="true">능력치</button>
         <button role="tab" data-p="equip" aria-selected="false">장비</button>
+        <button role="tab" data-p="skill" aria-selected="false">스킬</button>
         <button role="tab" data-p="skin" aria-selected="false">스킨</button>
         <button role="tab" data-p="bag" aria-selected="false">가방</button>
       </div>
@@ -654,6 +673,11 @@ body.hunting .chat-log { height: 64px; }
       <div class="pane" data-pane="equip" hidden>
         <ul class="ilist" id="equipList"></ul>
         <p class="muted">무기 3개는 모두 끼고 있고, 위에서 고른 클래스의 무기로 싸워요. 장비는 가챠센터에서 뽑고, 대장간에서 <b>칸</b>을 강화해요 (장비를 바꿔도 강화는 그대로).</p>
+      </div>
+      <div class="pane" data-pane="skill" hidden>
+        <div class="seg skcls" id="skClsBar" role="group" aria-label="직업별 스킬"></div>
+        <ul class="sklist" id="skillList"></ul>
+        <p class="muted">스킬은 <b>가챠센터 → 스킬 뽑기</b>에서 얻어요. 사냥터에서 쿨타임이 차면 <b>자동으로</b> 써요 (마나 없음). 같은 스킬을 또 뽑으면 장 수가 쌓여 레벨이 올라요. 사냥에서는 지금 클래스의 스킬만 써요.</p>
       </div>
       <div class="pane" data-pane="skin" hidden>
         <div class="arrows">
@@ -702,6 +726,7 @@ body.hunting .chat-log { height: 64px; }
         <span>처치 <b id="hbKills">0</b></span><span>경험치 <b id="hbExp">+0</b></span>
         <span>골드 <b id="hbGold">+0</b></span><span hidden>아이템 <b id="hbDrops">0</b></span>
       </div>
+      <div class="hb-sk" id="hbSk" aria-label="스킬 쿨타임"></div>
       <div class="hb-row"><span id="hbBoss">👑 보스까지 30:00</span></div>
       <div class="hb-row pot"><label>🥤 자동 <select id="hbPot"><option>30</option><option selected>40</option><option>50</option><option>60</option><option>70</option></select>%</label><span id="hbPots">물약 5개</span></div>
       <button class="btn main" id="hbBack" type="button">🏠 마을로 돌아가기</button>
@@ -741,7 +766,7 @@ body.hunting .chat-log { height: 64px; }
 
 <script type="module">
 'use strict';
-import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, fishOdds, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, fxText,
   DAY_MS, gameHour, darkness, dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx } from './assets/js/game-rules.js?v=__BUILD__';
@@ -1779,7 +1804,7 @@ let huntBusy = false, syncT = null;
 // 서버의 사냥 상태(h)로 사냥 화면 열기. 화면의 전투는 보여 주기용이고, 실제 결과는 서버가 30초마다 계산
 function enterHunt(h) {
   const f = FIELDS[h.f]; paintHunt(f);
-  HT = { f, mons: [], floats: [], parts: [], fx: [], shots: [], shake: 0, freeze: 0, loc: { kills: 0, exp: 0, gold: 0 }, t0: h.start, srv: h, bossAt: performance.now() + (h.boss - h.t) * 1000, atkT: .4, potCD: 0, target: null };
+  HT = { f, mons: [], floats: [], parts: [], fx: [], shots: [], shake: 0, freeze: 0, loc: { kills: 0, exp: 0, gold: 0 }, t0: h.start, srv: h, bossAt: performance.now() + (h.boss - h.t) * 1000, atkT: .4, potCD: 0, target: null, cd: { ...(h.cd || {}) }, q: [], sh: 0, bt: 0, batk: 0, bcrit: 0 };
   me.sit = -1; me.x = HW * T / 2; me.y = HH * T / 2; me.path = []; me.moving = false; cam = { x: me.x, y: me.y };
   for (let i = 0; i < 8; i++) spawnMon(false);
   document.body.classList.add('hunting'); $('#huntBox').hidden = false; $('#hbField').textContent = `${f.i} ${f.n}`;
@@ -1821,9 +1846,9 @@ const fxRing = (x, y, c, r = 22, life = .28) => HT.fx.push({ k: 'ring', x, y, c,
 const fxSlash = (x, y, dir, c, big) => HT.fx.push({ k: 'slash', x, y, dir, c, big, t: 0, life: big ? .2 : .15, rot: (Math.random() - .5) * .9 });
 // 한 번 공격의 피해 (지팡이는 마력, 나머지는 공격력 · 필살기 · 치명타)
 function rollHit(D, m) {
-  let dmg = D.hit * (.9 + Math.random() * .2), kind = '';
+  const bt = HT?.bt > 0; let dmg = D.hit * (.9 + Math.random() * .2) * (1 + (bt ? HT.batk : 0) / 100), kind = '';
   if (Math.random() * 100 < D.sp) { dmg *= D.spMul; kind = 'sp'; }
-  if (Math.random() * 100 < D.crit) { dmg *= D.critM || 1.5; kind = kind || 'crit'; }
+  if (Math.random() * 100 < D.crit + (bt ? HT.bcrit : 0)) { dmg *= D.critM || 1.5; kind = kind || 'crit'; }
   if (m?.boss && D.bossP) dmg *= 1 + D.bossP / 100;
   return { dmg: Math.max(1, Math.round(dmg)), kind };
 }
@@ -1860,6 +1885,11 @@ function updateHunt(dt) {
   const alive = HT.mons.filter(m => !m.dead);
   if (!HT.target || HT.target.dead) HT.target = alive.reduce((a, m) => (!a || Math.hypot(m.x - me.x, m.y - me.y) < Math.hypot(a.x - me.x, a.y - me.y) ? m : a), null);
   const tg = HT.target;
+  // 스킬: 쿨타임 줄이기 · 예약된 연타 처리 · 현황판 아이콘
+  for (const k of D.skills) HT.cd[k.s.id] = (HT.cd[k.s.id] || 0) - dt;
+  if (HT.bt > 0) HT.bt -= dt;
+  for (const q of HT.q) { q.t -= dt; if (q.t <= 0) { q.done = 1; q.f(); } } HT.q = HT.q.filter(q => !q.done);
+  HT.skT = (HT.skT || 0) - dt; if (HT.skT <= 0) { HT.skT = .2; renderHbSk(D); }
   HT.atkT = Math.max(0, HT.atkT - dt); HT.back = Math.max(0, (HT.back || 0) - dt); HT.backCD = Math.max(0, (HT.backCD || 0) - dt);
   if (!HT.dying && me.hp > 0) me.hp = Math.min(D.maxHp, me.hp + D.maxHp * D.regen * dt);   // 사냥 중 회복 (서버와 같게)
   if (tg) {
@@ -1889,6 +1919,8 @@ function updateHunt(dt) {
       if (HT.chase) { me.moving = true; const st = Math.min(sp, d - want + 1); me.x += dx / d * st; me.y += dy / d * st; }
       else { me.moving = false; if (HT.atkT <= 0) { HT.atkT = D.gap; if (D.far) shoot(tg, D); else hitMon(tg, D); } }
     }
+    // 쿨타임이 찬 스킬은 공격 거리 안에서 자동으로 씀 (쿨타임이 긴 것부터)
+    if (d <= ok && !HT.dying && !tg.dead) { let ready = null; for (const k of D.skills) if (HT.cd[k.s.id] <= 0 && (!ready || k.p.cd > ready.p.cd)) ready = k; if (ready) castSkill(ready, tg, D); }
   } else me.moving = false;
   // 몬스터
   for (const m of HT.mons) {
@@ -1918,7 +1950,7 @@ function updateHunt(dt) {
 function hitMon(m, D) { me.swing = .18; me.lunge = .12; applyHit(m, rollHit(D, m), D, 'melee'); }
 function applyHit(m, h, D, src) {
   if (m.dead) return;
-  const big = !!h.kind, cy = m.y - 18 * m.d.s, c = h.kind === 'sp' ? '#e2c6ff' : h.kind === 'crit' ? '#ffd166' : FXC[src];
+  const big = !!h.kind, cy = m.y - 18 * m.d.s, c = h.kind === 'sk' ? '#ffcf8a' : h.kind === 'sp' ? '#e2c6ff' : h.kind === 'crit' ? '#ffd166' : FXC[src];
   m.hp -= h.dmg; m.aggro = true; m.hitT = big ? .14 : .1; m.sq = 1;
   if (D.steal) me.hp = Math.min(D.maxHp, me.hp + h.dmg * D.steal / 100);   // 흡혈 옵션
   const a = Math.atan2(m.y - me.y, m.x - me.x), kb = (big ? 170 : 95) * (src === 'arrow' ? .8 : 1) * (m.boss ? .2 : 1 / Math.max(1, m.d.s));
@@ -1929,10 +1961,47 @@ function applyHit(m, h, D, src) {
   if (src === 'melee') fxSlash(m.x, cy, me.dir || 1, c, big);
   if (src === 'magic') fxBurst(m.x, cy, '#7fd0ff', 6, 120, 2.4, 0);
   const top = m.y - 34 * m.d.s;
-  if (h.kind === 'sp') floatText(m.x, top, `필살! ${h.dmg}`, '#d9b8ff', 21, 1.1, true); else if (h.kind === 'crit') floatText(m.x, top, `치명 ${h.dmg}!`, '#ffd166', 20, 1.1, true); else floatText(m.x, top, `${h.dmg}`, '#ffffff', 16);
+  if (h.kind === 'sk') floatText(m.x, top, `${h.dmg}`, '#ffb36b', 20, 1.05, true); else if (h.kind === 'sp') floatText(m.x, top, `필살! ${h.dmg}`, '#d9b8ff', 21, 1.1, true); else if (h.kind === 'crit') floatText(m.x, top, `치명 ${h.dmg}!`, '#ffd166', 20, 1.1, true); else floatText(m.x, top, `${h.dmg}`, '#ffffff', 16);
   if (m.hp <= 0) killMon(m, D);
 }
+// ───────── 스킬 자동 시전 (보여 주기용. 실제 결과는 서버 hunt.js가 같은 규칙으로 계산) ─────────
+const SK_COL = { sword: '#ffcf5a', bow: '#9be27a', staff: '#c9a2ff' };
+function skHit(m, D, mul) {
+  const bt = HT.bt > 0;
+  let dmg = D.hit * mul * (.9 + Math.random() * .2) * (1 + (bt ? HT.batk : 0) / 100), kind = 'sk';
+  if (Math.random() * 100 < D.crit + (bt ? HT.bcrit : 0)) { dmg *= D.critM || 1.5; kind = 'crit'; }
+  if (m.boss && D.bossP) dmg *= 1 + D.bossP / 100;
+  return { dmg: Math.max(1, Math.round(dmg)), kind };
+}
+function castSkill({ s, p }, tg, D) {
+  HT.cd[s.id] = p.cd;
+  const col = SK_COL[s.cls], cy = y => y - 22;
+  floatText(me.x, me.y - 80, `${s.i} ${s.n}!`, col, 17, 1.1, true); fxRing(me.x, cy(me.y), col, 44, .45); me.swing = .22;
+  if (s.k === 'hit') {
+    const meteor = s.id === 'm_meteor';
+    for (let i = 0; i < p.n; i++) HT.q.push({ t: i * .13 + (meteor ? .35 : 0), f: () => {
+      const m = !tg.dead ? tg : HT.mons.find(x => !x.dead && Math.hypot(x.x - me.x, x.y - me.y) < 6 * T); if (!m) return;
+      const h = skHit(m, D, p.m);
+      if (meteor) { fxBurst(m.x, m.y - 10, '#ff9f43', 40, 360, 5); fxBurst(m.x, m.y - 10, '#ffd34d', 20, 220, 3); fxRing(m.x, m.y, '#ffb36b', 90, .5); fxShake(12); applyHit(m, h, D, 'magic'); }
+      else if (s.cls === 'sword') { me.lunge = .12; applyHit(m, h, D, 'melee'); fxSlash(m.x, cy(m.y), -(me.dir || 1), col, true); }
+      else { const sx = me.x + (me.dir || 1) * 16, sy = me.y - 30; HT.shots.push({ k: s.cls === 'staff' ? 'magic' : 'arrow', x: sx, y: sy, m, h, sp: 620, t: 0, a: 0 }); }
+      if (i === 0 && p.stun) { m.atkT += p.stun; floatText(m.x, m.y - 50 * m.d.s, s.id === 'm_ice' ? '❄️ 얼음!' : '💫 기절!', '#9fe0ff', 14, 1); fxRing(m.x, m.y, '#9fe0ff', 30, .5); }
+      if (s.id === 's_quake') { fxBurst(m.x, m.y, '#b08a5a', 24, 260, 4); fxShake(9); }
+    } });
+    if (p.dot) for (let k = 1; k <= 4; k++) HT.q.push({ t: k * .9, f: () => { const m = tg; if (m.dead) return; const dmg = Math.max(1, Math.round(D.hit * p.dot / 4)); m.hp -= dmg; floatText(m.x + 10, m.y - 34 * m.d.s, `☠ ${dmg}`, '#8be06a', 14); fxBurst(m.x, m.y - 14, '#8be06a', 5, 60, 2.4, -40); if (m.hp <= 0) killMon(m, D); } });
+  } else if (s.k === 'heal') {
+    const v = Math.round(D.maxHp * p.v / 100); me.hp = Math.min(D.maxHp, me.hp + v);
+    fxBurst(me.x, me.y - 24, '#8af0a0', 22, 140, 3, -80); fxRing(me.x, me.y - 10, '#8af0a0', 50, .5); floatText(me.x, me.y - 60, `+${v}`, '#8af0a0', 18, 1.2, true);
+  } else if (s.k === 'shield') { HT.sh = Math.max(HT.sh, p.sh); fxRing(me.x, me.y - 22, '#8fd3ff', 36, .5); }
+  else { HT.bt = p.dur; HT.batk = p.atk; HT.bcrit = p.crit; fxBurst(me.x, me.y - 24, col, 16, 160, 3, -60); }
+}
+function renderHbSk(D) {
+  const el = $('#hbSk'), sig = D.skills.map(k => k.s.id + k.lv).join() || '-';
+  if (el.dataset.sig !== sig) { el.dataset.sig = sig; el.innerHTML = D.skills.length ? D.skills.map(k => `<span class="sk" data-id="${k.s.id}" title="${k.s.n} Lv.${k.lv}">${k.s.i}<i></i></span>`).join('') : '<small>스킬 없음 · 가챠센터에서 뽑아요</small>'; iconize(el); }
+  for (const k of D.skills) { const x = el.querySelector(`[data-id="${k.s.id}"]`); if (!x) continue; const r = Math.max(0, Math.min(1, (HT.cd[k.s.id] || 0) / k.p.cd)); x.querySelector('i').style.height = `${r * 100}%`; x.classList.toggle('on', r === 0); }
+}
 function hitMe(m, D) {
+  if (HT.sh > 0) { HT.sh--; fxRing(me.x, me.y - 26, '#8fd3ff', 34, .35); fxBurst(me.x, me.y - 26, '#bfefff', 8, 110, 2.6, 0); return floatText(me.x, me.y - 52, '막음!', '#8fd3ff', 16); }
   if (Math.random() * 100 < D.eva) { fxBurst(me.x, me.y - 26, '#bfefff', 5, 90, 2.4, 0); return floatText(me.x, me.y - 52, '회피', '#9fe0ff'); }
   const dmg = biteDmg(m.d, D);
   if (!dmg) { fxBurst(me.x, me.y - 26, '#ffe27a', 5, 90, 2.4, 0); return floatText(me.x, me.y - 52, '무적', '#ffe27a'); }
@@ -2018,7 +2087,9 @@ function renderHunt(now) {
   if (HT.target && !HT.target.dead) { const m = HT.target; ctx.strokeStyle = 'rgba(232,85,58,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(m.x, m.y + 2, 16 * m.d.s, 5 * m.d.s, 0, 0, 7); ctx.stroke(); }
   const list = HT.mons.map(m => ({ y: m.y, f: () => drawMon(m, clock) }));
   const lx = me.lunge > 0 ? (me.dir || 1) * Math.sin(me.lunge / .12 * Math.PI) * 9 : 0;
-  list.push({ y: me.y, f: () => drawChar(ctx, me.x + lx, me.y + 6, me, clock) });
+  list.push({ y: me.y, f: () => { drawChar(ctx, me.x + lx, me.y + 6, me, clock);
+    if (HT.sh > 0) { ctx.save(); ctx.globalAlpha = .28 + Math.sin(clock * 6) * .06; ctx.fillStyle = '#8fd3ff'; ctx.beginPath(); ctx.ellipse(me.x + lx, me.y - 18, 26, 32, 0, 0, 7); ctx.fill(); ctx.globalAlpha = .8; ctx.strokeStyle = '#d6f1ff'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore(); }
+    if (HT.bt > 0) { ctx.save(); ctx.globalAlpha = .5; ctx.strokeStyle = SK_COL[me.cls] || '#ffcf5a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(me.x + lx, me.y + 6, 20 + Math.sin(clock * 8) * 2, 7, 0, 0, 7); ctx.stroke(); ctx.restore(); } } });
   list.sort((a, b) => a.y - b.y).forEach(o => o.f());
   drawAmbient(f, clock);
   drawFx();
@@ -2208,6 +2279,30 @@ function openBuilding(b, keep) {
 const gachaB = () => BUILDINGS.find(b => b.id === 'gacha');
 const pwrTxt = (it, l = me.enh[it.slot] || 0) => { const x = itemStats(it, l); return x.atk != null ? `${it.slot === 'staff' ? '마력' : '공격'} ${x.atk}` : `방어 ${x.def}`; };
 const tenCost = gi => Math.round(gi.cost * 10 * GACHA_TEN);
+const skTen = () => Math.round(SKILL_GACHA.cost(me.lv) * 10 * SKILL_GACHA.ten);
+function skBox() {
+  S.skCls ||= me.cls; const one = SKILL_GACHA.cost(me.lv), ten = skTen(), own = me.life?.sk || {}, list = SKILLS.filter(s => s.cls === S.skCls);
+  return `<div class="gbox"><div class="gbox-h"><span class="gbox-i">📘</span><b>스킬 뽑기</b><small>직업을 골라 뽑아요 · 같은 스킬이 또 나오면 레벨 업</small><span class="glv">${list.filter(s => own[s.id]).length} / 6 모음</span></div>
+    <div class="seg skcls">${Object.entries(CLASSES).map(([k, c]) => `<button type="button" data-x="skc:${k}" aria-pressed="${S.skCls === k}">${c.i} ${c.n}</button>`).join('')}</div>
+    <div class="godds">${[1, 2, 3].map(r => `<span style="color:${SK_RARE[r].c}">${SK_RARE[r].n} <b>${SK_RARE[r].p}%</b> ${list.filter(s => s.r === r).map(s => s.i).join('')}</span>`).join('')}</div>
+    <div class="gbtns"><button class="btn" data-x="sk:1" ${me.gold < one ? 'disabled' : ''}>1회 뽑기<small>${goldTxt(one)}</small></button><button class="btn main" data-x="sk:10" ${me.gold < ten ? 'disabled' : ''}>10회 뽑기<small>${goldTxt(ten)} · 10% 할인</small></button></div></div>`;
+}
+// 스킬 뽑기 결과 카드: NEW / 레벨 업 / 최고 레벨이면 골드로 돌려받음
+function showSkillPulls(j) {
+  const cards = j.got.map((o, i) => { const s = SKILLS.find(x => x.id === o.id);
+    return `<div class="gcard sk${s.r === 3 ? ' shine' : ''}${o.isNew ? ' keep' : ''}" style="--i:${i};--rc:${SK_RARE[s.r].c};--gc:${SK_RARE[s.r].c}"><span class="ski2">${s.i}</span><em>${SK_RARE[s.r].n}</em><span class="nm">${s.n}</span>${o.max ? '<span class="dis">최고 레벨 · 골드</span>' : o.isNew ? '<span class="up">NEW!</span>' : o.up ? `<span class="up">Lv.${o.lv} ▲</span>` : `<span class="dis">Lv.${o.lv} · 장 +1</span>`}</div>`; }).join('');
+  openModal(`<h3>📘 ${CLASSES[S.skCls].n} 스킬 뽑기 결과</h3><div class="gres">${cards}</div>
+    ${j.back ? `<p class="gsum">최고 레벨 스킬은 골드로 돌려받았어요: <b>${goldTxt(j.back)}</b></p>` : ''}
+    <div class="actions"><button class="btn main" data-x="again" ${me.gold < skTen() ? 'disabled' : ''}>🎰 10회 더 뽑기<small>${goldTxt(skTen())}</small></button><button class="btn" data-x="see">📘 내 스킬 보기</button><button class="btn" data-x="back">가챠센터로</button></div>`, el => wire(el, async x => {
+    if (x === 'back') return openBuilding(gachaB());
+    if (x === 'see') { closeModal(); skTab = S.skCls; renderSkills(); return openPanelTab('skill'); }
+    const k = await act('/api/skill/pull', { cls: S.skCls, n: 10 }); if (k) showSkillPulls(k);
+  }));
+  const best = j.got.filter(o => SKILLS.find(s => s.id === o.id).r === 3 && (o.isNew || o.up));
+  for (const o of best) { const s = SKILLS.find(x => x.id === o.id); toast(`✨ 전설 스킬 ${s.n}${o.isNew ? '!' : ` Lv.${o.lv}!`}`); }
+  if (best.length) emote(me, '🎉');
+  logAct(`스킬 뽑기 ${j.got.length}회 −${j.cost}`);
+}
 function gachaSheet(b, keep) {
   const box = k => {
     const G = GACHA[k], gi = gachaInfo(me.gacha[k]), odds = GACHA_ODDS[gi.lv - 1];
@@ -2216,13 +2311,15 @@ function gachaSheet(b, keep) {
       <div class="godds">${odds.map((p, i) => (p ? `<span>${i + 1}단계 <b>${p}%</b></span>` : '')).join('')}</div>
       <div class="gbtns"><button class="btn" data-x="${k}:1" ${me.gold < gi.cost ? 'disabled' : ''}>1회 뽑기<small>${goldTxt(gi.cost)}</small></button><button class="btn main" data-x="${k}:10" ${me.gold < tenCost(gi) ? 'disabled' : ''}>10회 뽑기<small>${goldTxt(tenCost(gi))} · 10% 할인</small></button></div></div>`;
   };
-  openModal(`${sheetHead(b, '골드로 무기·방어구를 뽑아요. 지금 것보다 <b>좋은 장비</b>가 나오면 비교 창에서 바꿀지 고르고, 나머지는 자동으로 <b>분해(골드)</b>돼요. 많이 뽑을수록 뽑기 레벨이 올라 높은 단계가 나와요.')}
+  openModal(`${sheetHead(b, '골드로 무기·방어구·<b>스킬</b>을 뽑아요. 지금 것보다 <b>좋은 장비</b>가 나오면 비교 창에서 바꿀지 고르고, 나머지는 자동으로 <b>분해(골드)</b>돼요. 많이 뽑을수록 뽑기 레벨이 올라 높은 단계가 나와요.')}
     ${me.bag.length ? `<button class="btn main gpend" data-x="pend">🎁 아직 안 고른 좋은 장비 ${me.bag.length}개 · 비교하기</button>` : ''}
-    ${box('w')}${box('a')}
+    ${box('w')}${box('a')}${skBox()}
     <button class="btn gtablebtn" data-x="table">📊 단계 × 등급 표 보기 (그림 · 수치 · 옵션)</button>
     <details class="gfold"><summary>등급 확률 · 규칙</summary><div class="godds">${Object.values(GRADES).map(g => `<span style="color:${g.c}">${g.n} <b>${g.p}%</b></span>`).join('')}</div>
       <p class="muted">단계가 등급보다 중요해요. 2단계 '빈약'도 1단계 '신화'보다 세요. 무기는 3개(검·활·지팡이)를 모두 끼고, 지금 클래스의 무기로 싸워요.<br>등급이 높을수록 <b>랜덤 옵션</b>이 많이 붙어요 (빈약 0개 · 일반·고급 1개 · 희귀·영웅 2개 · 전설·신화 3개).</p></details>`, el => wire(el, async x => {
     if (x === 'pend') return showPicks();
+    if (x.startsWith('skc:')) { S.skCls = x.slice(4); return gachaSheet(b, true); }
+    if (x.startsWith('sk:')) { const j = await act('/api/skill/pull', { cls: S.skCls, n: +x.slice(3) }); if (j) showSkillPulls(j); return; }
     if (x === 'table') return gachaTable();
     const [k, n] = x.split(':'), j = await act('/api/gacha/pull', { box: k, n: +n });
     if (j) showPulls(j, k);
@@ -2412,7 +2509,7 @@ function syncMe() {
   $('#meName').textContent = me.name; $('#peekName').textContent = me.name; $('#meTitle').textContent = `🏷️ ${titleName(me.title) || '새로 온'} ›`; $('#meIntro').textContent = me.intro;
   $('#meLv').textContent = `Lv.${me.lv}`; $('#peekLv').textContent = `Lv.${me.lv}`;
   portrait($('#meCanvas'), me, 3); portrait($('#peekCanvas'), me, .82);
-  renderCls(); renderStats(); renderEquip(); renderSkins(); renderBag(); syncBars(); lookChanged();
+  renderCls(); renderStats(); renderEquip(); renderSkills(); renderSkins(); renderBag(); syncBars(); lookChanged();
 }
 // 자주 바뀌는 숫자 (체력·경험치·골드·사냥 상황)
 function syncBars() {
@@ -2503,6 +2600,20 @@ function hairPicker(el, after) {
   el.innerHTML = HAIRS.map(h => `<button type="button" data-hr="${h.id}" aria-pressed="${(me.hair || 'none') === h.id}">${h.n}</button>`).join('');
   el.onclick = e => { const id = e.target.closest('[data-hr]')?.dataset.hr; if (!id) return; me.hair = id; el.querySelectorAll('[data-hr]').forEach(b => b.setAttribute('aria-pressed', b.dataset.hr === id)); after(); };
 }
+// 스킬 탭: 직업별 6종 (가진 것은 레벨·다음 레벨까지 장 수, 없는 것은 흐리게)
+let skTab = null;
+const skRow = (s, n) => {
+  const lv = n ? Math.min(SK_MAX, skLv(n)) : 0, next = SK_NEED[lv], prev = lv ? SK_NEED[lv - 1] : 0, rc = SK_RARE[s.r].c;
+  return `<li class="${n ? '' : 'off'}" style="--rc:${rc}"><span class="ski">${s.i}</span><div><span class="lvb">${n ? (lv >= SK_MAX ? 'Lv.MAX' : `Lv.${lv}`) : '없음'}</span><b>${s.n}</b><span class="rt">${SK_RARE[s.r].n}</span>
+    <p>${s.d}<br>${skText(s, Math.max(1, lv))}</p>${n && lv < SK_MAX ? `<div class="skbar" title="다음 레벨까지 ${next - n}장"><i style="width:${(n - prev) / (next - prev) * 100}%"></i></div><p>다음 레벨까지 ${next - n}장 더 (${n}장 모음)</p>` : ''}</div></li>`;
+};
+function renderSkills() {
+  skTab ||= me.cls; const own = me.life?.sk || {};
+  $('#skClsBar').innerHTML = Object.entries(CLASSES).map(([k, c]) => `<button type="button" data-skc="${k}" aria-pressed="${skTab === k}">${c.i} ${c.n}${k === me.cls ? ' ✔' : ''}</button>`).join('');
+  $('#skillList').innerHTML = SKILLS.filter(s => s.cls === skTab).map(s => skRow(s, own[s.id] || 0)).join('');
+  iconize($('#skillList')); iconize($('#skClsBar'));
+}
+$('#skClsBar').addEventListener('click', e => { const k = e.target.closest('[data-skc]')?.dataset.skc; if (k) { skTab = k; renderSkills(); } });
 function renderBag() {
   const P = [['s', '🥤', '작은 음료', '체력 +50'], ['l', '🧋', '큰 음료', '체력 +200'], ['xl', '🍹', '특대 음료', '최대 체력의 50%']];
   $('#potList').innerHTML = P.map(([k, ic, n, d]) => row(ic, `${n} × ${me.pots[k]}`, d, '')).join('');
@@ -2539,8 +2650,8 @@ async function api(path, body, opts = {}) {
   return j;
 }
 // 서버에서 받은 내 정보로 캐릭터 맞추기
-function applyMe(m) {
-  const c = m.char, keepPos = HT && c.hunt;
+function applyMe(m, keep) {   // keep: 지금 위치 그대로 (서버 저장 위치는 45초마다라서 예전 자리일 수 있음)
+  const c = m.char, keepPos = keep || (HT && c.hunt);
   Object.assign(me, { name: m.nick, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair || 'none', hairC: c.hairC || HAIR_COLORS[0], intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
     str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp || derive().maxHp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
     cls: c.cls || 'sword', enh: c.enh || {}, presets: c.presets, preset: c.preset || 0, gacha: c.gacha || { w: 0, a: 0 }, life: c.life || me.life, uid: m.id ?? me.uid, gfx: m.gfx || {}, world: m.world || me.world });
@@ -2551,7 +2662,7 @@ function applyMe(m) {
 // 서버 응답 처리: 내 정보 맞추기 + 사냥 결과 알려 주기
 function took(j) {
   const lv0 = me.lv, inTown = !$('#app').hidden;
-  applyMe(j.me);
+  applyMe(j.me, !(HT && !j.me.char.hunt));   // 버튼 응답으로 순간이동하지 않게. 사냥에서 돌아올 때만 서버 위치로
   const h = j.hunt, srv = j.me.char.hunt;
   if (h && inTown) {
     if (h.bosses?.length) { toast(`👑 보스 ${h.bosses[0]}를 쓰러뜨렸어요!`); sysMsg(`👑 보스 ${h.bosses.join(', ')} 처치!`); }

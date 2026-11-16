@@ -155,6 +155,11 @@ export const ICONS = {
   full: [S('M4 11 L4 4 L11 4 M21 4 L28 4 L28 11 M28 21 L28 28 L21 28 M11 28 L4 28 L4 21', DARK, 3.2)],
   win: [R(9.5, 4, 18.5, 15, LIGHT, 2), R(4, 12, 18.5, 15.5, WHITE, 2), R(4, 12, 18.5, 4, BLUE, 2, 'f')],
   sun: [...Array.from({ length: 8 }, (_, i) => S(`M${16 + Math.cos(i * .785) * 10.5} ${16 + Math.sin(i * .785) * 10.5} L${16 + Math.cos(i * .785) * 14} ${16 + Math.sin(i * .785) * 14}`, ORANGE, 2.2)), C(16, 16, 7.5, YEL), E(13.5, 13.5, 2.4, 1.6, '#fff6c8', 'f', 'rotate(-35 13.5 13.5)')],
+  blast: [P('M16 2 L19 10 L27 6 L23 13.5 L30 16 L23 18.5 L27 26 L19 22 L16 30 L13 22 L5 26 L9 18.5 L2 16 L9 13.5 L5 6 L13 10Z', ORANGE), P('M16 8 L18 13 L23 12 L20 16 L23 20 L18 19 L16 24 L14 19 L9 20 L12 16 L9 12 L14 13Z', YEL, 'f')],
+  rain: [E(16, 11, 11, 7, '#c9d6e6'), C(10, 12, 5, '#c9d6e6'), C(21, 10, 6, '#dfe8f2'), S('M9 21 L7 27', '#5aa0f0', 2.6), S('M16 21 L14 28', '#5aa0f0', 2.6), S('M23 21 L21 27', '#5aa0f0', 2.6)],
+  snow: [S('M16 3 L16 29', '#8fd3ff', 3.2), S('M4.7 9.5 L27.3 22.5', '#8fd3ff', 3.2), S('M4.7 22.5 L27.3 9.5', '#8fd3ff', 3.2), C(16, 16, 4, WHITE)],
+  bolt: [P('M18.5 2 L7 18 L14.5 18 L12 30 L25 12.5 L17.5 12.5 L21 2Z', YEL), P('M18 5 L11.5 15.5 L15.5 15.5Z', '#fff6c8', 'f')],
+  meteor: [S('M4 4 L15 15', ORANGE, 4), S('M9 2.5 L17 11', '#ffd34d', 2.6), S('M2.5 9 L11 17', '#ffd34d', 2.6), C(20, 20, 8.5, '#8a6a52'), C(17.5, 17.5, 2.4, '#6b4f3c', 'f'), C(23, 22.5, 1.8, '#6b4f3c', 'f')],
   moon: [P('M19 3.5 A12.5 12.5 0 1 0 28.5 22 A10 10 0 1 1 19 3.5Z', YEL), C(12, 17, 1.6, '#f2b52a', 'f'), C(16, 23, 1.2, '#f2b52a', 'f')],
   phone: [R(8.5, 2.5, 15, 27, DARK, 3.5), R(10.5, 6, 11, 18.5, SKY, 1, 'f'), C(16, 27, 1.2, LIGHT, 'd')],
   pc: [R(5.5, 5, 21, 15, DARK, 2), R(7.5, 7, 17, 11, SKY, 1, 'f'), P('M2.5 21.5 L29.5 21.5 L27 26.5 L5 26.5Z', GREY)],
@@ -194,7 +199,7 @@ export const EMOJI = {
   '⚙️': 'gear', '⚙': 'gear', '✏️': 'pencil', '✏': 'pencil', '🔑': 'key', '🧾': 'receipt', '🔒': 'lock', '🔍': 'search', '🔎': 'search', '📢': 'speaker', '📣': 'speaker', '📅': 'calendar', '📋': 'clipboard', '📊': 'chart',
   '🎁': 'gift', '🎉': 'party', '🎈': 'balloon', '🎰': 'slot', '🎨': 'palette', '👕': 'shirt', '👀': 'eyes', '👥': 'people', '👋': 'wave', '🚶': 'walk', '👷': 'worker', '📦': 'box', '🚚': 'truck',
   '➕': 'plus', '✅': 'check', '🚫': 'ban', '⚠️': 'warn', '⚠': 'warn', '🚨': 'siren', '❗': 'exclaim', '❓': 'question', '⏳': 'hourglass', '⏱️': 'timer', '⏱': 'timer', '💤': 'zzz', '💨': 'wind', '🔄': 'refresh',
-  '↔️': 'swap', '↔': 'swap', '⛶': 'full', '🗗': 'win', '🌙': 'moon', '☀️': 'sun', '☀': 'sun', '📱': 'phone', '💻': 'pc', '💬': 'chat', '🔴': 'live', '📺': 'tv', '📰': 'paper', '👍': 'thumb', '🥇': 'gold1', '🥈': 'gold2', '🥉': 'gold3',
+  '↔️': 'swap', '↔': 'swap', '⛶': 'full', '🗗': 'win', '🌙': 'moon', '💥': 'blast', '🌧️': 'rain', '🌧': 'rain', '❄️': 'snow', '❄': 'snow', '⚡': 'bolt', '☄️': 'meteor', '☄': 'meteor', '☀️': 'sun', '☀': 'sun', '📱': 'phone', '💻': 'pc', '💬': 'chat', '🔴': 'live', '📺': 'tv', '📰': 'paper', '👍': 'thumb', '🥇': 'gold1', '🥈': 'gold2', '🥉': 'gold3',
   '🧪': 'tube', '😇': 'angel', '🌈': 'rainbow', '😵': 'dizzy', '🐱': 'cat', '🙈': 'hide', '😀': 'smile', '😂': 'laugh', '😑': 'meh', '😉': 'wink', '😢': 'sad',
 };
 

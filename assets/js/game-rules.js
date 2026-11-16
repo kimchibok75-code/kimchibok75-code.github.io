@@ -146,7 +146,7 @@ export function derive(c) {
   // 능력치·레벨에서 오는 피해는 공격 간격만큼 곱함 → 느린 무기는 한 방이 세고, 빠른 무기는 약하게 여러 번 (초당 피해는 비슷)
   const god = !!c.life?.god, am = (1 + (fx.atkP || 0) / 100) * (god ? 10 : 1);   // god: 관리자 갓모드 (안 맞음 + 공격력 10배)
   const atk = Math.round(((staff ? 3 : wAtk) + ((bow ? dex * wt.k : str * (staff ? 2 : wt.k)) + c.lv) * (staff ? 1 : wt.gap)) * am), mag = Math.round(((staff ? wAtk : 0) + (int * (staff ? wt.k : 2) + c.lv) * (staff ? wt.gap : 1)) * am);
-  return { god, b, str, dex, int, luk, atk, mag, hit: staff ? mag : atk, magic: staff, far: !!wt.far, wt: cls, cls, fx,
+  return { god, b, str, dex, int, luk, atk, mag, hit: staff ? mag : atk, magic: staff, far: !!wt.far, wt: cls, cls, fx, skills: mySkills(c, cls),
     def: Math.round((def + str * .5) * (1 + (fx.defP || 0) / 100)), mdef: Math.round((def * .5 + int * .5) * (1 + ((fx.defP || 0) + (fx.mdefP || 0)) / 100)), maxHp: Math.round((100 + c.lv * 20 + str * 5 + hp) * (1 + (fx.hpP || 0) / 100)),
     gap: wt.gap / Math.min(2, 1 + dex * .005) / (1 + (fx.aspd || 0) / 100), spd: Math.min(1.8, (1 + dex * .003) * (1 + (fx.spdP || 0) / 100)), crit: Math.min(70, 5 + luk * .25 + (fx.crit || 0)), critM: 1.5 + (fx.critD || 0) / 100,
     eva: Math.min(45, dex * .2 + (fx.eva || 0)), sp: 5 + int * .1 + (fx.sp || 0), spMul: (2 + int * .02) * (wt.sp || 1), goldB: luk + (fx.goldP || 0), expB: fx.expP || 0, enhB: Math.min(15, luk * .05 + (fx.enhB || 0)),
@@ -247,7 +247,7 @@ const HOUR = 3600e3, MIN = 60e3;
 // 캐릭터의 생활 정보 (DB characters.life 한 칸에 JSON으로)
 export const newLife = () => ({ coins: { fish: 0, farm: 0 }, res: { wood: 0, stone: 0 }, fish: { rod: 0, bait: 0 },
   farm: { plots: [null, null, null, null, null, null], can: 0, seeds: ['lettuce', 'carrot'], wetAt: 0, wetM: 1 }, cnt: {}, titles: ['new'], buff: null, wishAt: 0,
-  nodes: {}, gatherAt: 0, work: { lumber: { n: 0, at: 0, acc: 0 }, quarry: { n: 0, at: 0, acc: 0 } } });
+  sk: {}, skg: 0, nodes: {}, gatherAt: 0, work: { lumber: { n: 0, at: 0, acc: 0 }, quarry: { n: 0, at: 0, acc: 0 } } });
 export function fixLife(l) {
   const d = newLife(); if (!l || typeof l !== 'object') return d;
   for (const k of Object.keys(d)) if (l[k] === undefined || l[k] === null && k !== 'buff') l[k] = d[k];
@@ -491,4 +491,58 @@ export function darkness(h) {
   if (h >= 17 && h < 20) return (h - 17) / 3 * N;
   if (h >= 4 && h < 7) return (1 - (h - 4) / 3) * N;
   return N;
+}
+
+// ───── 스킬 (직업마다 6종, 사냥터에서 쿨타임마다 자동 시전, 마나 없음) ─────
+// k: hit(피해: m 배 × x 번, stun 초 동안 몬스터 멈춤, dot 독 피해 배율) · heal(최대 체력 v%) · shield(다음 공격 x번 막음) · buff(dur 초 동안 atk% · crit%p)
+// r: 희귀도 1 보통 · 2 희귀 · 3 전설 (뽑기 확률이 다름)
+const SK = (id, cls, n, i, r, cd, k, o, d) => ({ id, cls, n, i, r, cd, k, ...o, d });
+export const SKILLS = [
+  SK('s_bash', 'sword', '강타', '💥', 1, 6, 'hit', { m: 2 }, '검을 크게 내려쳐 한 방에 큰 피해'),
+  SK('s_whirl', 'sword', '회오리 베기', '⚔️', 1, 10, 'hit', { m: .75, x: 3 }, '몸을 돌리며 빠르게 세 번 벰'),
+  SK('s_guard', 'sword', '철벽 방패', '🛡️', 2, 15, 'shield', { x: 2 }, '방패를 들어 다음 공격을 막음'),
+  SK('s_roar', 'sword', '전투 함성', '📣', 2, 20, 'buff', { atk: 30, dur: 6 }, '함성을 질러 잠깐 공격력이 오름'),
+  SK('s_quake', 'sword', '대지 가르기', '⛰️', 3, 18, 'hit', { m: 3.2, stun: 1.5 }, '땅을 갈라 큰 피해를 주고 몬스터를 멈추게 함'),
+  SK('s_will', 'sword', '불굴의 의지', '❤️', 3, 26, 'heal', { v: 22 }, '이를 악물고 체력을 크게 회복'),
+  SK('b_multi', 'bow', '연속 사격', '🏹', 1, 6, 'hit', { m: .8, x: 3 }, '화살 세 발을 빠르게 연달아 쏨'),
+  SK('b_poison', 'bow', '독화살', '🧪', 1, 9, 'hit', { m: 1, dot: 1.6 }, '독 묻은 화살. 맞은 몬스터가 몇 초 동안 독 피해를 입음'),
+  SK('b_roll', 'bow', '뒤로 구르기', '💨', 2, 13, 'shield', { x: 2 }, '재빨리 굴러서 다음 공격을 피함'),
+  SK('b_eye', 'bow', '매의 눈', '👀', 2, 20, 'buff', { crit: 35, dur: 7 }, '약점을 노려 잠깐 치명타 확률이 크게 오름'),
+  SK('b_pierce', 'bow', '관통 화살', '🎯', 3, 15, 'hit', { m: 3.6 }, '힘껏 당겨 쏘는 묵직한 한 발'),
+  SK('b_rain', 'bow', '화살비', '🌧️', 3, 22, 'hit', { m: .9, x: 5 }, '하늘에서 화살이 다섯 번 쏟아짐'),
+  SK('m_fire', 'staff', '불덩이', '🔥', 1, 6, 'hit', { m: 2.1 }, '뜨거운 불덩이를 날림'),
+  SK('m_ice', 'staff', '얼음 창', '❄️', 1, 10, 'hit', { m: 1.6, stun: 2 }, '얼음 창으로 찌르고 몬스터를 얼려 멈추게 함'),
+  SK('m_shield', 'staff', '마법 보호막', '🔮', 2, 16, 'shield', { x: 3 }, '보호막이 다음 공격 세 번을 막음'),
+  SK('m_bolt', 'staff', '번개 사슬', '⚡', 2, 12, 'hit', { m: .85, x: 4 }, '번개가 튀며 네 번 때림'),
+  SK('m_heal', 'staff', '치유의 빛', '✨', 3, 22, 'heal', { v: 25 }, '따뜻한 빛으로 체력을 크게 회복'),
+  SK('m_meteor', 'staff', '메테오', '☄️', 3, 30, 'hit', { m: 6, stun: 1 }, '하늘에서 운석을 떨어뜨림'),
+];
+export const skillOf = id => SKILLS.find(s => s.id === id);
+export const SK_RARE = { 1: { n: '보통', c: '#5d6b7e', p: 60 }, 2: { n: '희귀', c: '#2f6fd0', p: 30 }, 3: { n: '전설', c: '#e0731c', p: 10 } };
+// 같은 스킬을 모은 장 수 → 레벨 (최대 10). 1장이면 Lv.1, 2장 Lv.2, 4장 Lv.3 …
+export const SK_NEED = [1, 2, 4, 7, 11, 16, 22, 29, 37, 46];
+export const SK_MAX = SK_NEED.length;
+export const skLv = n => SK_NEED.filter(x => n >= x).length;
+// 레벨에 따른 세기: 피해 +10%/레벨, 회복·버프 +7%/레벨, 막기는 3레벨마다 +1번, 쿨타임 −2%/레벨
+export function skPow(s, lv) {
+  const L = Math.max(0, lv - 1);
+  return { m: (s.m || 0) * (1 + .1 * L), n: s.x || 1, stun: s.stun || 0, dot: (s.dot || 0) * (1 + .1 * L), v: (s.v || 0) * (1 + .07 * L),
+    sh: (s.k === 'shield' ? s.x : 0) + Math.floor(L / 3), atk: (s.atk || 0) * (1 + .07 * L), crit: (s.crit || 0) * (1 + .07 * L), dur: s.dur || 0, cd: s.cd * (1 - .02 * L) };
+}
+export function skText(s, lv) {
+  const p = skPow(s, lv), pc = x => Math.round(x * 100) + '%';
+  const eff = s.k === 'hit' ? `피해 ${pc(p.m)}${p.n > 1 ? ` × ${p.n}번` : ''}${p.stun ? ` · ${p.stun}초 멈춤` : ''}${p.dot ? ` · 독 ${pc(p.dot)}` : ''}`
+    : s.k === 'heal' ? `체력 ${Math.round(p.v)}% 회복` : s.k === 'shield' ? `공격 ${p.sh}번 막기` : `${p.dur}초 동안 ${p.atk ? `공격력 +${Math.round(p.atk)}%` : `치명타 +${Math.round(p.crit)}%p`}`;
+  return `${eff} · 쿨타임 ${p.cd.toFixed(1)}초`;
+}
+// 가진 스킬: c.life.sk = { 스킬id: 모은 장 수 }. 지금 클래스 스킬만 사냥에서 씀
+export function mySkills(c, cls = c.cls) {
+  const o = c.life?.sk || {};
+  return SKILLS.filter(s => s.cls === cls && o[s.id] > 0).map(s => ({ s, lv: Math.min(SK_MAX, skLv(o[s.id])), p: skPow(s, Math.min(SK_MAX, skLv(o[s.id]))) }));
+}
+// 스킬 뽑기: 직업 상자를 골라서 뽑음. 값은 내 레벨에 따라 오름
+export const SKILL_GACHA = { cost: lv => 1500 + lv * 150, ten: .9 };
+export function rollSkill(cls) {
+  let r = Math.random() * 100, rare = 3; for (const k of [1, 2, 3]) { r -= SK_RARE[k].p; if (r < 0) { rare = k; break; } }
+  return pick(SKILLS.filter(s => s.cls === cls && s.r === rare));
 }
