@@ -97,6 +97,12 @@
       "ko": "Unstable Genetics는 여러 가지 새로운 메커니즘과 함께 실험적인 유전자 조립 게임플레이를 기본 게임에 추가합니다.",
       "at": 1794687919420
     },
+    "3837041858": {
+      "src": "RimWorld's vanilla faction interface wasn't designed to display dozens of faction relationships at once.",
+      "full": "RimWorld의 바닐라 세력 인터페이스는 수십 개의 세력 관계를 한 번에 표시하도록 설계되지 않았습니다.",
+      "ko": "RimWorld의 바닐라 세력 인터페이스는 수십 개의 세력 관계를 한 번에 표시하도록 설계되지 않았습니다.",
+      "at": 1794819358882
+    },
     "3837063832": {
       "src": "Pocket maps stop being disconnected side rooms.",
       "full": "포켓 맵은 연결이 끊긴 사이드 룸을 중지합니다.",

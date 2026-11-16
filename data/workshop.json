@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1794818995509,
+  "updatedAt": 1794819359284,
   "source": "https://steamcommunity.com/workshop/browse/?appid=294100&section=readytouseitems&days=7",
   "items": [
     {
@@ -8,10 +8,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837808326",
       "title": "Supply Shelf",
       "preview": "https://images.steamusercontent.com/ugc/14471707077254728827/8049B12204A704E4E24CC450B8DFDD66618F7D8B/",
-      "subs": 7291,
-      "current": 6877,
-      "favorited": 743,
-      "views": 22954,
+      "subs": 7297,
+      "current": 6883,
+      "favorited": 744,
+      "views": 22976,
       "tags": [
         "Mod",
         "1.7",
@@ -31,10 +31,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839642536",
       "title": "SQUISHY Melee",
       "preview": "https://images.steamusercontent.com/ugc/10794798281109748820/43C158FAE832AC939AE5CE8EB9B385380D32363E/",
-      "subs": 7472,
-      "current": 7041,
-      "favorited": 934,
-      "views": 17896,
+      "subs": 7477,
+      "current": 7048,
+      "favorited": 935,
+      "views": 17912,
       "tags": [
         "Mod",
         "1.7"
@@ -53,10 +53,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839580086",
       "title": "PAWN DEPTH ORDER",
       "preview": "https://images.steamusercontent.com/ugc/13391398177189960626/E5C8828C7E874F3A82BE1B555BFBD77FC6D4B13B/",
-      "subs": 4411,
-      "current": 4200,
-      "favorited": 400,
-      "views": 7659,
+      "subs": 4415,
+      "current": 4204,
+      "favorited": 401,
+      "views": 7667,
       "tags": [
         "Mod",
         "1.7"
@@ -78,7 +78,7 @@
       "subs": 253,
       "current": 236,
       "favorited": 113,
-      "views": 6045,
+      "views": 6063,
       "tags": [
         "Mod",
         "1.7",
@@ -98,10 +98,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837906824",
       "title": "Wayward Biomes: Tangled Hollows",
       "preview": "https://images.steamusercontent.com/ugc/9617940594054675953/E0B5CAA5143193FEBE472BC1CB1DD27AF12F5D87/",
-      "subs": 1985,
-      "current": 1885,
+      "subs": 1986,
+      "current": 1886,
       "favorited": 168,
-      "views": 6313,
+      "views": 6321,
       "tags": [
         "Mod",
         "1.7",
@@ -121,10 +121,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837063832",
       "title": "Seamless Pockets",
       "preview": "https://images.steamusercontent.com/ugc/11610367328486528479/BA821761713939E81E69C50A956EE8A56EBAC3D6/",
-      "subs": 4481,
-      "current": 4203,
-      "favorited": 797,
-      "views": 15272,
+      "subs": 4482,
+      "current": 4204,
+      "favorited": 798,
+      "views": 15278,
       "tags": [
         "Mod",
         "1.7",
@@ -144,10 +144,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3840043127",
       "title": "[OPEN BETA] These Are Our People",
       "preview": "https://images.steamusercontent.com/ugc/10653866610571298481/25AAD42163A77E98A8126383FADF813B2B0A44CE/",
-      "subs": 521,
-      "current": 499,
-      "favorited": 168,
-      "views": 3107,
+      "subs": 523,
+      "current": 500,
+      "favorited": 169,
+      "views": 3120,
       "tags": [
         "Mod",
         "1.7"
@@ -166,10 +166,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839399827",
       "title": "The Dead Man's Switch - Compatibility Fixes",
       "preview": "https://images.steamusercontent.com/ugc/17482907610690873833/B7F4669CF8A39D4D744719928527FA59C9FA62B4/",
-      "subs": 1206,
-      "current": 1152,
-      "favorited": 151,
-      "views": 3125,
+      "subs": 1211,
+      "current": 1157,
+      "favorited": 152,
+      "views": 3135,
       "tags": [
         "Mod",
         "1.7",
@@ -189,10 +189,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837981505",
       "title": "[KCB] Liftoff Effects (이륙 이펙트)",
       "preview": "https://images.steamusercontent.com/ugc/9889155727940097281/3595704D9EF4C97D316B91FABD4EFDD21AC23DA1/",
-      "subs": 3152,
-      "current": 2954,
+      "subs": 3156,
+      "current": 2957,
       "favorited": 268,
-      "views": 5246,
+      "views": 5251,
       "tags": [
         "Mod",
         "1.7",
@@ -208,14 +208,36 @@
     },
     {
       "rank": 10,
+      "id": "3837041858",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837041858",
+      "title": "Faction Display Fix (Continued)",
+      "preview": "https://images.steamusercontent.com/ugc/16468062484602019346/C89EF399C6D4FAD78095D57D99CA1F7C9CCD7A07/",
+      "subs": 819,
+      "current": 710,
+      "favorited": 42,
+      "views": 1200,
+      "tags": [
+        "Mod",
+        "1.7"
+      ],
+      "created": 1794267007000,
+      "updated": 1794267007000,
+      "size": 333024,
+      "collection": false,
+      "summary": "Faction Display Fix (Continued) A continuation of Warachia's Faction Display Fix, maintained for RimWorld 1.7. Overview Playing with a large number of modded factions? RimWorld's vanilla faction interface wasn't designed",
+      "prevRank": null,
+      "ko": "RimWorld의 바닐라 세력 인터페이스는 수십 개의 세력 관계를 한 번에 표시하도록 설계되지 않았습니다."
+    },
+    {
+      "rank": 11,
       "id": "3837314353",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837314353",
       "title": "The Dead Man's Switch - RatkinExpand",
       "preview": "https://images.steamusercontent.com/ugc/18425955992400237621/C09023863A63BC8253E2700E3181D016E1AEF0BF/",
-      "subs": 3768,
+      "subs": 3769,
       "current": 3488,
       "favorited": 541,
-      "views": 12531,
+      "views": 12536,
       "tags": [
         "Mod",
         "1.7",
@@ -231,15 +253,15 @@
       "ko": "구식 기술과 어려움을 겪고 있는 경제로 인해 쥐족 왕국은 행성 전역에 흩어져 있는 불량 기계체에 맞서 싸울 가능성이 거의 없었습니다."
     },
     {
-      "rank": 11,
+      "rank": 12,
       "id": "3836456822",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836456822",
       "title": "Realistic Water",
       "preview": "https://images.steamusercontent.com/ugc/11683647938646096538/76A92F77B968A020822032FB665D705AF5D6B5C8/",
-      "subs": 5839,
-      "current": 5151,
+      "subs": 5842,
+      "current": 5154,
       "favorited": 725,
-      "views": 15166,
+      "views": 15177,
       "tags": [
         "Mod",
         "1.7"
@@ -253,15 +275,15 @@
       "ko": "Realistic Water는 성능을 저하시키지 않으면서 물의 모양과 동작을 완전히 재구성합니다."
     },
     {
-      "rank": 12,
+      "rank": 13,
       "id": "3836765380",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3836765380",
       "title": "Cherokee Sling - Vehicle and Container Airlift",
       "preview": "https://images.steamusercontent.com/ugc/16776818813964644570/EA8EBB69E0ACE2E9B9EEB4594A5177017FF32C21/",
-      "subs": 5107,
-      "current": 4764,
+      "subs": 5108,
+      "current": 4766,
       "favorited": 681,
-      "views": 13084,
+      "views": 13086,
       "tags": [
         "Mod",
         "1.7",
@@ -276,15 +298,15 @@
       "ko": "장갑차를 전장에 배달하거나 적재된 트럭을 두 번째 식민지로 운반하세요."
     },
     {
-      "rank": 13,
+      "rank": 14,
       "id": "3837999796",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837999796",
       "title": "Titan Vehicles (Continued)",
       "preview": "https://images.steamusercontent.com/ugc/12020440468032264668/58EC5135462E56CBAAFF9C4E7F16BB2999BAD71A/",
-      "subs": 1306,
-      "current": 1228,
+      "subs": 1307,
+      "current": 1229,
       "favorited": 176,
-      "views": 7760,
+      "views": 7765,
       "tags": [
         "Mod",
         "1.7",
@@ -299,7 +321,7 @@
       "ko": "원본 작성자가 요청하면 이 업데이트를 삭제하겠습니다."
     },
     {
-      "rank": 14,
+      "rank": 15,
       "id": "3835595282",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3835595282",
       "title": "Windows (Continued) Continued",
@@ -307,7 +329,7 @@
       "subs": 3080,
       "current": 2922,
       "favorited": 335,
-      "views": 10222,
+      "views": 10224,
       "tags": [
         "Mod",
         "1.7",
@@ -324,7 +346,7 @@
       "ko": "Yap의 매끄러운 벽 통합 텍스처와 Owlchemist의 재료 인식 창 구성을 보존합니다. 금속, 나무, 돌로 만든 창 프레임이 주변 벽과 일치합니다."
     },
     {
-      "rank": 15,
+      "rank": 16,
       "id": "3838082034",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838082034",
       "title": "Super Awesome Epic Weapons",
@@ -332,7 +354,7 @@
       "subs": 62,
       "current": 52,
       "favorited": 31,
-      "views": 2658,
+      "views": 2661,
       "tags": [
         "Mod",
         "1.7"
@@ -346,15 +368,15 @@
       "ko": "저는 이것이 Vanilla Gravships 2 이후 가장 기대되는 모드라는 것을 알고 있습니다. 드디어 출시되었습니다."
     },
     {
-      "rank": 16,
+      "rank": 17,
       "id": "3837774191",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837774191",
       "title": "Kiiro Race - Devon Rex Xenotype (绮罗德文异种)",
       "preview": "https://images.steamusercontent.com/ugc/12082137762489397892/8DF91BB0448353191DA67B343B68C9B15BE4E229/",
-      "subs": 5257,
+      "subs": 5258,
       "current": 4979,
       "favorited": 295,
-      "views": 8108,
+      "views": 8114,
       "tags": [
         "Mod",
         "1.7",
@@ -369,7 +391,7 @@
       "ko": "Kiiro 레이스에 새로운 이국적인 계통인 독일 종족을 추가했습니다. 그들은 부드러운 곱슬머리를 가지고 있고, 매우 달라붙으며, 상처 입은 사람을 잘 돌보는 데 능숙합니다. 이것은 Qiluo Xenomorph 시리즈의 다섯 번째입니다."
     },
     {
-      "rank": 17,
+      "rank": 18,
       "id": "3838039525",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838039525",
       "title": "Orc Facial Animation",
@@ -377,7 +399,7 @@
       "subs": 289,
       "current": 248,
       "favorited": 60,
-      "views": 2320,
+      "views": 2324,
       "tags": [
         "Mod",
         "1.7"
@@ -391,15 +413,15 @@
       "ko": "Legacy of The Rim의 오크 이종형에 대한 얼굴 애니메이션 지원을 추가합니다. 귀는 512x512로 업스케일됩니다."
     },
     {
-      "rank": 18,
+      "rank": 19,
       "id": "3837808238",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837808238",
       "title": "Repeatable Technologies",
       "preview": "https://images.steamusercontent.com/ugc/14206298098965558478/90D8BBFCEF1D366AF714A314DA1A6148FCF90A06/",
-      "subs": 693,
-      "current": 663,
+      "subs": 696,
+      "current": 666,
       "favorited": 64,
-      "views": 2176,
+      "views": 2181,
       "tags": [
         "Mod",
         "1.7",
@@ -414,15 +436,15 @@
       "ko": "RimWorld를 위한 Stellaris 스타일의 반복 가능한 연구. Starflight 기본 사항을 마친 후에는 계속해서 완료할 수 있는 연구가 포함된 \"반복 가능\" 탭이 연구 화면에 나타납니다."
     },
     {
-      "rank": 19,
+      "rank": 20,
       "id": "3838111458",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838111458",
       "title": "Weather Reimagined",
       "preview": "https://images.steamusercontent.com/ugc/13986746735857019235/6AD9C49781067A81B5739D9E29539A6094671BB1/",
-      "subs": 3527,
-      "current": 3171,
-      "favorited": 513,
-      "views": 9429,
+      "subs": 3532,
+      "current": 3176,
+      "favorited": 515,
+      "views": 9436,
       "tags": [
         "Mod",
         "1.7"
@@ -434,29 +456,6 @@
       "summary": "A visual overhaul for fire, snow, weather and shadows in RimWorld 1.7. Rain, snow, blizzards, fog, auroras and lightning all get a new look. You can turn each feature on or off individually in the mod settings. I tested ",
       "prevRank": 19,
       "ko": "RimWorld 1.7의 불, 눈, 날씨 및 그림자에 대한 시각적 점검."
-    },
-    {
-      "rank": 20,
-      "id": "3838940648",
-      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3838940648",
-      "title": "Divine Hand",
-      "preview": "https://images.steamusercontent.com/ugc/12104527558986125222/F4938AA47D713B44166FCBCA9A735C728963719E/",
-      "subs": 637,
-      "current": 607,
-      "favorited": 167,
-      "views": 3129,
-      "tags": [
-        "Mod",
-        "1.7",
-        "1.6"
-      ],
-      "created": 1794576033000,
-      "updated": 1794722731000,
-      "size": 1459720,
-      "collection": false,
-      "summary": "Divine Hand Inspired by the divine hand from the Black & White (Lionhead, 2001), this mod lets you interact directly with your colonists using two very different hands: an angelic hand and a demonic hand. Angelic Hand ge",
-      "prevRank": 20,
-      "ko": "Black & White(Lionhead, 2001)의 신성한 손에서 영감을 받은 이 모드를 사용하면 매우 다른 두 손, 즉 천사의 손과 악마의 손을 사용하여 식민지 주민과 직접 상호 작용할 수 있습니다."
     }
   ]
 }
