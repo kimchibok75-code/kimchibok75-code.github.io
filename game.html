@@ -372,6 +372,9 @@ body.hunting .side { display: none; }
 .skgrid button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 2px var(--gold); }
 .skgrid.shop { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
 .skgrid em { position: absolute; top: 3px; right: 3px; font-style: normal; font-size: calc(10.5px * min(var(--fs), 1.15)); font-weight: 700; background: rgba(251,252,247,.92); border: 1px solid var(--line); border-radius: 7px; padding: 0 4px; line-height: 1.5; white-space: nowrap; }
+.skgrid .skfx { display: block; font-style: normal; font-size: .88em; font-weight: 800; color: #2f7a3a; white-space: normal; line-height: 1.2; }
+.skfxsum { margin: 4px 0 8px; padding: 7px 10px; border-radius: 10px; background: #eef7e6; border: 1.5px solid #bfe0b0; font-size: calc(13.5px * var(--fs)); }
+.skfxline { color: #2f7a3a; font-size: .92em; }
 .skgrid em.own { background: var(--leaf); color: #fff; border-color: var(--leaf); }
 .skbig { width: 150px; height: 150px; margin: 0 auto; border-radius: 16px; border: 2px solid var(--ink); background: linear-gradient(#eef7fb, #e3f0e2); position: relative; overflow: hidden; }
 .skbig canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -711,9 +714,10 @@ body.hunting .chat-log { height: 64px; }
           <div class="arow" id="hairList2"></div>
           <div class="arow" id="hairSw2"></div>
         </div>
+        <p class="skfxsum" id="skinFxSum"></p>
         <div class="field"><label>머리 장식</label><div class="skgrid" id="hatList"></div></div>
         <div class="field"><label>눈 모양</label><div class="skgrid" id="eyeList"></div></div>
-        <p class="muted">스킨은 겉모습만 바뀌고 능력치는 없어요. 스킨샵에서 더 살 수 있어요.</p>
+        <p class="muted">스킨은 가지고만 있어도 보유 효과가 붙어요 (안 써도 돼요). 스킨샵에서 더 살 수 있어요.</p>
       </div>
       <div class="pane" data-pane="bag" hidden>
         <div class="wallet" id="wallet"></div>
@@ -793,7 +797,7 @@ body.hunting .chat-log { height: 64px; }
 'use strict';
 import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
-  TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, fxText,
+  TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx } from './assets/js/game-rules.js?v=__BUILD__';
 import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico } from './assets/js/game-icons.js?v=__BUILD__';
 import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSolid, noise2, inCore, BUILDINGS as MAP_BUILDINGS, SPOTS, PORTAL, BACK, FISH_AT, PLOTS, BENCHES, NODES, DECO,
@@ -1645,6 +1649,7 @@ function nameTagAt(c, now) {
   if (c.emote && c.emote.until > now) { const k = 1 - (c.emote.until - now) / 2200; ctx.font = '22px sans-serif'; ctx.globalAlpha = Math.min(1, (1 - k) * 3); fillTextIco(ctx, c.emote.e, c.x + tw / 2 + 12, c.y - 60 - k * 14); ctx.globalAlpha = 1; }
   if (c.bubble && c.bubble.until > now) bubbleAt(c.x, top - 2, c.bubble.text, c === me);
   else if (c === me && me.job && !HT) { const l = jobLeft(); bubbleAt(c.x, top - 2, l ? `☕ 알바 중 ${fmtSec(l)}` : '☕ 알바 끝!', true); }
+  else if (c === me && F.auto && !HT) bubbleAt(c.x, top - 2, `🎣 낚시 중 · 미끼 ${me.life?.fish?.pack || 0}`, true);
 }
 function drawTownFloats() {
   for (const f of TF) { const k = f.t / 1.4; ctx.globalAlpha = Math.min(1, (1 - k) * 2.5); ctx.font = '900 15px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(31,42,58,.9)'; ctx.fillStyle = f.color; const y = f.y - k * 34; fillTextIco(ctx, f.text, f.x, y, true); }
@@ -2663,6 +2668,7 @@ function renderSkins() {
   const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
   const hats = HATS.filter(h => me.hats.includes(h.id)), eyes = EYE_SKINS.filter(e => e.id === 'dot' || me.hats.includes('eye:' + e.id));
   const sig = JSON.stringify([look, hats.map(h => h.id), eyes.map(e => e.id)]); if (sig === skinSig) return; skinSig = sig;
+  $('#skinFxSum').innerHTML = `✨ 스킨 보유 효과: <b>${fxText(skinFx(me)) || '없음 (스킨샵에서 사면 생겨요)'}</b>`;
   $('#hatList').innerHTML = hats.map(h => `<button type="button" data-h="${h.id}" aria-pressed="${me.hat === h.id}" title="${h.n}" aria-label="${h.n}"><canvas></canvas><small>${h.n}</small></button>`).join('');
   $('#eyeList').innerHTML = eyes.map(e => `<button type="button" data-y="${e.id}" aria-pressed="${(me.eyes || 'dot') === e.id}" title="${e.n}" aria-label="${e.n}"><canvas></canvas><small>${e.n}</small></button>`).join('');
   requestAnimationFrame(() => {
@@ -3292,11 +3298,12 @@ const houseDoor = h => [(h.x + 1.5) * T, (h.y + HOUSE_H + .5) * T];
 function skinShop(b, keep) {
   reopen = () => skinShop(b, true);
   const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
-  const tile = (key, name, own, on, price) => `<button type="button" data-x="${key}" aria-pressed="${on}" title="${name}" aria-label="${name}${own ? '' : ` · ${price.toLocaleString()} 골드`}"><canvas></canvas>${own ? `<em class="own">${on ? '착용' : '보유'}</em>` : `<em>🪙 ${price.toLocaleString()}</em>`}<small>${name.replace(/^\S+\s/, '')}</small></button>`;
+  const tile = (key, name, own, on, price, fx) => `<button type="button" data-x="${key}" aria-pressed="${on}" title="${name} · 보유 효과: ${fxText(fx || {})}" aria-label="${name} · 보유 효과 ${fxText(fx || {})}${own ? '' : ` · ${price.toLocaleString()} 골드`}"><canvas></canvas>${own ? `<em class="own">${on ? '착용' : '보유'}</em>` : `<em>🪙 ${price.toLocaleString()}</em>`}<small>${name.replace(/^\S+\s/, '')}<i class="skfx">${fxText(fx || {})}</i></small></button>`;
   const hats = HATS.filter(h => h.id !== 'none'), eyes = EYE_SKINS.filter(e => e.price);
-  openModal(`${sheetHead(b, '겉모습만 바꾸는 스킨을 팔아요. 능력치는 없고, <b>현금 결제도 없어요.</b> 칸을 누르면 미리보기·구매, 가진 스킨은 바로 쓰기/벗기.')}
-    <h3 class="sub">머리 장식</h3><div class="skgrid shop" id="shopHats">${hats.map(h => tile('hat:' + h.id, h.n, me.hats.includes(h.id), me.hat === h.id, h.price)).join('')}</div>
-    <h3 class="sub">눈 모양</h3><div class="skgrid shop" id="shopEyes">${eyes.map(e => tile('eye:' + e.id, e.n, me.hats.includes('eye:' + e.id), me.eyes === e.id, e.price)).join('')}</div>
+  openModal(`${sheetHead(b, '스킨을 팔아요. <b>가지고만 있어도 보유 효과</b>가 붙어요 (안 써도 돼요). 현금 결제는 없어요. 칸을 누르면 미리보기·구매, 가진 스킨은 바로 쓰기/벗기.')}
+    <p class="skfxsum">✨ 지금 보유 효과: <b>${fxText(skinFx(me)) || '없음'}</b></p>
+    <h3 class="sub">머리 장식</h3><div class="skgrid shop" id="shopHats">${hats.map(h => tile('hat:' + h.id, h.n, me.hats.includes(h.id), me.hat === h.id, h.price, h.fx)).join('')}</div>
+    <h3 class="sub">눈 모양</h3><div class="skgrid shop" id="shopEyes">${eyes.map(e => tile('eye:' + e.id, e.n, me.hats.includes('eye:' + e.id), me.eyes === e.id, e.price, e.fx)).join('')}</div>
     <p class="muted">머리 장식을 안 쓰면 장착한 모자(장비)가 보여요.</p><button class="close" data-close>닫기</button>`, el => {
     requestAnimationFrame(() => {
       el.querySelectorAll('#shopHats [data-x]').forEach(t => skinTile(t.querySelector('canvas'), { ...look, hat: t.dataset.x.slice(4) }));
@@ -3308,7 +3315,7 @@ function skinShop(b, keep) {
       if (own) { if (isEye) me.eyes = me.eyes === id ? 'dot' : id; else me.hat = me.hat === id ? 'none' : id; syncMe(); saveLook(); return reopen?.(); }
       // 구매 확인: 큰 미리보기
       openModal(`<h3>🛍️ ${item.n}</h3><div class="skbig"><canvas id="skBig"></canvas></div>
-        <p style="text-align:center;margin:0">${isEye ? '눈 모양' : '머리 장식'} · <b>${goldTxt(item.price)}</b><br><small class="muted">가진 골드 ${goldTxt(me.gold)}</small></p>
+        <p style="text-align:center;margin:0">${isEye ? '눈 모양' : '머리 장식'} · <b>${goldTxt(item.price)}</b><br><span class="skfxline">보유 효과: <b>${fxText(item.fx || {})}</b></span><br><small class="muted">가진 골드 ${goldTxt(me.gold)}</small></p>
         <div class="actions"><button class="btn main" data-y="buy" ${me.gold < item.price ? 'disabled' : ''}>${me.gold < item.price ? '골드가 모자라요' : '구매하고 바로 쓰기'}</button><button class="btn" data-y="back">돌아가기</button></div>`, el2 => {
         requestAnimationFrame(() => skinTile(el2.querySelector('#skBig'), isEye ? { ...look, eyes: id } : { ...look, hat: id }));
         el2.querySelector('.actions').onclick = async e => {

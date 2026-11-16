@@ -78,9 +78,10 @@ export const ENH_RATE = [100, 95, 90, 80, 70, 60, 50, 40, 35, 30];
 // 운이 높으면 강화 성공 확률 증가 (1포인트당 +0.05%p, 최대 +10%p)
 export const enhRate = (enh, D) => Math.min(100, ENH_RATE[enh] + (D?.enhB || 0));
 export const ENH_COST = [700, 1400, 2400, 3600, 5600, 8400, 12000, 17000, 22000, 30000];
-export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'ribbon', n: '🎀 리본', price: 300 }, { id: 'sprout', n: '🌱 새싹', price: 500 }, { id: 'cat', n: '🐱 고양이 귀', price: 800 }, { id: 'straw', n: '👒 밀짚모자', price: 1200 }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 2000 }];
+// fx = 보유 효과 (가지고만 있어도 붙음. 쓰고 있지 않아도 됨)
+export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'ribbon', n: '🎀 리본', price: 300, fx: { expP: 2 } }, { id: 'sprout', n: '🌱 새싹', price: 500, fx: { farmP: 5 } }, { id: 'cat', n: '🐱 고양이 귀', price: 800, fx: { crit: 1 } }, { id: 'straw', n: '👒 밀짚모자', price: 1200, fx: { fishP: 4 } }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 2000, fx: { atkP: 2, goldP: 2 } }];
 // 눈 모양 스킨 (가진 것은 hats 목록에 'eye:별' 처럼 저장). dot은 기본
-export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 400 }, { id: 'star', n: '⭐ 별 눈', price: 700 }, { id: 'wink', n: '😉 윙크', price: 800 }, { id: 'heart', n: '💗 하트 눈', price: 1000 }, { id: 'cat', n: '🐱 고양이 눈', price: 1200 }, { id: 'big', n: '✨ 반짝 큰 눈', price: 1500 }];
+export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 400, fx: { defP: 3 } }, { id: 'star', n: '⭐ 별 눈', price: 700, fx: { expP: 3 } }, { id: 'wink', n: '😉 윙크', price: 800, fx: { crit: 1 } }, { id: 'heart', n: '💗 하트 눈', price: 1000, fx: { hpP: 3 } }, { id: 'cat', n: '🐱 고양이 눈', price: 1200, fx: { fishC: 5 } }, { id: 'big', n: '✨ 반짝 큰 눈', price: 1500, fx: { goldP: 3 } }];
 
 let seq = 1;
 const newId = () => (globalThis.crypto?.randomUUID ? crypto.randomUUID().slice(0, 8) : `i${Date.now().toString(36)}${seq++}`);
@@ -242,7 +243,7 @@ export const FISH_SHOP = {
 export const fishZone = (grade, rod = 0, fx = {}) => Math.min(.6, FISH_GRADES[grade].zone * (1 + .06 * rod + (fx.fishZ || 0) / 100));
 
 // ───────── 카페 알바 ─────────
-export const JOB = { sec: 60, pay: lv => 40 + lv * 5 };
+export const JOB = { sec: 60, pay: lv => 60 + lv * 7 };   // 카페 알바 1분 (예전 40 + 레벨×5)
 
 // ═════════════════════ 4단계: 생활 (텃밭 · 채집 · 알바 고용 · 집 · 칭호 · 분수) ═════════════════════
 const HOUR = 3600e3, MIN = 60e3;
@@ -290,8 +291,8 @@ export const GATHER = { tree: { n: '나무', res: 'wood', amt: [2, 4], regrow: [
 export const RES = { wood: { n: '목재', i: '🪵' }, stone: { n: '석재', i: '🪨' } };
 // rate: 알바 1명이 1시간에 모으는 양 · cap: 쌓이는 최대 시간 · hire(k): k번째 알바 비용
 export const WORK = {
-  lumber: { n: '벌목소', res: 'wood', rate: 8, cap: 8, max: 5, hire: k => ({ gold: 1500 * k, wood: 20 * k }) },
-  quarry: { n: '채광소', res: 'stone', rate: 6, cap: 8, max: 5, hire: k => ({ gold: 1500 * k, stone: 15 * k }) },
+  lumber: { n: '벌목소', res: 'wood', rate: 11, cap: 10, max: 5, hire: k => ({ gold: 1500 * k, wood: 20 * k }) },
+  quarry: { n: '채광소', res: 'stone', rate: 8, cap: 10, max: 5, hire: k => ({ gold: 1500 * k, stone: 15 * k }) },
 };
 export function workSettle(w, kind, now) {
   const W = WORK[kind], cap = w.n * W.rate * W.cap;
@@ -388,10 +389,18 @@ export function checkTitles(c) {
   return got;
 }
 const addFx = (fx, o) => { for (const [k, v] of Object.entries(o)) fx[k] = Math.round(((fx[k] || 0) + v) * 100) / 100; };
+// 스킨 보유 효과 합계 (c.hats 에 가진 머리 장식 id 와 'eye:눈id')
+export function skinFx(c) {
+  const fx = {}, own = Array.isArray(c.hats) ? c.hats : [];
+  for (const h of HATS) if (h.fx && own.includes(h.id)) addFx(fx, h.fx);
+  for (const e of EYE_SKINS) if (e.fx && own.includes('eye:' + e.id)) addFx(fx, e.fx);
+  return fx;
+}
 export function titleFx(c) { const fx = {}; for (const id of c.life?.titles || []) addFx(fx, titleOf(id)?.fx || {}); return fx; }
 // 효과 합계: 가진 칭호 전부 + 지금 버프 + 장비 옵션(방어구 3칸 + 지금 클래스 무기)
 export function statFx(c) {
   const fx = titleFx(c), b = c.life?.buff;
+  addFx(fx, skinFx(c));   // 스킨 보유 효과
   if (c.gfx) addFx(fx, c.gfx);   // 마을 전체 효과 (사건 · 방송 · 공동 건설)
   if (b && b.until > Date.now() && BUFFS[b.k]) addFx(fx, BUFFS[b.k].fx);
   for (const s of [...ARMOR_SLOTS, CLASSES[c.cls] ? c.cls : 'sword']) addFx(fx, Object.fromEntries(c.equip?.[s]?.o || []));

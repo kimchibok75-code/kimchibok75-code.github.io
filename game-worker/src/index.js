@@ -463,7 +463,7 @@ const GAME = {
     if (Math.random() >= AUTO_FISH.hit) return { caught: false, fish: { i: fish.i, n: fish.n, grade: fish.grade }, left: F.pack, after: mark };
     const day = dayKey(at), dayN = row?.day === day ? row.day_n + 1 : 1, tired = dayN > FISHING.dayFull ? .5 : 1;
     const price = Math.round(fish.price * tired), info = JSON.stringify({ i: fish.i, n: fish.n, grade: fish.grade, len: fish.len, price });
-    const sell = Math.round(price * (1 + (c.gfx?.fishP || 0) / 100)), coin = Math.round(FISH_COIN[fish.grade] * (1 + (D.fx.fishC || 0) / 100) * tired);
+    const sell = Math.round(price * (1 + (D.fx.fishP || 0) / 100)), coin = Math.round(FISH_COIN[fish.grade] * (1 + (D.fx.fishC || 0) / 100) * tired);
     c.gold += sell; c.life.coins.fish += coin; cntAdd(c, 'fish');
     if (fish.grade === 'legend') cntAdd(c, 'legendFish'); if (fish.n === '낡은 장화') cntAdd(c, 'boot');
     return { caught: true, fish: { ...fish, price: sell }, coin, tired: tired < 1, left: F.pack, chron: fish.grade === 'legend' ? ['fish', `전설 물고기 ${fish.n} ${fish.len}cm를 낚았어요!`] : null,
@@ -715,7 +715,7 @@ async function fishReel(req, env, user) {
   const dayN = dr?.day === day ? dr.day_n + 1 : 1, tired = dayN > FISHING.dayFull ? .5 : 1;   // 하루에 너무 많이 낚으면 값이 절반 (자동 낚시 막기)
   const price = Math.round(fish.price * (perfect ? FISHING.perfect : 1) * tired), info = JSON.stringify({ i: fish.i, n: fish.n, grade: fish.grade, len: fish.len, price });
   return play(env, user, c => {
-    const sell = Math.round(price * (1 + (c.gfx?.fishP || 0) / 100));
+    const sell = Math.round(price * (1 + (derive(c).fx.fishP || 0) / 100));   // 마을 효과 + 스킨·칭호
     c.gold += sell;   // 낚은 물고기는 바로 팔림
     const coin = Math.round((FISH_COIN[fish.grade] + (perfect ? 1 : 0)) * (1 + (derive(c).fx.fishC || 0) / 100) * tired);
     c.life.coins.fish += coin; cntAdd(c, 'fish'); if (perfect) cntAdd(c, 'perfect'); if (fish.grade === 'legend') cntAdd(c, 'legendFish'); if (fish.n === '낡은 장화') cntAdd(c, 'boot');
