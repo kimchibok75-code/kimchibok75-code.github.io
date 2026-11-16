@@ -23,6 +23,21 @@ class_name = "Town"
 tag = "v1"
 new_sqlite_classes = ["Town"]
 
+# 치지직 채팅 받아 오기 (방송 중에만 접속, 하나만 씀)
+[[durable_objects.bindings]]
+name = "CHZZK"
+class_name = "Chzzk"
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["Chzzk"]
+
+[vars]
+CHZZK_CHANNEL = "d44a982c742226605f4fcf3b6b4e7629"   # 김치복 치지직 채널 (config/site.json과 같음)
+
+[triggers]
+crons = ["*/5 * * * *"]
+
 # 방송 상태 (kimchibok-live Worker에 바로 연결, 요청 수 아낌)
 [[services]]
 binding = "LIVE"

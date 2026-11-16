@@ -520,7 +520,7 @@ export const SKILLS = [
   SK('m_meteor', 'staff', '메테오', '☄️', 3, 30, 'hit', { m: 6, stun: 1 }, '하늘에서 운석을 떨어뜨림'),
 ];
 export const skillOf = id => SKILLS.find(s => s.id === id);
-export const SK_RARE = { 1: { n: '보통', c: '#5d6b7e', p: 60 }, 2: { n: '희귀', c: '#2f6fd0', p: 30 }, 3: { n: '전설', c: '#e0731c', p: 10 } };
+export const SK_RARE = { 1: { n: '보통', c: '#5d6b7e' }, 2: { n: '희귀', c: '#2f6fd0' }, 3: { n: '전설', c: '#e0731c' } };
 // 같은 스킬을 모은 장 수 → 레벨 (최대 10). 1장이면 Lv.1, 2장 Lv.2, 4장 Lv.3 …
 export const SK_NEED = [1, 2, 4, 7, 11, 16, 22, 29, 37, 46];
 export const SK_MAX = SK_NEED.length;
@@ -542,9 +542,20 @@ export function mySkills(c, cls = c.cls) {
   const o = c.life?.sk || {};
   return SKILLS.filter(s => s.cls === cls && o[s.id] > 0).map(s => ({ s, lv: Math.min(SK_MAX, skLv(o[s.id])), p: skPow(s, Math.min(SK_MAX, skLv(o[s.id]))) }));
 }
-// 스킬 뽑기: 직업 상자를 골라서 뽑음. 값은 내 레벨에 따라 오름
-export const SKILL_GACHA = { cost: lv => 1500 + lv * 150, ten: .9 };
-export function rollSkill(cls) {
-  let r = Math.random() * 100, rare = 3; for (const k of [1, 2, 3]) { r -= SK_RARE[k].p; if (r < 0) { rare = k; break; } }
-  return pick(SKILLS.filter(s => s.cls === cls && s.r === rare));
+// 스킬 뽑기: 직업 상관없이 18종 중에서 나옴. 많이 뽑을수록 뽑기 레벨이 올라 → 값이 오르고 전설 확률도 조금 오름
+export const SKILL_GACHA = {
+  need: [20, 40, 70, 110, 160, 230, 320],                              // 다음 레벨까지 필요한 횟수 (Lv.1→2 …)
+  cost: [1500, 2500, 4000, 6000, 9000, 13000, 18000, 25000],          // 레벨별 1회 값
+  odds: [[60, 30, 10], [57, 31, 12], [54, 32, 14], [50, 33, 17], [46, 34, 20], [42, 35, 23], [38, 36, 26], [34, 36, 30]],   // [보통, 희귀, 전설] %
+  ten: .9, back: .3,
+};
+export function skGachaInfo(n = 0) {
+  const G = SKILL_GACHA; let lv = 1, base = 0;
+  while (lv <= G.need.length && n >= base + G.need[lv - 1]) { base += G.need[lv - 1]; lv++; }
+  return { lv, max: G.cost.length, now: n - base, need: lv <= G.need.length ? G.need[lv - 1] : 0, cost: G.cost[lv - 1], odds: G.odds[lv - 1] };
+}
+export function rollSkill(lv = 1) {
+  const o = SKILL_GACHA.odds[Math.min(lv, SKILL_GACHA.odds.length) - 1];
+  let r = Math.random() * 100, rare = 3; for (const k of [1, 2]) { r -= o[k - 1]; if (r < 0) { rare = k; break; } }
+  return pick(SKILLS.filter(s => s.r === rare));
 }

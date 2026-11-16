@@ -4,6 +4,10 @@
 import { DurableObject } from 'cloudflare:workers';
 import { cleanChat } from './chat.js';
 import { T, MW, MH } from '../../assets/js/game-rules.js';
+import { SPOTS } from '../../assets/js/game-map.js';
+// 광장: 분수 가운데에서 이 거리 안 (치지직 채팅은 여기 있는 사람 말만 마을에 보임)
+const FOUNT = SPOTS.find(s => s.id === 'fountain'), PLAZA = { x: (FOUNT.x + 1) * T, y: (FOUNT.y + 1) * T, r: 9 * T };
+export const nearPlaza = (x, y) => Math.hypot(x - PLAZA.x, y - PLAZA.y) <= PLAZA.r;
 
 export const MAX_CH = 3;              // 마을 채널 수 (채널마다 50명)
 const MAX = 50, NEAR = 9 * T, DAY = 864e5;
@@ -46,6 +50,7 @@ export class Town extends DurableObject {
   async fetch(req) {
     const url = new URL(req.url);
     if (url.pathname === '/admin') return this.admin(await req.json());
+    if (url.pathname === '/chzzk') return this.chzzk(await req.json());
     if (url.pathname === '/has') {   // 다른 채널에서 물어봄: 이 사람이 여기 접속해 있나? (어느 기기인지)
       const id = Number(url.searchParams.get('id')), w = this.members().find(w => this.info(w).id === id);
       return Response.json(w ? { dev: this.info(w).dev, kind: this.info(w).kind } : null);
@@ -185,6 +190,23 @@ export class Town extends DurableObject {
       return sys(until ? `${u.nick}님 채팅 금지 ${left(until - now())}` : `${u.nick}님 채팅 금지를 풀었어요`);
     }
     sys('관리자 명령어: /공지 내용 · /조용 닉네임 10분 · /내보내기 닉네임');
+  }
+  // 치지직 채팅: 닉네임이 완전히 같고, 마을 광장 근처에 있는 사람(사냥·집 안 X)의 말만 이 채널 모두에게 보여 줌
+  async chzzk(list) {
+    if (!Array.isArray(list)) return new Response('bad', { status: 400 });
+    const byNick = new Map(); for (const w of this.members()) { const a = this.info(w); if (a.n) byNick.set(a.n, a); }
+    if (!byNick.size) return new Response('ok');
+    const t = now(), rows = [];
+    for (const m of list.slice(0, 200)) {
+      const a = byNick.get(String(m.n)); if (!a) continue;
+      const x = a.tx ?? a.x, y = a.ty ?? a.y;
+      if (a.hunt || a.room2 || a.mute > t || a.limited || !Number.isFinite(x) || !nearPlaza(x, y)) continue;
+      const r = cleanChat(String(m.text || '')); if (!r.ok) continue;   // 금칙어·링크·개인정보 검사는 마을 채팅과 같음 (경고는 없음)
+      this.all({ t: 'say', id: a.id, n: a.n, adm: a.adm ? 1 : 0, text: r.text, ch: 'all', chz: 1 });
+      rows.push([a.id, a.n, r.text]);
+    }
+    if (rows.length) await this.env.DB.batch(rows.map(([id, n, text]) => this.env.DB.prepare("INSERT INTO chat_log (user_id, nick, ch, text, at) VALUES (?, ?, 'chzzk', ?, ?)").bind(id, n, text, t))).catch(() => {});
+    return new Response('ok');
   }
   // 다른 채널에 같은 사람이 접속해 있는지 (있으면 {dev, kind})
   async elsewhere(id, skip) {

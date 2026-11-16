@@ -22,6 +22,7 @@ export const noise2 = n2;
 
 // ───── 지역 ─────
 export const PLAZA = { x: 40, y: 31 };                     // 광장 한가운데 (분수)
+export const PLAZA_C = { x: 40.5, y: 31.5 }, PLAZA_R = 7.4;   // 둥근 광장 (칸 단위 가운데·반지름)
 // 핵심 구역 (집을 지을 수 없는 곳): 광장 둘레 타원
 export const inCore = (x, y) => ((x + .5 - 40) / 18) ** 2 + ((y + .5 - 31) / 15) ** 2 < 1;
 const forestZ = (x, y) => ((x + .5 - 21) / 14) ** 2 + ((y + .5 - 9) / 8) ** 2 + .28 * n2(x / 5, y / 5, 3) < 1;
@@ -41,13 +42,15 @@ for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
   if (pd < 1) set(x, y, WATER); else if (pd < 1.22 && tileAt(x, y) !== WATER) set(x, y, SAND);
   // 광장
   const qd = Math.sqrt((x + .5 - 40.5) ** 2 + ((y + .5 - 31.5) * 1.18) ** 2) + 1.1 * n2(x / 3.2, y / 3.2, 8);
-  if (qd < 7.2) set(x, y, STONE);
+  if (qd < 7.2) set(x, y, STONE);   // (예전 모양 — 아래 6)에서 둥글게 바꿈)
 }
 // 텃밭 (반듯한 밭)
 for (let y = 45; y <= 50; y++) for (let x = 51; x <= 60; x++) set(x, y, SOIL);
 
 // 2) 꼬불꼬불한 길 (2차 곡선을 따라 둥글게 찍음)
+const ROADS = [];
 function road(pts, r0 = 1.05, s = 1) {
+  ROADS.push([pts, r0, s]);
   for (let k = 0; k + 2 < pts.length; k += 2) {
     const [a, b, c] = [pts[k], pts[k + 1], pts[k + 2]];
     for (let i = 0; i <= 70; i++) {
@@ -101,7 +104,7 @@ export const PORTAL = { x: 76 * T, y: 32.6 * T };            // 사냥터 포탈
 export const BACK = { x: 73.5 * T, y: 32.5 * T };            // 사냥에서 돌아오면 서는 곳
 export const FISH_AT = { x: (Math.floor(riverX(DOCK_Y)) + .3) * T, y: (DOCK_Y + 1) * T };   // 낚시하는 자리
 // 텃밭 칸 9개 (3줄 × 3칸, 픽셀 가운데)
-export const PLOTS = Array.from({ length: 9 }, (_, i) => ({ x: (52.2 + (i % 3) * 2.8) * T, y: (46.2 + Math.floor(i / 3) * 1.85) * T }));
+export const PLOTS = Array.from({ length: 9 }, (_, i) => ({ x: (53.2 + (i % 3) * 2.8) * T, y: (46.15 + Math.floor(i / 3) * 1.85) * T }));
 // 벤치 (광장 가장자리)
 export const BENCHES = [{ x: 35, y: 28 }, { x: 45, y: 28 }, { x: 34, y: 33 }, { x: 46, y: 33 }, { x: 36, y: 25 }, { x: 44, y: 25 }];
 for (const b of BENCHES) { set(b.x, b.y, STONE); block(b.x, b.y); }
@@ -144,6 +147,29 @@ for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
   if (edge < 2) DECO.push(d); else NODES.push({ i: NODES.length, k: d.k === 'stone' ? 'rock' : 'tree', x, y, v: d.k, s: d.s });
 }
 
+// 6) 둥근 광장: 원 안은 돌바닥, 예전 울퉁불퉁한 가장자리는 풀밭으로 → 그 자리를 지나던 길은 다시 이어 줌
+{
+  const inP = (x, y) => Math.hypot(x + .5 - PLAZA_C.x, y + .5 - PLAZA_C.y) < PLAZA_R;
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+    const v = tileAt(x, y);
+    if (inP(x, y)) { if (v === G || v === PATH) set(x, y, STONE); }
+    else if (v === STONE && !BENCHES.some(b => b.x === x && b.y === y)) set(x, y, G);
+  }
+  ROADS.splice(0).forEach(([p, r, k]) => road(p, r, k)); ROADS.length = 0;
+  for (const b of BUILDINGS) if (tileAt(b.door.x, b.door.y) === G) set(b.door.x, b.door.y, PATH);
+}
+
+// ───── 부드러운 바닥 ─────
+// 바닥 종류는 1×1 칸 그대로(집 짓기·길 찾기는 칸으로). 그림만 칸 경계를 둥글게 이은 모양으로 그림.
+// soft(종류, x, y) > .5 이면 그 자리(칸 단위 소수 좌표)에 그 바닥이 그려져 있음. 집 자리 검사도 같은 값을 씀
+const memOf = { [PATH]: v => v === PATH || v === STONE, [SAND]: v => v === SAND || v === WATER, [WATER]: v => v === WATER, [FOREST]: v => v === FOREST, [GRAVEL]: v => v === GRAVEL };
+const NOISE = { [PATH]: .1, [SAND]: .12, [WATER]: .08, [FOREST]: .22, [GRAVEL]: .2 };
+export function soft(t, fx, fy) {
+  const m = memOf[t], x = fx - .5, y = fy - .5, i = Math.floor(x), j = Math.floor(y), u = sm(x - i), v = sm(y - j);
+  const a = (X, Y) => (m(tiles[Math.min(MH - 1, Math.max(0, Y)) * MW + Math.min(MW - 1, Math.max(0, X))]) ? 1 : 0);
+  return (a(i, j) * (1 - u) + a(i + 1, j) * u) * (1 - v) + (a(i, j + 1) * (1 - u) + a(i + 1, j + 1) * u) * v + NOISE[t] * n2(fx * .9, fy * .9, 40 + t);
+}
+
 // ───── 집 (언제나 모두 공개, 핵심 구역 밖 빈 풀밭 어디든) ─────
 export const HOUSE_W = 3, HOUSE_H = 2;
 // 집 자리 검사. houses = [{x, y}] (다른 사람 집). 문은 아래쪽 가운데 (x+1, y+2)
@@ -152,6 +178,11 @@ export function canHouse(x, y, houses = []) {
   for (let j = -1; j <= HOUSE_H; j++) for (let i = -1; i <= HOUSE_W; i++) {
     const tx = x + i, ty = y + j, inside = i >= 0 && j >= 0 && i < HOUSE_W && j < HOUSE_H;
     if (inside) { if (inCore(tx, ty)) return '마을 가운데(핵심 구역)에는 집을 지을 수 없어요'; if (tileAt(tx, ty) !== G) return '풀밭에만 지을 수 있어요 (길·물·숲·밭 X)'; if (isSolid(tx, ty)) return '나무나 건물이 있어서 지을 수 없어요'; }
+  }
+  // 그림으로 보이는 길·물·광장이 집 자리에 조금이라도 걸치면 안 됨
+  for (let fy = y + .1; fy < y + HOUSE_H; fy += .2) for (let fx = x + .1; fx < x + HOUSE_W; fx += .2) {
+    if (soft(PATH, fx, fy) > .45) return '길 위에는 집을 지을 수 없어요';
+    if (soft(SAND, fx, fy) > .45) return '물가에는 집을 지을 수 없어요';
   }
   if (isSolid(x + 1, y + HOUSE_H) || tileAt(x + 1, y + HOUSE_H) === WATER) return '문 앞이 막혀 있어요';
   for (const h of houses) if (x < h.x + HOUSE_W + 1 && x + HOUSE_W + 1 > h.x && y < h.y + HOUSE_H + 1 && y + HOUSE_H + 1 > h.y) return '다른 집과 너무 가까워요';

@@ -168,6 +168,9 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; lette
 .chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 999px; background: rgba(251, 252, 247, .94); border: 2px solid var(--ink); font-weight: 700; font-size: calc(14px * var(--fs)); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .chip.mock { background: var(--gold); }
 .chip.clock { font-variant-numeric: tabular-nums; }
+.chztag { display: inline-block; background: #00ffa3; color: #0b1a14; font-weight: 800; font-size: .78em; border-radius: 6px; padding: 0 5px; margin-right: 4px; vertical-align: 1px; }
+.livebox { position: relative; width: 100%; aspect-ratio: 16 / 9; border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; background: #000; }
+.livebox iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 button.chip { cursor: pointer; font: inherit; font-weight: 700; }
 .autofish { border: 2px solid var(--ink); border-radius: 12px; background: #fff; padding: 9px 10px; display: grid; gap: 6px; margin: 8px 0; }
 .autofish .af-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .autofish .af-h span { margin-left: auto; }
@@ -415,7 +418,7 @@ body.hunting .zoom { display: none; }
 .sklist .lvb { float: right; font-weight: 800; font-size: calc(12.5px * var(--fs)); }
 .sklist p { margin: 2px 0 0; font-size: calc(12px * var(--fs)); color: var(--ink-soft); line-height: 1.35; }
 .sklist .skbar { height: 6px; border-radius: 3px; background: var(--paper-2); overflow: hidden; margin-top: 4px; } .sklist .skbar i { display: block; height: 100%; background: var(--rc); }
-.gcard.sk { --gc: var(--rc); } .gcard .ski2 { font-size: 28px; line-height: 1; } .gcard .ski2 img.ico { width: 34px; height: 34px; }
+.gcard.sk { --gc: var(--rc); } .gcard .cl { font-size: .9em; color: var(--ink-soft); } .gcard .ski2 { font-size: 28px; line-height: 1; } .gcard .ski2 img.ico { width: 34px; height: 34px; }
 .huntbox.min .hbmin { transform: rotate(180deg); }
 body.hunting .chat-log { height: 64px; }
 
@@ -789,13 +792,13 @@ body.hunting .chat-log { height: 64px; }
 
 <script type="module">
 'use strict';
-import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, fxText,
   DAY_MS, gameHour, darkness, dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx } from './assets/js/game-rules.js?v=__BUILD__';
 import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico } from './assets/js/game-icons.js?v=__BUILD__';
 import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSolid, noise2, inCore, BUILDINGS as MAP_BUILDINGS, SPOTS, PORTAL, BACK, FISH_AT, PLOTS, BENCHES, NODES, DECO,
-  HOUSE_W, HOUSE_H, canHouse, ROOM_W, ROOM_H, ROOM_DOOR } from './assets/js/game-map.js?v=__BUILD__';
+  HOUSE_W, HOUSE_H, canHouse, ROOM_W, ROOM_H, ROOM_DOOR, soft, PLAZA_C, PLAZA_R } from './assets/js/game-map.js?v=__BUILD__';
 const API = (location.hostname === 'localhost' && new URLSearchParams(location.search).get('api')) || 'https://kimchibok-game.kimchibok.workers.dev';   // 시험용: localhost에서만 ?api=http://localhost:8787 로 바꿀 수 있음
 const LIVE_API = 'https://kimchibok-live.kimchibok.workers.dev/live';
 const $ = s => document.querySelector(s);
@@ -1078,38 +1081,70 @@ let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 214748364
 const ground = document.createElement('canvas'); ground.width = MW * T; ground.height = MH * T;
 const GCOL = { [G]: ['#93cf74', '#8bc96c'], [PATH]: ['#ead6a6', '#e4cf9b'], [WATER]: ['#5db5dc', '#57aed6'], [STONE]: ['#ddd7ca', '#d4cdbf'], [SOIL]: ['#9b6b43', '#916340'], [DOCK]: ['#bb8752', '#b07c49'], [SAND]: ['#f0e2b6', '#eadaa9'], [GRAVEL]: ['#c9bfa9', '#c1b7a0'], [FOREST]: ['#72b05e', '#6aa857'] };
 (function paintGround() {
-  const g = ground.getContext('2d'); seed = 11;
-  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) { const v = tileAt(x, y); g.fillStyle = GCOL[v][(x + y) % 2]; g.fillRect(x * T, y * T, T, T); }
-  // 둥근 모서리: 두 이웃이 같은 다른 바닥이면 모서리를 그 바닥으로 깎음
-  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
-    const v = tileAt(x, y); if (v === G || v === FOREST || v === SOIL || v === DOCK) continue;
-    for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-      const a = tileAt(x + dx, y), b = tileAt(x, y + dy); if (a === v || b === v || a !== b || a === DOCK) continue;
-      const bx = x * T + (dx < 0 ? 0 : T / 2), by = y * T + (dy < 0 ? 0 : T / 2);
-      g.save(); g.beginPath(); g.rect(bx, by, T / 2, T / 2); g.clip();
-      g.fillStyle = GCOL[a][(x + y) % 2]; g.fillRect(bx, by, T / 2, T / 2);
-      g.fillStyle = GCOL[v][(x + y) % 2]; g.beginPath(); g.arc(x * T + T / 2, y * T + T / 2, T / 2, 0, 7); g.fill(); g.restore();
+  const g = ground.getContext('2d'), WP = MW * T, HP = MH * T; seed = 11;
+  const r = (a, b) => a + rnd() * (b - a), pick = l => l[Math.floor(rnd() * l.length)];
+  // 1) 풀밭: 바둑판 대신 큰 얼룩으로 자연스럽게
+  g.fillStyle = '#91cd72'; g.fillRect(0, 0, WP, HP);
+  for (let i = 0; i < 520; i++) { g.globalAlpha = r(.18, .42); g.fillStyle = pick(['#9fd680', '#86c467', '#98d27a', '#8ac86b', '#a4d985']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(30, 110), r(18, 60), r(0, 3), 0, 7); g.fill(); }
+  g.globalAlpha = 1;
+  // 2) 숲·자갈·모래·물·길: 칸 경계를 둥글게 이은 모양 (soft). 4px 해상도로 계산해서 부드럽게 늘림
+  const hex = c => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
+  const LAYERS = [
+    [FOREST, { c: '#73b15f', c2: '#66a454', feather: .14 }],
+    [GRAVEL, { c: '#cbc1aa', c2: '#bdb29a', edge: '#a99d84', ew: .07, feather: .03 }],
+    [SAND, { c: '#f0e2b6', c2: '#e9d8a6', edge: '#dcc58e', ew: .05, feather: .02 }],
+    [WATER, { c: '#5cb4db', c2: '#4ea8d2', edge: '#b9e6f5', ew: .06, feather: .02 }],
+    [PATH, { c: '#ead6a6', c2: '#e0c993', edge: '#cfb27a', ew: .07, feather: .02 }],
+  ];
+  const S = 4, w = WP / S, h = HP / S, cv = document.createElement('canvas'); cv.width = w; cv.height = h; const c = cv.getContext('2d');
+  for (const [t, L] of LAYERS) {
+    const im = c.createImageData(w, h), d = im.data, A = hex(L.c), B = hex(L.c2), E = L.edge && hex(L.edge), f0 = .5 - L.feather;
+    for (let py = 0; py < h; py++) for (let px = 0; px < w; px++) {
+      const fx = (px + .5) * S / T, fy = (py + .5) * S / T, f = soft(t, fx, fy); if (f < f0) continue;
+      const k = (noise2(fx / 2.2, fy / 2.2, 60 + t) + 1) / 2;   // 안쪽 색 얼룩
+      let col = [0, 1, 2].map(i => A[i] * (1 - k) + B[i] * k);
+      if (E && f < .5 + L.ew) col = E;   // 가장자리 띠
+      const o = (py * w + px) * 4; d[o] = col[0]; d[o + 1] = col[1]; d[o + 2] = col[2];
+      d[o + 3] = Math.min(1, (f - f0) / Math.max(.02, L.feather * 2)) * 255;
     }
+    c.putImageData(im, 0, 0); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.drawImage(cv, 0, 0, WP, HP);
   }
+  // 3) 둥근 광장 (돌 고리 무늬)
+  { const X = PLAZA_C.x * T, Y = PLAZA_C.y * T, RR = (PLAZA_R + .45) * T;
+    g.fillStyle = 'rgba(60,50,35,.18)'; g.beginPath(); g.arc(X, Y + 3, RR + 2, 0, 7); g.fill();
+    g.fillStyle = '#bfb5a2'; g.beginPath(); g.arc(X, Y, RR, 0, 7); g.fill();
+    g.fillStyle = '#ddd6c8'; g.beginPath(); g.arc(X, Y, RR - 7, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(95,82,62,.2)'; g.lineWidth = 1.4;
+    for (let k = 0, rad = RR - 7; rad > 30; k++, rad -= 26) {
+      g.fillStyle = k % 2 ? '#d6cfbf' : '#e1dacd'; g.beginPath(); g.arc(X, Y, rad, 0, 7); g.fill(); g.beginPath(); g.arc(X, Y, rad, 0, 7); g.stroke();
+      const n = Math.max(8, Math.round(rad * 2 * Math.PI / 34)), off = k * .5;   // 돌 이음매
+      for (let j = 0; j < n; j++) { const an = (j + off) / n * Math.PI * 2; g.beginPath(); g.moveTo(X + Math.cos(an) * rad, Y + Math.sin(an) * rad); g.lineTo(X + Math.cos(an) * (rad - 26), Y + Math.sin(an) * (rad - 26)); g.stroke(); }
+    }
+    g.fillStyle = '#cfc6b4'; g.beginPath(); g.arc(X, Y, 40, 0, 7); g.fill();
+    g.strokeStyle = '#b3a890'; g.lineWidth = 3; g.beginPath(); g.arc(X, Y, 40, 0, 7); g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 2; g.beginPath(); g.arc(X, Y, RR - 9, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); }
+  // 4) 선착장 다리 (칸 그대로)
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (tileAt(x, y) === DOCK) {
+    const X = x * T, Y = y * T; g.fillStyle = GCOL[DOCK][(x + y) % 2]; g.fillRect(X, Y, T, T);
+    g.fillStyle = 'rgba(70,40,20,.35)'; for (let k = 7; k < T; k += 8) g.fillRect(X, Y + k, T, 1.5); if (x % 2 === 0) { g.fillStyle = 'rgba(70,40,20,.5)'; g.fillRect(X + 3, Y + 3, 2, 2); }
+  }
+  // 5) 잔 장식 (그 바닥이 실제로 그려진 곳에만)
+  const on = (t, x, y) => soft(t, x / T, y / T) > .58, bare = (x, y) => soft(PATH, x / T, y / T) < .35 && soft(SAND, x / T, y / T) < .35 && soft(GRAVEL, x / T, y / T) < .4 && Math.hypot(x / T - PLAZA_C.x, y / T - PLAZA_C.y) > PLAZA_R + .8;
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
     const v = tileAt(x, y), X = x * T, Y = y * T;
     if (v === G || v === FOREST) {
-      if (rnd() < .2) { g.fillStyle = v === G ? 'rgba(40,110,40,.32)' : 'rgba(20,70,25,.35)'; const gx = X + 6 + rnd() * 20, gy = Y + 8 + rnd() * 16; g.fillRect(gx, gy, 2, 5); g.fillRect(gx + 3, gy + 1, 2, 4); }
+      if (rnd() < .2) { const gx = X + 6 + rnd() * 20, gy = Y + 8 + rnd() * 16; if (bare(gx, gy)) { g.strokeStyle = v === G ? 'rgba(40,110,40,.4)' : 'rgba(20,70,25,.4)'; g.lineWidth = 1.8; g.lineCap = 'round'; for (const dd of [-3, 0, 3]) { g.beginPath(); g.moveTo(gx + dd * .4, gy + 5); g.lineTo(gx + dd, gy); g.stroke(); } } }
       const fl = noise2(x / 4, y / 4, 31) > .45 && v === G;   // 꽃밭은 무리 지어
-      if (rnd() < (fl ? .5 : .04)) { g.fillStyle = ['#fff', '#ffd166', '#ff8fab', '#b9a6ff'][Math.floor(rnd() * 4)]; const fx = X + 6 + rnd() * 20, fy = Y + 6 + rnd() * 20; g.beginPath(); g.arc(fx, fy, 2.6, 0, 7); g.fill(); g.fillStyle = '#ffe9a0'; g.beginPath(); g.arc(fx, fy, 1, 0, 7); g.fill(); }
+      if (rnd() < (fl ? .5 : .04)) { const col = ['#fff', '#ffd166', '#ff8fab', '#b9a6ff'][Math.floor(rnd() * 4)], fx = X + 6 + rnd() * 20, fy = Y + 6 + rnd() * 20; if (bare(fx, fy)) { g.fillStyle = col; g.beginPath(); g.arc(fx, fy, 2.6, 0, 7); g.fill(); g.fillStyle = '#ffe9a0'; g.beginPath(); g.arc(fx, fy, 1, 0, 7); g.fill(); } }
     }
-    if (v === GRAVEL && rnd() < .5) { g.fillStyle = rnd() < .5 ? 'rgba(90,80,65,.28)' : 'rgba(255,255,255,.3)'; g.beginPath(); g.ellipse(X + 5 + rnd() * 22, Y + 5 + rnd() * 22, 2 + rnd() * 2.5, 1.5 + rnd() * 1.5, 0, 0, 7); g.fill(); }
-    if (v === PATH && rnd() < .18) { g.fillStyle = 'rgba(150,115,70,.25)'; g.beginPath(); g.arc(X + 5 + rnd() * 22, Y + 5 + rnd() * 22, 1.5 + rnd() * 1.5, 0, 7); g.fill(); }
-    if (v === STONE) { g.strokeStyle = 'rgba(80,70,55,.12)'; g.lineWidth = 1; g.strokeRect(X + .5, Y + .5, T / 2, T / 2); g.strokeRect(X + T / 2 + .5, Y + T / 2 + .5, T / 2 - 1, T / 2 - 1); }
-    if (v === WATER && rnd() < .22) { g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 2; g.beginPath(); const wx = X + 6 + rnd() * 14, wy = Y + 10 + rnd() * 14; g.moveTo(wx, wy); g.quadraticCurveTo(wx + 4, wy - 3, wx + 8, wy); g.stroke(); }
-    if (v === DOCK) { g.fillStyle = 'rgba(70,40,20,.35)'; for (let k = 7; k < T; k += 8) g.fillRect(X, Y + k, T, 1.5); if (x % 2 === 0) { g.fillStyle = 'rgba(70,40,20,.5)'; g.fillRect(X + 3, Y + 3, 2, 2); } }
-    if (v === SOIL) { g.fillStyle = 'rgba(60,35,15,.3)'; g.fillRect(X + 2, Y + 10, T - 4, 3); g.fillRect(X + 2, Y + 22, T - 4, 3); }
-    if (v === SAND && rnd() < .2) { g.fillStyle = 'rgba(180,150,90,.3)'; g.fillRect(X + rnd() * 28, Y + rnd() * 28, 2, 2); }
+    if (v === GRAVEL && rnd() < .5) { const gx = X + 5 + rnd() * 22, gy = Y + 5 + rnd() * 22, col = rnd() < .5 ? 'rgba(90,80,65,.28)' : 'rgba(255,255,255,.3)', a1 = 2 + rnd() * 2.5, a2 = 1.5 + rnd() * 1.5; if (on(GRAVEL, gx, gy)) { g.fillStyle = col; g.beginPath(); g.ellipse(gx, gy, a1, a2, 0, 0, 7); g.fill(); } }
+    if (v === PATH && rnd() < .18) { const gx = X + 5 + rnd() * 22, gy = Y + 5 + rnd() * 22, rad = 1.5 + rnd() * 1.5; if (on(PATH, gx, gy)) { g.fillStyle = 'rgba(150,115,70,.28)'; g.beginPath(); g.arc(gx, gy, rad, 0, 7); g.fill(); } }
+    if (v === WATER && rnd() < .22) { const wx = X + 6 + rnd() * 14, wy = Y + 10 + rnd() * 14; if (soft(WATER, wx / T, wy / T) > .7) { g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 2; g.beginPath(); g.moveTo(wx, wy); g.quadraticCurveTo(wx + 4, wy - 3, wx + 8, wy); g.stroke(); } }
+    if (v === SAND && rnd() < .2) { const sx = X + rnd() * 28, sy = Y + rnd() * 28; if (on(SAND, sx, sy) && soft(WATER, sx / T, sy / T) < .4) { g.fillStyle = 'rgba(180,150,90,.3)'; g.fillRect(sx, sy, 2, 2); } }
   }
-  // 텃밭: 네모 흙 칸들을 풀로 덮고, 귀퉁이가 둥근 밭 하나로
+  // 6) 텃밭: 귀퉁이가 둥근 밭 하나
   { let x0 = MW, y0 = MH, x1 = 0, y1 = 0; for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (tileAt(x, y) === SOIL) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
     if (x1 >= x0) {
-      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (tileAt(x, y) === SOIL) { g.fillStyle = GCOL[G][(x + y) % 2]; g.fillRect(x * T, y * T, T, T); }
       const X = x0 * T + 3, Y = y0 * T + 3, Wd = (x1 - x0 + 1) * T - 6, Hh = (y1 - y0 + 1) * T - 6;
       inkDraw(g, [{ path: R(X, Y, Wd, Hh, 22), c: '#a9774b', after: q => {
         q.save(); q.beginPath(); q.roundRect(X, Y, Wd, Hh, 22); q.clip();
@@ -1118,11 +1153,6 @@ const GCOL = { [G]: ['#93cf74', '#8bc96c'], [PATH]: ['#ead6a6', '#e4cf9b'], [WAT
         q.restore(); } },
         { flat: 1, path: R(X + 7, Y + 7, Wd - 14, Hh - 14, 16), c: 'rgba(90,55,25,.18)' }], 2.4);
     } }
-  // 물가 반짝 테두리
-  g.strokeStyle = 'rgba(255,255,255,.5)'; g.lineWidth = 2;
-  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (tileAt(x, y) === WATER) {
-    if (tileAt(x, y - 1) !== WATER && tileAt(x, y - 1) !== DOCK) { g.beginPath(); g.moveTo(x * T + 3, y * T + 2); g.lineTo(x * T + T - 3, y * T + 2); g.stroke(); }
-  }
 })();
 
 // ───────── 길 찾기 (칸 단위 A* + 직선으로 줄이기) ─────────
@@ -1367,19 +1397,18 @@ function drawHouse(h) {
 const treeP = (k, c1 = '#3f8f4c', c2 = '#2f7a4a') => k === 'pine'
   ? [{ path: R(-3, -12, 6, 12, 1), c: '#7a5332' }, { path: PG([[0, -50], [13, -28], [-13, -28]]), c: c2 }, { path: PG([[0, -40], [17, -16], [-17, -16]]), c: c2 }, { path: PG([[0, -30], [20, -6], [-20, -6]]), c: c2 }, { flat: 1, path: PG([[0, -46], [5, -36], [-4, -32]]), c: 'rgba(255,255,255,.2)' }]
   : [{ path: R(-3.5, -14, 7, 14, 1), c: '#7a5332' }, { path: E(-9, -22, 10, 9), c: c1 }, { path: E(9, -22, 10, 9), c: c1 }, { path: E(0, -31, 15, 13), c: c1 }, { flat: 1, path: E(-5, -35, 6, 4), c: 'rgba(255,255,255,.22)' }];
-// 새 나무 3종: 자작나무(흰 줄기·연두 잎), 벚나무(분홍 꽃 구름), 단풍나무(주황·빨강 잎)
-const birchP = [{ path: R(-3, -30, 6, 30, 2), c: '#f1efe6', after: g => { g.fillStyle = '#3a3a3a'; for (const [y, w] of [[-26, 3], [-19, 2.5], [-11, 3.5], [-5, 2]]) g.fillRect(-3, y, w, 1.6); } },
-  { path: E(0, -40, 11, 16), c: '#a6d46a' }, { path: E(-7, -30, 7, 8), c: '#93c95c' }, { path: E(7, -33, 7, 9), c: '#93c95c' }, { flat: 1, path: E(-3, -46, 4, 5), c: 'rgba(255,255,255,.25)' }];
-const cherryP = [{ path: R(-3.5, -14, 7, 14, 1), c: '#6b4030' }, { path: PG([[-1, -14], [-8, -22], [-6, -23], [1, -16]]), c: '#6b4030' },
-  { path: E(-10, -23, 10, 8), c: '#f6b6cf' }, { path: E(10, -24, 10, 8), c: '#f6b6cf' }, { path: E(0, -32, 15, 11), c: '#ffc7da', after: g => { g.fillStyle = '#ff8fb5'; for (const [x, y] of [[-8, -30], [5, -36], [9, -25], [-12, -21], [2, -27], [-3, -38]]) { g.beginPath(); g.arc(x, y, 1.6, 0, 7); g.fill(); } } },
-  { flat: 1, path: E(-5, -37, 6, 3.5), c: 'rgba(255,255,255,.35)' }];
-const mapleP = [{ path: R(-3.5, -14, 7, 14, 1), c: '#6b4030' }, { path: E(-9, -21, 10, 9), c: '#e4572e' }, { path: E(9, -22, 10, 9), c: '#f0a030' }, { path: E(0, -31, 14, 12), c: '#f07a2e' },
-  { flat: 1, path: E(-6, -34, 5, 3.5), c: 'rgba(255,240,180,.35)' }, { flat: 1, path: E(6, -26, 3, 2.4), c: '#ffd166' }, { flat: 1, path: E(-8, -24, 2.6, 2), c: '#c43d2a' }];
+// 새 나무 3종: 색은 기존 나무와 같은 초록, 모양만 다름 (이름표는 예전 그대로 birch·cherry·maple)
+// birch = 키 큰 포플러 · cherry = 넓게 퍼진 두 덩이 나무 · maple = 우산처럼 납작한 나무
+const TG1 = '#3f8f4c', TG2 = '#4a9a55', TRUNK = '#7a5332';
+const birchP = [{ path: R(-3, -16, 6, 16, 1), c: TRUNK }, { path: E(0, -38, 9.5, 24), c: TG1 }, { path: E(-3, -30, 6, 10), c: TG2 }, { flat: 1, path: E(-3, -48, 3.5, 7), c: 'rgba(255,255,255,.2)' }];
+const cherryP = [{ path: R(-3.5, -14, 7, 14, 1), c: TRUNK }, { path: PG([[-1, -12], [-12, -22], [-9, -24], [1, -15]]), c: TRUNK }, { path: PG([[1, -12], [12, -21], [9, -23], [-1, -15]]), c: TRUNK },
+  { path: E(-13, -26, 11, 9), c: TG1 }, { path: E(13, -26, 11, 9), c: TG1 }, { path: E(0, -30, 10, 10), c: TG2 }, { flat: 1, path: E(-15, -30, 5, 3), c: 'rgba(255,255,255,.2)' }, { flat: 1, path: E(10, -30, 5, 3), c: 'rgba(255,255,255,.18)' }];
+const mapleP = [{ path: R(-3, -24, 6, 24, 1), c: TRUNK }, { path: PG([[-17, -24], [-10, -34], [10, -34], [17, -24], [10, -21], [-10, -21]]), c: TG1 }, { path: E(0, -34, 12, 5), c: TG2 }, { flat: 1, path: E(-5, -35, 6, 2), c: 'rgba(255,255,255,.22)' }];
 const rockP = (c = '#9aa0a8', ore) => [{ path: PG([[-15, 0], [-17, -9], [-9, -19], [4, -21], [15, -13], [17, 0]]), c }, { flat: 1, path: PG([[-9, -17], [3, -19], [-2, -10], [-12, -8]]), c: 'rgba(255,255,255,.3)' },
   ...(ore ? [{ flat: 1, path: E(6, -8, 2.6, 2), c: '#e8c55a' }, { flat: 1, path: E(-4, -5, 2, 1.6), c: '#e8c55a' }, { flat: 1, path: E(10, -14, 1.6, 1.4), c: '#bfe9ff' }] : [])];
 const stumpP = [{ path: R(-8, -8, 16, 8, 2), c: '#8a5a30' }, { path: E(0, -8, 8, 3.6), c: '#d8a56a', after: g => { g.strokeStyle = 'rgba(120,75,35,.6)'; g.lineWidth = 1; g.beginPath(); g.ellipse(0, -8, 4, 1.7, 0, 0, 7); g.stroke(); } }, { flat: 1, path: E(9, -2, 3, 1.5, .5), c: '#6cc35a' }];
 const rubbleP = [{ path: E(-6, -3, 5, 3.5), c: '#9aa0a8' }, { path: E(5, -3, 4, 3), c: '#8d939b' }, { path: E(0, -6, 3.5, 3), c: '#a8aeb6' }];
-const SP_TREE = { birch: () => sprite('t:birch', 40, 66, 20, 60, g => inkDraw(g, birchP, 2)), cherry: () => sprite('t:cherry', 50, 56, 25, 50, g => inkDraw(g, cherryP, 2)), maple: () => sprite('t:maple', 50, 56, 25, 50, g => inkDraw(g, mapleP, 2)),
+const SP_TREE = { birch: () => sprite('t:birch2', 40, 70, 20, 64, g => inkDraw(g, birchP, 2)), cherry: () => sprite('t:cherry2', 60, 50, 30, 44, g => inkDraw(g, cherryP, 2)), maple: () => sprite('t:maple2', 50, 50, 25, 44, g => inkDraw(g, mapleP, 2)),
   round: () => sprite('t:round', 50, 60, 25, 54, g => inkDraw(g, treeP('round'), 2)), pine: () => sprite('t:pine', 50, 62, 25, 56, g => inkDraw(g, treeP('pine'), 2)), stone: () => sprite('t:stone', 44, 30, 22, 26, g => inkDraw(g, rockP('#a39a8c'), 2)) };
 const SP_NODE = { tree: () => sprite('n:tree', 50, 60, 25, 54, g => inkDraw(g, treeP('round', '#58a856'), 2)), rock: () => sprite('n:rock', 44, 30, 22, 26, g => inkDraw(g, rockP('#a3a8b0', true), 2)),
   stump: () => sprite('n:stump', 30, 18, 15, 14, g => inkDraw(g, stumpP, 1.8)), rubble: () => sprite('n:rubble', 30, 16, 15, 12, g => inkDraw(g, rubbleP, 1.8)) };
@@ -1423,8 +1452,26 @@ function boardText() {
   const l = Math.max(0, Math.floor((at - Date.now()) / 1000)), dd = Math.floor(l / 86400), p = n => String(n).padStart(2, '0');
   return `다음 방송까지 ${dd ? dd + '일 ' : ''}${p(Math.floor(l % 86400 / 3600))}:${p(Math.floor(l % 3600 / 60))}:${p(l % 60)}`;
 }
+// 방송 중이면 전광판 위에 큰 화면 (방송 썸네일을 1분마다 새로). 누르면 창에서 같이 보기
+const boardScreen = s => { const X = s.x * T, Y = s.y * T, w = s.w * T, W = 156, H = 88; return { x: X + w / 2 - W / 2, y: Y - 40 - H, w: W, h: H }; };
+function drawLiveScreen(s, now) {
+  const r = boardScreen(s), Y = s.y * T;
+  inkDraw(ctx, [{ path: R(r.x + 22, r.y + r.h, 8, Y - 34 - (r.y + r.h), 2), c: '#3a434f' }, { path: R(r.x + r.w - 30, r.y + r.h, 8, Y - 34 - (r.y + r.h), 2), c: '#3a434f' }, { path: R(r.x - 7, r.y - 7, r.w + 14, r.h + 14, 8), c: '#1f2430' }], 2.4);
+  ctx.save(); rr(ctx, r.x, r.y, r.w, r.h, 3); ctx.clip();
+  if (LIVE_IMG.complete && LIVE_IMG.naturalWidth) ctx.drawImage(LIVE_IMG, r.x, r.y, r.w, r.h);
+  else { const g = ctx.createLinearGradient(r.x, r.y, r.x + r.w, r.y + r.h); g.addColorStop(0, '#173a2c'); g.addColorStop(1, '#0d1b2a'); ctx.fillStyle = g; ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.fillStyle = '#00ffa3'; ctx.font = '800 20px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('CHZZK LIVE', r.x + r.w / 2, r.y + r.h / 2 - 6); }
+  ctx.fillStyle = 'rgba(255,255,255,.06)'; for (let y = r.y; y < r.y + r.h; y += 3) ctx.fillRect(r.x, y, r.w, 1);   // 전광판 줄무늬
+  ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(r.x, r.y + r.h - 20, r.w, 20);
+  ctx.fillStyle = '#fff'; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('▶ 눌러서 같이 보기', r.x + r.w / 2, r.y + r.h - 10);
+  ctx.restore();
+  ctx.fillStyle = Math.floor(now / 600) % 2 ? '#ff3b3b' : '#ff6b6b'; rr(ctx, r.x + 6, r.y + 6, 42, 16, 5); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = '800 10.5px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('● LIVE', r.x + 27, r.y + 14.5);
+}
 function drawBoard(s, now) {
   const X = s.x * T, Y = s.y * T, w = s.w * T;
+  if (S.live) drawLiveScreen(s, now);
   inkDraw(ctx, [{ path: R(X + 18, Y - 4, 7, 30, 2), c: '#5b4636' }, { path: R(X + w - 25, Y - 4, 7, 30, 2), c: '#5b4636' }, { path: R(X + 4, Y - 34, w - 8, 40, 7), c: S.live ? '#1f2a3a' : '#33405a' }], 2.2);
   ctx.font = '700 15px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   if (S.live) { ctx.fillStyle = Math.floor(now / 500) % 2 ? '#ff4d4f' : '#ffd166'; fillTextIco(ctx, '🔴 김치복 생방송 중!', X + w / 2, Y - 14); }
@@ -1514,12 +1561,14 @@ function frame(now) {
   if (!$('#app').hidden && !S.away) { update(dt, now); render(now); drawStick(); }
   requestAnimationFrame(frame);
 }
+// 화면 이동은 실제 화면 점(기기 픽셀) 단위로 맞춤: 배율 125%·150% 화면에서 1칸·2칸씩 들쭉날쭉 움직이며 떨리던 것 해결
+const pxR = v => Math.round(v * DPR) / DPR;
 function follow(dt, mw, mh) {
   const vw = W / S.zoom, vh = H / S.zoom;
   let tx = me.x, ty = me.y - (innerWidth <= 760 ? 40 : 0) + (HT ? (innerWidth <= 760 ? -H * .12 : H * .14) / S.zoom : 0);
   tx = Math.max(vw / 2, Math.min(mw - vw / 2, tx)); ty = Math.max(vh / 2, Math.min(mh - vh / 2, ty));
   if (vw > mw) tx = mw / 2; if (vh > mh) ty = mh / 2;
-  cam.x += (tx - cam.x) * Math.min(1, dt * 6); cam.y += (ty - cam.y) * Math.min(1, dt * 6);
+  const k = 1 - Math.exp(-dt * 7); cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k;   // 프레임 간격이 달라도 똑같이 부드럽게
 }
 // 마을에 떠오르는 글자 (채집 +3 등)
 const TF = [];
@@ -1628,7 +1677,7 @@ function render(now) {
   if (me.room) return renderRoom(now);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.fillStyle = '#5fb3d9'; ctx.fillRect(0, 0, W, H);
-  const z = S.zoom, ox = Math.round(W / 2 - cam.x * z), oy = Math.round(H / 2 - cam.y * z);
+  const z = S.zoom, ox = pxR(W / 2 - cam.x * z), oy = pxR(H / 2 - cam.y * z);
   ctx.setTransform(DPR * z, 0, 0, DPR * z, ox * DPR, oy * DPR);
   ctx.imageSmoothingEnabled = true;
   // 화면에 보이는 부분만 바닥 그림
@@ -1678,7 +1727,7 @@ const roomGround = (() => {
 })();
 function renderRoom(now) {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#3a2a20'; ctx.fillRect(0, 0, W, H);
-  const z = S.zoom, ox = Math.round(W / 2 - cam.x * z), oy = Math.round(H / 2 - cam.y * z);
+  const z = S.zoom, ox = pxR(W / 2 - cam.x * z), oy = pxR(H / 2 - cam.y * z);
   ctx.setTransform(DPR * z, 0, 0, DPR * z, ox * DPR, oy * DPR);
   ctx.drawImage(roomGround, 0, 0);
   inkDraw(ctx, [...winP(2 * T, 10, 44, 34), ...winP(ROOM_W * T - 2 * T - 44, 10, 44, 34), { path: R(ROOM_W * T / 2 - 40, 8, 80, 26, 5), c: '#fbfcf7' }], 2);
@@ -2116,7 +2165,7 @@ function drawFx() {
 function renderHunt(now) {
   const f = HT.f;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = ({ plain: '#6fa858', forest: '#3d6b38', canyon: '#a9805a', factory: '#4f5864' })[f.id] || f.g[1]; ctx.fillRect(0, 0, W, H);
-  const z = S.zoom, sh = HT.shake, ox = Math.round(W / 2 - cam.x * z + (Math.random() - .5) * 2 * sh), oy = Math.round(H / 2 - cam.y * z + (Math.random() - .5) * 2 * sh);
+  const z = S.zoom, sh = HT.shake, ox = pxR(W / 2 - cam.x * z + (Math.random() - .5) * 2 * sh), oy = pxR(H / 2 - cam.y * z + (Math.random() - .5) * 2 * sh);
   ctx.setTransform(DPR * z, 0, 0, DPR * z, ox * DPR, oy * DPR);
   ctx.drawImage(huntGround[f.id], 0, 0, HW * T, HH * T);
   if (HT.target && !HT.target.dead) { const m = HT.target; ctx.strokeStyle = 'rgba(232,85,58,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(m.x, m.y + 2, 16 * m.d.s, 5 * m.d.s, 0, 0, 7); ctx.stroke(); }
@@ -2245,6 +2294,7 @@ function tap(sx, sy) {
     return busyToast();
   }
   if (Math.hypot(w.x - FSIGN.x, w.y - (FSIGN.y - 24)) < 26) return openFishing();
+  if (S.live) { const bs = SPOTS.find(s => s.id === 'board'), r = boardScreen(bs); if (w.x > r.x - 8 && w.x < r.x + r.w + 8 && w.y > r.y - 8 && w.y < bs.y * T - 34) return openSpot(bs); }
   if (Math.abs(w.x - PORTAL.x) < 24 && w.y > PORTAL.y - 74 && w.y < PORTAL.y + 6) return openHuntSelect();
   const fo = SPOTS.find(s => s.id === 'fountain'); if (Math.hypot((w.x - (fo.x + 1) * T) / 38, (w.y - (fo.y + .8) * T) / 36) < 1) return openWish();
   if (hitP) return openProfile(hitP);
@@ -2325,24 +2375,24 @@ function openBuilding(b, keep) {
 const gachaB = () => BUILDINGS.find(b => b.id === 'gacha');
 const pwrTxt = (it, l = me.enh[it.slot] || 0) => { const x = itemStats(it, l); return x.atk != null ? `${it.slot === 'staff' ? '마력' : '공격'} ${x.atk}` : `방어 ${x.def}`; };
 const tenCost = gi => Math.round(gi.cost * 10 * GACHA_TEN);
-const skTen = () => Math.round(SKILL_GACHA.cost(me.lv) * 10 * SKILL_GACHA.ten);
+const skTen = () => Math.round(skGachaInfo(me.life?.skg || 0).cost * 10 * SKILL_GACHA.ten);
 function skBox() {
-  S.skCls ||= me.cls; const one = SKILL_GACHA.cost(me.lv), ten = skTen(), own = me.life?.sk || {}, list = SKILLS.filter(s => s.cls === S.skCls);
-  return `<div class="gbox"><div class="gbox-h"><span class="gbox-i">📘</span><b>스킬 뽑기</b><small>직업을 골라 뽑아요 · 같은 스킬이 또 나오면 레벨 업</small><span class="glv">${list.filter(s => own[s.id]).length} / 6 모음</span></div>
-    <div class="seg skcls">${Object.entries(CLASSES).map(([k, c]) => `<button type="button" data-x="skc:${k}" aria-pressed="${S.skCls === k}">${c.i} ${c.n}</button>`).join('')}</div>
-    <div class="godds">${[1, 2, 3].map(r => `<span style="color:${SK_RARE[r].c}">${SK_RARE[r].n} <b>${SK_RARE[r].p}%</b> ${list.filter(s => s.r === r).map(s => s.i).join('')}</span>`).join('')}</div>
+  const gi = skGachaInfo(me.life?.skg || 0), one = gi.cost, ten = skTen(), own = me.life?.sk || {};
+  return `<div class="gbox"><div class="gbox-h"><span class="gbox-i">📘</span><b>스킬 뽑기</b><small>검사·궁수·마법사 18종 중에서 나와요 · 같은 스킬이 또 나오면 레벨 업 · 뽑기 레벨이 오르면 값과 전설 확률이 올라요</small><span class="glv">뽑기 Lv.${gi.lv}</span></div>
+    <div class="gbar"><i style="width:${gi.need ? gi.now / gi.need * 100 : 100}%"></i><span>${gi.need ? `다음 레벨까지 ${gi.need - gi.now}회` : '최고 레벨'}</span></div>
+    <div class="godds">${[1, 2, 3].map(r => `<span style="color:${SK_RARE[r].c}">${SK_RARE[r].n} <b>${gi.odds[r - 1]}%</b></span>`).join('')}<span>모은 스킬 <b>${SKILLS.filter(s => own[s.id]).length} / ${SKILLS.length}</b></span></div>
     <div class="gbtns"><button class="btn" data-x="sk:1" ${me.gold < one ? 'disabled' : ''}>1회 뽑기<small>${goldTxt(one)}</small></button><button class="btn main" data-x="sk:10" ${me.gold < ten ? 'disabled' : ''}>10회 뽑기<small>${goldTxt(ten)} · 10% 할인</small></button></div></div>`;
 }
 // 스킬 뽑기 결과 카드: NEW / 레벨 업 / 최고 레벨이면 골드로 돌려받음
 function showSkillPulls(j) {
   const cards = j.got.map((o, i) => { const s = SKILLS.find(x => x.id === o.id);
-    return `<div class="gcard sk${s.r === 3 ? ' shine' : ''}${o.isNew ? ' keep' : ''}" style="--i:${i};--rc:${SK_RARE[s.r].c};--gc:${SK_RARE[s.r].c}"><span class="ski2">${s.i}</span><em>${SK_RARE[s.r].n}</em><span class="nm">${s.n}</span>${o.max ? '<span class="dis">최고 레벨 · 골드</span>' : o.isNew ? '<span class="up">NEW!</span>' : o.up ? `<span class="up">Lv.${o.lv} ▲</span>` : `<span class="dis">Lv.${o.lv} · 장 +1</span>`}</div>`; }).join('');
-  openModal(`<h3>📘 ${CLASSES[S.skCls].n} 스킬 뽑기 결과</h3><div class="gres">${cards}</div>
-    ${j.back ? `<p class="gsum">최고 레벨 스킬은 골드로 돌려받았어요: <b>${goldTxt(j.back)}</b></p>` : ''}
+    return `<div class="gcard sk${s.r === 3 ? ' shine' : ''}${o.isNew ? ' keep' : ''}" style="--i:${i};--rc:${SK_RARE[s.r].c};--gc:${SK_RARE[s.r].c}"><span class="ski2">${s.i}</span><em>${SK_RARE[s.r].n}</em><small class="cl">${CLASSES[s.cls].i} ${CLASSES[s.cls].n}</small><span class="nm">${s.n}</span>${o.max ? '<span class="dis">최고 레벨 · 골드</span>' : o.isNew ? '<span class="up">NEW!</span>' : o.up ? `<span class="up">Lv.${o.lv} ▲</span>` : `<span class="dis">Lv.${o.lv} · 장 +1</span>`}</div>`; }).join('');
+  openModal(`<h3>📘 스킬 뽑기 결과</h3><div class="gres">${cards}</div>
+    ${j.back ? `<p class="gsum">최고 레벨 스킬은 골드로 돌려받았어요: <b>${goldTxt(j.back)}</b></p>` : ''}${j.lvUp ? `<p class="gsum">🎉 <b>스킬 뽑기 레벨 ${j.lvUp}</b> 달성! 전설 확률이 올라요 (값도 올라요)</p>` : ''}
     <div class="actions"><button class="btn main" data-x="again" ${me.gold < skTen() ? 'disabled' : ''}>🎰 10회 더 뽑기<small>${goldTxt(skTen())}</small></button><button class="btn" data-x="see">📘 내 스킬 보기</button><button class="btn" data-x="back">가챠센터로</button></div>`, el => wire(el, async x => {
     if (x === 'back') return openBuilding(gachaB());
-    if (x === 'see') { closeModal(); skTab = S.skCls; renderSkills(); return openPanelTab('skill'); }
-    const k = await act('/api/skill/pull', { cls: S.skCls, n: 10 }); if (k) showSkillPulls(k);
+    if (x === 'see') { closeModal(); skTab = SKILLS.find(s => s.id === j.got[0]?.id)?.cls || me.cls; renderSkills(); return openPanelTab('skill'); }
+    const k = await act('/api/skill/pull', { n: 10 }); if (k) showSkillPulls(k);
   }));
   const best = j.got.filter(o => SKILLS.find(s => s.id === o.id).r === 3 && (o.isNew || o.up));
   for (const o of best) { const s = SKILLS.find(x => x.id === o.id); toast(`✨ 전설 스킬 ${s.n}${o.isNew ? '!' : ` Lv.${o.lv}!`}`); }
@@ -2364,8 +2414,7 @@ function gachaSheet(b, keep) {
     <details class="gfold"><summary>등급 확률 · 규칙</summary><div class="godds">${Object.values(GRADES).map(g => `<span style="color:${g.c}">${g.n} <b>${g.p}%</b></span>`).join('')}</div>
       <p class="muted">단계가 등급보다 중요해요. 2단계 '빈약'도 1단계 '신화'보다 세요. 무기는 3개(검·활·지팡이)를 모두 끼고, 지금 클래스의 무기로 싸워요.<br>등급이 높을수록 <b>랜덤 옵션</b>이 많이 붙어요 (빈약 0개 · 일반·고급 1개 · 희귀·영웅 2개 · 전설·신화 3개).</p></details>`, el => wire(el, async x => {
     if (x === 'pend') return showPicks();
-    if (x.startsWith('skc:')) { S.skCls = x.slice(4); return gachaSheet(b, true); }
-    if (x.startsWith('sk:')) { const j = await act('/api/skill/pull', { cls: S.skCls, n: +x.slice(3) }); if (j) showSkillPulls(j); return; }
+    if (x.startsWith('sk:')) { const j = await act('/api/skill/pull', { n: +x.slice(3) }); if (j) showSkillPulls(j); return; }
     if (x === 'table') return gachaTable();
     const [k, n] = x.split(':'), j = await act('/api/gacha/pull', { box: k, n: +n });
     if (j) showPulls(j, k);
@@ -2431,6 +2480,13 @@ function openSpot(s) {
   if (s.id === 'river') return openFishing();
   if (s.id === 'farm') return openFarm();
   if (s.id === 'fountain') return openWish();
+  if (s.id === 'board' && S.live) {
+    const src = `https://chzzk.naver.com/embed/live/${(liveInfo?.url || '').split('/live/')[1] || CHZZK_ID}`;
+    return openModal(`<h3>🔴 김치복 생방송</h3>${liveInfo?.title ? `<p style="margin:0 0 6px"><b>${esc(liveInfo.title)}</b></p>` : ''}
+      <div class="livebox"><iframe src="${src}" title="김치복 치지직 생방송" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <p class="muted">광장 근처에 있으면, 치지직 채팅에 <b>게임 닉네임과 똑같은 닉네임</b>으로 쓴 말이 마을 채팅과 말풍선으로도 보여요. 방송 중에는 마을 모두 경험치·골드 2배!</p>
+      <div class="actions"><a class="btn" href="${(liveInfo?.url) || `https://chzzk.naver.com/live/${CHZZK_ID}`}" target="_blank" rel="noopener">치지직에서 크게 보기 · 채팅하기</a></div><button class="close" data-close>닫기</button>`);
+  }
   if (s.id === 'board') openModal(`<h3>📣 광장 전광판</h3><p>${S.live ? '지금 김치복 생방송 중이에요!' : '김치복 방송 일정과 공지가 나오는 전광판.'}</p><div class="actions">${actBtn('sched', '📅 방송 일정 보기', '홈페이지 일정')}</div><button class="close" data-close>닫기</button>`, el => el.querySelector('.actions').addEventListener('click', e => { const a = e.target.closest('[data-a]')?.dataset.a; if (a) doAct(a); }));
 }
 function addGold(n) { me.gold += n; syncBars(); }
@@ -2495,7 +2551,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 function addChat(m) {
   const li = document.createElement('li');
   if (m.sys) { const t = String(m.text), em = /^\p{Extended_Pictographic}/u.test(t), bad = /^(⚠️|🚫|🚨|⛔)|금지|경고|차단|쉬어/.test(t); li.className = bad ? 'sys warn' : 'sys'; li.textContent = em ? t : `${bad ? '⚠️' : '💬'} ${t}`; }
-  else { if (m.mine) li.classList.add('mine'); if (m.adm) li.classList.add('adm'); li.innerHTML = `${m.adm ? '<span class="admtag">관리자</span>' : ''}<b>${esc(m.who)}</b> ${esc(m.text)}`; }
+  else { if (m.mine) li.classList.add('mine'); if (m.adm) li.classList.add('adm'); if (m.chz) li.classList.add('chz'); li.innerHTML = `${m.chz ? '<span class="chztag" title="치지직 채팅에서 온 말">치지직</span>' : ''}${m.adm ? '<span class="admtag">관리자</span>' : ''}<b>${esc(m.who)}</b> ${esc(m.text)}`; }
   const log = $('#chatLog'); log.append(li); while (log.children.length > 80) log.firstChild.remove(); log.scrollTop = log.scrollHeight;
   const f = $('#feed'); const fl = li.cloneNode(true); f.append(fl); while (f.children.length > 4) f.firstChild.remove(); setTimeout(() => fl.remove(), 6000);
 }
@@ -2559,7 +2615,7 @@ $('#rulesBtn').onclick = () => openModal(`<h3>💬 채팅 규칙</h3><div style=
   <tr><td>같은 말</td><td>3번 연속 같은 말은 안 보내져요</td></tr><tr><td>반복 글자</td><td>ㅋㅋㅋ… 같은 글자는 10개까지로 줄여요</td></tr>
   <tr><td>금지어</td><td>욕설·비하는 ***로 가려요. 아주 심한 말은 안 보내지고 경고</td></tr><tr><td>경고</td><td>3번 → 10분, 또 3번 → 1시간, 또 3번 → 24시간 채팅 금지</td></tr>
   <tr><td>링크</td><td>인터넷 주소 금지 (김치복 공식 링크만 가능)</td></tr><tr><td>개인정보</td><td>전화번호·이메일은 자동으로 가려요</td></tr>
-  <tr><td>채팅</td><td>마을 전체 채팅 하나예요. 같은 채널 모두에게 보여요</td></tr><tr><td>새 계정</td><td>가입 후 5분이 지나면 말할 수 있어요 (도배 계정 방지)</td></tr><tr><td>신고</td><td>김치복님이 직접 확인하고 처리해요. 3명 넘게 신고하면 확인 전까지 채팅이 멈춰요</td></tr></tbody></table></div>
+  <tr><td>채팅</td><td>마을 전체 채팅 하나예요. 같은 채널 모두에게 보여요</td></tr><tr><td>새 계정</td><td>가입 후 5분이 지나면 말할 수 있어요 (도배 계정 방지)</td></tr><tr><td>치지직</td><td>김치복 방송 중에 <b>광장 근처</b>에 있으면, 치지직 채팅에 <b>게임 닉네임과 똑같은 닉네임</b>으로 쓴 말이 마을에도 보여요 (사냥터·집 안에서는 안 보여요)</td></tr><tr><td>신고</td><td>김치복님이 직접 확인하고 처리해요. 3명 넘게 신고하면 확인 전까지 채팅이 멈춰요</td></tr></tbody></table></div>
   <p class="muted">차단: 캐릭터를 누르면 나오는 프로필 카드에서. 차단한 사람의 말과 캐릭터는 나에게 안 보여요.</p><button class="btn main" data-close>알겠어요</button>`);
 
 // ───────── 캐릭터창: 능력치 · 장비 · 스킨 · 가방 ─────────
@@ -2629,7 +2685,7 @@ function skinTile(cv, look) {
   const sc = w / 40; drawChar(g, w / 2, h * .5 + 38 * sc, { ...look, equip: {}, cls: '', moving: false, still: true }, 0, sc);
 }
 function renderSkins() {
-  const look = { face: me.face, body: me.body, hair: me.hair, hairC: me.hairC, hat: me.hat, eyes: me.eyes || 'dot' };
+  const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
   const hats = HATS.filter(h => me.hats.includes(h.id)), eyes = EYE_SKINS.filter(e => e.id === 'dot' || me.hats.includes('eye:' + e.id));
   const sig = JSON.stringify([look, hats.map(h => h.id), eyes.map(e => e.id)]); if (sig === skinSig) return; skinSig = sig;
   $('#hatList').innerHTML = hats.map(h => `<button type="button" data-h="${h.id}" aria-pressed="${me.hat === h.id}" title="${h.n}" aria-label="${h.n}"><canvas></canvas><small>${h.n}</small></button>`).join('');
@@ -2778,8 +2834,12 @@ function saveLook() {
   lookT = setTimeout(() => api('/api/character', { face: me.face, body: me.body, eyes: me.eyes, hat: me.hat, hair: me.hair, hairC: me.hairC }).catch(e => toast(e.message)), 700);
 }
 // 실제 김치복 방송 상태 (홈페이지와 같은 Worker)
+const LIVE_IMG = new Image(); let liveInfo = null;
+const LIVE_FIX = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('live') === '1';   // 시험용: 방송 중처럼 보기
+const CHZZK_ID = 'd44a982c742226605f4fcf3b6b4e7629';
 async function checkLive() {
-  try { const j = await (await fetch(LIVE_API, { cache: 'no-store' })).json(); if (!!j.open !== S.live) { S.live = !!j.open; $('#liveBanner').hidden = !S.live; if (S.live) sysMsg(`🔴 김치복님 생방송 중! ${j.title || ''} · 방송 중에는 마을 모두 경험치·골드 2배!`); } } catch {}
+  try { const j = await (await fetch(LIVE_API, { cache: 'no-store' })).json(); if (LIVE_FIX) j.open = true; liveInfo = j;
+    if (j.open && j.thumb) { const u = j.thumb + (j.thumb.includes('?') ? '&' : '?') + 't=' + Math.floor(Date.now() / 60e3); if (LIVE_IMG.src !== u) LIVE_IMG.src = u; } if (!!j.open !== S.live) { S.live = !!j.open; $('#liveBanner').hidden = !S.live; if (S.live) sysMsg(`🔴 김치복님 생방송 중! ${j.title || ''} · 방송 중에는 마을 모두 경험치·골드 2배!`); } } catch {}
   liveCheckin();
 }
 
@@ -3256,7 +3316,7 @@ const houseDoor = h => [(h.x + 1.5) * T, (h.y + HOUSE_H + .5) * T];
 // 스킨샵: 정사각형 미리보기 칸. 가진 것은 누르면 바로 쓰기/벗기, 없는 것은 누르면 구매 확인
 function skinShop(b, keep) {
   reopen = () => skinShop(b, true);
-  const look = { face: me.face, body: me.body, hair: me.hair, hairC: me.hairC, hat: me.hat, eyes: me.eyes || 'dot' };
+  const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
   const tile = (key, name, own, on, price) => `<button type="button" data-x="${key}" aria-pressed="${on}" title="${name}" aria-label="${name}${own ? '' : ` · ${price.toLocaleString()} 골드`}"><canvas></canvas>${own ? `<em class="own">${on ? '착용' : '보유'}</em>` : `<em>🪙 ${price.toLocaleString()}</em>`}<small>${name.replace(/^\S+\s/, '')}</small></button>`;
   const hats = HATS.filter(h => h.id !== 'none'), eyes = EYE_SKINS.filter(e => e.price);
   openModal(`${sheetHead(b, '겉모습만 바꾸는 스킨을 팔아요. 능력치는 없고, <b>현금 결제도 없어요.</b> 칸을 누르면 미리보기·구매, 가진 스킨은 바로 쓰기/벗기.')}
@@ -3487,7 +3547,7 @@ function onNet(m) {
     if (S.blocked.has(m.id)) return;
     const mine = m.id === NET.me, p = mine ? me : personOf(m.id);
     if (p && (mine || shown(p))) say(p, m.text);
-    addChat({ who: m.n, text: m.text, mine, adm: !!m.adm });
+    addChat({ who: m.n, text: m.text, mine, adm: !!m.adm, chz: !!m.chz });
   }
   else if (m.t === 'nope') sysMsg(m.why);
   else if (m.t === 'note') m.notes.forEach(n => sysMsg(n));

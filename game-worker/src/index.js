@@ -3,13 +3,15 @@
 import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, FISH_GRADES, rollFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, AUTO_FISH, FISH_SHOP, fishZone, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
-  SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, rollSkill,
+  SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
   dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText } from '../../assets/js/game-rules.js';
 import { canHouse, isSolid, NODES, BACK } from '../../assets/js/game-map.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
 import { Town, MAX_CH, toRooms, lookRow } from './town.js';
 export { Town };
+import { Chzzk } from './chzzk.js';
+export { Chzzk };
 
 const ORIGINS = ['https://kimchibok75-code.github.io', 'http://localhost:5173', 'http://127.0.0.1:5173'];
 const PBKDF2_ITER = 30000;            // 비밀번호 해시 반복 횟수 (무료 요금제 CPU 한도 안에서)
@@ -22,6 +24,8 @@ const fail = (status, msg) => { throw new HttpError(status, msg); };
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
 
 export default {
+  // 5분마다: 치지직 채팅 연결 담당(Chzzk)을 깨움. 그 뒤로는 Chzzk가 알아서 1분(방송 중 20초)마다 확인
+  async scheduled(ev, env, ctx) { ctx.waitUntil(env.CHZZK.get(env.CHZZK.idFromName('main')).fetch('https://chzzk/tick').catch(() => {})); },
   async fetch(req, env) {
     const origin = req.headers.get('Origin') || '';
     const cors = { 'Access-Control-Allow-Origin': ORIGINS.includes(origin) ? origin : ORIGINS[0], 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Max-Age': '86400', Vary: 'Origin' };
@@ -345,24 +349,24 @@ const GAME = {
     c.gold += got; c.hp = Math.min(c.hp, derive(c).maxHp);
     return { got, take: !!b.take, log: ['gacha-pick', `${itemName(it)} ${b.take ? '장착' : '분해'} +${got}`] };
   },
-  // 스킬 뽑기: 직업 상자 하나를 골라 1회·10회. 같은 스킬이 또 나오면 모은 장 수가 늘어 레벨이 자동으로 오름
-  // 최고 레벨(10)인 스킬이 또 나오면 그 1회 값의 30%를 골드로 돌려줌
+  // 스킬 뽑기 1회·10회: 직업 상관없이 18종 중에서. 같은 스킬이 또 나오면 모은 장 수가 늘어 레벨이 자동으로 오름
+  // 뽑기 레벨(뽑은 횟수)이 오르면 값이 오르고 전설 확률도 오름. 최고 레벨(10)인 스킬이 또 나오면 그 1회 값의 30%를 골드로 돌려줌
   '/api/skill/pull'(c, b) {
     townOnly(c);
-    const cls = b.cls, n = Number(b.n);
-    if (!own(CLASSES, cls) || ![1, 10].includes(n)) fail(400, '잘못된 요청이에요');
-    const one = SKILL_GACHA.cost(c.lv), cost = n === 10 ? Math.round(one * 10 * SKILL_GACHA.ten) : one;
+    const n = Number(b.n); if (![1, 10].includes(n)) fail(400, '잘못된 요청이에요');
+    const g0 = skGachaInfo(c.life.skg || 0), cost = n === 10 ? Math.round(g0.cost * 10 * SKILL_GACHA.ten) : g0.cost;
     spend(c, cost);
     const sk = c.life.sk = c.life.sk && typeof c.life.sk === 'object' ? c.life.sk : {}, out = []; let back = 0;
     for (let k = 0; k < n; k++) {
-      const s = rollSkill(cls), had = own(sk, s.id) ? sk[s.id] : 0, lv0 = skLv(had);
-      if (had >= SK_NEED[SK_MAX - 1]) { back += Math.round(one * .3); out.push({ id: s.id, lv: SK_MAX, max: true }); continue; }
+      const s = rollSkill(skGachaInfo(c.life.skg || 0).lv), had = own(sk, s.id) ? sk[s.id] : 0, lv0 = skLv(had);
+      c.life.skg = (c.life.skg || 0) + 1;
+      if (had >= SK_NEED[SK_MAX - 1]) { back += Math.round(g0.cost * SKILL_GACHA.back); out.push({ id: s.id, lv: SK_MAX, max: true }); continue; }
       sk[s.id] = had + 1; const lv1 = skLv(sk[s.id]);
       out.push({ id: s.id, lv: lv1, isNew: !had, up: lv1 > lv0 });
     }
-    c.life.skg = (c.life.skg || 0) + n; cntAdd(c, 'skillPull', n); c.gold += back;
-    const best = out.filter(o => SKILLS.find(s => s.id === o.id).r === 3);
-    return { got: out, back, cost, log: ['skill', `${CLASSES[cls].n} 스킬 뽑기 ${n}회 -${cost}${back ? ` +${back}` : ''} ${best.map(o => SKILLS.find(s => s.id === o.id).n).join(', ')}`] };
+    cntAdd(c, 'skillPull', n); c.gold += back;
+    const g1 = skGachaInfo(c.life.skg), best = out.filter(o => SKILLS.find(s => s.id === o.id).r === 3);
+    return { got: out, back, cost, lvUp: g1.lv > g0.lv ? g1.lv : 0, log: ['skill', `스킬 뽑기 ${n}회 -${cost}${back ? ` +${back}` : ''} ${best.map(o => SKILLS.find(s => s.id === o.id).n).join(', ')}`] };
   },
   // 클래스 바꾸기 (언제든 무료): 지금 쓰는 무기가 바뀜
   '/api/class'(c, b) {
