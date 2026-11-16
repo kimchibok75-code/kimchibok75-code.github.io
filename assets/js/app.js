@@ -384,7 +384,19 @@ function renderMods() {
   $('#modMore').hidden = list.length <= M.limit;
   $('#modMore').textContent = `더 보기 (${list.length - M.limit}개 남음)`;
 }
-function initMods() {
+// 김치복이 사이트에서 드래그로 바꾼 순서 (게임 서버에 저장됨). 목록에 없는 모드는 그 대분류 맨 뒤로
+const GAME_API = (location.hostname === 'localhost' && new URLSearchParams(location.search).get('api')) || 'https://kimchibok-game.kimchibok.workers.dev';
+function applyModOrder(o) {
+  let changed = false;
+  for (const [cat, ids] of Object.entries(o?.cats || {})) {
+    if (!Array.isArray(ids)) continue;
+    const pos = new Map(ids.map((id, i) => [id, i]));
+    const key = m => (pos.has(m.id) ? pos.get(m.id) : 1e6 + m.order);
+    S.mods.items.filter(m => m.category === cat).sort((a, b) => key(a) - key(b)).forEach((m, i) => { if (m.order !== i) { m.order = i; changed = true; } });
+  }
+  return changed;
+}
+async function initMods() {
   if (!S.mods?.items?.length) { $('#modGrid').innerHTML = '<div class="empty">모드 목록을 불러오지 못했어요</div>'; return; }
   const reset = () => { M.limit = 60; renderMods(); };
   $('#modCats').onclick = e => {
@@ -396,7 +408,12 @@ function initMods() {
   $('#modSort').onchange = e => { M.sort = e.target.value; reset(); };
   let t; $('#modSearch').oninput = e => { clearTimeout(t); t = setTimeout(() => { M.q = e.target.value; reset(); }, 120); };
   $('#modMore').onclick = () => { M.limit += 60; renderMods(); };
+  // 저장된 순서를 먼저 받아 옴 (서버가 느리면 0.8초만 기다리고 일단 보여 준 뒤 다시 그림)
+  const orderP = fetch(`${GAME_API}/api/mods-order`).then(r => (r.ok ? r.json() : null)).catch(() => null);
+  const early = await Promise.race([orderP, new Promise(r => setTimeout(() => r(undefined), 800))]);
+  if (early) applyModOrder(early);
   renderModFilters(); renderMods();
+  if (early === undefined) orderP.then(o => { if (o && applyModOrder(o) && !M.editor) renderMods(); });
   // 추천 순서 편집 (김치복 관리자 계정만, 따로 불러옴)
   import(new URL('./mod-edit.js' + new URL(import.meta.url).search, import.meta.url).href)
     .then(m => m.initModEdit({ S, M, $, esc, toast, renderMods, renderModFilters })).catch(e => console.warn('편집 기능 불러오기 실패', e));

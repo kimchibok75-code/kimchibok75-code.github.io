@@ -166,6 +166,16 @@ async function updateWorkshop() {
 // 여기서는 스팀 정보(썸네일·구독자·태그)만 새로 가져와 붙임
 async function updateMods() {
   const db = readJson('mods.json', { categories: [], items: [] });
+  // 김치복이 사이트에서 드래그로 바꾼 순서(게임 서버에 저장됨)를 파일에도 옮겨 적음. 목록에 없는 모드는 그 대분류 맨 뒤로
+  try {
+    const o = await get('https://kimchibok-game.kimchibok.workers.dev/api/mods-order', { type: 'json' });
+    for (const [cat, ids] of Object.entries(o?.cats || {})) {
+      if (!Array.isArray(ids)) continue;
+      const pos = new Map(ids.map((id, i) => [id, i]));
+      const key = m => (pos.has(m.id) ? pos.get(m.id) : 1e6 + m.order);
+      db.items.filter(m => m.category === cat).sort((a, b) => key(a) - key(b)).forEach((m, i) => { m.order = i; });
+    }
+  } catch (e) { console.warn('[mods] 사이트에서 바꾼 순서 못 읽음:', e.message); }
   const details = await steamDetails(db.items.map(m => m.steamId));
   for (const m of db.items) if (m.steamId && details[m.steamId]) m.steam = details[m.steamId];
   const changed = writeJson('mods.json', { ...db, updatedAt: Date.now() });

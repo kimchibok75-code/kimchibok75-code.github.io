@@ -37,10 +37,12 @@
   - **사이트에서 드래그로 순서 편집** (2026-11-16): 김치복 관리자 계정(치복 타운과 같은 계정)만
     - 들어가는 곳: 모드 추천 맨 아래 "✏️ 추천 순서 편집" (관리자로 로그인돼 있을 때만 보임). 로그인 안 돼 있으면 `mods.html?edit`
     - 화면: `assets/js/mod-edit.js` (SortableJS를 cdnjs에서 편집할 때만 불러옴, `forceFallback`). 소분류 안에서 순서 + 소분류 묶음 순서. 다른 소분류로 옮기기는 안 됨
-    - 서버: 게임 서버 `POST /api/admin/mods-order {cat, ids}` (`index.js`의 `modsOrder`) → 깃허브 API로 `data/mods.json`의 `order`만 고쳐 커밋 → push라서 자동 배포
-    - 열쇠: Worker 비밀 값 `GITHUB_TOKEN` (fine-grained, 이 저장소 Contents 읽기·쓰기만). 사용자가 `npx --yes wrangler@4 secret put GITHUB_TOKEN`으로 직접 넣음
+    - 저장: 게임 서버 `POST /api/admin/mods-order {cat, ids}` → D1 `mod_order` 표 (대분류마다 모드 id 순서). **열쇠·깃허브 설정 필요 없음** (사용자가 어렵다고 해서 깃허브 커밋 방식은 버림)
+    - 읽기: 누구나 `GET /api/mods-order` → `{cats: {대분류: [id…]}}`. 사이트(`app.js`의 `applyModOrder`)가 바로 적용 → 다른 사람에게도 바로 보임. 목록에 없는 모드(새로 추가한 것)는 그 대분류 맨 뒤
+    - 매일 자동 갱신(`update.mjs mods`)이 같은 순서를 `data/mods.json`의 `order`에도 옮겨 적음
+    - add-mod로 새 모드를 넣으면 사이트에서는 그 대분류 맨 뒤에 보임 (김치복이 끌어서 옮기면 됨)
     - `GET /api/whoami` → `{nick, admin}` (게임 정산 없이 확인만)
-    - 내 컴퓨터 시험: `game-worker/.dev.vars`에 `GITHUB_TOKEN=아무거나`, `GH_API=http://localhost:8799` + 깃허브 흉내 서버(contents GET/PUT)를 띄움. 끝나면 `.dev.vars` 지우기
+    - 내 컴퓨터 시험: 위 "내 컴퓨터에서 서버까지 시험하기"처럼 wrangler dev → `mods.html?api=http://localhost:8787&edit`
 
 ## 모드 URL을 받으면 (사용자가 스팀 창작마당 링크만 줌)
 묻지 말고 알아서 처리:

@@ -1,5 +1,5 @@
 // 모드 추천 — 순서 편집 (김치복 관리자 계정만)
-// 로그인은 치복 타운과 같은 계정·같은 토큰(cbt-token)을 씀. 저장은 게임 서버가 깃허브의 data/mods.json을 고쳐서 올림
+// 로그인은 치복 타운과 같은 계정·같은 토큰(cbt-token)을 씀. 저장은 게임 서버(D1 mod_order)에, 사이트는 그걸 바로 읽음
 // 드래그: SortableJS (편집을 켤 때만 불러옴)
 const API = (location.hostname === 'localhost' && new URLSearchParams(location.search).get('api')) || 'https://kimchibok-game.kimchibok.workers.dev';
 const SORTABLE = 'https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js';
@@ -131,7 +131,7 @@ export function initModEdit(x) {
       const pos = new Map(ids.map((id, i) => [id, i]));
       for (const m of S.mods.items) if (m.category === M.cat && pos.has(m.id)) m.order = pos.get(m.id);
       stop();
-      toast(j.same ? '바뀐 게 없어요' : '저장했어요. 다른 사람에게는 1~2분 뒤에 보여요');
+      toast('저장했어요. 다른 사람에게도 바로 보여요');
     } catch (e) {
       if (e.status === 401) { toast('로그인이 끝났어요. 다시 로그인해 주세요'); login(); }
       else toast(e.message);
