@@ -312,7 +312,13 @@
 - 처음 안내(`showGuide`)에 '이런 것도 있어요': 마을회관 집 · 매시 레이드 · 자동 생활
 - 화면 확인용 임시 코드는 줄 끝에 `// DEBUG-REMOVE`를 달고, 배포 전에 그 줄들을 지움
 - CLAUDE.md에 백틱 들어간 글을 넣을 때는 bash `node -e` 말고 Write/Edit 도구로 (백틱이 명령으로 실행돼 깨짐)
-- 사운드는 아직 없음 (조사만 함: ZzFX + Kenney CC0 추천)
+- **소리**: `assets/js/game-sound.js` — 효과음·배경 음악을 파일 없이 코드(Web Audio)로 만듦 (저작권 걱정 없음)
+  - `sfx('이름')` 효과음 (목록은 `FX`), `bgm('town' | 'hunt' | 'raid')` 배경 음악 (`SONGS`, 8마디를 코드로 반복)
+  - 처음 화면을 누른 뒤에야 소리가 남 (`sndUnlock`). 설정 → 효과음·배경 음악 크기, 소리 끄기 (localStorage `cbt-snd`)
+  - 서버 버튼 성공 소리는 game.html의 `ACT_SND` (주소 → 소리), 모든 버튼 누르는 소리는 document click 한 곳
+  - 확인: 페이지에서 `(await import('/assets/js/game-sound.js?v=__BUILD__')).sndState()` → `ctx: 'running'`이면 소리 남
+  - 더 진짜 같은 소리(나무 베기 등)가 필요하면 Kenney.nl CC0 묶음을 받아서 바꿀 수 있음 (받기 전에 사용자에게 확인)
+- 오른쪽 세로 버튼과 확대 버튼은 `.rcol` 한 줄에 같이 있음 (버튼을 더 넣어도 안 겹침)
 
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감
