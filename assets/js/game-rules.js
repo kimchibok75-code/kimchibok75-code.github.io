@@ -464,7 +464,7 @@ export const liveGift = lv => 1000 + lv * 200;               // 방송 출석 �
 
 // 마을 공동 건설: 모두가 목재·석재·골드를 모아 하나씩 지음. 다 지으면 마을 모두에게 영원히 효과
 export const VILLAGE = [
-  { id: 'flower', n: '광장 꽃밭', i: '🌻', need: { wood: 1500, stone: 800, gold: 300000 }, fx: { expP: 3 } },
+  { id: 'flower', n: '광장 꽃밭', i: '🌷', need: { wood: 1500, stone: 800, gold: 300000 }, fx: { expP: 3 } },
   { id: 'light', n: '강가 등대', i: '🏛️', need: { wood: 3500, stone: 3500, gold: 1000000 }, fx: { fishC: 10, fishZ: 5 } },
   { id: 'stage', n: '축제 무대', i: '🎉', need: { wood: 6000, stone: 4000, gold: 2500000 }, fx: { goldP: 5 } },
   { id: 'spa', n: '마을 온천', i: '💧', need: { wood: 6000, stone: 10000, gold: 5000000 }, fx: { hpP: 5, regen: .5 } },

@@ -128,7 +128,8 @@ addNodes('rock', 20, (x, y) => tileAt(x, y) === GRAVEL, 2.5);
 addNodes('tree', 8, (x, y) => tileAt(x, y) === G && !inCore(x, y), 5);
 addNodes('rock', 5, (x, y) => tileAt(x, y) === G && !inCore(x, y), 5);
 
-// 5) 꾸밈 나무 (막힘). 가장자리는 빽빽하게, 숲은 조금, 집 동네는 드문드문
+// 5) 나머지 나무·돌. 지도 가장자리(2칸)는 꾸밈(못 캠), 그 안쪽은 모두 캘 수 있는 자원 (v = 그림 종류, s = 크기)
+//    번호(i)는 위의 자원 뒤로 이어 붙여서, 예전 자원 번호는 그대로
 export const DECO = [];
 for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
   const v = tileAt(x, y), edge = Math.min(x, y, MW - 1 - x, MH - 1 - y);
@@ -136,7 +137,8 @@ for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
   const p = edge < 2 ? .7 : v === FOREST ? .2 : v === GRAVEL ? .06 : inCore(x, y) ? .015 : .035;
   const r = R(), r2 = R();
   if (r >= p || !freeFor(x, y) || near(DECO, x, y, edge < 2 ? 1 : 2) || near(NODES, x, y, 2)) continue;
-  DECO.push({ x, y, k: v === GRAVEL ? 'stone' : r2 < (v === FOREST ? .55 : .25) ? 'pine' : 'round', s: .85 + R() * .35 }); block(x, y);
+  const d = { x, y, k: v === GRAVEL ? 'stone' : r2 < (v === FOREST ? .55 : .25) ? 'pine' : 'round', s: .85 + R() * .35 }; block(x, y);
+  if (edge < 2) DECO.push(d); else NODES.push({ i: NODES.length, k: d.k === 'stone' ? 'rock' : 'tree', x, y, v: d.k, s: d.s });
 }
 
 // ───── 집 (언제나 모두 공개, 핵심 구역 밖 빈 풀밭 어디든) ─────

@@ -34,6 +34,9 @@ export const ICONS = {
   money: [P('M11 9 L8.5 3.5 L13 5 L16 3 L19 5 L23.5 3.5 L21 9Z', '#d9a35b'), P('M10 12 Q4 28 16 28 Q28 28 22 12Z', '#d9a35b'), R(10, 9, 12, 4, '#b9803d', 2), C(16, 20.5, 4.6, GOLD, 'a'), R(15, 18, 2, 5, GOLD2, .8, 'd')],
   wood: [R(3.5, 10, 22, 13, '#b0703d', 6.5), E(24.5, 16.5, 4.5, 6.5, '#e7b77a'), E(24.5, 16.5, 2.4, 3.6, WOOD, 'f'), R(7, 13, 11, 2, '#c98a4b', 1, 'f')],
   stone: [P('M4.5 22 L8 12 L15 7 L24 9.5 L28.5 19.5 L22.5 26.5 L10 26.5Z', GREY), P('M10 13.5 L15 9.5 L21 11 L15.5 14Z', '#c5ccd4', 'f'), P('M20 22 L25 18.5 L23.5 23Z', '#7f8994', 'f')],
+  fishcoin: [C(16, 16, 12, '#6fd0e0'), C(16, 16, 8.4, '#2f9bb0', 'f'), C(16, 16, 6.8, '#6fd0e0', 'f'), P('M10.5 16 Q14 11.5 18.5 14 L22 11.5 L21 16 L22 20.5 L18.5 18 Q14 20.5 10.5 16Z', '#ffffff', 'f'), C(13.3, 15.3, .9, '#1f5f70', 'f'), E(11, 10.5, 2.6, 1.6, '#e6fbff', 'f', 'rotate(-30 11 10.5)')],
+  farmcoin: [C(16, 16, 12, '#a6dd73'), C(16, 16, 8.4, '#4f9d3a', 'f'), C(16, 16, 6.8, '#a6dd73', 'f'), ...Array.from({ length: 6 }, (_, i) => C(16 + 3.4 * Math.cos(i * 1.047), 16 + 3.4 * Math.sin(i * 1.047), 1.9, '#ffe066', 'f')), C(16, 16, 1.9, '#8a5a2b', 'f'), E(11, 10.5, 2.6, 1.6, '#f2ffe0', 'f', 'rotate(-30 11 10.5)')],
+  tulip: [S('M16 29 L16 16', '#4fb35e', 2.4), P('M16 25 Q9 23 8 17 Q14 18 16 23Z', '#7cc96b'), P('M10 7 L13 10 L16 5 L19 10 L22 7 L21.5 14 Q16 19 10.5 14Z', '#ff7aa8'), P('M14 10.5 L16 6.5 L18 10.5 L16 15Z', '#ffb3cf', 'f')],
   shell: [P('M16 28 L4 14.5 Q16 -1 28 14.5Z', '#ffb38a'), P('M16 27 L10.5 9 L13.6 7.6Z', '#ffd8bf', 'f'), P('M16 27 L18.4 7.6 L21.5 9Z', '#ffd8bf', 'f'), P('M16 27 L6.5 14 L8 11.5Z', '#ffd8bf', 'f'), P('M16 27 L24 11.5 L25.5 14Z', '#ffd8bf', 'f'), R(11.5, 24, 9, 4.5, '#ff9a6b', 2)],
   sunflower: [...Array.from({ length: 10 }, (_, i) => E(16 + 8 * Math.cos(i * .628), 16 + 8 * Math.sin(i * .628), 4.6, 3, YEL, '', `rotate(${i * 36} ${16 + 8 * Math.cos(i * .628)} ${16 + 8 * Math.sin(i * .628)})`)), C(16, 16, 6.2, '#8a5a2b'), C(14, 14, 1, '#5a3a1b', 'd'), C(18, 15, 1, '#5a3a1b', 'd'), C(16, 18.5, 1, '#5a3a1b', 'd')],
   tag: [P('M4 6 Q4 4 6 4 L15 4 L28 17 Q29 18 28 19 L19 28 Q18 29 17 28 L4 15Z', '#ff9f43'), C(10, 10, 2.4, WHITE, 'f'), R(13, 15, 9, 2.2, '#ffc27a', 1, 'f', 'rotate(45 17.5 16)')],
@@ -178,7 +181,7 @@ export const ICONS = {
 
 // 이모지 → 그림 이름
 export const EMOJI = {
-  '🪙': 'coin', '🏷️': 'tag', '🏷': 'tag', '💰': 'money', '🪵': 'wood', '🪨': 'stone', '🐚': 'shell', '🌻': 'sunflower', '📘': 'book', '⭐': 'star', '🎯': 'target', '🖥️': 'monitor', '🖥': 'monitor', '🌟': 'star', '✨': 'sparkle',
+  '🪙': 'coin', '🏷️': 'tag', '🏷': 'tag', '💰': 'money', '🪵': 'wood', '🪨': 'stone', '🐚': 'fishcoin', '🌻': 'farmcoin', '🌷': 'tulip', '📘': 'book', '⭐': 'star', '🎯': 'target', '🖥️': 'monitor', '🖥': 'monitor', '🌟': 'star', '✨': 'sparkle',
   '🗡️': 'sword', '🗡': 'sword', '⚔️': 'swords', '⚔': 'swords', '🏹': 'bow', '🪄': 'staff', '🛡️': 'shield', '🛡': 'shield', '⛑️': 'helmet', '⛑': 'helmet', '🧥': 'armor', '👢': 'boots', '👒': 'hat', '🎀': 'ribbon', '👑': 'crown',
   '🔨': 'hammer', '⚒️': 'hammer', '⚒': 'hammer', '🪓': 'axe', '⛏️': 'pick', '⛏': 'pick', '🔥': 'fire', '🔮': 'orb', '🌀': 'portal', '💪': 'muscle', '🏃': 'run', '🧠': 'brain', '🍀': 'clover',
   '❤️': 'heart', '❤': 'heart', '♥': 'heart', '💗': 'heartPink',
