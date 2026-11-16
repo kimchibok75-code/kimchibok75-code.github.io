@@ -320,8 +320,12 @@ function filteredMods() {
     (!M.version || versionsOf(m).includes(M.version)) &&
     (!words.length || words.every(w => norm([m.name, m.desc, m.section, m.category, m.steam?.title, ...(m.steam?.tags || [])].join(' ')).includes(w.replace(/\s+/g, '')))));
   const catOrder = Object.fromEntries(S.mods.categories.map((c, i) => [c.key, i]));
+  // 같은 소분류끼리 모이게: 소분류 순서 = 그 소분류에서 가장 앞에 있는 모드의 순서
+  const secRank = {};
+  for (const m of S.mods.items) { const k = `${m.category}|${m.section}`; secRank[k] = Math.min(secRank[k] ?? Infinity, m.order); }
+  const rank = m => secRank[`${m.category}|${m.section}`];
   const by = {
-    order: (a, b) => (catOrder[a.category] - catOrder[b.category]) || (a.order - b.order),
+    order: (a, b) => (catOrder[a.category] - catOrder[b.category]) || (rank(a) - rank(b)) || (a.order - b.order),
     subs: (a, b) => (b.steam?.subs || 0) - (a.steam?.subs || 0),
     updated: (a, b) => (b.steam?.updated || 0) - (a.steam?.updated || 0),
     name: (a, b) => a.name.localeCompare(b.name, 'ko'),
@@ -348,6 +352,7 @@ function modRow(m, q) {
   const s = m.steam || {};
   const img = s.preview ? `${s.preview}${s.preview.includes('?') ? '&' : '?'}imw=160&imh=90&ima=fit&impolicy=Letterbox` : '';
   const vers = versionsOf(m);
+  const exact = m.kind === 'collection' || m.kind === 'mapfile'; // 모음집·맵파일은 해당하는 버전만 표시
   return `<a class="mrow" href="${esc(m.url)}" target="_blank" rel="noopener">
     <span class="mthumb">${m.kind === 'mapfile' ? '🗺️' : m.kind === 'collection' || s.collection ? '📦' : '🧩'}${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</span>
     <span class="mmain">
@@ -355,7 +360,7 @@ function modRow(m, q) {
       ${m.desc ? `<span class="mdesc">${hl(m.desc, q)}</span>` : ''}
     </span>
     <span class="msec">${M.cat ? '' : `${catOf(m.category).icon || ''} `}${esc(m.section)}</span>
-    <span class="mver">${VERSIONS.map(v => `<i class="${vers.includes(v) ? 'ok' : ''}">${v}</i>`).join('')}</span>
+    <span class="mver">${(exact ? vers : VERSIONS).map(v => `<i class="${vers.includes(v) ? 'ok' : ''}">${v}</i>`).join('')}</span>
     <span class="msubs">${s.subs ? `${num(s.subs)}` : '-'}<small>구독</small></span>
   </a>`;
 }
@@ -626,7 +631,6 @@ async function main() {
   } else if (PAGE === 'community') {
     initCafe();
   } else if (PAGE === 'mods') {
-    $('#sheetLink').href = S.cfg.modSheet.url;
     initMods();
   } else if (PAGE === 'weekly') {
     $('#workshopLink').href = S.cfg.workshop.url;

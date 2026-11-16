@@ -93,6 +93,10 @@ export async function syncSheet() {
   }
   if (sheetItems.length < 10) throw new Error(`시트에서 모드를 ${sheetItems.length}개밖에 못 읽음 — 형식이 바뀌었는지 확인 필요`);
 
+  // 시트와 다르게 소분류를 옮긴 모드 (config.modSheet.moves: { 스팀id: "소분류" })
+  const moves = config.modSheet.moves || {};
+  for (const m of sheetItems) if (m.steamId && Object.hasOwn(moves, m.steamId)) m.section = moves[m.steamId];
+
   const manual = prev.items.filter(m => m.source === 'manual');
   if (manual.length && !categories.some(c => c.key === '추천')) categories.push({ key: '추천', label: '추천', ...CATEGORY_INFO['추천'], notes: [] });
   const items = [...sheetItems, ...manual];
