@@ -137,7 +137,10 @@ for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
   const p = edge < 2 ? .7 : v === FOREST ? .2 : v === GRAVEL ? .06 : inCore(x, y) ? .015 : .035;
   const r = R(), r2 = R();
   if (r >= p || !freeFor(x, y) || near(DECO, x, y, edge < 2 ? 1 : 2) || near(NODES, x, y, 2)) continue;
-  const d = { x, y, k: v === GRAVEL ? 'stone' : r2 < (v === FOREST ? .55 : .25) ? 'pine' : 'round', s: .85 + R() * .35 }; block(x, y);
+  let k = v === GRAVEL ? 'stone' : r2 < (v === FOREST ? .55 : .25) ? 'pine' : 'round';
+  // 둥근 나무 일부를 자작나무·벚나무·단풍나무로 (좌표로 정해서 난수 순서는 그대로 → 자원·집 자리 안 바뀜)
+  if (k === 'round') k = ['round', 'round', 'birch', 'cherry', 'maple'][(x * 7 + y * 13) % 5];
+  const d = { x, y, k, s: .85 + R() * .35 }; block(x, y);
   if (edge < 2) DECO.push(d); else NODES.push({ i: NODES.length, k: d.k === 'stone' ? 'rock' : 'tree', x, y, v: d.k, s: d.s });
 }
 

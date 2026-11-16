@@ -154,6 +154,7 @@ export const ICONS = {
   swap: [S('M7 16 L25 16', BLUE, 3.4), P('M2.5 16 L10 9 L10 23Z', BLUE), P('M29.5 16 L22 9 L22 23Z', BLUE)],
   full: [S('M4 11 L4 4 L11 4 M21 4 L28 4 L28 11 M28 21 L28 28 L21 28 M11 28 L4 28 L4 21', DARK, 3.2)],
   win: [R(9.5, 4, 18.5, 15, LIGHT, 2), R(4, 12, 18.5, 15.5, WHITE, 2), R(4, 12, 18.5, 4, BLUE, 2, 'f')],
+  sun: [...Array.from({ length: 8 }, (_, i) => S(`M${16 + Math.cos(i * .785) * 10.5} ${16 + Math.sin(i * .785) * 10.5} L${16 + Math.cos(i * .785) * 14} ${16 + Math.sin(i * .785) * 14}`, ORANGE, 2.2)), C(16, 16, 7.5, YEL), E(13.5, 13.5, 2.4, 1.6, '#fff6c8', 'f', 'rotate(-35 13.5 13.5)')],
   moon: [P('M19 3.5 A12.5 12.5 0 1 0 28.5 22 A10 10 0 1 1 19 3.5Z', YEL), C(12, 17, 1.6, '#f2b52a', 'f'), C(16, 23, 1.2, '#f2b52a', 'f')],
   phone: [R(8.5, 2.5, 15, 27, DARK, 3.5), R(10.5, 6, 11, 18.5, SKY, 1, 'f'), C(16, 27, 1.2, LIGHT, 'd')],
   pc: [R(5.5, 5, 21, 15, DARK, 2), R(7.5, 7, 17, 11, SKY, 1, 'f'), P('M2.5 21.5 L29.5 21.5 L27 26.5 L5 26.5Z', GREY)],
@@ -193,7 +194,7 @@ export const EMOJI = {
   '⚙️': 'gear', '⚙': 'gear', '✏️': 'pencil', '✏': 'pencil', '🔑': 'key', '🧾': 'receipt', '🔒': 'lock', '🔍': 'search', '🔎': 'search', '📢': 'speaker', '📣': 'speaker', '📅': 'calendar', '📋': 'clipboard', '📊': 'chart',
   '🎁': 'gift', '🎉': 'party', '🎈': 'balloon', '🎰': 'slot', '🎨': 'palette', '👕': 'shirt', '👀': 'eyes', '👥': 'people', '👋': 'wave', '🚶': 'walk', '👷': 'worker', '📦': 'box', '🚚': 'truck',
   '➕': 'plus', '✅': 'check', '🚫': 'ban', '⚠️': 'warn', '⚠': 'warn', '🚨': 'siren', '❗': 'exclaim', '❓': 'question', '⏳': 'hourglass', '⏱️': 'timer', '⏱': 'timer', '💤': 'zzz', '💨': 'wind', '🔄': 'refresh',
-  '↔️': 'swap', '↔': 'swap', '⛶': 'full', '🗗': 'win', '🌙': 'moon', '📱': 'phone', '💻': 'pc', '💬': 'chat', '🔴': 'live', '📺': 'tv', '📰': 'paper', '👍': 'thumb', '🥇': 'gold1', '🥈': 'gold2', '🥉': 'gold3',
+  '↔️': 'swap', '↔': 'swap', '⛶': 'full', '🗗': 'win', '🌙': 'moon', '☀️': 'sun', '☀': 'sun', '📱': 'phone', '💻': 'pc', '💬': 'chat', '🔴': 'live', '📺': 'tv', '📰': 'paper', '👍': 'thumb', '🥇': 'gold1', '🥈': 'gold2', '🥉': 'gold3',
   '🧪': 'tube', '😇': 'angel', '🌈': 'rainbow', '😵': 'dizzy', '🐱': 'cat', '🙈': 'hide', '😀': 'smile', '😂': 'laugh', '😑': 'meh', '😉': 'wink', '😢': 'sad',
 };
 
