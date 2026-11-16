@@ -179,9 +179,10 @@ button.chip { cursor: pointer; font: inherit; font-weight: 700; }
 .iconbtn { width: 38px; height: 38px; border-radius: 12px; border: 2px solid var(--ink); background: rgba(251, 252, 247, .94); font-size: calc(18px * var(--fs)); display: grid; place-items: center; }
 .placegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; margin: 8px 0; }
 .placegrid .btn { display: flex; align-items: center; gap: 8px; justify-content: flex-start; padding: 10px; }
-.side { position: absolute; right: 10px; top: 56px; display: grid; gap: 6px; }
+.rcol { position: absolute; right: 10px; top: 56px; display: grid; gap: 6px; justify-items: end; }   /* 오른쪽 세로 버튼 + 확대 버튼 (버튼 수가 바뀌어도 안 겹침) */
+.side { display: grid; gap: 6px; }
 .iconbtn[aria-pressed="true"] { background: var(--leaf, #4f9d5a); color: #fff; }
-.zoom { position: absolute; right: 10px; top: 196px; display: grid; gap: 6px; }   /* .side 버튼 3개(56 + 38×3 + 6×2) 아래로 */
+.zoom { display: grid; gap: 6px; }
 body.hunting .side { display: none; }
 .banner { position: absolute; left: 50%; top: 58px; transform: translateX(-50%); background: var(--kimchi); color: #fff; border: 2px solid var(--ink); border-radius: 12px; padding: 7px 14px; font-weight: 700; font-size: calc(14px * var(--fs)); box-shadow: 0 3px 0 var(--ink); white-space: nowrap; }
 
@@ -444,7 +445,7 @@ body.hunting .chat-log { height: 64px; }
   .mbar { display: block; height: 6px; border-radius: 4px; background: var(--paper-2); overflow: hidden; }
   .mbar i { display: block; height: 100%; width: 0; background: var(--gold); }
   .mbar.hp i { background: #ef6a50; }
-  .side { top: 54px; }
+  .rcol { top: 54px; }
   .huntbox { left: 10px; right: 10px; top: 56px; width: auto; padding: 8px 10px; gap: 5px; font-size: calc(13px * var(--fs)); }
   .hb-top { font-size: calc(16px * var(--fs)); }
   .hb-stats { grid-template-columns: repeat(2, 1fr); gap: 2px 12px; }
@@ -477,7 +478,7 @@ body.hunting .chat-log { height: 64px; }
   .emo-toggle { width: 38px; height: 38px; }
   .feed { position: absolute; left: 10px; right: 64px; bottom: calc(var(--dock-h) + 70px + env(safe-area-inset-bottom, 0px)); list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; pointer-events: none; }
   .feed li { justify-self: start; max-width: 100%; background: rgba(31, 42, 58, .62); color: #fff; padding: 4px 9px; border-radius: 9px; font-size: calc(13px * var(--fs)); overflow-wrap: anywhere; animation: fade 6s forwards; }
-  .zoom { top: auto; bottom: calc(var(--dock-h) + 70px + env(safe-area-inset-bottom, 0px)); }
+  .zoom { position: fixed; right: 10px; bottom: calc(var(--dock-h) + 70px + env(safe-area-inset-bottom, 0px)); }
   .hud .chip.hide-m { display: none; }
   .hud { flex-wrap: wrap; padding-right: 90px; row-gap: 5px; }
   .hud .spacer { display: none; }
@@ -491,7 +492,7 @@ body.hunting .chat-log { height: 64px; }
 }
 @media (min-width: 761px) { .feed { display: none; } .chatexp { display: none; }
   .app { grid-template-columns: calc(300px * var(--ui)) minmax(0, 1fr); }
-  .panel, .hud, .side, .zoom, .chat, .huntbox, .raidbox, .banner, .roombtn, .placebar, .modal, .away, .toast { zoom: var(--ui); }
+  .panel, .hud, .rcol, .chat, .huntbox, .raidbox, .banner, .roombtn, .placebar, .modal, .away, .toast { zoom: var(--ui); }
   .hud { flex-wrap: wrap; }
   .hud .chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 }
@@ -762,8 +763,8 @@ a.iconbtn { color: inherit; text-decoration: none; }
       <button class="iconbtn" id="fsBtn" aria-label="전체화면" title="전체화면 (Esc로 나가기)">⛶</button>
       <button class="iconbtn" id="setBtn" aria-label="설정">⚙️</button>
     </div>
-    <div class="side"><button class="iconbtn adm" id="admBtn" hidden aria-label="관리자 화면" title="관리자 화면 (관리자만 보여요)">🛡️</button><button class="iconbtn" id="newsBtn" aria-label="마을 소식판" title="마을 소식판: 오늘 의뢰 · 공동 건설 · 마을 소식">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn" id="townBtn" aria-label="마을 바로가기" title="마을 바로가기">🏘️</button><button class="iconbtn" id="autoBtn" aria-label="자동 생활" title="자동 생활: 벌목·채광·알바·낚시·농사를 알아서 해요 (효율은 낮아요)" aria-pressed="false">🧺</button><button class="iconbtn" id="roamBtn" aria-label="자유 행동" title="자유 행동: 켜 두면 캐릭터가 알아서 돌아다니고 인사해요" aria-pressed="false">🚶</button></div>
-    <div class="zoom"><button class="iconbtn" id="zIn" aria-label="크게 보기">＋</button><button class="iconbtn" id="zOut" aria-label="작게 보기">－</button></div>
+    <div class="rcol"><div class="side"><button class="iconbtn adm" id="admBtn" hidden aria-label="관리자 화면" title="관리자 화면 (관리자만 보여요)">🛡️</button><button class="iconbtn" id="newsBtn" aria-label="마을 소식판" title="마을 소식판: 오늘 의뢰 · 공동 건설 · 마을 소식">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn" id="townBtn" aria-label="마을 바로가기" title="마을 바로가기">🏘️</button><button class="iconbtn" id="autoBtn" aria-label="자동 생활" title="자동 생활: 벌목·채광·알바·낚시·농사를 알아서 해요 (효율은 낮아요)" aria-pressed="false">🧺</button><button class="iconbtn" id="roamBtn" aria-label="자유 행동" title="자유 행동: 켜 두면 캐릭터가 알아서 돌아다니고 인사해요" aria-pressed="false">🚶</button></div>
+    <div class="zoom"><button class="iconbtn" id="zIn" aria-label="크게 보기">＋</button><button class="iconbtn" id="zOut" aria-label="작게 보기">－</button></div></div>
     <div class="banner" id="liveBanner" hidden>🔴 김치복 생방송 중!</div>
     <button class="roombtn" id="roomBtn" type="button" hidden>🚪 집에서 나가기</button>
     <div class="placebar" id="placeBar" hidden><span id="placeMsg"></span><button class="mini main" id="placeOk" type="button">여기에 짓기</button><button class="mini" id="placeNo" type="button">취소</button></div>
