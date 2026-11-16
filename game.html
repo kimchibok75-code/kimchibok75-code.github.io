@@ -54,6 +54,15 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .seeds { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
 .seeds button { display: grid; grid-template-columns: auto 1fr; column-gap: 6px; text-align: left; align-items: center; padding: 7px 8px; border-radius: 12px; border: 1px solid var(--line); background: #fff; font: inherit; cursor: pointer; }
 .seeds button span { grid-row: span 2; font-size: calc(24px * var(--fs)); } .seeds button small { font-size: calc(11px * var(--fs)); color: #6b7684; }
+.sheet h3.sub { margin: 20px 0 8px; font-size: calc(16px * var(--fs)); }
+.ctags { display: flex; flex-wrap: wrap; gap: 3px 4px; margin-top: 3px; }
+.ctags em { font-style: normal; font-size: calc(11.5px * var(--fs)); font-weight: 700; background: var(--paper-2); color: var(--ink-soft); border-radius: 7px; padding: 1px 6px; white-space: nowrap; }
+.ctags em.g { background: #fff4d1; color: #8a5a00; }
+.seeds button .ctags { grid-column: 2; }
+.wallet.farmw { grid-template-columns: minmax(0, 1.25fr) minmax(0, .8fr) minmax(0, 1.3fr); gap: 4px; } .wallet.farmw > div { padding: 5px 6px; column-gap: 5px; }
+.wallet.mini b { white-space: normal; min-width: 0; overflow-wrap: normal; word-break: keep-all; line-height: 1.2; }
+.farmbtns .btn { white-space: normal; word-break: keep-all; }
+.farmbtns .btn small { display: block; }
 .seeds button[aria-pressed="true"] { border: 2px solid var(--ink); background: #fff8e1; }
 .titles li { align-items: start; } .titles li.lock { opacity: .72; } .titles li.on { border-color: #f2c14e; background: #fffaf0; }
 .titles .nm { color: #8a5a12; } .titles .fx { display: block; color: #2f8f45; font-weight: 700; }
@@ -159,6 +168,10 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; lette
 .chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 999px; background: rgba(251, 252, 247, .94); border: 2px solid var(--ink); font-weight: 700; font-size: calc(14px * var(--fs)); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .chip.mock { background: var(--gold); }
 .chip.clock { font-variant-numeric: tabular-nums; }
+button.chip { cursor: pointer; font: inherit; font-weight: 700; }
+.autofish { border: 2px solid var(--ink); border-radius: 12px; background: #fff; padding: 9px 10px; display: grid; gap: 6px; margin: 8px 0; }
+.autofish .af-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .autofish .af-h span { margin-left: auto; }
+.autofish .af-all { display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; } .autofish .af-all input { width: 18px; height: 18px; }
 .hud .spacer { flex: 1; }
 .iconbtn { width: 38px; height: 38px; border-radius: 12px; border: 2px solid var(--ink); background: rgba(251, 252, 247, .94); font-size: calc(18px * var(--fs)); display: grid; place-items: center; }
 .placegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; margin: 8px 0; }
@@ -303,6 +316,15 @@ body.hunting .side { display: none; }
 .gcard .gt { width: 40px; height: 40px; border: 0; } .gcard .gt img { width: 34px; height: 34px; }
 .gcard em { font-style: normal; font-weight: 800; color: var(--gc); } .gcard .pw { font-weight: 800; font-size: calc(12px * var(--fs)); }
 .gcard .up { color: #2f8f45; font-weight: 800; } .gcard .dis { color: var(--ink-soft); }
+.gcard > * { max-width: 100%; min-width: 0; overflow-wrap: anywhere; }
+.gcard .oc { font-size: calc(10.5px * var(--fs)); font-weight: 700; background: #fff4d1; color: #8a5a00; border-radius: 6px; padding: 0 5px; }
+@media (max-width: 600px) {
+  .gres { grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 5px; }
+  .gcard { padding: 5px 1px; font-size: calc(10.5px * min(var(--fs), 1.1)); }
+  .gcard .nm { display: none; }   /* 휴대폰: 이름은 빼고 등급·수치만 (누르면 이름·옵션) */
+  .gcard .gt { width: 34px; height: 34px; } .gcard .gt img { width: 30px; height: 30px; }
+  .gcard .pw { font-size: calc(11px * min(var(--fs), 1.1)); }
+}
 .gcard.keep { box-shadow: 0 0 0 3px #ffd45a; }
 .gcard.shine { animation: gflip .45s both, gglow .9s ease-in-out infinite alternate; animation-delay: calc(var(--i) * 90ms), calc(var(--i) * 90ms + .45s); }
 @keyframes gflip { from { transform: rotateY(90deg) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -708,6 +730,7 @@ body.hunting .chat-log { height: 64px; }
       <span class="chip clock" id="clockChip" title="치복 타운 시간 (하루 = 실제 30분)">☀️ 06:00</span>
       <span class="chip hide-m" id="onlineChip">👥 23명</span>
       <span class="chip" id="coinChip">🪙 1,230</span>
+      <button type="button" class="chip" id="fishChip" hidden title="자동 낚시 중 (누르면 낚시터)"></button>
       <span class="chip" id="jobChip" hidden>☕ 알바 1:00</span>
       <span class="chip" id="buffChip" hidden title="분수 버프"></span>
       <span class="chip ev" id="evChip" hidden></span>
@@ -767,7 +790,7 @@ body.hunting .chat-log { height: 64px; }
 <script type="module">
 'use strict';
 import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
-  T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, fishOdds, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
+  T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, fxText,
   DAY_MS, gameHour, darkness, dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx } from './assets/js/game-rules.js?v=__BUILD__';
 import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico } from './assets/js/game-icons.js?v=__BUILD__';
@@ -1554,6 +1577,17 @@ const LAMPS = (() => {
   return L;
 })();
 const SP_LAMP = () => sprite('lamp', 30, 70, 15, 66, g => inkDraw(g, [{ path: R(-6, -4, 12, 5, 2), c: '#3a434f' }, { path: R(-2, -52, 4, 50, 1.5), c: '#4a5260' }, { path: R(-7, -62, 14, 12, 3), c: '#3a434f' }, { flat: 1, path: R(-5, -60, 10, 8, 2), c: '#ffe7a3' }, { path: PG([[-9, -62], [9, -62], [4, -67], [-4, -67]]), c: '#2f3742' }], 1.8));
+// 낚시터 표지판 + 서는 자리 표시
+const FSIGN = { x: FISH_AT.x + 1.7 * T, y: FISH_AT.y - 4 };
+const SP_FSIGN = () => sprite('fsign', 50, 64, 25, 60, g => inkDraw(g, [{ path: R(-2.5, -36, 5, 36, 1.5), c: '#8a5a32' }, { path: R(-19, -56, 38, 24, 6), c: '#c98a4b' }, { flat: 1, path: R(-15, -53, 30, 3.5, 1.7), c: 'rgba(255,255,255,.25)' }, { flat: 1, path: E(0, 0, 8, 2.6), c: 'rgba(0,0,0,.18)' }], 2));
+function drawFishSpot(now) {
+  const x = FISH_AT.x, y = FISH_AT.y + 4;
+  ctx.save(); ctx.strokeStyle = `rgba(255,255,255,${(.6 + Math.sin(now / 400) * .25).toFixed(2)})`; ctx.lineWidth = 2.4; ctx.setLineDash([6, 4]); ctx.lineDashOffset = -now / 60;
+  ctx.beginPath(); ctx.ellipse(x, y, 17, 7, 0, 0, 7); ctx.stroke(); ctx.restore();
+  blit(SP_FSIGN(), FSIGN.x, FSIGN.y);
+  ctx.font = '17px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; fillTextIco(ctx, '🎣', FSIGN.x, FSIGN.y - 44);
+  plaque('🎣 낚시터', FSIGN.x, FSIGN.y - 74);
+}
 function drawLamp(l, lit) { blit(SP_LAMP(), l.x, l.y); if (lit > .05) { ctx.fillStyle = `rgba(255,226,140,${(.55 * lit).toFixed(2)})`; ctx.beginPath(); ctx.arc(l.x, l.y - 56, 9, 0, 7); ctx.fill(); } }
 const LM = document.createElement('canvas'); let lmx = null;
 // 어둠 덮기: 불빛 자리만 둥글게 뚫음. lights = [[월드x, 월드y, 반지름], ...]
@@ -1613,6 +1647,7 @@ function render(now) {
   for (const s of SPOTS) { if (s.id === 'fountain') list.push({ y: (s.y + 1.6) * T, f: () => drawFountain(s, now) }); if (s.id === 'board') list.push({ y: s.y * T + 26, f: () => drawBoard(s, now) }); }
   if (vis(PORTAL.x, PORTAL.y)) list.push({ y: PORTAL.y, f: () => drawPortal(now) });
   for (const b of BENCHES) list.push({ y: b.y * T + 24, f: () => drawBench(b) });
+  if (vis(FSIGN.x, FSIGN.y)) list.push({ y: FSIGN.y, f: () => drawFishSpot(now) });
   const hr = HOUR(), dk = darkness(hr), lit = Math.min(1, dk / .4);
   for (const l of LAMPS) if (vis(l.x, l.y)) list.push({ y: l.y, f: () => drawLamp(l, lit) });
   const chars = [me, ...people.filter(shown)];
@@ -2155,6 +2190,7 @@ function steerDir() {
 // 칸이 아니라 좌표로 계속 걸음 (벽에 닿으면 옆으로 미끄러짐). 다른 사람 화면에는 0.5초마다 'go' 한 번
 function steerTick(dt) {
   const d = HT || S.away ? null : steerDir();
+  if (d && BUSY()) { STEER.key.clear(); STEER.drag = null; busyToast(); return; }
   if (!d) { if (STEER.on) { STEER.on = false; me.moving = false; STEER.t = 0; netGo(); savePos(); } return; }
   if (!STEER.on) { STEER.on = true; standUp(me); me.path = []; me.then = null; GA = null; closePanel?.(); STEER.t = 0; }
   ROAM.pause = 15;
@@ -2199,6 +2235,16 @@ function tap(sx, sy) {
     return;
   }
   if (S.place) return setPlaceAt(w.x, w.y);   // 집 자리 고르는 중
+  const bk = BUSY();
+  if (bk) {   // 알바 중엔 카페 앞, 자동 낚시 중엔 강가에서만
+    if (hitP) return openProfile(hitP);
+    if (onMe) return openPanelTab('stat');
+    const cb = BUILDINGS.find(b => w.x > b.x * T && w.x < (b.x + b.w) * T && w.y > (b.y - 1) * T && w.y < (b.y + b.h) * T);
+    if (bk === 'job' && cb?.id === 'cafe') return openBuilding(cb);
+    if (bk === 'fish' && Math.hypot(w.x - FISH_AT.x, w.y - FISH_AT.y) < 3 * T) return openFishing();
+    return busyToast();
+  }
+  if (Math.hypot(w.x - FSIGN.x, w.y - (FSIGN.y - 24)) < 26) return openFishing();
   if (Math.abs(w.x - PORTAL.x) < 24 && w.y > PORTAL.y - 74 && w.y < PORTAL.y + 6) return openHuntSelect();
   const fo = SPOTS.find(s => s.id === 'fountain'); if (Math.hypot((w.x - (fo.x + 1) * T) / 38, (w.y - (fo.y + .8) * T) / 36) < 1) return openWish();
   if (hitP) return openProfile(hitP);
@@ -2254,7 +2300,7 @@ function openBuilding(b, keep) {
       <ul class="ilist">${P.map(([k, p]) => row(p.i, `${p.n} <small style="display:inline">(${me.pots[k]}개 있음)</small>`, `${p.d} · ${goldTxt(p.price)}`, [1, 5, 10].map(n => `<button class="mini${n === 5 ? ' main' : ''}" data-x="${k}:${n}" ${me.gold < p.price * n ? 'disabled' : ''}>${n}개</button>`).join(''))).join('')}
       ${me.job ? row('☕', '알바 중이에요', `남은 시간 ${fmtSec(jobLeft())} · 끝나면 ${goldTxt(me.job.pay)}`, `<button class="mini" data-x="quit">그만두기</button>`) : row('☕', '알바하기', `1분 동안 카페 일을 도와요 · ${goldTxt(JOB.pay(me.lv))} (레벨이 높을수록 많이)`, `<button class="mini main" data-x="job">시작</button>`)}
       ${row('🪑', '창가 자리에서 쉬기', '체력을 전부 회복해요 · 무료 (마을에서는 가만히 있어도 1초에 2%씩 차요)', `<button class="mini" data-x="rest">쉬기</button>`)}</ul><button class="close" data-close>닫기</button>`, el => wire(el, async x => {
-      if (x === 'job') { if (await act('/api/job/start', {})) { closeModal(); say(me, '☕ 알바 중…', 4000); toast('☕ 알바 시작! 1분 뒤에 골드가 들어와요 (마을을 돌아다녀도 돼요)'); } return; }
+      if (x === 'job') { if (await act('/api/job/start', {})) { closeModal(); say(me, '☕ 알바 중…', 4000); walkNear(me, ...door('cafe')); toast('☕ 알바 시작! 1분 동안 카페 앞에서 일해요. 끝나면 골드가 들어와요'); } return; }
       if (x === 'quit') { if (await act('/api/job/quit', {})) { toast('알바를 그만뒀어요'); reopen?.(); } return; }
       if (x === 'rest') { if (await act('/api/rest', {})) { emote(me, '❤️'); toast('푹 쉬었어요. 체력이 가득 찼어요'); reopen?.(); } return; }
       const [k, n] = x.split(':'), j = await act('/api/pots', { k, n: +n });
@@ -2330,20 +2376,32 @@ function showPulls(j, box) {
   const best = j.items.filter(it => ['legend', 'myth'].includes(it.g));
   const cards = j.items.map((it, i) => {
     const cur = me.equip[it.slot], a = itemStats(it, me.enh[it.slot] || 0), b = cur ? itemStats(cur, me.enh[it.slot] || 0) : null, v = a.atk ?? a.def, d = v - (b ? b.atk ?? b.def : 0);
-    return `<div class="gcard${it.keep ? ' keep' : ''}${best.includes(it) ? ' shine' : ''}" style="--i:${i};--gc:${GRADES[it.g].c}">${gIcon(it)}<em>${GRADES[it.g].n}</em><span class="nm">${itemName(it)}</span><span class="pw">${a.atk != null ? (it.slot === 'staff' ? '마력' : '공격') : '방어'} ${v}</span>${optList(it)}${it.keep ? `<span class="up">▲${Math.max(0, d)} NEW</span>` : `<span class="dis">분해</span>`}</div>`;
+    return `<div class="gcard${it.keep ? ' keep' : ''}${best.includes(it) ? ' shine' : ''}" data-x="card:${i}" style="--i:${i};--gc:${GRADES[it.g].c}" title="${it.st}단계 ${GRADES[it.g].n} ${itemName(it)}${it.o?.length ? ' · ' + it.o.map(optText).join(', ') : ''}">${gIcon(it)}<em>${GRADES[it.g].n}</em><span class="nm">${itemName(it)}</span><span class="pw">${a.atk != null ? (it.slot === 'staff' ? '마력' : '공격') : '방어'} ${v}</span>${it.o?.length ? `<span class="oc">옵션 ${it.o.length}</span>` : ''}${it.keep ? `<span class="up">NEW ▲${Math.max(0, d)}</span>` : `<span class="dis">분해</span>`}</div>`;
   }).join('');
   const gi = gachaInfo(me.gacha[box]);
   openModal(`<h3>${GACHA[box].i} ${GACHA[box].n} 결과</h3><div class="gres">${cards}</div>
     <p class="gsum">🔨 나머지는 분해해서 <b>${goldTxt(j.got)}</b> 받았어요${j.lvUp ? `<br>🎉 <b>뽑기 레벨 ${j.lvUp}</b> 달성! 더 높은 단계가 나와요` : ''}</p>
-    <div class="actions">${me.bag.length ? `<button class="btn main" data-x="pick">🔍 좋은 장비 비교하고 고르기<small>${me.bag.length}개</small></button>` : ''}
+    <div class="actions">${me.bag.length ? `<button class="btn main" data-x="pick">🔍 좋은 장비 비교하고 고르기<small>${me.bag.length}개</small></button><button class="btn" data-x="auto">⚡ 자동으로 고르기<small>더 센 것은 끼고 나머지는 분해</small></button>` : ''}
       <button class="btn${me.bag.length ? '' : ' main'}" data-x="again" ${me.gold < tenCost(gi) ? 'disabled' : ''}>🎰 10회 더 뽑기<small>${goldTxt(tenCost(gi))}</small></button><button class="btn" data-x="back">가챠센터로</button></div>`, el => wire(el, async x => {
     if (x === 'pick') { PK.back = true; return showPicks(); }
+    if (x === 'auto') { await autoPick(); return openBuilding(gachaB()); }
+    if (x.startsWith('card:')) { const it = j.items[+x.slice(5)]; return toast(`${it.st}단계 ${GRADES[it.g].n} ${itemName(it)}${it.o?.length ? ' · ' + it.o.map(optText).join(', ') : ''}`); }
     if (x === 'back') return openBuilding(gachaB());
     const k = await act('/api/gacha/pull', { box, n: 10 }); if (k) showPulls(k, box);
   }));
   for (const it of best) { toast(`✨ ${GRADES[it.g].n}! ${itemName(it)}`); sysMsg(`✨ ${GRADES[it.g].n} 장비: ${it.st}단계 ${itemName(it)}`); }
   if (best.length) emote(me, '🎉');
   logAct(`${GACHA[box].n} ${j.items.length}회 −${j.cost} +${j.got}`);
+}
+// 자동으로 고르기: 칸마다 지금 것보다 세면 바꾸고(쓰던 것은 분해), 아니면 새 것을 분해
+async function autoPick() {
+  let on = 0, got = 0;
+  for (const it of [...me.bag]) {
+    const e = me.enh[it.slot] || 0, better = itemPower(it, e) > itemPower(me.equip[it.slot], e);
+    const j = await act('/api/gacha/pick', { id: it.id, take: better }); if (!j) break;
+    got += j.got || 0; if (better) on++;
+  }
+  toast(`⚡ 자동으로 골랐어요 · ${on}개 장착${got ? ` · 분해 🪙 ${got.toLocaleString()}` : ''}`); logAct(`장비 자동 고르기: ${on}개 장착 +${got}`); if (on) emote(me, '🎉');
 }
 // 비교 창: 지금 장비 ↔ 새 장비. 바꾸기(쓰던 것은 분해) / 분해하기
 const PK = { back: false };
@@ -2925,6 +2983,7 @@ function placeOpen(n) {
   if (n === '내 집' && myHouse()) return openHouse(myHouse());
 }
 function teleport(px, py, quiet) {
+  if (BUSY() && !quiet) { busyToast(); return false; }
   if (me.room) leaveRoom();
   if (TOWN.bad(Math.floor(px / T), Math.floor(py / T))) return toast('거기는 갈 수 없어요');
   standUp(me); me.x = px; me.y = py; me.path = []; me.moving = false; GA = null; cam = { x: me.x, y: me.y }; savePos(true); netGo(); if (!quiet) emote(me, '✨');
@@ -2943,7 +3002,27 @@ function setRoam(on) { ROAM.on = on; ROAM.next = 1; ROAM.pause = 0; $('#roamBtn'
 setRoam(ROAM.on);
 $('#roamBtn').onclick = () => { setRoam(!ROAM.on); toast(ROAM.on ? '🚶 자유 행동 ON · 캐릭터가 알아서 돌아다니고 인사해요 (바닥을 누르면 잠깐 멈춰요)' : '자유 행동 OFF'); };
 const POI = () => PLACES.map(p => [p[2], p[3]]);
+// ───────── 알바·자동 낚시 중: 그 자리에서만 (카페 앞 서성이기 · 강가에서 낚시) ─────────
+const BUSY = () => (HT ? null : me.job ? 'job' : F.auto ? 'fish' : null);
+let busyT = 0;
+function busyToast() { if (performance.now() - busyT < 1500) return; busyT = performance.now(); toast(BUSY() === 'job' ? '☕ 알바 중에는 카페 앞에서만 일해요. 그만두려면 카페를 눌러요' : '🎣 자동 낚시 중에는 강가에서 낚시만 해요. 멈추려면 위쪽 🎣 칩을 눌러요'); }
+const BUSY_PACE = { t: 0 };
+function busyPace(dt) {
+  const k = BUSY(), [hx, hy] = k === 'job' ? door('cafe') : [FISH_AT.x, FISH_AT.y];
+  if (me.sit >= 0) standUp(me);
+  if (Math.hypot(me.x - hx, me.y - hy) > 3 * T && !me.path.length) { walkNear(me, hx, hy); BUSY_PACE.t = 1; return; }   // 멀리 있으면 그 자리로 걸어감
+  if (me.path.length || (BUSY_PACE.t -= dt) > 0) return;
+  if (k === 'job') {   // 카페 문 앞을 왔다 갔다
+    BUSY_PACE.t = 2 + Math.random() * 3;
+    if (Math.random() < .3) return say(me, pick(['☕ 주문 받습니다!', '☕ 커피 나왔어요~', '🧋 버블티 한 잔!', '☕ 어서 오세요!']), 2200);
+    walkTo(me, hx + (Math.random() - .5) * 3 * T, hy + .3 * T + Math.random() * 1.2 * T);
+  } else {   // 강가: 거의 가만히, 가끔 자리만 살짝
+    BUSY_PACE.t = 4 + Math.random() * 4;
+    if (Math.hypot(me.x - hx, me.y - hy) > 10) walkTo(me, hx, hy); else me.dir = -1;
+  }
+}
 function roamTick(dt) {
+  if (BUSY()) return busyPace(dt);
   if (!ROAM.on || HT || !modal.hidden || me.path.length || GA || S.place) return;
   if ((ROAM.pause -= dt) > 0 || (ROAM.next -= dt) > 0) return;
   ROAM.next = 3 + Math.random() * 6;
@@ -3028,6 +3107,9 @@ function plotLeft(p, f, now) {   // 다 자랄 때까지 남은 실제 초 (물 
   const wet = Math.max(0, (f.wetAt + FARM.dur - now) / 1000), fast = Math.min(wet, need / f.wetM);
   return Math.ceil(fast + (need - fast * f.wetM));
 }
+// 작물 정보: 줄글 대신 작은 꼬리표 (자라는 시간 · 씨앗 값 · 수확 값 · 코인)
+const durTxt = s => (s >= 3600 ? `${Math.floor(s / 3600)}시간${s % 3600 >= 60 ? ` ${Math.floor(s % 3600 / 60)}분` : ''}` : s >= 60 ? `${Math.floor(s / 60)}분${s % 60 ? ` ${s % 60}초` : ''}` : `${s}초`);
+const cropTags = c => `<span class="ctags"><em title="자라는 시간">⏱️ ${durTxt(c.sec)}</em><em title="씨앗 값">씨 🪙 ${c.cost.toLocaleString()}</em><em class="g" title="수확하면 받는 골드">수확 🪙 ${c.sell.toLocaleString()}</em><em class="g" title="수확하면 받는 텃밭 코인">${COIN.farm[0]} ${c.coin}</em></span>`;
 function openFarm(keep) {
   if (HT) return;
   reopen = () => openFarm(true);
@@ -3042,16 +3124,16 @@ function openFarm(keep) {
   const ready = f.plots.filter(p => p && !plotLeft(p, f, now)).length, empty = f.plots.filter(p => !p).length, cr = cropOf(S.seed);
   const locked = CROPS.filter(c => !f.seeds.includes(c.id)), nextPlot = f.plots.length < FARM.maxPlots ? FARM.plotCost[f.plots.length - 6] : null, canNext = f.can < CANS.cost.length;
   openModal(`<div id="farmSheet"><h3>🌾 내 텃밭</h3><p>씨앗을 심으면 시간이 지나 자라요. <b>물을 주면 5분 동안 ${CANS.mul[f.can]}배</b> 빨리 자라요 (물은 5분에 한 번). 수확하면 골드와 <b>${COIN.farm[1]}</b>을 받아요.</p>
-    <div class="wallet mini"><div><span class="wi">🪙</span><b>${me.gold.toLocaleString()}</b></div><div><span class="wi">${COIN.farm[0]}</span><b>${L.coins.farm.toLocaleString()}</b></div><div><span class="wi">🚿</span><b>${CANS.names[f.can]}</b></div></div>
+    <div class="wallet mini farmw"><div><span class="wi">🪙</span><b>${me.gold.toLocaleString()}</b></div><div><span class="wi">${COIN.farm[0]}</span><b>${L.coins.farm.toLocaleString()}</b></div><div><span class="wi">🚿</span><b>${CANS.names[f.can]}</b></div></div>
     <div class="plots">${cells}</div>
     <div class="actions farmbtns">
       <button class="btn${cd ? '' : ' main'}" data-x="water" ${cd || !f.plots.some(Boolean) ? 'disabled' : ''}>🚿 물 주기<small>${wet ? `💧 빨리 자라는 중 ${fmtLeft(wet)}` : ''}${cd ? ` · 다음 물 ${fmtLeft(cd)}` : ` · ${CANS.mul[f.can]}배 5분`}</small></button>
       <button class="btn${ready ? ' main' : ''}" data-x="harvest" ${ready ? '' : 'disabled'}>🧺 모두 수확<small>${ready}칸</small></button>
       <button class="btn" data-x="plantall" ${empty && me.gold >= cr.cost ? '' : 'disabled'}>🌱 빈 칸 모두 심기<small>${cr.i} ${cr.n} × ${empty} · ${goldTxt(cr.cost * empty)}</small></button></div>
     <h3 class="sub">심을 씨앗</h3>
-    <div class="seeds">${f.seeds.map(id => { const c = cropOf(id); return `<button type="button" data-x="seed:${id}" aria-pressed="${S.seed === id}"><span>${c.i}</span><b>${c.n}</b><small>${fmtLeft(c.sec)} · 씨 🪙${c.cost} → 🪙${c.sell} ${COIN.farm[0]}${c.coin}</small></button>`; }).join('')}</div>
+    <div class="seeds">${f.seeds.map(id => { const c = cropOf(id); return `<button type="button" data-x="seed:${id}" aria-pressed="${S.seed === id}"><span>${c.i}</span><b>${c.n}</b>${cropTags(c)}</button>`; }).join('')}</div>
     <h3 class="sub">🌻 텃밭 코인 상점</h3>
-    <ul class="ilist">${locked.map(c => row(c.i, `${c.n} 품종 열기`, `${fmtLeft(c.sec)} · 씨 🪙${c.cost} → 수확 🪙${c.sell} + ${COIN.farm[0]}${c.coin}`, `<button class="mini main" data-x="unlock:${c.id}" ${L.coins.farm < c.unlock ? 'disabled' : ''}>${coinTxt('farm', c.unlock)}</button>`)).join('')}
+    <ul class="ilist">${locked.map(c => row(c.i, `${c.n} 품종 열기`, cropTags(c), `<button class="mini main" data-x="unlock:${c.id}" ${L.coins.farm < c.unlock ? 'disabled' : ''}>${coinTxt('farm', c.unlock)}</button>`)).join('')}
       ${canNext ? row('🚿', `${CANS.names[f.can + 1]}`, `물 준 5분 동안 ${CANS.mul[f.can]}배 → <b>${CANS.mul[f.can + 1]}배</b>`, `<button class="mini main" data-x="can" ${L.coins.farm < CANS.cost[f.can] ? 'disabled' : ''}>${coinTxt('farm', CANS.cost[f.can])}</button>`) : ''}
       ${nextPlot != null ? row('🟫', '텃밭 한 칸 늘리기', `지금 ${f.plots.length}칸 → ${f.plots.length + 1}칸 (최대 ${FARM.maxPlots}칸)`, `<button class="mini main" data-x="plot" ${L.coins.farm < nextPlot ? 'disabled' : ''}>${coinTxt('farm', nextPlot)}</button>`) : ''}</ul>
     <p class="muted">작물은 마을 텃밭에 내 것만 보여요. <b>밭의 두둑을 직접 누르면</b> 고른 씨앗 심기 · 물 주기 · 수확이 바로 돼요. 화면을 닫아 두어도 계속 자라요.</p></div>`, el => wire(el, async x => {
@@ -3525,6 +3607,8 @@ const FG = FISH_GRADES, fishTag = f => `${f.i} <b style="color:${FG[f.grade].c}"
 const F = { tab: 'price', rank: null, nextAt: 0, phase: 'idle', timer: null };
 async function openFishing() {
   if (HT) return toast('사냥 중에는 낚시를 할 수 없어요');
+  if (me.job) return toast('☕ 알바 중에는 낚시를 할 수 없어요');
+  if (Math.hypot(me.x - FISH_AT.x, me.y - FISH_AT.y) > 3 * T) { toast('🎣 강가 낚시터로 걸어가요'); return walkNear(me, FISH_AT.x, FISH_AT.y, openFishing); }
   F.phase = 'idle'; paintFishing();
   try { F.rank = await api('/api/fish/rank'); } catch (x) { F.rank = { error: x.message }; }
   if (!modal.hidden && $('#fishSheet')) paintFishing();
@@ -3542,18 +3626,72 @@ function paintFishing() {
     <div class="wallet mini"><div><span class="wi">${COIN.fish[0]}</span><b>${me.life.coins.fish.toLocaleString()}</b></div><div><span class="wi">🎣</span><b>${FISH_SHOP.rod.names[me.life.fish.rod]}</b></div><div><span class="wi">🪱</span><b>${FISH_SHOP.bait.names[me.life.fish.bait]}</b></div><div><button class="mini" id="toShop" type="button">🪝 낚시점</button></div></div>
     <div class="water" id="water"><span class="ripple"></span><span class="float">🎈</span></div>
     <div class="fishstage" id="fishMsg">${F.msg || '물고기 23종 · 일반부터 전설까지. 등급이 높을수록 바늘이 빠르고 칸이 좁아요'}</div>
-    <div id="fishGame"><button class="btn main pull" id="castBtn" ${wait ? 'disabled' : ''}>${wait ? `⏳ ${wait}초 뒤에 다시 던질 수 있어요` : '🎣 낚싯대 던지기'}</button></div>
+    <div class="autofish"><div class="af-h"><b>🤖 자동 낚시</b><span>자동용 미끼 🪱 <b id="afLeft">${(me.life.fish.pack || 0).toLocaleString()}</b>개</span><button class="mini" id="afBuy" type="button">미끼 사기</button></div>
+      <small class="muted">미니게임 없이 알아서 던지고 당겨요. 한 번에 미끼 1개 · 성공 ${Math.round(AUTO_FISH.hit * 100)}% (완벽 보너스 없음). 창을 닫아도 계속해요.</small>
+      <label class="af-all"><input type="checkbox" id="afAll" ${F.all ? 'checked' : ''}> 미끼 다 쓸 때까지 계속 낚시하기</label>
+      <button class="btn ${F.auto ? '' : 'main'}" id="afBtn" type="button">${F.auto ? '⏹ 자동 낚시 멈추기' : (F.all ? '🤖 자동 낚시 시작' : '🤖 자동으로 한 번 낚기')}</button></div>
+    <div id="fishGame"><button class="btn main pull" id="castBtn" ${wait || F.auto ? 'disabled' : ''}>${wait ? `⏳ ${wait}초 뒤에 다시 던질 수 있어요` : '🎣 낚싯대 던지기'}</button></div>
     <div class="points" style="background:#fff;border-color:var(--line);margin-top:8px"><span>내 기록</span><span style="font-size:13px">${m ? `${m.count.toLocaleString()}마리 · 번 골드 ${m.gold.toLocaleString()}` : '아직 없음'}</span></div>
     <div class="rtabs" id="rtabs">${[['price', '💰 제일 비싼'], ['len', '📏 제일 큰'], ['count', '🎣 제일 많이']].map(([k, n]) => `<button type="button" data-t="${k}" aria-pressed="${F.tab === k}">${n}</button>`).join('')}</div>
     <div id="rankBox">${rankList()}</div><button class="close" data-close>닫기</button></div>`, el => {
     el.querySelector('#rtabs').onclick = e => { const t = e.target.closest('[data-t]')?.dataset.t; if (!t) return; F.tab = t; el.querySelectorAll('#rtabs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === t)); el.querySelector('#rankBox').innerHTML = rankList(); };
     el.querySelector('#castBtn').onclick = cast;
+    el.querySelector('#afAll').onchange = e => { F.all = e.target.checked; try { localStorage.setItem('cbt-afall', F.all ? '1' : '0'); } catch {} if (!F.auto) el.querySelector('#afBtn').textContent = F.all ? '🤖 자동 낚시 시작' : '🤖 자동으로 한 번 낚기'; };
+    el.querySelector('#afBtn').onclick = () => (F.auto ? autoFishStop('자동 낚시를 멈췄어요') : autoFishStart());
+    el.querySelector('#afBuy').onclick = baitShop;
     el.querySelector('#toShop').onclick = () => { stopFish(); fishShop(BUILDINGS.find(b => b.id === 'fishshop')); };
   }, true);
   F.msg = '';
   if (wait) { clearTimeout(F.cdT); F.cdT = setTimeout(castCountdown, 500); }
 }
 // 다시 던질 수 있을 때까지 버튼에 남은 초 표시
+// ───────── 자동 낚시 (미끼를 1개씩 써서 서버가 던지기·당기기를 한 번에) ─────────
+try { F.all = localStorage.getItem('cbt-afall') === '1'; } catch {}
+function autoFishStart() {
+  if (HT) return toast('사냥 중에는 낚시를 할 수 없어요');
+  if (!(me.life.fish.pack > 0)) { toast('자동 낚시용 미끼가 없어요. 먼저 미끼를 사 주세요'); return baitShop(); }
+  if (F.phase !== 'idle') return toast('지금 던진 낚싯대를 먼저 당겨 주세요');
+  F.auto = true; F.autoN = 0; F.autoG = 0; fishChip(); if ($('#fishSheet')) paintFishing();
+  clearTimeout(F.autoT); F.autoT = setTimeout(autoFishTick, Math.max(0, F.nextAt - Date.now()) + 100);
+}
+function autoFishStop(msg) {
+  F.auto = false; clearTimeout(F.autoT); fishChip();
+  if (msg) { toast(F.autoN ? `${msg} · ${F.autoN}번 던져서 ${goldTxt(F.autoG)}` : msg); if (F.autoN) logAct(`자동 낚시 ${F.autoN}번 +${F.autoG}`); }
+  if ($('#fishSheet')) paintFishing();
+}
+async function autoFishTick() {
+  if (!F.auto) return;
+  if (HT || S.away) return autoFishStop('자동 낚시를 멈췄어요');
+  if (F.phase !== 'idle' || document.visibilityState === 'hidden') { F.autoT = setTimeout(autoFishTick, 1000); return; }   // 창이 숨겨지면 잠깐 쉼
+  let j; try { j = await api('/api/fish/auto', {}); took(j); }
+  catch (x) { if (x.status === 429) { F.autoT = setTimeout(autoFishTick, 1500); return; } return autoFishStop(x.message); }
+  F.nextAt = Date.now() + FISHING.cooldown; F.autoN++;
+  if (j.caught) {
+    const f = j.fish; F.autoG += f.price;
+    F.msg = `🤖 ${fishTag(f)} ${f.len}cm → ${goldTxt(f.price)} · ${COIN.fish[0]} +${j.coin || 0}${j.tired ? ' (오늘 많이 낚아서 절반)' : ''}`;
+    say(me, `${f.i} ${f.len}cm!`, 2200); if (['rare', 'epic', 'legend'].includes(f.grade)) emote(me, '🎉');
+    if (['epic', 'legend'].includes(f.grade)) sysMsg(`🎣 ${FG[f.grade].n} 물고기! ${f.n} ${f.len}cm`);
+  } else { F.msg = `🤖 💨 놓쳤어요${['rare', 'epic', 'legend'].includes(j.fish.grade) ? ` (${fishTag(j.fish)}였는데…)` : ''}`; say(me, '💨 놓쳤다…', 1800); }
+  if ($('#fishSheet')) paintFishing(); fishChip();
+  if (!F.all) return autoFishStop('');
+  if (!(j.left > 0)) return autoFishStop('🪱 미끼를 다 써서 자동 낚시를 멈췄어요');
+  F.autoT = setTimeout(autoFishTick, FISHING.cooldown + 150);
+}
+// 위쪽 칩: 자동 낚시 중이면 보임 (누르면 낚시터 창)
+function fishChip() {
+  const c = $('#fishChip'); c.hidden = !F.auto;
+  if (F.auto) c.textContent = `🎣 자동 낚시 · 🪱 ${(me.life.fish.pack || 0).toLocaleString()}`;
+  iconize(c);
+}
+$('#fishChip').onclick = () => openFishing();
+function baitShop() {
+  openModal(`<h3>🪱 자동 낚시용 미끼</h3><p>자동 낚시는 한 번 던질 때마다 미끼 1개를 써요. 손으로 하는 낚시는 미끼가 필요 없어요.</p>
+    <div class="actions">${AUTO_FISH.packs.map(([n, g], i) => `<button class="btn${i === 1 ? ' main' : ''}" data-x="${i}" ${me.gold < g ? 'disabled' : ''}>🪱 미끼 ${n}개<small>${goldTxt(g)}${i ? ` · 1개 ${(g / n).toFixed(1)}골드` : ''}</small></button>`).join('')}</div>
+    <p class="muted">가진 미끼 ${(me.life.fish.pack || 0).toLocaleString()}개 · 가진 골드 ${goldTxt(me.gold)}</p><button class="btn" data-x="back">낚시터로</button>`, el => wire(el, async x => {
+    if (x === 'back') return openFishing();
+    const j = await act('/api/fish/pack', { i: +x }); if (j) { toast(`🪱 미끼 ${AUTO_FISH.packs[+x][0]}개를 샀어요`); fishChip(); openFishing(); }
+  }));
+}
 function castCountdown() {
   const b = $('#castBtn'); if (!b || F.phase !== 'idle') return;
   const w = Math.max(0, Math.ceil((F.nextAt - Date.now()) / 1000));

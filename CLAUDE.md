@@ -261,6 +261,18 @@
   - 화면 쪽: `castSkill`, 현황판 아이콘 `renderHbSk`, 캐릭터창 → 스킬 탭(`renderSkills`)
   - 밸런스(봇 시험, 골드 30%를 스킬에): 55레벨까지 약 11~12시간 (스킬 없이 14~16시간)
 - 버튼 응답(`took`)으로 위치를 바꾸지 않음 (`applyMe(m, keep)`). 서버 저장 위치는 45초마다라서, 예전에는 수확하면 옛 자리로 순간이동했음
+- **자동 낚시**:
+  - 자동용 미끼 `life.fish.pack`은 골드로 묶음 구매 (`AUTO_FISH.packs`, `/api/fish/pack`)
+  - `/api/fish/auto`가 한 번에 던지기와 당기기를 함. 성공 70%, 완벽 보너스 없음, 쿨타임 10초
+  - 체크박스 "미끼 다 쓸 때까지 계속" (`F.all`, localStorage `cbt-afall`). 위쪽 `#fishChip`을 누르면 낚시터 창
+- **알바·자동 낚시 중에는 그 자리에서만** (`BUSY()`, `busyPace`, `busyToast`)
+  - 알바 중에는 카페 문 앞을 서성이고, 자동 낚시 중에는 강가에 있음
+  - 다른 곳 누르기·화살표·바로가기 순간이동이 막힘
+  - 서버도 알바 중에는 채집을 막음
+- 낚시터 표지판 `FSIGN` + 서는 자리 점선 고리 (`drawFishSpot`). 낚시는 강가에서만 열림 (멀면 걸어감)
+- 가챠 결과 카드: 휴대폰에서는 이름을 빼고, 옵션은 개수만 표시. 카드를 누르면 자세히 보임
+  - "⚡ 자동으로 고르기" (`autoPick`): 더 센 것은 끼고 나머지는 분해
+- 텃밭 창: 작물 정보를 꼬리표로 표시 (`cropTags`), 소제목 위 여백(`.sheet h3.sub`)
 - **확인만 함 (아직 안 만듦)**:
   - 광장 생방송 전광판: 치지직 `https://chzzk.naver.com/embed/live/<채널id>`는 다른 사이트에 넣는 것을 막지 않음 → iframe으로 가능
   - 치지직 채팅 연동: `api.chzzk.naver.com/polling/v2/channels/<id>/live-status`의 `chatChannelId`로 채팅 서버에 접속 가능

@@ -2,7 +2,7 @@
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
 import { nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, FISH_GRADES, rollFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
-  fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, FISH_SHOP, fishZone, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
+  fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, AUTO_FISH, FISH_SHOP, fishZone, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, rollSkill,
   dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText } from '../../assets/js/game-rules.js';
 import { canHouse, isSolid, NODES, BACK } from '../../assets/js/game-map.js';
@@ -440,6 +440,34 @@ const GAME = {
     return { wait, zone, zl, speed: gd.speed, strong: ['rare', 'epic', 'legend'].includes(fish.grade), cooldown: FISHING.cooldown,
       after: () => env.DB.prepare('INSERT INTO fishing (user_id, bait, last_cast) VALUES (?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET bait = excluded.bait, last_cast = excluded.last_cast').bind(user.id, cast, at).run() };
   },
+  // 자동 낚시용 미끼 사기 (골드)
+  '/api/fish/pack'(c, b) {
+    const p = AUTO_FISH.packs[Number(b.i)]; if (!p) fail(400, '없는 물건이에요');
+    spend(c, p[1]); c.life.fish.pack = (c.life.fish.pack || 0) + p[0];
+    return { log: ['fish-pack', `${p[0]}개 -${p[1]}`] };
+  },
+  // 자동 낚시 한 번: 미끼 1개 쓰고 던지기 + 당기기를 서버가 한 번에. 쿨타임은 손 낚시와 같음 (10초)
+  async '/api/fish/auto'(c, b, at, out, env, user) {
+    townOnly(c); notWorking(c);
+    if (!(c.life.fish.pack > 0)) fail(400, '자동 낚시용 미끼가 없어요. 낚시터에서 미끼를 사 주세요');
+    const row = await env.DB.prepare('SELECT last_cast, day, day_n FROM fishing WHERE user_id = ?').bind(user.id).first();
+    const left = Math.ceil(((row?.last_cast || 0) + FISHING.cooldown - at) / 1000);
+    if (left > 0) fail(429, `너무 빨라요. ${left}초 뒤에 다시 던질 수 있어요`);
+    c.life.fish.pack--;
+    const D = derive(c), F = c.life.fish, fish = rollFish(D.luk, F.rod, F.bait);
+    const mark = () => env.DB.prepare("INSERT INTO fishing (user_id, bait, last_cast) VALUES (?, '', ?) ON CONFLICT(user_id) DO UPDATE SET bait = '', last_cast = excluded.last_cast").bind(user.id, at).run();
+    if (Math.random() >= AUTO_FISH.hit) return { caught: false, fish: { i: fish.i, n: fish.n, grade: fish.grade }, left: F.pack, after: mark };
+    const day = dayKey(at), dayN = row?.day === day ? row.day_n + 1 : 1, tired = dayN > FISHING.dayFull ? .5 : 1;
+    const price = Math.round(fish.price * tired), info = JSON.stringify({ i: fish.i, n: fish.n, grade: fish.grade, len: fish.len, price });
+    const sell = Math.round(price * (1 + (c.gfx?.fishP || 0) / 100)), coin = Math.round(FISH_COIN[fish.grade] * (1 + (D.fx.fishC || 0) / 100) * tired);
+    c.gold += sell; c.life.coins.fish += coin; cntAdd(c, 'fish');
+    if (fish.grade === 'legend') cntAdd(c, 'legendFish'); if (fish.n === '낡은 장화') cntAdd(c, 'boot');
+    return { caught: true, fish: { ...fish, price: sell }, coin, tired: tired < 1, left: F.pack, chron: fish.grade === 'legend' ? ['fish', `전설 물고기 ${fish.n} ${fish.len}cm를 낚았어요!`] : null,
+      after: async () => { await mark(); await env.DB.prepare(`UPDATE fishing SET count = count + 1, gold = gold + ?, day = ?, day_n = ?,
+          best_price_fish = CASE WHEN ? > best_price THEN ? ELSE best_price_fish END, best_price = MAX(best_price, ?),
+          best_len_fish = CASE WHEN ? > best_len THEN ? ELSE best_len_fish END, best_len = MAX(best_len, ?) WHERE user_id = ?`)
+        .bind(price, day, dayN, price, info, price, fish.len, info, fish.len, user.id).run(); } };
+  },
   // ───── 할 이유 (기획서 4-8) ─────
   // 공동 건설에 기부: 목재·석재·골드. 모자라는 만큼만 받음. 다 모이면 다음 건물로
   async '/api/village/give'(c, b, at, out, env, user) {
@@ -534,7 +562,7 @@ const GAME = {
   },
   // 채집: 마을의 나무·바위 (사람마다 따로 자람)
   '/api/gather'(c, b, at) {
-    townOnly(c);
+    townOnly(c); notWorking(c);
     const n = NODES[Number(b.node)]; if (!n) fail(400, '없는 자원이에요');
     const L = c.life, G = GATHER[n.k];
     if (at - L.gatherAt < GATHER.gap) fail(429, '너무 빨라요');

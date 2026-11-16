@@ -231,6 +231,8 @@ export function rollFish(luk = 0, rod = 0, bait = 0) {
 }
 
 // 낚시 코인: 낚을 때마다 등급만큼 (완벽하면 +1)
+// 자동 낚시: 자동용 미끼를 1개씩 쓰고, 미니게임 없이 알아서 당김 (성공 70%, 완벽 없음). 미끼는 골드로 묶음 구매
+export const AUTO_FISH = { hit: .7, packs: [[20, 160], [100, 750], [300, 2100]] };
 export const FISH_COIN = { normal: 1, uncommon: 2, rare: 4, epic: 8, legend: 20 };
 // 낚시점 (낚시 코인으로 삼). 낚싯대: 판정 칸 +6%/단계 + 좋은 등급 조금 / 미끼: 좋은 등급이 훨씬 잘 나옴
 export const FISH_SHOP = {
@@ -245,7 +247,7 @@ export const JOB = { sec: 60, pay: lv => 40 + lv * 5 };
 // ═════════════════════ 4단계: 생활 (텃밭 · 채집 · 알바 고용 · 집 · 칭호 · 분수) ═════════════════════
 const HOUR = 3600e3, MIN = 60e3;
 // 캐릭터의 생활 정보 (DB characters.life 한 칸에 JSON으로)
-export const newLife = () => ({ coins: { fish: 0, farm: 0 }, res: { wood: 0, stone: 0 }, fish: { rod: 0, bait: 0 },
+export const newLife = () => ({ coins: { fish: 0, farm: 0 }, res: { wood: 0, stone: 0 }, fish: { rod: 0, bait: 0, pack: 0 },
   farm: { plots: [null, null, null, null, null, null], can: 0, seeds: ['lettuce', 'carrot'], wetAt: 0, wetM: 1 }, cnt: {}, titles: ['new'], buff: null, wishAt: 0,
   sk: {}, skg: 0, nodes: {}, gatherAt: 0, work: { lumber: { n: 0, at: 0, acc: 0 }, quarry: { n: 0, at: 0, acc: 0 } } });
 export function fixLife(l) {
