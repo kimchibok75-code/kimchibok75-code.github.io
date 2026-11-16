@@ -528,7 +528,7 @@ body.hunting .chat-log { height: 64px; }
 @media (prefers-reduced-motion: reduce) { .panel, .toast { transition: none; } }
 /* 강화 애니메이션 */
 .anvil { position: relative; height: 96px; display: flex; align-items: flex-end; justify-content: center; font-size: calc(44px * var(--fs)); margin: 8px 0; }
-.anvil .ham { position: absolute; left: calc(50% - 82px); bottom: 14px; display: inline-block; transform-origin: 85% 85%; animation: hammer .32s ease-in infinite; }
+.anvil .ham { position: absolute; left: calc(50% + 18px); bottom: 20px; z-index: 2; display: inline-block; transform-origin: 50% 92%; animation: hammer .32s ease-in infinite; }   /* 망치: 물건 오른쪽 위에 살짝 걸침, 손잡이 끝을 축으로 내려침 */
 .enh-diff { display: grid; gap: 6px; margin: 0; padding: 10px 12px; list-style: none; background: #fff; border: 1.5px solid var(--line); border-radius: 12px; }
 .enh-diff li { display: flex; justify-content: space-between; gap: 10px; font-weight: 700; }
 .enh-diff .up { color: #2f8f45; } .enh-diff .same { color: var(--ink-soft); font-weight: 500; }
@@ -540,7 +540,7 @@ body.hunting .chat-log { height: 64px; }
 .spark { position: absolute; left: 50%; top: 40%; font-size: calc(20px * var(--fs)); pointer-events: none; animation: spark .9s ease-out forwards; }
 .enh-result { text-align: center; font-size: calc(20px * var(--fs)); font-weight: 800; min-height: 30px; }
 .enh-result.ok { color: #2f8f45; } .enh-result.bad { color: #7a8597; }
-@keyframes hammer { 0% { transform: rotate(-50deg); } 70% { transform: rotate(18deg); } 100% { transform: rotate(-50deg); } }
+@keyframes hammer { 0% { transform: rotate(20deg); } 70% { transform: rotate(-52deg); } 100% { transform: rotate(20deg); } }
 @keyframes glow { 50% { filter: drop-shadow(0 0 8px #ff9b54); transform: translateY(1px); } }
 @keyframes pop { 0% { transform: scale(.5); } 70% { transform: scale(1.25); } 100% { transform: scale(1); } }
 @keyframes shake { 20% { transform: translateX(-7px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
