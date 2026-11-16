@@ -604,6 +604,21 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <!-- ─────────── 로그인 · 가입 ─────────── -->
 <div class="boot" id="boot" role="status" aria-live="polite"><div class="boot-in"><b class="boot-t">🥬 치복 타운</b><div class="boot-bar"><i id="bootBar"></i></div><small id="bootMsg">불러오는 중…</small></div></div>
+<script>
+(function () {
+  function say(m) { var e = document.getElementById('bootMsg'); if (e) { e.textContent = m; e.style.color = '#b8392f'; } }
+  var ua = (navigator.userAgent.match(/(SamsungBrowser|Whale|NAVER|KAKAOTALK|Edg|Chrome|Firefox|Version)\/[\d.]+/g) || []).join(' ');
+  addEventListener('error', function (e) {
+    if (!document.getElementById('boot')) return;
+    var f = e.filename || (e.target && e.target.src) || '';
+    say('⚠️ 오류: ' + (e.message || '파일을 못 불러왔어요') + (f ? ' (' + f.split('/').pop().split('?')[0] + (e.lineno ? ' ' + e.lineno + '줄' : '') + ')' : '') + ' · ' + ua);
+  }, true);
+  setTimeout(function () {
+    var b = document.getElementById('bootBar');
+    if (document.getElementById('boot') && b && !(parseFloat(b.style.width) > 5)) say('⚠️ 게임 파일을 못 불러왔어요. 새로고침해 주세요 · ' + ua);
+  }, 15000);
+})();
+</script>
 <section class="gate" id="gate">
   <div class="gate-inner">
     <div class="logo">
