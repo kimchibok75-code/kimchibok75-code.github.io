@@ -311,7 +311,6 @@ body.hunting .side { display: none; }
 .guide kbd { display: inline-block; padding: 1px 7px; border: 1px solid #b9c4b4; border-bottom-width: 3px; border-radius: 6px; background: #fff; font: 700 calc(12.5px * var(--fs)) var(--font-body); white-space: nowrap; }
 .guide .skip { display: flex; gap: 8px; align-items: center; font-size: calc(14px * var(--fs)); cursor: pointer; }
 .guide .skip input { width: 18px; height: 18px; margin: 0; }
-.sheet:has([data-pick]) .xclose { display: none; }
 .chat-log .tag { font-size: calc(11px * var(--fs)); font-weight: 700; color: var(--ink-soft); margin-right: 4px; }
 /* 채팅창 크기 손잡이(PC) · 톱니 */
 .chgrip { position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--ink); background: var(--paper); cursor: nesw-resize; display: grid; place-items: center; touch-action: none; z-index: 2; padding: 0; }
@@ -434,6 +433,17 @@ body.hunting .side { display: none; }
 @keyframes gflip { from { transform: rotateY(90deg) scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes gglow { to { box-shadow: 0 0 16px 2px var(--gc); } }
 .gsum { text-align: center; margin: 4px 0; }
+/* 뽑기 결과 (2026-11-17): 더 센 것(NEW)은 앞에 · 금빛 테, 분해된 것은 흐리게, 장착한 것은 초록 테 */
+.gres.still .gcard { animation: none; }
+.gcard.dim { opacity: .5; filter: saturate(.35); } .gcard.dim .gt { transform: scale(.9); }
+.gcard.on { box-shadow: 0 0 0 3px #4fbf6a; }
+.gcard.keep .up { background: #fff1c9; border-radius: 6px; padding: 0 4px; }
+.pk-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.pk-list li { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.pk-list .gt { width: 40px; height: 40px; } .pk-list .gt img { width: 34px; height: 34px; }
+.pk-list b { font-size: calc(14px * var(--fs)); } .pk-list small { display: block; color: var(--ink-soft); font-size: calc(12.5px * var(--fs)); font-variant-numeric: tabular-nums; }
+.pk-list small i { font-style: normal; color: #2a7f3e; font-weight: 800; }
+.bs-stack { display: grid; gap: 8px; }
 /* 비교 창 */
 .cmp { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 6px; text-align: center; }
 .cmp-c { background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 8px 4px; display: grid; gap: 3px; justify-items: center; word-break: keep-all; }
@@ -478,6 +488,13 @@ body.hunting .side { display: none; }
 .skgrid button { position: relative; aspect-ratio: 1; border: 2px solid var(--line); border-radius: 10px; background: linear-gradient(#eef7fb, #e3f0e2); padding: 0; overflow: hidden; }
 .skgrid button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 2px var(--gold); }
 .skgrid.shop { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
+/* 스킨샵 칸 (2026-11-17): 그림 아래에 이름 · 효과를 따로 써서 잘 보이게 */
+.skgrid.shop { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.skgrid.shop button { aspect-ratio: auto; display: flex; flex-direction: column; background: #fff; text-align: center; }
+.skgrid.shop canvas { position: relative; inset: auto; display: block; width: 100%; height: auto; aspect-ratio: 1; background: linear-gradient(#eef7fb, #e3f0e2); }
+.skgrid.shop.raid canvas { background: linear-gradient(#ffe9d6, #f6c9a8); }
+.skgrid.shop small { position: static; display: grid; gap: 2px; background: none; white-space: normal; overflow: visible; text-overflow: clip; padding: 6px 4px 7px; border-top: 1.5px solid var(--line); font-size: calc(13px * min(var(--fs), 1.15)); line-height: 1.3; word-break: keep-all; }
+.skgrid.shop .skfx { font-size: calc(12px * min(var(--fs), 1.15)); }
 .housetier { background: #fff8ec; border: 1.5px solid #ecd3a6; border-radius: 12px; padding: 8px 10px; margin: 8px 0; display: grid; gap: 6px; } .housetier p { margin: 0; }
 .sndset { display: grid; gap: 8px; background: var(--paper-2, #f6efe2); border-radius: 12px; padding: 10px 12px; margin: 6px 0 10px; }
 .sndset label { display: grid; grid-template-columns: 7.5em 1fr; align-items: center; gap: 8px; font-weight: 700; }
@@ -3500,9 +3517,8 @@ const XBTN = '<button class="xclose" type="button" data-close aria-label="닫기
 function openModal(html, onReady, keep) { if (!keep) { modalAt = performance.now(); if (modal.hidden) sfx('open'); } const st = keep ? sheet.scrollTop : 0; sheet.onclick = null; sheet.innerHTML = XBTN + html; modal.hidden = false; onReady?.(sheet); if (keep) sheet.scrollTop = st; else sheet.querySelector('button:not(.xclose), input')?.focus({ preventScroll: true }); }
 function closeModal() { if (!modal.hidden) sfx('close'); modal.hidden = true; sheet.innerHTML = ''; reopen = null; }
 modal.addEventListener('click', e => { if (performance.now() - modalAt < 400) { e.stopPropagation(); e.preventDefault(); } }, true);
-const pickLock = () => { if (!sheet.querySelector('[data-pick]')) return false; toast('새 장비를 바꾸거나 분해해야 가챠센터를 나갈 수 있어요'); return true; };
-modal.addEventListener('click', e => { if ((e.target === modal || e.target.closest('[data-close]')) && !pickLock()) closeModal(); });
-addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden && !pickLock()) closeModal(); });
+modal.addEventListener('click', e => { if (e.target === modal || e.target.closest('[data-close]')) closeModal(); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
 const actBtn = (id, label, cost) => `<button class="btn" data-a="${id}">${label}${cost ? `<small>${cost}</small>` : ''}</button>`;
 const goldTxt = n => `🪙 ${n.toLocaleString()}`;
 const row = (ic, name, desc, btns, locked) => `<li${locked ? ' class="locked"' : ''}><span class="ic">${ic}</span><span><span class="nm">${name}</span><small>${desc}</small></span><span class="btns">${btns}</span></li>`;
@@ -3607,11 +3623,14 @@ const skTen = () => Math.round(skGachaInfo(me.life?.skg || 0).cost * 10 * SKILL_
 // 스킬 뽑기 결과 카드: NEW / 레벨 업 / 최고 레벨이면 골드로 돌려받음
 function showSkillPulls(j) {
   { const top = Math.max(0, ...j.got.map(o => SKILLS.find(x => x.id === o.id)?.r || 0)); sfx('gacha'); setTimeout(() => sfx('reveal', top * 2), 420); }
-  const cards = j.got.map((o, i) => { const s = SKILLS.find(x => x.id === o.id);
-    return `<div class="gcard sk${s.r === 3 ? ' shine' : ''}${o.isNew ? ' keep' : ''}" style="--i:${i};--rc:${SK_RARE[s.r].c};--gc:${SK_RARE[s.r].c}"><span class="ski2">${s.i}</span><em>${SK_RARE[s.r].n}</em><small class="cl">${CLASSES[s.cls].i} ${CLASSES[s.cls].n}</small><span class="nm">${s.n}</span>${o.max ? '<span class="dis">최고 레벨 · 골드</span>' : o.isNew ? '<span class="up">NEW!</span>' : o.up ? `<span class="up">Lv.${o.lv} ▲</span>` : `<span class="dis">Lv.${o.lv} · 장 +1</span>`}</div>`; }).join('');
-  openModal(`<h3>📘 스킬 뽑기 결과</h3><div class="gres">${cards}</div>
-    ${j.back ? `<p class="gsum">최고 레벨 스킬은 골드로 돌려받았어요: <b>${goldTxt(j.back)}</b></p>` : ''}${j.lvUp ? `<p class="gsum">🎉 <b>스킬 뽑기 레벨 ${j.lvUp}</b> 달성! 전설 확률이 올라요 (값도 올라요)</p>` : ''}
-    <div class="actions"><button class="btn main" data-x="again" ${me.gold < skTen() ? 'disabled' : ''}>🎰 10회 더 뽑기<small>${goldTxt(skTen())}</small></button><button class="btn" data-x="see">📘 내 스킬 보기</button><button class="btn" data-x="back">가챠센터로</button></div>`, el => wire(el, async x => {
+  const ord = j.got.map((o, i) => [o, i]).sort((a, b) => (b[0].isNew - a[0].isNew) || (!!b[0].up - !!a[0].up) || a[1] - b[1]);
+  const cards = ord.map(([o], i) => { const s = SKILLS.find(x => x.id === o.id);
+    return `<div class="gcard sk${s.r === 3 ? ' shine' : ''}${o.isNew ? ' keep' : ''}${!o.isNew && !o.up ? ' dim' : ''}" style="--i:${i};--rc:${SK_RARE[s.r].c};--gc:${SK_RARE[s.r].c}"><span class="ski2">${s.i}</span><em>${SK_RARE[s.r].n}</em><small class="cl">${CLASSES[s.cls].i} ${CLASSES[s.cls].n}</small><span class="nm">${s.n}</span>${o.max ? '<span class="dis">최고 · 골드</span>' : o.isNew ? '<span class="up">NEW!</span>' : o.up ? `<span class="up">Lv.${o.lv} ▲</span>` : `<span class="dis">Lv.${o.lv} · +1장</span>`}</div>`; }).join('');
+  const nNew = j.got.filter(o => o.isNew).length, nUp = j.got.filter(o => o.up && !o.isNew).length, ten = skTen();
+  openModal(bsWrap({ id: 'gacha', icon: '📘', name: '스킬 뽑기 결과' }, { tag: '같은 스킬이 또 나오면 모아서 레벨 업', wal: ['gold'],
+    body: `<div class="cs" style="margin:0">${nNew ? chip(`✨ 새 스킬 ${nNew}개`, 'up') : ''}${nUp ? chip(`▲ 레벨 업 ${nUp}개`, 'up') : ''}${j.back ? chip(`🪙 +${fmtN(j.back)} (최고 레벨)`, 'gold') : ''}${j.lvUp ? chip(`🎉 스킬 뽑기 Lv.${j.lvUp}`, 'up') : ''}</div>
+      <div class="gres">${cards}</div>${bbtn('see', '📘 내 스킬 보기', '', { wide: true })}`,
+    foot: `<div class="bs-two">${bbtn('back', '가챠센터로')}${bbtn('again', '🎰 10회 더 뽑기', `🪙 ${fmtN(ten)}`, { main: true, dis: me.gold < ten })}</div>` }), el => wire(el, async x => {
     if (x === 'back') return openBuilding(gachaB());
     if (x === 'see') { closeModal(); skTab = SKILLS.find(s => s.id === j.got[0]?.id)?.cls || me.cls; renderSkills(); return openPanelTab('skill'); }
     const k = await act('/api/skill/pull', { n: 10 }); if (k) showSkillPulls(k);
@@ -3625,6 +3644,8 @@ function showSkillPulls(j) {
 const STG_C = ['#aab4bf', '#6cbf5a', '#3f9be0', '#9a5fe0', '#f0a030', '#e8553a'];
 const oddsBar = L => { L = L.filter(x => x[1] > 0); return `<div class="bs-odds"><div class="ob">${L.map(([, p, c]) => `<i style="flex:${p};background:${c}"></i>`).join('')}</div><div class="cs">${L.map(([n, p, c]) => `<span class="c"><s style="background:${c}"></s>${n} <b>${p}%</b></span>`).join('')}</div></div>`; };
 function gachaSheet(b, keep) {
+  if (me.bag.length && !HT) return showPulls();   // 고르기 전에는 늘 결과 화면으로
+  if (S.pull) { S.pull = null; pullSave(); }
   reopen = () => gachaSheet(b, true);
   const tab = btab('gacha', 'w', ['w', 'a', 'sk']);
   let body, one, ten, x1, x10;
@@ -3643,72 +3664,109 @@ function gachaSheet(b, keep) {
       <div class="bs-sec">나오는 단계 확률</div>${oddsBar(odds.map((q, i) => [`${i + 1}단계`, q, STG_C[i]]))}</div>
       <div class="bs-card"><h4>지금 낀 장비 <small>이것보다 좋으면 비교 창이 떠요</small></h4><div class="gx-gear">${G.slots.map(k => { const it = me.equip[k]; return `<div>${it ? gIcon(it) : `<span class="emp">${SLOTS[k].i}</span>`}<small>${it ? `${it.st}단계 <b style="color:${GRADES[it.g].c}">${GRADES[it.g].n}</b>` : '비어 있음'}</small></div>`; }).join('')}</div></div>`;
   }
-  const pend = me.bag.length ? `<button class="bs-alert" data-x="pend">🎁 아직 안 고른 좋은 장비 <b>${me.bag.length}개</b><span>비교하기 ›</span></button>` : '';
   bsOpen(b, { tag: '골드로 장비 · 스킬 뽑기', wal: ['gold'], tabs: [['w', '⚔️ 무기'], ['a', '🛡️ 방어구'], ['sk', '📘 스킬']], tab,
-    body: pend + body,
+    body,
     help: `<p>지금 것보다 <b>좋은 장비</b>가 나오면 비교 창에서 바꿀지 골라요. 나머지는 자동으로 <b>분해(골드)</b>돼요.</p><p>많이 뽑을수록 <b>뽑기 레벨</b>이 올라 높은 단계가 나와요.</p><p>단계가 등급보다 중요해요. 2단계 '빈약'도 1단계 '신화'보다 세요. 무기 3개(검·활·지팡이)를 모두 끼고, 지금 클래스의 무기로 싸워요.</p>
       <div class="cs">${Object.values(GRADES).map(g => `<span class="c" style="color:${g.c}">${g.n} <b>${g.p}%</b></span>`).join('')}</div><p class="muted">등급이 높을수록 랜덤 옵션이 많이 붙어요 (빈약 0 · 일반·고급 1 · 희귀·영웅 2 · 전설·신화 3개)</p>${bbtn('table', '📊 단계 × 등급 표 보기', '', { wide: true })}`,
     foot: `<div class="bs-two">${bbtn(x1, '1회 뽑기', `🪙 ${fmtN(one)}`, { dis: me.gold < one })}${bbtn(x10, '10회 뽑기<em>10%↓</em>', `🪙 ${fmtN(ten)}`, { main: true, dis: me.gold < ten })}</div>` },
     async x => {
-      if (x === 'pend') return showPicks();
       if (x === 'table') return gachaTable();
       if (x.startsWith('sk:')) { const j = await act('/api/skill/pull', { n: +x.slice(3) }); if (j) showSkillPulls(j); return; }
       const [k, n] = x.split(':'), j = await act('/api/gacha/pull', { box: k, n: +n });
       if (j) showPulls(j, k);
     }, keep);
 }
-// 뽑기 결과: 카드가 하나씩 뒤집힘. 좋은 장비(NEW)는 비교 창으로, 나머지는 분해
-function showPulls(j, box) {
-  { const gs = Object.keys(GRADES), top = Math.max(0, ...j.items.map(it => gs.indexOf(it.g))); sfx('gacha'); setTimeout(() => sfx('reveal', top), 420); }
-  const best = j.items.filter(it => ['legend', 'myth'].includes(it.g));
-  const cards = j.items.map((it, i) => {
-    const cur = me.equip[it.slot], a = itemStats(it, me.enh[it.slot] || 0), b = cur ? itemStats(cur, me.enh[it.slot] || 0) : null, v = a.atk ?? a.def, d = v - (b ? b.atk ?? b.def : 0);
-    return `<div class="gcard${it.keep ? ' keep' : ''}${best.includes(it) ? ' shine' : ''}" data-x="card:${i}" style="--i:${i};--gc:${GRADES[it.g].c}" title="${it.st}단계 ${GRADES[it.g].n} ${itemName(it)}${it.o?.length ? ' · ' + it.o.map(optText).join(', ') : ''}">${gIcon(it)}<em>${GRADES[it.g].n}</em><span class="nm">${itemName(it)}</span><span class="pw">${a.atk != null ? (it.slot === 'staff' ? '마력' : '공격') : '방어'} ${v}</span>${it.o?.length ? `<span class="oc">옵션 ${it.o.length}</span>` : ''}${it.keep ? `<span class="up">NEW ▲${Math.max(0, d)}</span>` : `<span class="dis">분해</span>`}</div>`;
-  }).join('');
-  const gi = gachaInfo(me.gacha[box]);
-  openModal(`<h3>${GACHA[box].i} ${GACHA[box].n} 결과</h3><div class="gres">${cards}</div>
-    <p class="gsum">🔨 나머지는 분해해서 <b>${goldTxt(j.got)}</b> 받았어요${j.lvUp ? `<br>🎉 <b>뽑기 레벨 ${j.lvUp}</b> 달성! 더 높은 단계가 나와요` : ''}</p>
-    <div class="actions">${me.bag.length ? `<button class="btn main" data-x="pick">🔍 좋은 장비 비교하고 고르기<small>${me.bag.length}개</small></button><button class="btn" data-x="auto">⚡ 자동으로 고르기<small>더 센 것은 끼고 나머지는 분해</small></button>` : ''}
-      <button class="btn${me.bag.length ? '' : ' main'}" data-x="again" ${me.gold < tenCost(gi) ? 'disabled' : ''}>🎰 10회 더 뽑기<small>${goldTxt(tenCost(gi))}</small></button><button class="btn" data-x="back">가챠센터로</button></div>`, el => wire(el, async x => {
-    if (x === 'pick') { PK.back = true; return showPicks(); }
-    if (x === 'auto') { await autoPick(); return openBuilding(gachaB()); }
-    if (x.startsWith('card:')) { const it = j.items[+x.slice(5)]; return toast(`${it.st}단계 ${GRADES[it.g].n} ${itemName(it)}${it.o?.length ? ' · ' + it.o.map(optText).join(', ') : ''}`); }
-    if (x === 'back') return openBuilding(gachaB());
-    const k = await act('/api/gacha/pull', { box, n: 10 }); if (k) showPulls(k, box);
-  }));
-  for (const it of best) { toast(`✨ ${GRADES[it.g].n}! ${itemName(it)}`); sysMsg(`✨ ${GRADES[it.g].n} 장비: ${it.st}단계 ${itemName(it)}`); }
-  if (best.length) emote(me, '🎉');
-  logAct(`${GACHA[box].n} ${j.items.length}회 −${j.cost} +${j.got}`);
+// ───────── 장비 뽑기 결과 (2026-11-17 개편) ─────────
+// 더 센 장비(가방 me.bag)가 남아 있으면 이 화면에서 끝내야 함: 창을 닫아도 가챠센터를 다시 열거나 다시 접속하면 이 화면으로 돌아옴
+// S.pull = { box, items(뽑은 것), got(분해 골드), lvUp, res: { 장비 id: 'on' 장착 | 'off' 분해 } } → localStorage cbt-pull
+const pullSave = () => { try { S.pull ? localStorage.setItem('cbt-pull', JSON.stringify(S.pull)) : localStorage.removeItem('cbt-pull'); } catch {} };
+function pullState() {
+  if (!S.pull) try { S.pull = JSON.parse(localStorage.getItem('cbt-pull') || 'null'); } catch {}
+  if (S.pull && !Array.isArray(S.pull.items)) S.pull = null;
+  if (me.bag.length) {   // 다른 기기에서 뽑았거나 기록이 없으면 가방으로 채움
+    if (!S.pull || !me.bag.some(it => S.pull.items.some(x => x.id === it.id))) S.pull = { box: null, items: [], got: 0, res: {} };
+    for (const it of me.bag) if (!S.pull.items.some(x => x.id === it.id)) S.pull.items.push({ ...it, keep: true });
+    if (!S.pull.box) S.pull.box = S.pull.items.every(it => WEAPON_SLOTS.includes(it.slot)) ? 'w' : S.pull.items.every(it => !WEAPON_SLOTS.includes(it.slot)) ? 'a' : null;
+  }
+  return S.pull;
 }
+const pwName = it => (itemStats(it, 0).atk != null ? (it.slot === 'staff' ? '마력' : '공격') : '방어');
+const pwVal = (it, e) => { const x = itemStats(it, e); return x.atk ?? x.def; };
+function showPulls(j, box) {
+  if (j) {
+    S.pull = { box, items: j.items, got: j.got, lvUp: j.lvUp, res: {} }; pullSave();
+    const gs = Object.keys(GRADES), top = Math.max(0, ...j.items.map(it => gs.indexOf(it.g))); sfx('gacha'); setTimeout(() => sfx('reveal', top), 420);
+    const best = j.items.filter(it => ['legend', 'myth'].includes(it.g));
+    for (const it of best) { toast(`✨ ${GRADES[it.g].n}! ${itemName(it)}`); sysMsg(`✨ ${GRADES[it.g].n} 장비: ${it.st}단계 ${itemName(it)}`); }
+    if (best.length) emote(me, '🎉');
+    logAct(`${GACHA[box].n} ${j.items.length}회 −${j.cost} +${j.got}`);
+  }
+  const P = pullState(); if (!P) return openBuilding(gachaB());
+  reopen = () => showPulls();
+  const bagIds = new Set(me.bag.map(it => it.id));
+  const st = it => P.res[it.id] || (bagIds.has(it.id) ? 'wait' : it.keep ? (me.equip[it.slot]?.id === it.id ? 'on' : 'off') : 'dis');
+  const rank = { wait: 0, on: 1, off: 2, dis: 2 };
+  const list = P.items.map((it, i) => [it, i]).sort((a, b) => rank[st(a[0])] - rank[st(b[0])] || a[1] - b[1]);
+  const wait = P.items.filter(it => st(it) === 'wait'), nOn = P.items.filter(it => st(it) === 'on').length, nDis = P.items.filter(it => ['off', 'dis'].includes(st(it))).length;
+  const better = it => { const e = me.enh[it.slot] || 0; return itemPower(it, e) > itemPower(me.equip[it.slot], e); };
+  const cards = list.map(([it, i], k) => {
+    const s = st(it), e = me.enh[it.slot] || 0, cur = me.equip[it.slot], v = pwVal(it, e), d = v - (cur && cur.id !== it.id ? pwVal(cur, e) : 0);
+    const tag = { wait: `<span class="up">NEW ▲${Math.max(0, d)}</span>`, on: '<span class="up">✅ 장착</span>', off: '<span class="dis">분해</span>', dis: '<span class="dis">분해</span>' }[s];
+    return `<div class="gcard${s === 'wait' ? ' keep' : ''}${s === 'on' ? ' on' : ''}${s === 'off' || s === 'dis' ? ' dim' : ''}${j && ['legend', 'myth'].includes(it.g) ? ' shine' : ''}" data-x="card:${i}" style="--i:${k};--gc:${GRADES[it.g].c}" title="${it.st}단계 ${GRADES[it.g].n} ${itemName(it)}${it.o?.length ? ' · ' + it.o.map(optText).join(', ') : ''}">${gIcon(it)}<em>${GRADES[it.g].n}</em><span class="nm">${itemName(it)}</span><span class="pw">${pwName(it)} ${v}</span>${it.o?.length ? `<span class="oc">옵션 ${it.o.length}</span>` : ''}${tag}</div>`;
+  }).join('');
+  // 자동으로 고르면 어떻게 되는지 미리 보여 주기
+  const plan = wait.map(it => { const e = me.enh[it.slot] || 0, cur = me.equip[it.slot], take = better(it), a = cur ? pwVal(cur, e) : 0, b = pwVal(it, e);
+    return `<li>${gIcon(it)}<div><b>${SLOTS[it.slot].n} · ${it.st}단계 <span style="color:${GRADES[it.g].c}">${GRADES[it.g].n}</span></b><small>${pwName(it)} ${a} → ${b} <i>▲${Math.max(0, b - a)}</i>${it.o?.length ? ` · 옵션 ${it.o.length}개` : ''}</small></div>${take ? chip('끼기', 'up') : chip('분해')}</li>`; }).join('');
+  const nTake = wait.filter(better).length, G = P.box ? GACHA[P.box] : null, gi = P.box ? gachaInfo(me.gacha[P.box]) : null, ten = gi ? tenCost(gi) : 0;
+  const summary = `<div class="cs" style="margin:0">${wait.length ? chip(`✨ 더 센 장비 ${wait.length}개`, 'up') : ''}${nOn ? chip(`✅ 장착 ${nOn}개`, 'up') : ''}${nDis ? chip(`🔨 분해 ${nDis}개`) : ''}${P.got ? chip(`🪙 +${fmtN(P.got)}`, 'gold') : ''}${P.lvUp ? chip(`🎉 뽑기 Lv.${P.lvUp}`, 'up') : ''}</div>`;
+  openModal(bsWrap({ id: 'gacha', icon: G ? G.i : '🎁', name: G ? `${G.n} 결과` : '뽑기 결과' }, {
+    tag: wait.length ? '더 센 장비가 나왔어요 · 고르기 전에는 이 화면으로 돌아와요' : '정리 끝! 더 뽑거나 가챠센터로',
+    wal: ['gold'],
+    body: `${summary}<div class="gres${j ? '' : ' still'}">${cards}</div>
+      ${wait.length ? `<div class="bs-card hero"><h4>⚡ 자동으로 고르면 <small>끼기 ${nTake} · 분해 ${wait.length - nTake}</small></h4><ul class="pk-list">${plan}</ul></div>` : ''}`,
+    foot: wait.length
+      ? `<div class="bs-stack">${bbtn('auto', '⚡ 자동으로 고르기', nTake ? `더 센 것 ${nTake}개 끼기 · 쓰던 것은 분해` : '모두 분해', { wide: true, main: true })}${bbtn('pick', '🔍 하나씩 비교하고 고르기', '', { wide: true })}</div>`
+      : `<div class="bs-two">${bbtn('back', '가챠센터로')}${G ? bbtn('again', '🎰 10회 더 뽑기', `🪙 ${fmtN(ten)}`, { main: true, dis: me.gold < ten }) : ''}</div>`,
+  }), el => wire(el, async x => {
+    if (x === 'auto') { await autoPick(); return showPulls(); }
+    if (x === 'pick') return showPicks();
+    if (x.startsWith('card:')) { const it = P.items[+x.slice(5)]; return toast(`${it.st}단계 ${GRADES[it.g].n} ${itemName(it)}${it.o?.length ? ' · ' + it.o.map(optText).join(', ') : ''}`); }
+    if (x === 'back') { S.pull = null; pullSave(); return openBuilding(gachaB()); }
+    if (x === 'again') { const k = await act('/api/gacha/pull', { box: P.box, n: 10 }); if (k) showPulls(k, P.box); }
+  }), !j);
+}
+// 고른 결과 기록 (결과 화면에 장착 / 분해로 보임)
+const pullMark = (it, on, got) => { if (!S.pull) return; S.pull.res[it.id] = on ? 'on' : 'off'; S.pull.got = (S.pull.got || 0) + (got || 0); pullSave(); };
 // 자동으로 고르기: 칸마다 지금 것보다 세면 바꾸고(쓰던 것은 분해), 아니면 새 것을 분해
 async function autoPick() {
   let on = 0, got = 0;
   for (const it of [...me.bag]) {
     const e = me.enh[it.slot] || 0, better = itemPower(it, e) > itemPower(me.equip[it.slot], e);
     const j = await act('/api/gacha/pick', { id: it.id, take: better }); if (!j) break;
-    got += j.got || 0; if (better) on++;
+    got += j.got || 0; if (better) on++; pullMark(it, better, j.got);
   }
   toast(`⚡ 자동으로 골랐어요 · ${on}개 장착${got ? ` · 분해 🪙 ${got.toLocaleString()}` : ''}`); logAct(`장비 자동 고르기: ${on}개 장착 +${got}`); if (on) emote(me, '🎉');
 }
-// 비교 창: 지금 장비 ↔ 새 장비. 바꾸기(쓰던 것은 분해) / 분해하기
-const PK = { back: false };
+// 비교 창: 지금 장비 ↔ 새 장비. 바꾸기(쓰던 것은 분해) / 분해하기. 다 고르면 결과 화면으로
 function showPicks(id) {
   const it = me.bag.find(p => p.id === id) || me.bag[0];
-  if (!it) { if (PK.back && !HT) { PK.back = false; return openBuilding(gachaB()); } return closeModal(); }
+  if (!it) return HT ? closeModal() : showPulls();
+  reopen = () => showPicks(id);
   const slot = it.slot, e = me.enh[slot] || 0, cur = me.equip[slot], A = cur ? itemStats(cur, e) : {}, B = itemStats(it, e), wpn = WEAPON_SLOTS.includes(slot);
   const D0 = derive(), D1 = derive({ ...me, equip: { ...me.equip, [slot]: it } });
   const main = wpn ? [slot === 'staff' ? '마력' : '공격력', A.atk || 0, B.atk] : ['방어', A.def || 0, B.def], d = main[2] - main[1];
   const sub = wpn ? (slot === me.cls ? [[slot === 'staff' ? '내 마력' : '내 공격력', D0.hit, D1.hit]] : []) : [['체력', A.hp || 0, B.hp], ['내 물리 방어', D0.def, D1.def], ['내 마법 방어', D0.mdef, D1.mdef], ['내 최대 체력', D0.maxHp, D1.maxHp]];
   const card = (x, label, cls) => `<div class="cmp-c${cls}" style="--gc:${x ? GRADES[x.g].c : 'var(--line)'}"><small>${label}</small>${x ? `${gIcon(x)}<b style="color:${GRADES[x.g].c}">${x.st}단계 ${GRADES[x.g].n}</b><span>${itemName(x)}</span>${optList(x)}` : `<span style="font-size:40px">${SLOTS[slot].i}</span><span class="muted">비어 있음</span>`}</div>`;
-  openModal(`<h3>🎁 새 ${SLOTS[slot].n}!${me.bag.length > 1 ? ` <small class="muted">(${me.bag.length}개 남음)</small>` : ''}</h3>
-    <div class="cmp" data-pick>${card(cur, '지금 장비', '')}<div class="cmp-arrow">➜</div>${card(it, '새 장비', ' new')}</div>
-    <div class="cmp-big">${main[0]} <span class="n">${main[1]}</span> → <span class="n ${d > 0 ? 'up' : 'down'}">${main[2]}</span> <span class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</span>${e ? ` <small class="muted">(칸 강화 +${e} 포함)</small>` : ''}</div>
-    ${sub.length ? diffList(sub.map(r => [r[0], r[1]]), sub.map(r => [r[0], r[2]])) : ''}
-    ${wpn && slot !== me.cls ? `<p class="muted">지금 클래스(${CLASSES[me.cls].i} ${CLASSES[me.cls].n})의 무기가 아니에요. 캐릭터창에서 ${CLASSES[slot].n}(으)로 바꾸면 이 무기로 싸워요.</p>` : ''}
-    <div class="actions"><button class="btn main" data-x="take">✅ 바꾸기<small>${cur ? `쓰던 장비는 분해 · ${goldTxt(dismantle(cur))}` : '바로 장착'}</small></button><button class="btn" data-x="no">🔨 분해하기<small>새 장비를 골드로 · ${goldTxt(dismantle(it))}</small></button>${me.bag.length > 1 ? `<button class="btn" data-x="all">🔨 남은 ${me.bag.length}개 모두 분해<small>${goldTxt(me.bag.reduce((a, b) => a + dismantle(b), 0))}</small></button>` : ''}</div>
-    <p class="muted">바꾸거나 분해해야 가챠센터를 나갈 수 있어요.</p>`, el => wire(el, async x => {
-    if (x === 'all') { let got = 0; for (const b of [...me.bag]) { const j = await act('/api/gacha/pick', { id: b.id, take: false }); if (!j) break; got += j.got || 0; } toast(`모두 분해해서 🪙 ${got.toLocaleString()} 받았어요`); logAct(`장비 모두 분해 +${got}`); return showPicks(); }
+  openModal(bsWrap({ id: 'gacha', icon: '🎁', name: `새 ${SLOTS[slot].n}!` }, { tag: me.bag.length > 1 ? `${me.bag.length}개 남음 · 창을 닫아도 가챠센터에서 이어서 골라요` : '창을 닫아도 가챠센터에서 이어서 골라요',
+    body: `<div class="cmp" data-pick>${card(cur, '지금 장비', '')}<div class="cmp-arrow">➜</div>${card(it, '새 장비', ' new')}</div>
+      <div class="cmp-big">${main[0]} <span class="n">${main[1]}</span> → <span class="n ${d > 0 ? 'up' : 'down'}">${main[2]}</span> <span class="${d > 0 ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</span>${e ? ` <small class="muted">(칸 강화 +${e} 포함)</small>` : ''}</div>
+      ${sub.length ? diffList(sub.map(r => [r[0], r[1]]), sub.map(r => [r[0], r[2]])) : ''}
+      ${wpn && slot !== me.cls ? `<p class="muted">지금 클래스(${CLASSES[me.cls].i} ${CLASSES[me.cls].n})의 무기가 아니에요. 캐릭터창에서 ${CLASSES[slot].n}(으)로 바꾸면 이 무기로 싸워요.</p>` : ''}
+      ${me.bag.length > 1 ? bbtn('all', `🔨 남은 ${me.bag.length}개 모두 분해`, `🪙 ${fmtN(me.bag.reduce((a, b) => a + dismantle(b), 0))}`, { wide: true }) : ''}`,
+    foot: `<div class="bs-two">${bbtn('no', '🔨 분해하기', `🪙 ${fmtN(dismantle(it))}`)}${bbtn('take', '✅ 바꾸기', cur ? `쓰던 것 분해 · 🪙 ${fmtN(dismantle(cur))}` : '바로 장착', { main: true })}</div>` }), el => wire(el, async x => {
+    if (x === 'all') { let got = 0; for (const b of [...me.bag]) { const j = await act('/api/gacha/pick', { id: b.id, take: false }); if (!j) break; got += j.got || 0; pullMark(b, false, j.got); } toast(`모두 분해해서 🪙 ${got.toLocaleString()} 받았어요`); logAct(`장비 모두 분해 +${got}`); return showPicks(); }
     const j = await act('/api/gacha/pick', { id: it.id, take: x === 'take' }); if (!j) return;
+    pullMark(it, j.take, j.got);
     if (j.take) { toast(`${itemIcon(it)} ${itemName(it)} 장착!${j.got ? ` (분해 🪙 ${j.got})` : ''}`); logAct(`${itemName(it)} 장착`); emote(me, '🎉'); }
     else { toast(`분해해서 🪙 ${j.got} 받았어요`); logAct(`${itemName(it)} 분해 +${j.got}`); }
     showPicks();
@@ -4271,7 +4329,7 @@ function enterTown(first) {
     cam = { x: me.x, y: me.y };
     if (!S.greeted) { S.greeted = true; addChat({ sys: true, text: `${me.name}님, 치복 타운에 온 걸 환영해요! 바닥을 누르면 그 자리로 걸어가요(화살표·끌기도 OK). 🌳 나무·🪨 바위를 누르면 채집, 오른쪽 끝 보라색 포탈은 자동 사냥이에요` }); logAct('치복 타운 도착'); }
     if (first) took(first); else act('/api/me');   // 사냥 정산(자리 비운 동안 결과)과 오늘 첫 접속 보너스
-    setTimeout(() => { if (me.bag?.length && !HT) { PK.back = false; showPicks(); } else if (guideOn() && modal.hidden) showGuide(); }, 700);
+    setTimeout(() => { if (me.bag?.length && !HT) showPulls(); else if (guideOn() && modal.hidden) showGuide(); }, 700);
     checkLive(); clearInterval(liveT); liveT = setInterval(checkLive, 180e3);
     loadBlocks(); netConnect(); loadHouses();   // 그 뒤로는 누가 집을 지으면 서버가 알려 줌 ({t:'house', h})
   });
@@ -4688,7 +4746,7 @@ const houseDoor = h => [(h.x + 1.5) * T, (h.y + HOUSE_H + .5) * T];
 function skinShop(b, keep) {
   reopen = () => skinShop(b, true);
   const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
-  const tile = (key, name, own, on, price, fx) => `<button type="button" data-x="${key}" aria-pressed="${on}" title="${name} · 보유 효과: ${fxText(fx || {})}" aria-label="${name} · 보유 효과 ${fxText(fx || {})}${own ? '' : ` · ${price.toLocaleString()} 골드`}"><canvas></canvas>${own ? `<em class="own">${on ? '착용' : '보유'}</em>` : `<em>🪙 ${price.toLocaleString()}</em>`}<small>${name.replace(/^\S+\s/, '')}<i class="skfx">${fxText(fx || {})}</i></small></button>`;
+  const tile = (key, name, own, on, price, fx) => `<button type="button" data-x="${key}" aria-pressed="${on}" title="${name} · 보유 효과: ${fxText(fx || {})}" aria-label="${name} · 보유 효과 ${fxText(fx || {})}${own ? '' : ` · ${price.toLocaleString()} 골드`}"><canvas></canvas>${own ? `<em class="own">${on ? '착용' : '보유'}</em>` : price ? `<em>🪙 ${price.toLocaleString()}</em>` : ''}<small>${name.replace(/^\S+\s/, '')}<i class="skfx">${fxText(fx || {})}</i></small></button>`;
   const hats = HATS.filter(h => h.id !== 'none' && !h.raid), eyes = EYE_SKINS.filter(e => e.price), suits = SUITS.filter(s => !s.raid);
   const WT = [['sword', '검'], ['bow', '활'], ['staff', '지팡이']], rset = raidSet('rdragon');
   const rItem = k => k.startsWith('eye:') ? EYE_SKINS.find(e => 'eye:' + e.id === k) : k.startsWith('suit:') ? SUITS.find(s => 'suit:' + s.id === k) : k.startsWith('wsk:') ? WSKINS.find(w => wskKey(w) === k) : HATS.find(h => h.id === k);

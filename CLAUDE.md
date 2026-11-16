@@ -416,6 +416,11 @@
   - `live: true`면 1초마다 다시 그림 (카페 알바·체력, 텃밭 밭 탭). 도움말 열림 상태는 `S.bhelp`로 유지
   - 새 건물을 만들면 이 틀로: `bsOpen(b, { tag, wal, tabs, tab, body, help, foot, live, ready }, 버튼 처리 함수, keep)`
 - 예전 `sheetHead`, `skBox`, `#farmSheet` 1초 갱신은 없앰. 소원 분수·낚시터(물가) 창은 아직 예전 모양
+- **장비 뽑기 결과** (`showPulls`): 같은 틀. 더 센 장비(NEW)가 앞에, 분해된 건 흐리게, 장착한 건 초록 테. 아래 버튼은 ⚡ 자동으로 고르기(맨 위) → 🔍 하나씩 비교
+  - 가방(`me.bag`)에 고를 장비가 남아 있으면 **창을 닫아도** 가챠센터를 열거나 다시 접속하면 결과 화면으로 돌아옴 (다 골라야 다시 뽑기 가능). 닫기 잠금(`pickLock`)은 없앰
+  - 결과는 `S.pull` + localStorage `cbt-pull`에 기억. 고른 결과는 `pullMark`. 기록이 없으면 가방으로 다시 만듦(`pullState`)
+  - 스킬 뽑기 결과·비교 창(`showPicks`)도 같은 틀. 비교를 다 끝내면 결과 화면으로
+- 스킨샵 칸: 그림 아래에 이름 · 효과를 따로 (`.skgrid.shop`), 값이 0인 레이드 스킨은 가격표 없음
 
 ### 마을 주민 NPC 임무 — 2026-11-17
 - **3시간마다 새 주민 5명** (이름·생김새·임무가 시간으로 정해짐 → 화면·서버 같은 계산). game-rules.js `NPC_BLOCK, NPC_N, NPC_MAX(3), NPC_NAMES, NPC_TASKS, npcList, npcState, npcProg, npcGold, npcExp`
