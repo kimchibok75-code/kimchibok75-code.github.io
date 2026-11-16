@@ -300,14 +300,18 @@
   - 전광판(`drawScreen`, `screenRect`): 늘 보임. 방송 중이면 썸네일 + LIVE, 누르면 치지직 플레이어 창. 아니면 "김치복 TV · 다음 방송까지". 작은 광장 게시판 위의 생방송 화면은 없앰
 
 ### 스킨 · 레이드 · 자동 생활 · 집 단계 — 2026-11-16 배포
-- **스킨 추가**: 의상  6종(가진 것 , 입은 것 ) + 무기 스킨  무기마다 6종(, 낀 것 ). DB . 그림 ,   - 레이드 전용()은 가게에서 못 삼.  = 한 세트 6부위(모자·눈·의상·검·활·지팡이)
-- **매시 정각 레이드** (레드 드래곤): Durable Object  (, 인스턴스 하나 'main', wrangler 마이그레이션 v3)
-  - 정각부터 30초 모집 → 최대 150초 전투. 보스 체력 = 참가자 공격력 합 × 100초라서 늘 잡힘. 숫자는 game-rules.js   - 화면 . 새로고침하면 localStorage 로 다시 들어감. 보상은  (으로 한 번만)
-- **관리자 버튼**: 오른쪽 세로 버튼 맨 위 🛡️ (, 관리자만 보임) → 치트 탭 맨 위 '레이드 지금 열기' ()
-- **자동 생활** 🧺: , (1시간에 목재 36·석재 24·골드·코인, 최대 8시간). 사냥·알바를 시작하면 꺼짐. 화면 는 보여 주기용
-- **집 단계** (마을회관):  일반 집 → 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩. 빌라부터 임대 수입(1시간 5천/1.2만/3만, 최대  12시간)
-  - , , , , DB  (). 그림 - 처음 안내()에 '이런 것도 있어요': 마을회관 집 · 매시 레이드 · 자동 생활
-- 화면 확인용 임시 코드는 줄 끝에 를 달고, 배포 전에 그 줄들을 지움
+- **스킨 추가**: 의상 `SUITS` 6종(가진 것 `suit:id`, 입은 것 `c.suit`) + 무기 스킨 `WSKINS` 무기마다 6종(`wsk:종류:id`, 낀 것 `c.wsk`). DB `migrations/0011_skins.sql`. 그림 `suitParts`, `wskParts`
+  - 레이드 전용(`raid: 'rdragon'`)은 가게에서 못 삼. `raidSet(set)` = 한 세트 6부위(모자·눈·의상·검·활·지팡이)
+- **매시 정각 레이드** (레드 드래곤): Durable Object `Raid` (`game-worker/src/raid.js`, 인스턴스 하나 'main', wrangler 마이그레이션 v3)
+  - 정각부터 30초 모집 → 최대 150초 전투. 보스 체력 = 참가자 공격력 합 × 100초라서 늘 잡힘. 숫자는 game-rules.js `RAID, RAID_BOSS, raidPattern, raidReward`
+  - 화면 `raidAsk/enterRaid/updateRaid/raidClaim`. 새로고침하면 localStorage `cbt-raid`로 다시 들어감. 보상은 `/api/raid/claim` (`life.raidGot`으로 한 번만)
+- **관리자 버튼**: 오른쪽 세로 버튼 맨 위 🛡️ (`#admBtn`, 관리자만 보임) → 치트 탭 맨 위 '레이드 지금 열기' (`/api/admin/raid`)
+- **자동 생활** 🧺: `life.auto`, `autoSettle`(1시간에 목재 36·석재 24·골드·코인, 최대 8시간). 사냥·알바를 시작하면 꺼짐. 화면 `autoPace`는 보여 주기용
+- **집 단계** (마을회관): `HOUSE_TIERS` 일반 집 → 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩. 빌라부터 임대 수입(1시간 5천/1.2만/3만, 최대 `HOUSE_INC_CAP` 12시간)
+  - `life.house.{lv, at, acc}`, `houseSettle`, `/api/house/up`, `/api/house/collect`, DB `houses.lv` (`0012_house_lv.sql`). 그림 `towerParts(lv)`
+- 처음 안내(`showGuide`)에 '이런 것도 있어요': 마을회관 집 · 매시 레이드 · 자동 생활
+- 화면 확인용 임시 코드는 줄 끝에 `// DEBUG-REMOVE`를 달고, 배포 전에 그 줄들을 지움
+- CLAUDE.md에 백틱 들어간 글을 넣을 때는 bash `node -e` 말고 Write/Edit 도구로 (백틱이 명령으로 실행돼 깨짐)
 - 사운드는 아직 없음 (조사만 함: ZzFX + Kenney CC0 추천)
 
 ### 다음: 4-2단계
