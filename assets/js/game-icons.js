@@ -215,10 +215,11 @@ function el(p, mode) {
   if (mode === 'out') return `<${p.t} ${a} fill="${INK}" stroke="${INK}" stroke-width="${OUT}" stroke-linejoin="round"/>`;
   return `<${p.t} ${a} fill="${p.c}"/>`;
 }
-export function iconSvg(key) {
+// flat: 바깥 검은 테두리 없이 색 면만 (마을 그림과 같은 선 없는 모양, 2026-11-16 텃밭 작물)
+export function iconSvg(key, flat = false) {
   const parts = ICONS[key]; if (!parts) return '';
   const base = parts.filter(p => p.f === '' || p.f === 'f'), over = parts.filter(p => p.f === 'a'), deco = parts.filter(p => p.f === 'd');
-  const layer = ps => ps.filter(p => p.f !== 'f').map(p => el(p, 'out')).join('') + ps.map(p => el(p, 'in')).join('');
+  const layer = ps => (flat ? '' : ps.filter(p => p.f !== 'f').map(p => el(p, 'out')).join('')) + ps.map(p => el(p, 'in')).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 34 34">${layer(base)}${over.length ? layer(over) : ''}${deco.map(p => el(p, 'in')).join('')}</svg>`;
 }
 const URL_CACHE = {};
@@ -231,6 +232,12 @@ export function icoImg(key) {
   if (!ICONS[key]) return null;
   if (!IMG[key]) { const im = new Image(); im.src = iconUrl(key); IMG[key] = im; }
   return IMG[key].complete && IMG[key].naturalWidth ? IMG[key] : null;
+}
+const IMG_F = {};
+export function icoImgFlat(key) {
+  if (!ICONS[key]) return null;
+  if (!IMG_F[key]) { const im = new Image(); im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg(key, true)); IMG_F[key] = im; }
+  return IMG_F[key].complete && IMG_F[key].naturalWidth ? IMG_F[key] : null;
 }
 export function preloadIcons() { for (const k of Object.keys(ICONS)) icoImg(k); }
 // 이모지 글자 찾기 (이모지 다음의 FE0F, 피부색 등 포함)

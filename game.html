@@ -863,7 +863,7 @@ import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLO
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx } from './assets/js/game-rules.js?v=__BUILD__';
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
-import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico } from './assets/js/game-icons.js?v=__BUILD__';
+import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico, icoImgFlat } from './assets/js/game-icons.js?v=__BUILD__';
 import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSolid, noise2, inCore, BUILDINGS as MAP_BUILDINGS, SPOTS, PORTAL, BACK, FISH_AT, PLOTS, BENCHES, NODES, DECO,
   HOUSE_W, HOUSE_H, canHouse, ROOM_W, ROOM_H, ROOM_DOOR, soft, PLAZA_C, PLAZA_R, nearWater, shoreNear, seaAt, coastY, SEA_AT } from './assets/js/game-map.js?v=__BUILD__';
 const API = (location.hostname === 'localhost' && new URLSearchParams(location.search).get('api')) || 'https://kimchibok-game.kimchibok.workers.dev';   // 시험용: localhost에서만 ?api=http://localhost:8787 로 바꿀 수 있음
@@ -1857,15 +1857,15 @@ function drawPortal(now) {
 }
 // 내 텃밭 (밭 위에 내 작물만 보임): 두둑마다 작물이 2줄 × 3포기로 심겨서 자람
 const BED_W = 74, BED_H = 34;
-const CROP_LEAF = ['#5fae4a', '#6bbf55', '#4f9d3a', '#78c25e', '#58a64b'];
+// 2026-11-16: 자라는 중에도 심은 작물 그림 그대로 (작게 → 크게), 선 없는 모양
 function cropPlant(x, y, k, cr, idx, now) {
-  const sway = Math.sin(now / 600 + x * .3) * .8, leaf = CROP_LEAF[(cr.id || '').length % CROP_LEAF.length];
-  if (k < .15) { ctx.fillStyle = '#6b4424'; ctx.beginPath(); ctx.ellipse(x, y, 4, 2, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#e8d6a6'; ctx.beginPath(); ctx.arc(x, y - .5, 1.2, 0, 7); ctx.fill(); return; }
-  const s = Math.min(1, .45 + k * .7);
-  const parts = [{ path: R(x - 1, y - 9 * s, 2, 9 * s, 1), c: '#3f8a35' }, { path: E(x - 4.5 * s + sway, y - 8 * s, 5 * s, 2.4 * s, .55), c: leaf }, { path: E(x + 4.5 * s + sway, y - 9 * s, 5 * s, 2.4 * s, -.55), c: leaf }];
-  if (k > .55) parts.push({ path: E(x + sway, y - 12 * s, 3.6 * s, 2.2 * s, 0), c: leaf });
-  flatInk(ctx, parts);
-  if (k >= 1) { ctx.font = '15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; fillTextIco(ctx, cr.i, x + sway, y - 11 + Math.sin(now / 300 + idx) * 1); }
+  const sway = Math.sin(now / 600 + x * .3) * .8;
+  if (k < .08) { ctx.fillStyle = '#5e3b1f'; ctx.beginPath(); ctx.ellipse(x, y, 4, 2, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#e8d6a6'; ctx.beginPath(); ctx.arc(x, y - .5, 1.2, 0, 7); ctx.fill(); return; }
+  const sz = 6 + Math.min(1, k) * 11, bob = k >= 1 ? Math.sin(now / 300 + idx) : 0;
+  ctx.fillStyle = 'rgba(60,35,15,.28)'; ctx.beginPath(); ctx.ellipse(x, y, sz * .32, sz * .12, 0, 0, 7); ctx.fill();   // 발밑 그림자
+  const im = icoImgFlat(emojiKey(cr.i));
+  if (im) ctx.drawImage(im, x + sway - sz / 2, y - sz + 1 + bob, sz, sz);
+  else { ctx.font = `${Math.round(sz)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText(cr.i, x + sway, y + bob); }
 }
 function drawPlots(now) {
   const f = me.life?.farm; if (!f || me.room) return;
@@ -1876,7 +1876,6 @@ function drawPlots(now) {
     // 두둑 (흙을 높게 쌓은 밭 줄)
     ctx.fillStyle = 'rgba(60,35,15,.35)'; rr(ctx, bx, by + 3, BED_W, BED_H, 11); ctx.fill();
     ctx.fillStyle = wet ? '#6e4527' : '#865530'; rr(ctx, bx, by, BED_W, BED_H, 11); ctx.fill();
-    ctx.strokeStyle = 'rgba(31,25,20,.55)'; ctx.lineWidth = 1.6; rr(ctx, bx, by, BED_W, BED_H, 11); ctx.stroke();
     for (const ry of [by + 11, by + 24]) { ctx.fillStyle = wet ? '#5a371e' : '#6f4426'; rr(ctx, bx + 6, ry - 3, BED_W - 12, 6, 3); ctx.fill(); ctx.fillStyle = 'rgba(255,240,210,.14)'; rr(ctx, bx + 6, ry - 3, BED_W - 12, 2, 1); ctx.fill(); }
     if (wet) { ctx.fillStyle = 'rgba(140,200,255,.55)'; for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.arc(bx + 12 + k * 17, by + 6 + (k % 2) * 20, 1.6, 0, 7); ctx.fill(); } }
     if (!p) { ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('빈 밭', P.x, P.y); return; }
