@@ -274,7 +274,7 @@ export const FISH_SEA = {
 };
 // 이름으로 찾기용 (강 + 바다 합침). 예전 기록의 물고기(아기 고래 등)도 여기서 찾음
 export const FISH = Object.fromEntries(Object.keys(FISH_RIVER).map(g => [g, [...FISH_RIVER[g], ...FISH_SEA[g].filter(f => !FISH_RIVER[g].some(r => r[1] === f[1]))]]));
-export const FISHING = { cooldown: 10e3, waitMin: 1500, waitMax: 4000, dayFull: 400 };   // wait: 던지고 입질까지(ms). dayFull: 하루에 이만큼 넘게 낚으면 값·코인 절반
+export const FISHING = { cooldown: 2e3, waitMin: 1500, waitMax: 4000, dayFull: 400 };   // wait: 던지고 입질까지(ms). dayFull: 하루에 이만큼 넘게 낚으면 값·코인 절반
 // 낚을 확률: 기본 60% + 낚싯대 1단계마다 +6%p + 칭호·스킨·마을 효과(fishZ, %p). 최대 95%. 자동 낚시는 10%p 낮음
 export const FISH_HIT = { base: .6, rod: .06, max: .95, auto: .1 };
 export const fishHit = (rod = 0, fx = {}, auto = false) => Math.max(.3, Math.min(FISH_HIT.max, FISH_HIT.base + FISH_HIT.rod * rod + (fx.fishZ || 0) / 100) - (auto ? FISH_HIT.auto : 0));

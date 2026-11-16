@@ -433,6 +433,14 @@
   - 누르면 대화창(`openNpc`, `npcSheet`). 알바·자동 중에도 대화는 됨
   - **임무창** `#questBox` (왼쪽 위, `renderQuests`, 1초마다): 받은 임무·진행·새 주민까지 남은 시간. 줄을 누르면 그 주민에게 걸어감. ▲로 접기(localStorage `cbt-qmin`)
 
+### 랭킹 · 낚시 쿨타임 — 2026-11-17 배포
+- 오른쪽 버튼 📖 가이드 밑에 **🏆 랭킹** (`#rankBtn`, `openRank`, bsWrap 틀, 색 `BC.rank`). 탭: 레벨 / 번 돈 / 낚시 / 강화 합. 상위 50명 + 내 순위
+- 서버 `GET /api/rank?k=lv|earn|fish|enh` (index.js `RANK`, `rankList`, 1분 기억 `RANK_MEM`)
+  - 레벨: lv → exp 순 · 낚시: `fishing` 표 count · 강화 합: `c.enh` 6칸 합
+  - **번 돈** = `life.earn`: `play()`에서 (나중 골드 − 처음 골드 + 그 사이 `spend`로 쓴 돈)이 양수면 더함. 치트 골드는 `c._noEarn`으로 빼고 셈. 2026-11-17부터 센 값 (예전 수입은 없음)
+- 아이콘 🏆 = game-icons.js `trophy`
+- 낚시 쿨타임 10초 → **2초** (`FISHING.cooldown`, 손·자동 같이). 시간당 낚시 수입·경험치가 크게 늘고, 하루 400마리(값 절반)에 빨리 닿음
+
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감
 - 다 지은 공동 건설(꽃밭·등대 등)을 지도에 그림으로 보여 주기

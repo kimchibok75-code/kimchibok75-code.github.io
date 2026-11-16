@@ -164,6 +164,17 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .bs .plots { margin: 0; }
 .bs-table { width: 100%; border-collapse: collapse; font-size: calc(13.5px * var(--fs)); font-variant-numeric: tabular-nums; } .bs-table th, .bs-table td { padding: 6px 4px; text-align: center; border-top: 1px solid var(--line); } .bs-table th { font-size: calc(12px * var(--fs)); color: var(--ink-soft); border-top: 0; } .bs-table td.nx { color: #2a7f3e; font-weight: 700; }
 .bs .skfxsum { margin: 0; }
+/* 랭킹 (2026-11-17) */
+.rk-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.rk-list li, .rk-me { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 54px; padding: 6px 12px 6px 6px; border-radius: 13px; background: #fff; border: 1.5px solid var(--line); }
+.rk-list li.top { background: #fffaf0; border-color: #f2d59a; }
+.rk-list li.mine { box-shadow: inset 0 0 0 2px var(--kimchi); }
+.rk-n { text-align: center; font-weight: 800; font-size: calc(16px * var(--fs)); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.rk-list li.top .rk-n { font-size: 24px; }
+.rk-who { min-width: 0; } .rk-who b { display: block; font-size: calc(15px * var(--fs)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rk-who small { display: block; color: var(--ink-soft); font-size: calc(12px * var(--fs)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rk-v { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rk-me { background: #fff1ec; border-color: #f3b9a8; grid-template-columns: auto minmax(0, 1fr) auto; padding-left: 12px; } .rk-me span:first-child { color: var(--ink-soft); font-weight: 700; } .rk-me b { font-size: calc(17px * var(--fs)); }
 .bs .swatches button { width: 40px; height: 40px; }
 @media (max-width: 600px) { .bs { --sb: max(18px, env(safe-area-inset-bottom, 0px)); } .bs-head h3 { font-size: calc(19px * var(--fs)); } }
 html, body { height: 100%; }
@@ -926,7 +937,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
       <button class="iconbtn" id="fsBtn" aria-label="전체화면" title="전체화면 (Esc로 나가기)">⛶</button>
       <button class="iconbtn" id="setBtn" aria-label="설정">⚙️</button>
     </div>
-    <div class="rcol"><div class="side"><button class="iconbtn adm" id="admBtn" hidden aria-label="관리자 화면" title="관리자 화면 (관리자만 보여요)">🛡️</button><button class="iconbtn" id="newsBtn" aria-label="마을 소식판" title="마을 소식판: 오늘 의뢰 · 공동 건설 · 마을 소식">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn lb" id="townBtn" aria-label="바로가기" title="바로가기: 누르면 그 자리로 바로 이동">🏘️<small>바로가기</small></button><button class="iconbtn lb" id="autoBtn" aria-label="자동" title="자동: 벌목·채광·알바·낚시·농사 + 산책하며 인사까지 알아서 해요 (효율은 낮아요)" aria-pressed="false">🧺<small>자동</small></button><button class="iconbtn lb" id="guideBtn" aria-label="가이드" title="가이드: 모든 놀거리 설명">📖<small>가이드</small></button></div>
+    <div class="rcol"><div class="side"><button class="iconbtn adm" id="admBtn" hidden aria-label="관리자 화면" title="관리자 화면 (관리자만 보여요)">🛡️</button><button class="iconbtn" id="newsBtn" aria-label="마을 소식판" title="마을 소식판: 오늘 의뢰 · 공동 건설 · 마을 소식">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn lb" id="townBtn" aria-label="바로가기" title="바로가기: 누르면 그 자리로 바로 이동">🏘️<small>바로가기</small></button><button class="iconbtn lb" id="autoBtn" aria-label="자동" title="자동: 벌목·채광·알바·낚시·농사 + 산책하며 인사까지 알아서 해요 (효율은 낮아요)" aria-pressed="false">🧺<small>자동</small></button><button class="iconbtn lb" id="guideBtn" aria-label="가이드" title="가이드: 모든 놀거리 설명">📖<small>가이드</small></button><button class="iconbtn lb" id="rankBtn" aria-label="랭킹" title="랭킹: 레벨 · 번 돈 · 낚시 · 강화">🏆<small>랭킹</small></button></div>
     <div class="zoom"><button class="iconbtn" id="zIn" aria-label="크게 보기">＋</button><button class="iconbtn" id="zOut" aria-label="작게 보기">－</button></div></div>
     <div class="banner" id="liveBanner" hidden>🔴 김치복 생방송 중!</div>
     <button class="roombtn" id="roomBtn" type="button" hidden>🚪 집에서 나가기</button>
@@ -3532,7 +3543,7 @@ function spend(n) { if (me.gold < n) { toast('골드가 부족해요'); return f
 //  · 점진적 공개 · 밀러의 법칙: 긴 설명은 접은 '도움말'에, 화면에는 한 줄 소개 + 숫자 꼬리표만
 //  · 상태 보이기: 진행 막대, 모자란 재료는 빨간 꼬리표에 '얼마 모자란지'까지
 //  · 일관성(제이콥의 법칙): 모든 건물이 같은 순서 — 머리 → 지갑 → 탭 → 내용 → 도움말 → 주 버튼
-const BC = { cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45' };
+const BC = { cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b' };
 S.btab = {}; S.bhelp = {};
 const WAL = { gold: () => ['🪙', me.gold], wood: () => [RES.wood.i, LIFE().res.wood], stone: () => [RES.stone.i, LIFE().res.stone], fish: () => [COIN.fish[0], LIFE().coins.fish], farm: () => [COIN.farm[0], LIFE().coins.farm] };
 const fmtN = n => Math.floor(n || 0).toLocaleString();
@@ -5335,6 +5346,7 @@ const GUIDE = () => [
     ['건물 이용', '건물을 누르면 그 앞까지 걸어가서 바로 창이 열려요.'],
     ['🏘️ 바로가기', '오른쪽 버튼. 가고 싶은 곳을 누르면 그 자리로 바로 이동하고 시설 창도 열려요.'],
     ['채팅·이모트', '아래 채팅 칸은 같은 채널의 모두에게 보여요. 😊 버튼으로 이모트. 귓속말·친구·거래는 없어요.'],
+    ['🏆 랭킹', '오른쪽 버튼. 레벨 · 번 돈 · 낚시 · 강화 합 순위(상위 50명)와 내 순위를 봐요. 번 돈은 2026-11-17부터 센 값이에요.'],
     ['캐릭터창', '내 캐릭터를 누르면 능력치·장비·스킬·스킨·칭호를 볼 수 있어요.'],
     ['📜 주민 임무', '마을에 주민 5명이 돌아다녀요(3시간마다 새 주민). 머리 위 ❗ 말풍선을 누르면 소소한 임무를 받고, 다 하면 ❓로 바뀌어요. 다시 찾아가면 보상! 받은 임무는 왼쪽 위 임무창에 보여요 (한 번에 3개까지).'],
   ]],
@@ -5360,7 +5372,7 @@ const GUIDE = () => [
   ['🎣', '낚시', [
     ['손 낚시', '아무 물이나 누르면 물가로 걸어가서 바로 낚싯대를 던져요. 잡으면 머리 위로 자랑해요!'],
     ['강 · 바다', '강·연못과 마을 남쪽 바다에서 나는 물고기가 달라요. 목록은 낚시터 창에서 볼 수 있어요.'],
-    ['보상', '낚은 물고기는 바로 팔려서 골드가 되고, 🐚 낚시 코인도 받아요. 10초에 한 번 던질 수 있어요.'],
+    ['보상', '낚은 물고기는 바로 팔려서 골드가 되고, 🐚 낚시 코인도 받아요. 2초에 한 번 던질 수 있어요.'],
     ['낚시점', '낚시 코인으로 낚싯대(낚을 확률 ↑)와 미끼(좋은 등급 ↑)를 올려요.'],
     ['자동 낚시', '낚시터 표지판(강가)을 누르면 자동 낚시. 골드로 산 자동용 미끼를 1개씩 써요.'],
     ['순위', '낚시터 창에서 제일 비싼·제일 큰·제일 많이 낚은 사람 순위를 봐요.'],
@@ -5416,6 +5428,24 @@ function openGuideBook(open = 0) {
     <button class="close" data-close>닫기</button></div>`);
 }
 $('#guideBtn').onclick = () => openGuideBook();
+// ───────── 🏆 랭킹 (2026-11-17, 가이드 밑 버튼): 레벨 · 번 돈 · 낚시 · 강화 합. 서버 /api/rank?k= (상위 50명, 1분마다 새로) ─────────
+const RANKS = [['lv', '⭐ 레벨', x => `Lv.${x}`], ['earn', '💰 번 돈', x => `🪙 ${fmtN(x)}`], ['fish', '🎣 낚시', x => `${fmtN(x)}마리`], ['enh', '🔨 강화', x => `+${fmtN(x)}`]];
+const RK = { k: 'lv', data: {} };
+async function openRank(k = RK.k) {
+  RK.k = k; const R = RANKS.find(r => r[0] === k), d = RK.data[k];
+  const fresh = d && Date.now() - d.got < 30e3;
+  const rows = !d ? '<p class="muted" style="text-align:center;padding:20px 0">순위를 불러오는 중…</p>' : d.error ? `<p class="muted">${esc(d.error)}</p>` : !d.list.length ? '<p class="muted" style="text-align:center;padding:20px 0">아직 기록이 없어요. 첫 1등이 되어 보세요!</p>'
+    : `<ol class="rk-list">${d.list.map((x, i) => `<li class="${x.id === me.uid ? 'mine' : ''}${i < 3 ? ' top' : ''}"><span class="rk-n">${['🥇', '🥈', '🥉'][i] || i + 1}</span><span class="rk-who"><b>${esc(x.nick)}</b><small>Lv.${x.lv} · ${CLASSES[x.cls]?.i || ''} ${CLASSES[x.cls]?.n || ''}${x.title && x.title !== 'new' ? ` · 「${esc(titleName(x.title))}」` : ''}</small></span><span class="rk-v">${R[2](x.v)}</span></li>`).join('')}</ol>`;
+  const mine = d && !d.error ? `<div class="rk-me"><span>내 순위</span><b>${d.me.rank ? `${d.me.rank}위` : '순위 없음'}</b><span class="rk-v">${R[2](d.me.v)}</span></div>` : '';
+  openModal(bsWrap({ id: 'rank', icon: '🏆', name: '랭킹' }, { tag: k === 'earn' ? '2026-11-17부터 번 골드를 모두 더해요' : k === 'enh' ? '장비 칸 6개의 강화 단계를 모두 더해요' : k === 'fish' ? '지금까지 낚은 물고기 수' : '레벨이 같으면 경험치가 많은 순서',
+    tabs: RANKS.map(([id, n]) => [id, n]), tab: k, body: rows, foot: mine }), el => {
+    el.querySelector('.bs-tabs').onclick = e => { const t = e.target.closest('[data-tab]')?.dataset.tab; if (t && t !== RK.k) { openRank(t); sheet.scrollTop = 0; } };
+  }, !!d);
+  if (fresh) return;
+  try { const j = await api(`/api/rank?k=${k}`); RK.data[k] = { ...j, got: Date.now() }; } catch (x) { RK.data[k] = { error: x.message, got: Date.now() }; }
+  if (!modal.hidden && sheet.querySelector('.rk-list, .bs') && RK.k === k && sheet.querySelector('.bs-head h3')?.textContent === '랭킹') openRank(k);
+}
+$('#rankBtn').onclick = () => openRank();
 
 // ───────── 시작 안내 창: 게임을 켤 때마다 (오늘 하루 보지 않기 가능) ─────────
 const guideOn = () => { try { return localStorage.getItem('cbt-guide-skip') !== dayKey(Date.now()); } catch { return true; } };
@@ -5430,7 +5460,7 @@ function showGuide() {
   openModal(`<div class="guide"><h3>🥬 치복 타운에 어서 와요, ${esc(me.name)}님!</h3>
     <h4>🎯 오늘의 목표</h4><ul>${goals}</ul>
     <h4 style="margin-top:12px">🗺️ 이런 것도 있어요</h4><ul class="tips">${[['🏛️ 마을회관', '내 집을 지을 수 있어요. 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩으로 올리면 빌라부터 임대 수입!'], ['🐉 매시 정각', '레드 드래곤 레이드! 30초 안에 참여하면 큰 보상 + 확률로 전용 스킨'], ['🎣 낚시', '아무 물이나 누르면 바로 낚싯대를 던져요. 잡으면 머리 위로 자랑!']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
-    <h4 style="margin-top:12px">👉 오른쪽 버튼</h4><ul class="tips">${[['🏘️ 바로가기', '가고 싶은 곳을 누르면 바로 이동해요'], ['🧺 자동', '벌목·채광·알바·낚시·농사를 알아서 해요 (효율은 낮아요)'], ['📖 가이드', '<b>모든 놀거리 설명은 여기에!</b> 궁금하면 언제든 눌러요']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
+    <h4 style="margin-top:12px">👉 오른쪽 버튼</h4><ul class="tips">${[['🏘️ 바로가기', '가고 싶은 곳을 누르면 바로 이동해요'], ['🧺 자동', '벌목·채광·알바·낚시·농사를 알아서 해요 (효율은 낮아요)'], ['📖 가이드', '<b>모든 놀거리 설명은 여기에!</b> 궁금하면 언제든 눌러요'], ['🏆 랭킹', '레벨 · 번 돈 · 낚시 · 강화 합 순위를 봐요']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
     <h4 style="margin-top:12px">⚙️ 알아 두면 편해요</h4><ul class="tips">${tips.map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul></div>
     <label class="skip guide"><input type="checkbox" id="guideSkip"> 오늘 하루 보지 않기</label>
     <div class="actions"><button class="btn" data-g="book">📖 가이드 보기</button><button class="btn" data-g="news">📋 오늘 의뢰 · 마을 소식</button><button class="btn main" data-g="go">시작하기</button></div>`, el => {

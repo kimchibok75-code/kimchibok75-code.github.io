@@ -170,6 +170,7 @@ export const ICONS = {
   monitor: [R(3.5, 5, 25, 17, DARK, 2.5), R(6, 7.5, 20, 12, SKY, 1.5, 'f'), R(13.5, 22, 5, 4, GREY, 1), R(9, 26, 14, 2.5, DARK, 1.2)],
   paper: [R(4, 6, 24, 21, WHITE, 2.5), R(7, 9, 18, 4, DARK, 1, 'f'), R(7, 15.5, 8, 7.5, SKY, 1.2, 'f'), R(17, 15.5, 8, 1.8, GREY, .8, 'f'), R(17, 18.5, 8, 1.8, GREY, .8, 'f'), R(17, 21.5, 6, 1.8, GREY, .8, 'f')],
   thumb: [P('M11 14 L15.5 5 Q19 4.5 18.5 9 L17.5 13 L25.5 13 Q28.5 13 28 16.5 L26.5 25.5 Q26 28 23 28 L11 28Z', '#ffc9a0'), R(4, 13.5, 6.5, 14.5, BLUE, 1.5)],
+  trophy: [P('M9 4 L23 4 L23 11 Q23 19 16 19.5 Q9 19 9 11Z', GOLD), S('M9 7 Q3.5 7 4.5 12 Q5.5 15.5 10 15.5 M23 7 Q28.5 7 27.5 12 Q26.5 15.5 22 15.5', GOLD2, 2.4), R(14, 19, 4, 4.5, GOLD2, .5), R(9.5, 23, 13, 5, BROWN, 1.5), P('M12.5 7 L14.5 7 L14 14 Q12.5 12 12.5 7Z', '#fff1b0', 'f')],
   gold1: medal(GOLD, GOLD2), gold2: medal('#d6dde5', '#aab4bf'), gold3: medal('#e09a5a', '#b9733a'),
   tube: [P('M11 4 L21 4 L21 22.5 A5 5 0 0 1 11 22.5Z', '#e9f6ff'), P('M11 14.5 L21 14.5 L21 22.5 A5 5 0 0 1 11 22.5Z', '#7be07b', 'f'), R(9, 2.5, 14, 3.6, '#e9f6ff', 1.5), C(14.5, 19, 1.3, '#c8f5c8', 'd'), C(17.5, 22.5, 1, '#c8f5c8', 'd')],
   angel: [...face(), S('M8.5 4.5 Q16 0.5 23.5 4.5 Q16 8.5 8.5 4.5Z', '#ffe27a', 1.8, 'a'), L('M9.5 16 Q11.5 13.5 13.5 16 M18.5 16 Q20.5 13.5 22.5 16', INK, 1.7), L('M11.5 20.5 Q16 24.5 20.5 20.5', INK, 1.7), E(9, 20, 1.8, 1.1, '#ff9aa8', 'd'), E(23, 20, 1.8, 1.1, '#ff9aa8', 'd')],
@@ -199,7 +200,7 @@ export const EMOJI = {
   '⚙️': 'gear', '⚙': 'gear', '✏️': 'pencil', '✏': 'pencil', '🔑': 'key', '🧾': 'receipt', '🔒': 'lock', '🔍': 'search', '🔎': 'search', '📢': 'speaker', '📣': 'speaker', '📅': 'calendar', '📋': 'clipboard', '📊': 'chart',
   '🎁': 'gift', '🎉': 'party', '🎈': 'balloon', '🎰': 'slot', '🎨': 'palette', '👕': 'shirt', '👀': 'eyes', '👥': 'people', '👋': 'wave', '🚶': 'walk', '👷': 'worker', '📦': 'box', '🚚': 'truck',
   '➕': 'plus', '✅': 'check', '🚫': 'ban', '⚠️': 'warn', '⚠': 'warn', '🚨': 'siren', '❗': 'exclaim', '❓': 'question', '⏳': 'hourglass', '⏱️': 'timer', '⏱': 'timer', '💤': 'zzz', '💨': 'wind', '🔄': 'refresh',
-  '↔️': 'swap', '↔': 'swap', '⛶': 'full', '🗗': 'win', '🌙': 'moon', '💥': 'blast', '🌧️': 'rain', '🌧': 'rain', '❄️': 'snow', '❄': 'snow', '⚡': 'bolt', '☄️': 'meteor', '☄': 'meteor', '☀️': 'sun', '☀': 'sun', '📱': 'phone', '💻': 'pc', '💬': 'chat', '🔴': 'live', '📺': 'tv', '📰': 'paper', '👍': 'thumb', '🥇': 'gold1', '🥈': 'gold2', '🥉': 'gold3',
+  '↔️': 'swap', '↔': 'swap', '⛶': 'full', '🗗': 'win', '🌙': 'moon', '💥': 'blast', '🌧️': 'rain', '🌧': 'rain', '❄️': 'snow', '❄': 'snow', '⚡': 'bolt', '☄️': 'meteor', '☄': 'meteor', '☀️': 'sun', '☀': 'sun', '📱': 'phone', '💻': 'pc', '💬': 'chat', '🔴': 'live', '📺': 'tv', '📰': 'paper', '👍': 'thumb', '🏆': 'trophy', '🥇': 'gold1', '🥈': 'gold2', '🥉': 'gold3',
   '🧪': 'tube', '😇': 'angel', '🌈': 'rainbow', '😵': 'dizzy', '🐱': 'cat', '🙈': 'hide', '😀': 'smile', '😂': 'laugh', '😑': 'meh', '😉': 'wink', '😢': 'sad',
 };
 

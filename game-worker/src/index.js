@@ -69,6 +69,7 @@ async function route(req, env, url) {
   if (m === 'POST' && p === '/api/character') return saveLook(req, env, s.user);
   if (m === 'POST' && p === '/api/move') return saveMove(req, env, s.user);
   if (m === 'GET' && p === '/api/fish/rank') return fishRank(env, s.user);
+  if (m === 'GET' && p === '/api/rank') return rankList(env, s.user, url.searchParams.get('k'));
   if (m === 'GET' && p === '/api/houses') return json({ houses: (await env.DB.prepare('SELECT h.user_id AS id, u.nick, h.x, h.y, h.roof, h.lv FROM houses h JOIN users u ON u.id = h.user_id WHERE u.banned = 0').all()).results });
   if (m === 'GET' && p === '/api/news') return json(await news(env));
   if (m === 'GET' && p === '/api/raid') { const j = await (await raidDO(env).fetch('https://raid/state')).json(); return json({ ...j, now: now() }); }
@@ -260,7 +261,7 @@ async function play(env, user, fn) {
   for (let tries = 0; tries < 4; tries++) {
     const r = await env.DB.prepare('SELECT * FROM characters WHERE user_id = ?').bind(user.id).first();
     const W = await world(env), c = toChar(r), at = now(), out = {}; c._adm = !!user.is_admin; c.gfx = worldFx(W, at); c._w = W;
-    const lv0 = c.lv; dailyState(c, at); npcState(c, at);
+    const lv0 = c.lv, g0 = c.gold; c._spent = 0; dailyState(c, at); npcState(c, at);
     if (!c.hunt) {   // 마을: 체력이 1초에 2%씩 참
       const max = derive(c).maxHp;
       c.hp = Math.min(max, Math.round(c.hp + Math.max(0, (at - (c.hpAt || at)) / 1000) * max * HUNT.townRegen)); c.hpAt = at;
@@ -270,6 +271,7 @@ async function play(env, user, fn) {
     if (c.life.auto?.on && (c.hunt || c.jobAt)) c.life.auto.on = 0;   // 사냥·알바를 시작하면 자동 생활은 꺼짐
     const dq = checkDaily(c, at); if (dq.length) out.daily = dq;   // 매일 의뢰 · 도장
     const got = checkTitles(c); if (got.length) out.newTitles = got;   // 새로 깬 칭호
+    { const e = c.gold - g0 + c._spent; if (e > 0 && !c._noEarn) c.life.earn = (c.life.earn || 0) + Math.round(e); }   // 번 돈 (랭킹): 이번에 늘어난 골드 + 쓴 골드
     const w = await env.DB.prepare(`UPDATE characters SET title = ?, x = ?, y = ?, lv = ?, exp = ?, gold = ?, s_str = ?, s_dex = ?, s_int = ?, s_luk = ?, points = ?, hp = ?, hp_at = ?,
         equip = ?, bag = ?, hats = ?, hat = ?, eyes = ?, pots = ?, pot_at = ?, hunt = ?, bonus_day = ?, job_at = ?, cls = ?, enh = ?, presets = ?, preset = ?, gacha = ?, life = ?, ver = ver + 1, updated_at = ? WHERE user_id = ? AND ver = ?`)
       .bind(c.title, c.x, c.y, c.lv, c.exp, c.gold, c.str, c.dex, c.int, c.luk, c.points, c.hp, c.hpAt, JSON.stringify(c.equip), JSON.stringify(c.bag), JSON.stringify(c.hats), c.hat, c.eyes,
@@ -292,7 +294,7 @@ function dailyBonus(c, at) {
   c.bonusDay = day; const g = c.lv * 20; c.gold += g; cntAdd(c, 'days');
   return { bonus: g };
 }
-const spend = (c, n) => { if (!Number.isFinite(n) || n < 0) fail(400, '잘못된 요청이에요'); if (c.gold < n) fail(400, '골드가 부족해요'); c.gold -= n; };
+const spend = (c, n) => { if (!Number.isFinite(n) || n < 0) fail(400, '잘못된 요청이에요'); if (c.gold < n) fail(400, '골드가 부족해요'); c.gold -= n; c._spent = (c._spent || 0) + n; };
 const own = (o, k) => typeof k === 'string' && Object.hasOwn(o, k);   // "__proto__" 같은 이름으로 속이는 것 막기
 const findBag = (c, id) => { const i = c.bag.findIndex(it => it.id === String(id)); if (i < 0) fail(400, '이미 고른 장비예요'); return i; };
 const townOnly = c => { if (c.hunt) fail(400, '사냥 중에는 할 수 없어요. 마을로 돌아온 뒤에 해 주세요'); };
@@ -497,7 +499,7 @@ const GAME = {
     spend(c, p[1]); c.life.fish.pack = (c.life.fish.pack || 0) + p[0];
     return { log: ['fish-pack', `${p[0]}개 -${p[1]}`] };
   },
-  // 자동 낚시 한 번: 미끼 1개를 씀. 낚을 확률은 손 낚시보다 조금 낮음. 쿨타임은 손 낚시와 같음 (10초)
+  // 자동 낚시 한 번: 미끼 1개를 씀. 낚을 확률은 손 낚시보다 조금 낮음. 쿨타임은 손 낚시와 같음 (2초, 2026-11-17)
   '/api/fish/auto'(c, b, at, out, env, user) { return fishOnce(c, b, at, env, user, true); },
   // ───── 할 이유 (기획서 4-8) ─────
   // 공동 건설에 기부: 목재·석재·골드. 모자라는 만큼만 받음. 다 모이면 다음 건물로
@@ -807,6 +809,28 @@ async function fishOnce(c, b, at, env, user, auto) {
       .bind(price, day, dayN, price, info, price, fish.len, info, fish.len, user.id).run(); } };
 }
 
+// ───────── 랭킹 (2026-11-17): 레벨 · 번 돈 · 낚시 · 강화 합. 상위 50명 + 내 순위. 1분 동안 기억 ─────────
+const ENH_SUM = ['sword', 'bow', 'staff', 'hat', 'armor', 'shoes'].map(k => `COALESCE(json_extract(c.enh, '$.${k}'), 0)`).join(' + ');
+const RANK = {
+  lv: { v: 'c.lv', t: 'c.exp' },
+  earn: { v: "COALESCE(json_extract(c.life, '$.earn'), 0)", t: 'c.lv' },
+  fish: { v: 'COALESCE(f.count, 0)', t: 'COALESCE(f.gold, 0)' },
+  enh: { v: `(${ENH_SUM})`, t: 'c.lv' },
+};
+const RANK_MEM = {};
+async function rankList(env, user, k) {
+  if (!own(RANK, k)) fail(400, '잘못된 요청이에요');
+  const R = RANK[k], from = 'FROM characters c JOIN users u ON u.id = c.user_id LEFT JOIN fishing f ON f.user_id = c.user_id WHERE u.banned = 0';
+  let M = RANK_MEM[k];
+  if (!M || now() - M.at > 60e3) {
+    const r = await env.DB.prepare(`SELECT u.id, u.nick, c.lv, c.cls, c.title, ${R.v} AS v, ${R.t} AS t ${from} AND ${R.v} > 0 ORDER BY v DESC, t DESC, u.id LIMIT 50`).all();
+    M = RANK_MEM[k] = { at: now(), list: r.results.map(x => ({ id: x.id, nick: x.nick, lv: x.lv, cls: x.cls, title: x.title, v: x.v })) };
+  }
+  const me = await env.DB.prepare(`SELECT ${R.v} AS v, ${R.t} AS t ${from} AND u.id = ?`).bind(user.id).first();
+  const rank = me && me.v > 0 ? (await env.DB.prepare(`SELECT COUNT(*) AS n ${from} AND (${R.v} > ? OR (${R.v} = ? AND ${R.t} > ?))`).bind(me.v, me.v, me.t).first()).n + 1 : 0;
+  return json({ k, list: M.list, me: { v: me?.v || 0, rank }, at: M.at });
+}
+
 async function fishRank(env, user) {
   const q = (order, where) => env.DB.prepare(`SELECT u.nick, f.count, f.best_price_fish, f.best_len_fish FROM fishing f JOIN users u ON u.id = f.user_id WHERE ${where} AND u.banned = 0 ORDER BY ${order} DESC LIMIT 10`);
   const [price, len, count, mine] = await env.DB.batch([q('f.best_price', 'f.best_price > 0'), q('f.best_len', 'f.best_len > 0'), q('f.count', 'f.count > 0'),
@@ -848,7 +872,7 @@ async function report(req, env, user) {
 const CHEAT_MAX = 1e9;
 function cheat(c, k, b, at, env, user) {
   const n = Math.max(-CHEAT_MAX, Math.min(CHEAT_MAX, Math.round(Number(b.n) || 0))), L = c.life, add = (o, key) => { o[key] = Math.max(0, (o[key] || 0) + n); };
-  if (k === 'gold') { c.gold = Math.max(0, c.gold + n); return { msg: `골드 ${n >= 0 ? '+' : ''}${n.toLocaleString()}` }; }
+  if (k === 'gold') { c._noEarn = true; c.gold = Math.max(0, c.gold + n); return { msg: `골드 ${n >= 0 ? '+' : ''}${n.toLocaleString()}` }; }
   if (k === 'exp') { c.exp = Math.max(0, c.exp + n); return { msg: `경험치 +${n.toLocaleString()}` }; }
   if (k === 'lv') {
     const lv = Math.max(1, Math.min(LV_CAP, n || 1)); c.lv = lv; c.exp = 0;
