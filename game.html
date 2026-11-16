@@ -1247,7 +1247,8 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 const GCOL = { [G]: ['#93cf74', '#8bc96c'], [PATH]: ['#ead6a6', '#e4cf9b'], [WATER]: ['#5db5dc', '#57aed6'], [STONE]: ['#ddd7ca', '#d4cdbf'], [SOIL]: ['#9b6b43', '#916340'], [DOCK]: ['#bb8752', '#b07c49'], [SAND]: ['#f0e2b6', '#eadaa9'], [GRAVEL]: ['#c9bfa9', '#c1b7a0'], [FOREST]: ['#72b05e', '#6aa857'] };
 async function paintGround(step) {
   const cv = document.createElement('canvas'); cv.width = Math.round(MW * T * GK); cv.height = Math.round(MH * T * GK);
-  const g = cv.getContext('2d'); if (!g) { cv.width = cv.height = 0; throw new Error('캔버스를 못 만듦'); }
+  const SOFT = PHONE ? { willReadFrequently: true } : undefined;   // 휴대폰은 GPU 말고 보통 캔버스 (GPU가 멈추며 화면이 번쩍이던 문제)
+  const g = cv.getContext('2d', SOFT); if (!g) { cv.width = cv.height = 0; throw new Error('캔버스를 못 만듦'); }
   const WP = MW * T, HP = MH * T; seed = 11; g.scale(GK, GK);
   const r = (a, b) => a + rnd() * (b - a), pick = l => l[Math.floor(rnd() * l.length)];
   // 바닥 모양: soft(종류) 값을 4px 격자로 재고, 경계선을 선(벡터)으로 따서 칠함 → 확대해도 가장자리가 또렷함
@@ -1278,7 +1279,7 @@ async function paintGround(step) {
   let LY = null;
   const inside = (P, draw) => {
     if (!LY) { LY = document.createElement('canvas'); LY.width = cv.width; LY.height = cv.height; }
-    const q = LY.getContext('2d'); q.setTransform(1, 0, 0, 1, 0, 0); q.globalCompositeOperation = 'source-over'; q.globalAlpha = 1; q.clearRect(0, 0, LY.width, LY.height);
+    const q = LY.getContext('2d', SOFT); q.setTransform(1, 0, 0, 1, 0, 0); q.globalCompositeOperation = 'source-over'; q.globalAlpha = 1; q.clearRect(0, 0, LY.width, LY.height);
     q.setTransform(GK, 0, 0, GK, 0, 0); q.lineCap = 'round'; draw(q);
     q.globalAlpha = 1; q.globalCompositeOperation = 'destination-in'; q.fillStyle = '#000'; q.fill(P); q.globalCompositeOperation = 'source-over';
     g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.drawImage(LY, 0, 0); g.restore();
@@ -1292,6 +1293,7 @@ async function paintGround(step) {
   for (let i = 0; i < 900; i++) { g.globalAlpha = r(.15, .35); g.fillStyle = pick(['#a2d982', '#84c266', '#97d079', '#8cc86d', '#aadd8b']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(14, 46), r(8, 24), r(0, 3), 0, 7); g.fill(); }
   g.globalAlpha = 1; g.lineCap = 'round';
   for (let i = 0; i < 9000; i++) {   // 풀잎 (짧은 획 두세 개)
+    if (i && i % 3000 === 0) await new Promise(res => setTimeout(res));
     const x = r(0, WP), y = r(0, HP), dk = rnd() < .7; g.strokeStyle = dk ? 'rgba(52,120,48,.32)' : 'rgba(225,250,200,.35)'; g.lineWidth = r(1, 1.6);
     g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x - 1, y - 3, x - 2.5, y - r(4, 7)); g.moveTo(x + 2, y); g.quadraticCurveTo(x + 2.5, y - 3, x + 3.5, y - r(3, 6)); g.stroke();
   }
@@ -1384,7 +1386,9 @@ async function paintGround(step) {
 const groundReady = (async () => {
   for (const k of [GK, 1, .75, .5, .4]) {
     if (k > GK) continue; GK = k;
-    try { ground = await paintGround(n => bootStep(8 + n * 7, `마을 그리는 중… (${n}/10)`)); return; } catch (x) { console.warn('바닥 다시 그리기', k, x.message); }
+    try { const cv = await paintGround(n => bootStep(8 + n * 7, `마을 그리는 중… (${n}/10)`)); ground = cv;
+      if (PHONE && window.createImageBitmap) try { ground = await createImageBitmap(cv); cv.width = cv.height = 0; } catch { ground = cv; }
+      return; } catch (x) { console.warn('바닥 다시 그리기', k, x.message); }
   }
 })();
 
@@ -1982,7 +1986,7 @@ function paintHunt(f) {
   if (huntGround[f.id]) return huntGround[f.id];
   if (innerWidth <= 760) for (const k in huntGround) delete huntGround[k];
   const A = HUNT_ART[f.id] || HUNT_ART.plain, K = PHONE ? SPR_K : 2, WP = HW * T, HP = HH * T;
-  const cvs = document.createElement('canvas'); cvs.width = WP * K; cvs.height = HP * K; const g = cvs.getContext('2d'); g.scale(K, K); seed = 31 + f.tier * 97;
+  const cvs = document.createElement('canvas'); cvs.width = WP * K; cvs.height = HP * K; const g = cvs.getContext('2d', PHONE ? { willReadFrequently: true } : undefined); g.scale(K, K); seed = 31 + f.tier * 97;
   const r = (a, b) => a + rnd() * (b - a), pick = l => l[Math.floor(rnd() * l.length)];
   const inner = (x, y) => x > 8 && x < WP - 8 && y > 8 && y < HP - 8;
   g.fillStyle = A.base; g.fillRect(0, 0, WP, HP);
@@ -2274,7 +2278,7 @@ function exitRaid() {
 let raidGround = null;
 function paintRaid() {
   if (raidGround) return raidGround;
-  const K = PHONE ? SPR_K : 2, WP = RW(), HP = RH(), c = document.createElement('canvas'); c.width = WP * K; c.height = HP * K; const g = c.getContext('2d'); g.scale(K, K);
+  const K = PHONE ? SPR_K : 2, WP = RW(), HP = RH(), c = document.createElement('canvas'); c.width = WP * K; c.height = HP * K; const g = c.getContext('2d', PHONE ? { willReadFrequently: true } : undefined); g.scale(K, K);
   let sd = 77; const r = () => ((sd = (sd * 16807) % 2147483647) - 1) / 2147483646;
   g.fillStyle = '#4a3a3a'; g.fillRect(0, 0, WP, HP);
   for (let i = 0; i < 140; i++) { g.globalAlpha = .25 + r() * .3; g.fillStyle = ['#584444', '#3e3030', '#5e4a42', '#463838'][i % 4]; g.beginPath(); g.ellipse(r() * WP, r() * HP, 20 + r() * 60, 10 + r() * 30, r() * 3, 0, 7); g.fill(); }
