@@ -88,7 +88,8 @@ export class Raid extends DurableObject {
       if (m.dead) P.dead = true;
       if (t >= R.start && !P.dead && Number.isFinite(m.d) && m.d > 0) {
         const sec = Math.min(3, Math.max(.2, (t - (P.at || R.start)) / 1000));
-        const d = Math.min(m.d, P.dps * 2.5 * sec); P.dmg += d; R.hp -= d;
+        // 스킬은 한 번에 크게 들어가니까, 안 쓴 한도를 8초어치까지 모아 둠
+        const allow = P.dps * 2.5 * sec + (P.spare || 0), d = Math.min(m.d, allow); P.spare = Math.min(P.dps * 8, allow - d); P.dmg += d; R.hp -= d;
       }
       P.at = t;
     }

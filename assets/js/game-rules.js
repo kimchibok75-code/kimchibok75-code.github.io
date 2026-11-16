@@ -634,7 +634,7 @@ export const RAID = {
   drain: 120,                        // 아무도 안 때려도 120초면 보스 체력이 0 (무조건 잡힘)
   hpSec: 100,                        // 보스 체력 = 참가자 초당 피해 합 × 100초 → 다 같이 열심히 치면 약 55초
   cap: 60,                           // 한 번에 최대 인원
-  drop: .12, dropDead: .06,          // 전용 스킨이 나올 확률 (끝까지 버팀 / 쓰러짐)
+  drop: 2 / 3, dropDead: 2 / 3,      // 전용 스킨이 나올 확률 (끝까지 버팀 / 쓰러짐): 3번에 2번
   deadMul: .7,                       // 쓰러진 사람 보상 배율
   W: 30, H: 20,                      // 레이드 맵 크기 (칸)
 };
@@ -644,7 +644,13 @@ export const isHourlyRaid = start => (start - RAID.recruit) % RAID.every === 0;
 // 보상: 사냥 약 25분어치 골드 + 지금 레벨의 30% 경험치
 export const raidReward = lv => ({ gold: Math.round((1500 * lv + 8000) * .4), exp: Math.round(needExp(lv) * .3) });
 // 초당 피해 (서버가 화면이 보낸 피해를 이 값으로 막음)
-export const raidDps = D => Math.max(1, Math.round(D.hit / D.gap * (1 + Math.min(70, D.crit) / 100 * ((D.critM || 1.5) - 1)) * (1 + (D.bossP || 0) / 100) * (1 + (D.sp || 0) / 100 * ((D.spMul || 2) - 1))));
+// 스킬도 자동으로 쓰니까 스킬 평균 피해(공격 스킬 · 독 · 공격 버프)까지 더함
+export const raidDps = D => {
+  const cm = (1 + Math.min(70, D.crit) / 100 * ((D.critM || 1.5) - 1)) * (1 + (D.bossP || 0) / 100);
+  let sk = 0, bm = 1;
+  for (const { s, p } of D.skills || []) { if (s.k === 'hit') sk += D.hit * (p.m * p.n + p.dot) / p.cd; else if (s.k === 'buff') bm += p.atk / 100 * Math.min(1, p.dur / p.cd); }
+  return Math.max(1, Math.round((D.hit / D.gap * (1 + (D.sp || 0) / 100 * ((D.spMul || 2) - 1)) * bm + sk) * cm));
+};
 // 보스 공격 순서 (시작 시각으로 정해짐 → 모두의 화면이 같음). at = 시작 뒤 초, k = 종류, x·y = 칸 좌표, warn = 미리 보여 주는 초
 export function raidPattern(start) {
   let sd = (start / 1000) % 2147483647 | 0; const rnd = () => ((sd = (sd * 16807) % 2147483647) - 1) / 2147483646;

@@ -318,7 +318,12 @@
   - 레이드 전용(`raid: 'rdragon'`)은 가게에서 못 삼. `raidSet(set)` = 한 세트 6부위(모자·눈·의상·검·활·지팡이)
 - **매시 정각 레이드** (레드 드래곤): Durable Object `Raid` (`game-worker/src/raid.js`, 인스턴스 하나 'main', wrangler 마이그레이션 v3)
   - 정각부터 30초 모집 → 최대 150초 전투. 보스 체력 = 참가자 공격력 합 × 100초라서 늘 잡힘. 숫자는 game-rules.js `RAID, RAID_BOSS, raidPattern, raidReward`
-  - 화면 `raidAsk/enterRaid/updateRaid/raidClaim`. 새로고침하면 localStorage `cbt-raid`로 다시 들어감. 보상은 `/api/raid/claim` (`life.raidGot`으로 한 번만)
+  - 전용 스킨 확률 `RAID.drop`·`dropDead` = 2/3 (3번에 2번, 쓰러져도 같음)
+  - **스킬도 자동**: `raidSkillTick`·`raidSkill`(사냥터 `castSkill`과 같은 규칙, 회복은 체력 70% 아래일 때만), 보호막 `raidBlock`, 표시 `raidAura`, 레이드 창의 `#raidSk`(=`renderHbSk(D, el, cd)`)
+  - 서버 피해 한도: `raidDps`에 스킬 평균 피해 포함 + raid.js가 안 쓴 한도를 8초어치까지 모아 둠(`P.spare`) → 메테오처럼 한 번에 크게 들어가도 안 잘림
+  - 그림(2026-11-16 다듬음): `paintRaid` = 바위벽·용암 폭포·용암 호수·보물 더미·제각각 판석·빛나는 소환진·돌기둥·뼈. 움직이는 것 `raidAmbient`(용암 빛·거품·불티 `RD.emb`). 드래곤 `drawDragon` = 막 3겹 날개·뿔·이빨·발톱·꼬리 가시, 불 뿜기 전 목이 달아오름, 콧김
+  - 시험: 임시로 `window.__raid = () => { enterRaid(srvNow() + 1500); RD.tries = 99; RD.ws.onmessage = null; RD.ws.close(); RD.max = RD.hp = 1e9; }` (DEBUG-REMOVE)
+- 화면 `raidAsk/enterRaid/updateRaid/raidClaim`. 새로고침하면 localStorage `cbt-raid`로 다시 들어감. 보상은 `/api/raid/claim` (`life.raidGot`으로 한 번만)
 - **관리자 버튼**: 오른쪽 세로 버튼 맨 위 🛡️ (`#admBtn`, 관리자만 보임) → 치트 탭 맨 위 '레이드 지금 열기' (`/api/admin/raid`)
 - **자동 생활** 🧺: `life.auto`, `autoSettle`(1시간에 목재 36·석재 24·골드·코인, 최대 8시간). 사냥·알바를 시작하면 꺼짐. 화면 `autoPace`는 보여 주기용
 - **집 단계** (마을회관): `HOUSE_TIERS` 일반 집 → 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩. 빌라부터 임대 수입(1시간 5천/1.2만/3만, 최대 `HOUSE_INC_CAP` 12시간)
