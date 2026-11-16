@@ -30,7 +30,7 @@ export function initModEdit(x) {
   const { S, M, $, esc, toast, renderMods, renderModFilters } = x;
   const page = $('.page-top');
   page.insertAdjacentHTML('beforeend', `
-    <div class="ed-entry"><button class="btn btn-ghost btn-sm" id="edOpen" hidden>✏️ 추천 순서 편집</button></div>
+    <div class="ed-entry"><button class="ed-faint" id="edOpen">✏️ 추천 순서 편집</button></div>
     <dialog class="modal ed-login" id="edLogin"><form method="dialog" class="modal-box glass">
       <h3>관리자 로그인</h3>
       <p class="muted">치복 타운과 같은 닉네임·비밀번호예요</p>
@@ -43,17 +43,18 @@ export function initModEdit(x) {
   const bar = document.createElement('div');
   bar.className = 'ed-bar glass'; bar.hidden = true;
   bar.innerHTML = `<span class="ed-what"><b>순서 편집 중</b> <span class="muted" id="edCat"></span></span>
-    <span class="ed-tip muted">⠿ 손잡이를 끌어서 옮겨요 · 소분류 묶음을 옮길 땐 '소분류만 보기'</span>
+    <span class="ed-tip muted">⠿ 손잡이를 끌어서 옮겨요 · 다른 소분류로도 옮길 수 있어요 · 소분류 묶음은 '소분류만 보기'에서</span>
     <span class="ed-acts"><button class="btn btn-ghost btn-sm" id="edFold" aria-pressed="false">소분류만 보기</button><button class="btn btn-ghost btn-sm" id="edCancel">취소</button><button class="btn btn-accent btn-sm" id="edSave">저장</button></span>`;
   $('#modCats').before(bar);
 
-  const E = { on: false, dirty: false, sorts: [] };
+  const E = { on: false, dirty: false, sorts: [], admin: false };
   M.editor = null;
 
   async function check() {
-    if (!tok.get()) return false;
-    try { const me = await api('/api/whoami'); $('#edOpen').hidden = !me.admin; return me.admin; }
-    catch { $('#edOpen').hidden = true; return false; }
+    // 버튼은 누구에게나 아주 희미하게 보임. 누르면 관리자는 바로 편집, 아니면 로그인 창 (저장은 서버가 관리자만 받음)
+    if (!tok.get()) return (E.admin = false);
+    try { const me = await api('/api/whoami'); return (E.admin = !!me.admin); }
+    catch { return (E.admin = false); }
   }
   function login() {
     const d = $('#edLogin'); $('#edErr').textContent = ''; d.showModal();
@@ -86,17 +87,20 @@ export function initModEdit(x) {
     $('#edCat').textContent = `· ${cat?.label || M.cat}`;
     const thumb = m => { const p = m.steam?.preview; return p ? `<img src="${esc(`${p}${p.includes('?') ? '&' : '?'}imw=96&imh=54&ima=fit&impolicy=Letterbox`)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''; };
     $('#modGrid').innerHTML = `<div class="ed-list" id="edList">${groups().map(g => `
-      <div class="ed-sec">
-        <div class="ed-h"><span class="ed-grip" title="끌어서 소분류 옮기기">⠿</span><b>${esc(g.s)}</b><small class="muted">${g.items.length}개</small></div>
+      <div class="ed-sec" data-s="${esc(g.s)}">
+        <div class="ed-h"><span class="ed-grip" title="끌어서 소분류 옮기기">⠿</span><b>${esc(g.s)}</b><small class="muted ed-n">${g.items.length}개</small></div>
         <div class="ed-items">${g.items.map(m => `
           <div class="ed-row" data-id="${esc(m.id)}"><span class="ed-grip" title="끌어서 옮기기">⠿</span><span class="ed-th">${thumb(m)}</span><span class="ed-name">${esc(m.name)}</span></div>`).join('')}
         </div>
       </div>`).join('')}</div>`;
     $('#modMore').hidden = true;
-    const mark = () => { E.dirty = true; $('#edSave').classList.add('pulse'); };
-    const opt = { handle: '.ed-grip', animation: 160, forceFallback: true, fallbackTolerance: 3, fallbackClass: 'ed-drag', ghostClass: 'ed-ghost', chosenClass: 'ed-chosen', onEnd: e => { if (e.oldIndex !== e.newIndex) mark(); } };
+    const mark = () => {
+      E.dirty = true; $('#edSave').classList.add('pulse');
+      document.querySelectorAll('#edList .ed-sec').forEach(s => { s.querySelector('.ed-n').textContent = `${s.querySelectorAll('.ed-row').length}개`; });
+    };
+    const opt = { handle: '.ed-grip', animation: 160, forceFallback: true, fallbackTolerance: 3, fallbackClass: 'ed-drag', ghostClass: 'ed-ghost', chosenClass: 'ed-chosen', onEnd: e => { if (e.oldIndex !== e.newIndex || e.from !== e.to) mark(); } };
     E.sorts.push(new window.Sortable($('#edList'), { ...opt, draggable: '.ed-sec', handle: '.ed-h .ed-grip' }));
-    document.querySelectorAll('#edList .ed-items').forEach((el, i) => E.sorts.push(new window.Sortable(el, { ...opt, draggable: '.ed-row', group: `sec${i}` })));
+    document.querySelectorAll('#edList .ed-items').forEach(el => E.sorts.push(new window.Sortable(el, { ...opt, draggable: '.ed-row', group: 'mods' })));   // 같은 대분류 안에서는 다른 소분류로도 옮길 수 있음
   }
 
   async function start() {
@@ -106,30 +110,32 @@ export function initModEdit(x) {
     $('#modSearch').value = ''; $('#modSort').value = 'order';
     document.querySelectorAll('#modVersion button').forEach(b => b.classList.toggle('on', !b.dataset.v));
     E.on = true; E.dirty = false; M.editor = E;
-    page.classList.add('editing'); bar.hidden = false; $('#edOpen').hidden = true;
+    page.classList.add('editing'); bar.hidden = false;
     renderModFilters(); render();
     bar.scrollIntoView({ block: 'nearest' });
   }
   function stop() {
     E.sorts.forEach(s => s.destroy()); E.sorts = [];
     E.on = false; E.dirty = false; M.editor = null;
-    page.classList.remove('editing'); bar.hidden = true; $('#edOpen').hidden = false; $('#edSave').classList.remove('pulse');
+    page.classList.remove('editing'); bar.hidden = true; $('#edSave').classList.remove('pulse');
     renderModFilters(); renderMods();
   }
   E.render = render;
   E.leave = () => !E.dirty || confirm('저장하지 않은 순서가 있어요. 버리고 넘어갈까요?');
 
-  $('#edOpen').onclick = start;
+  $('#edOpen').onclick = async () => { if (E.admin || (await check())) start(); else login(); };
   $('#edCancel').onclick = () => { if (E.leave()) stop(); };
   $('#edFold').onclick = () => { const on = $('#edList')?.classList.toggle('folded'); $('#edFold').setAttribute('aria-pressed', !!on); $('#edFold').textContent = on ? '모두 펼치기' : '소분류만 보기'; };
   $('#edSave').onclick = async () => {
     if (!E.dirty) { stop(); return; }
-    const ids = [...document.querySelectorAll('#edList .ed-row')].map(r => r.dataset.id);
+    // [[소분류, [모드 id…]], …] — 비어 버린 소분류는 뺌
+    const groups = [...document.querySelectorAll('#edList .ed-sec')].map(s => [s.dataset.s, [...s.querySelectorAll('.ed-row')].map(r => r.dataset.id)]).filter(g => g[1].length);
     const btn = $('#edSave'); btn.disabled = true; btn.textContent = '저장 중…';
     try {
-      const j = await api('/api/admin/mods-order', { cat: M.cat, ids });
-      const pos = new Map(ids.map((id, i) => [id, i]));
-      for (const m of S.mods.items) if (m.category === M.cat && pos.has(m.id)) m.order = pos.get(m.id);
+      await api('/api/admin/mods-order', { cat: M.cat, groups });
+      const at = new Map(); let i = 0;
+      for (const [s, ids] of groups) for (const id of ids) at.set(id, { s, o: i++ });
+      for (const m of S.mods.items) if (m.category === M.cat && at.has(m.id)) { m.section = at.get(m.id).s; m.order = at.get(m.id).o; }
       stop();
       toast('저장했어요. 다른 사람에게도 바로 보여요');
     } catch (e) {

@@ -646,3 +646,7 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
 .ed-list.folded .ed-sec { cursor: default; }
 #edFold[aria-pressed="true"] { border-color: rgba(255, 122, 26, .5); color: var(--accent); }
 .ed-drag { opacity: .9 !important; box-shadow: 0 12px 30px rgba(0, 0, 0, .25); }
+/* 추천 순서 편집 버튼: 누구에게나 아주 희미하게 */
+.ed-faint { background: none; border: 0; padding: 4px 6px; font: inherit; font-size: 13px; color: var(--muted); opacity: .22; cursor: pointer; transition: opacity .2s; }
+.ed-faint:hover, .ed-faint:focus-visible { opacity: .7; }
+.ed-items { min-height: 24px; }

@@ -390,9 +390,14 @@ function applyModOrder(o) {
   let changed = false;
   for (const [cat, ids] of Object.entries(o?.cats || {})) {
     if (!Array.isArray(ids)) continue;
-    const pos = new Map(ids.map((id, i) => [id, i]));
+    const groups = Array.isArray(ids[0]) ? ids : [[null, ids]];   // [[소분류, [id…]], …] 또는 예전 형식 [id…]
+    const pos = new Map(), sec = new Map(); let n = 0;
+    for (const [s, list] of groups) for (const id of list || []) { pos.set(id, n++); if (s) sec.set(id, s); }
     const key = m => (pos.has(m.id) ? pos.get(m.id) : 1e6 + m.order);
-    S.mods.items.filter(m => m.category === cat).sort((a, b) => key(a) - key(b)).forEach((m, i) => { if (m.order !== i) { m.order = i; changed = true; } });
+    S.mods.items.filter(m => m.category === cat).sort((a, b) => key(a) - key(b)).forEach((m, i) => {
+      if (m.order !== i) { m.order = i; changed = true; }
+      if (sec.has(m.id) && m.section !== sec.get(m.id)) { m.section = sec.get(m.id); changed = true; }
+    });
   }
   return changed;
 }
@@ -413,7 +418,7 @@ async function initMods() {
   const early = await Promise.race([orderP, new Promise(r => setTimeout(() => r(undefined), 800))]);
   if (early) applyModOrder(early);
   renderModFilters(); renderMods();
-  if (early === undefined) orderP.then(o => { if (o && applyModOrder(o) && !M.editor) renderMods(); });
+  if (early === undefined) orderP.then(o => { if (o && applyModOrder(o) && !M.editor) { renderModFilters(); renderMods(); } });
   // 추천 순서 편집 (김치복 관리자 계정만, 따로 불러옴)
   import(new URL('./mod-edit.js' + new URL(import.meta.url).search, import.meta.url).href)
     .then(m => m.initModEdit({ S, M, $, esc, toast, renderMods, renderModFilters })).catch(e => console.warn('편집 기능 불러오기 실패', e));

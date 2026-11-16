@@ -171,9 +171,11 @@ async function updateMods() {
     const o = await get('https://kimchibok-game.kimchibok.workers.dev/api/mods-order', { type: 'json' });
     for (const [cat, ids] of Object.entries(o?.cats || {})) {
       if (!Array.isArray(ids)) continue;
-      const pos = new Map(ids.map((id, i) => [id, i]));
+      const groups = Array.isArray(ids[0]) ? ids : [[null, ids]];   // [[소분류, [id…]], …] 또는 예전 형식 [id…]
+      const pos = new Map(), sec = new Map(); let n = 0;
+      for (const [s, list] of groups) for (const id of list || []) { pos.set(id, n++); if (s) sec.set(id, s); }
       const key = m => (pos.has(m.id) ? pos.get(m.id) : 1e6 + m.order);
-      db.items.filter(m => m.category === cat).sort((a, b) => key(a) - key(b)).forEach((m, i) => { m.order = i; });
+      db.items.filter(m => m.category === cat).sort((a, b) => key(a) - key(b)).forEach((m, i) => { m.order = i; if (sec.has(m.id)) m.section = sec.get(m.id); });
     }
   } catch (e) { console.warn('[mods] 사이트에서 바꾼 순서 못 읽음:', e.message); }
   const details = await steamDetails(db.items.map(m => m.steamId));
