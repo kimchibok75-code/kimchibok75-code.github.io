@@ -372,7 +372,7 @@ export const TITLES = [
   tt('dq10', '의뢰를 해결하는', '마을', 'daily', 10, { goldP: 1 }, '매일 의뢰 10개'), tt('dq100', '마을의 해결사인', '마을', 'daily', 100, { goldP: 2, expP: 2 }, '매일 의뢰 100개'),
   tt('wb1', '도장을 다 모은', '마을', 'weekBox', 1, { expP: 1 }, '한 주에 도장 5개'), tt('wb8', '두 달을 성실하게 보낸', '마을', 'weekBox', 8, { expP: 2, hpP: 2 }, '도장 상자 8번'),
   tt('give1', '마을을 함께 짓는', '마을', 'give', 1, { hpP: 1 }, '공동 건설에 기부'), tt('give50', '마을의 기둥인', '마을', 'give', 50, { goldP: 2, hpP: 2 }, '공동 건설 기부 50번'),
-  tt('live1', '방송을 함께 본', '마을', 'live', 1, { expP: 1 }, '방송 중에 출석'), tt('live10', '방송의 단골인', '마을', 'live', 10, { expP: 2, goldP: 2 }, '방송 출석 10번'),
+  tt('live1', '방송을 함께 본', '마을', 'live', 1, { expP: 1 }, '방송 중에 마을에 들름'), tt('live10', '방송의 단골인', '마을', 'live', 10, { expP: 2, goldP: 2 }, '방송 중에 10일 들름'),
   tt('day7', '일주일을 함께한', '마을', 'days', 7, { expP: 1 }, '7일 접속'), tt('day30', '한 달을 함께한', '마을', 'days', 30, { expP: 3 }, '30일 접속'),
   tt('job10', '카페에서 일하는', '마을', 'job', 10, { goldP: 1 }, '카페 알바 10번'), tt('job100', '바리스타가 된', '마을', 'job', 100, { goldP: 2, spdP: 2 }, '카페 알바 100번'),
   tt('chief', '마을을 지키는', '마을', 'adm', 1, { hpP: 3 }, '치복 타운 관리자'),
@@ -459,8 +459,8 @@ export const eventNow = t => { const e = eventAt(t); return t >= e.start && t < 
 export function nextEvent(t) { const e = eventAt(t); return t < e.start ? e : eventAt((Math.floor(t / EVENT_BLOCK) + 1) * EVENT_BLOCK); }
 
 // 방송 보너스: 김치복님이 방송 중이면 마을 모두
-export const LIVE_FX = { expP: 30, goldP: 20 };
-export const liveGift = lv => 1000 + lv * 200;               // 방송 출석 보상 (하루 한 번, 사냥 약 8분어치)
+export const LIVE_FX = { expP: 100, goldP: 100 };   // 방송 중: 경험치·골드 2배
+export const liveGift = () => 0;   // 방송 출석 선물은 없음 (출석은 칭호용으로만 셈)
 
 // 마을 공동 건설: 모두가 목재·석재·골드를 모아 하나씩 지음. 다 지으면 마을 모두에게 영원히 효과
 export const VILLAGE = [

@@ -2503,7 +2503,7 @@ function saveLook() {
 }
 // 실제 김치복 방송 상태 (홈페이지와 같은 Worker)
 async function checkLive() {
-  try { const j = await (await fetch(LIVE_API, { cache: 'no-store' })).json(); if (!!j.open !== S.live) { S.live = !!j.open; $('#liveBanner').hidden = !S.live; if (S.live) sysMsg(`🔴 김치복님 생방송 중! ${j.title || ''} · 방송 중에는 마을 모두 경험치·골드 보너스!`); } } catch {}
+  try { const j = await (await fetch(LIVE_API, { cache: 'no-store' })).json(); if (!!j.open !== S.live) { S.live = !!j.open; $('#liveBanner').hidden = !S.live; if (S.live) sysMsg(`🔴 김치복님 생방송 중! ${j.title || ''} · 방송 중에는 마을 모두 경험치·골드 2배!`); } } catch {}
   liveCheckin();
 }
 
@@ -2696,6 +2696,16 @@ $('#resetStats').onclick = () => {
 const door = id => { const b = BUILDINGS.find(b => b.id === id); return [(b.door.x + .5) * T, (b.door.y + .5) * T]; };
 const PLACES = [['⛲', '광장 분수 앞', START.x, START.y], ['🎰', '가챠센터', ...door('gacha')], ['☕', '카페', ...door('cafe')], ['👕', '스킨샵', ...door('skin')], ['🔨', '대장간', ...door('smith')],
   ['🏛️', '마을회관', ...door('hall')], ['🎣', '낚시터', FISH_AT.x, FISH_AT.y], ['🪝', '낚시점', ...door('fishshop')], ['🪓', '벌목소', ...door('lumber')], ['⛏️', '채광소', ...door('quarry')], ['🌾', '텃밭', ...door('farmshed')], ['🌀', '사냥터 포탈', BACK.x, BACK.y]];
+// 바로가기로 가면 그 시설 창도 바로 열기
+function placeOpen(n) {
+  const bid = { '가챠센터': 'gacha', '카페': 'cafe', '스킨샵': 'skin', '대장간': 'smith', '마을회관': 'hall', '낚시점': 'fishshop', '벌목소': 'lumber', '채광소': 'quarry' }[n];
+  if (bid) return openBuilding(BUILDINGS.find(b => b.id === bid));
+  if (n === '광장 분수 앞') return openWish();
+  if (n === '낚시터') return openFishing();
+  if (n === '텃밭') return openFarm();
+  if (n === '사냥터 포탈') return openHuntSelect();
+  if (n === '내 집' && myHouse()) return openHouse(myHouse());
+}
 function teleport(px, py, quiet) {
   if (me.room) leaveRoom();
   if (TOWN.bad(Math.floor(px / T), Math.floor(py / T))) return toast('거기는 갈 수 없어요');
@@ -2704,8 +2714,8 @@ function teleport(px, py, quiet) {
 $('#townBtn').onclick = () => {
   if (HT) return toast('사냥 중에는 현황판의 "마을로 돌아가기"를 눌러 주세요');
   const list = [...PLACES, ...(myHouse() ? [['🏠', '내 집', ...houseDoor(myHouse())]] : [])];
-  openModal(`<h3>🏘️ 마을 바로가기</h3><p class="muted">누르면 그 자리로 바로 이동해요.</p><div class="placegrid">${list.map(([i, n], k) => `<button class="btn" data-x="${k}"><span style="font-size:22px">${i}</span>${n}</button>`).join('')}</div><button class="close" data-close>닫기</button>`,
-    el => wire(el, async k => { const [, n, x, y] = list[+k]; closeModal(); ROAM.pause = 20; teleport(x, y); }));
+  openModal(`<h3>🏘️ 마을 바로가기</h3><p class="muted">누르면 그 자리로 바로 가서 시설 창이 열려요.</p><div class="placegrid">${list.map(([i, n], k) => `<button class="btn" data-x="${k}"><span style="font-size:22px">${i}</span>${n}</button>`).join('')}</div><button class="close" data-close>닫기</button>`,
+    el => wire(el, async k => { const [, n, x, y] = list[+k]; closeModal(); ROAM.pause = 20; teleport(x, y); setTimeout(() => placeOpen(n), 250); }));
 };
 
 // ───────── 자유 행동: 켜 두면 캐릭터가 알아서 돌아다니고, 근처 사람에게 인사 ─────────
@@ -3242,7 +3252,7 @@ async function openAdmin(tab = ADM.tab) {
   if (tab === 'notice') {
     return show(`<p class="muted">모든 마을 채널에 공지가 떠요 (100글자까지). 채팅창에서 <b>/공지 내용</b>, <b>/조용 닉네임 10분</b>, <b>/내보내기 닉네임</b> 으로도 할 수 있어요.</p>
       <div class="admform"><input id="aNotice" maxlength="100" placeholder="공지 내용"><button class="mini main" data-x="send">보내기</button></div>
-      <h4 class="sub">📺 방송 보너스 직접 켜기</h4><p class="muted">방송 연결이 안 될 때나 이벤트용. 켜는 동안 마을 모두 ${fxText(LIVE_FX)}, 방송 출석 가능.</p>
+      <h4 class="sub">📺 방송 보너스 직접 켜기</h4><p class="muted">방송 연결이 안 될 때나 이벤트용. 켜는 동안 마을 모두 경험치·골드 2배.</p>
       <div class="actions"><button class="mini" data-x="live:60">1시간</button><button class="mini" data-x="live:180">3시간</button><button class="mini" data-x="live:0">끄기</button></div>`,
       async (x, el) => { if (x.startsWith('live:')) { const min = +x.slice(5); await api('/api/admin/live', { min }); toast(min ? `방송 보너스를 ${min}분 동안 켰어요 (30초 안에 반영)` : '방송 보너스를 껐어요'); return; } const text = el.querySelector('#aNotice').value.trim(); if (!text) return; await api('/api/admin/notice', { text }); toast('공지를 보냈어요'); el.querySelector('#aNotice').value = ''; });
   }
@@ -3402,7 +3412,7 @@ function villageView() {
 function newsView() {
   const t = Date.now(), e = eventNow(t), n = nextEvent(t), live = liveOn(), W = NEWS.data?.village, fx = worldFx({ lv: W?.lv ?? me.world?.lv ?? 0, live }, t);
   return `<div class="nbox ${e ? 'on' : ''}"><span class="big">${e ? e.i : '⏳'}</span><div>${e ? `<b>지금 마을 사건: ${e.n}</b><small>${e.d} · ${fmtLeft(Math.ceil((e.end - t) / 1000))} 남음</small>` : `<b>다음 마을 사건: ${n.n}</b><small>${n.d} · ${fmtLeft(Math.ceil((n.start - t) / 1000))} 뒤 시작</small>`}</div></div>
-    <div class="nbox ${live ? 'live' : ''}"><span class="big">🔴</span><div>${live ? `<b>김치복님 방송 중!</b><small>마을 모두 ${fxText(LIVE_FX)} · 출석하면 ${goldTxt(liveGift(me.lv))} (하루 한 번)</small>` : `<b>방송 보너스</b><small>김치복님이 방송하면 마을 모두 ${fxText(LIVE_FX)} · 방송 출석 선물</small>`}</div></div>
+    <div class="nbox ${live ? 'live' : ''}"><span class="big">🔴</span><div>${live ? `<b>김치복님 방송 중!</b><small>마을 모두 경험치·골드 2배!</small>` : `<b>방송 보너스</b><small>김치복님이 방송하면 마을 모두 경험치·골드 2배</small>`}</div></div>
     <p class="muted" style="margin:6px 0">지금 마을 전체 효과: <b>${fxText(fx) || '없음'}</b></p>
     <h4 class="sub">마을 연대기</h4>
     <ul class="chron">${(NEWS.data?.chron || []).map(c => `<li><small>${fmtT(c.at)}</small> ${esc(c.text)}</li>`).join('') || '<li class="muted">아직 큰일이 없었어요. 첫 기록의 주인공이 되어 보세요!</li>'}</ul>
@@ -3453,7 +3463,7 @@ setInterval(() => {
 // 방송 출석 (방송 중이면 하루 한 번 자동)
 async function liveCheckin() {
   if (!liveOn() || !token || $('#app').hidden || me.life?.liveDay === dayKey(Date.now()) || S.checkin) return;
-  S.checkin = true; try { const j = await api('/api/live/checkin', {}); took(j); toast(`📺 방송 출석! ${goldTxt(j.gift)}`); sysMsg(`📺 김치복님 방송 출석 선물: 골드 ${j.gift.toLocaleString()} · 방송 중에는 마을 모두 경험치·골드 보너스!`); } catch {} finally { S.checkin = false; }
+  S.checkin = true; try { const j = await api('/api/live/checkin', {}); took(j); } catch {} finally { S.checkin = false; }
 }
 $('#newsBtn').onclick = () => openNews(); $('#evChip').onclick = () => openNews('news');
 

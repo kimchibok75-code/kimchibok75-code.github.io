@@ -448,12 +448,12 @@ const GAME = {
       WORLD.at = 0; NEWS.at = 0;
     } };
   },
-  // 방송 출석: 김치복님이 방송 중일 때 하루 한 번
+  // 방송 출석: 김치복님이 방송 중일 때 하루 한 번 (선물 없음, 칭호용 횟수만)
   '/api/live/checkin'(c, b, at) {
     if (!c._w?.live) fail(400, '지금은 방송 중이 아니에요');
     const day = dayKey(at); if (c.life.liveDay === day) fail(400, '오늘은 이미 출석했어요');
-    c.life.liveDay = day; const g = liveGift(c.lv); c.gold += g; cntAdd(c, 'live');
-    return { gift: g };
+    c.life.liveDay = day; cntAdd(c, 'live');
+    return { gift: 0 };
   },
   // ───── 4단계 ─────
   // 칭호 달기 (가진 것만)
