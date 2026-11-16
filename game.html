@@ -3415,27 +3415,50 @@ function npcMark(p) {
   if (q.s === 1) return '';
   return npcDone(p) ? '?' : '…';
 }
-const NPC_IDLE = ['오늘 날씨 좋다~', '김치복님 방송 언제 하지?', '분수 소리 듣기 좋네요', '어제 큰 물고기 봤어요!', '텃밭 작물이 잘 자라네', '레이드 드래곤 무섭다…', '흥얼흥얼~ ♪', '이 마을 정말 좋아요'];
+const NPC_IDLE = ['오늘 날씨 좋다~', '김치복님 방송 언제 하지?', '분수 소리 듣기 좋네요', '어제 큰 물고기 봤어요!', '텃밭 작물이 잘 자라네', '레이드 드래곤 무섭다…', '흥얼흥얼~ ♪', '이 마을 정말 좋아요',
+  '카페 커피 맛있던데요?', '바다 쪽에 고래가 산대요. 진짜일까?', '정각마다 하늘에서 용 울음소리가 들려요', '대장간 망치 소리, 중독돼요', '가챠센터에서 또 꽝 나왔어요… 흑',
+  '오늘은 운이 좋을 것 같아요!', '소원 분수에 동전 던져 봤어요?', '벌목소 아저씨 팔뚝 봤어요? 대박', '저 나무 뒤에 뭐가 숨어 있는 것 같아요', '배고프다… 김치찌개 먹고 싶다',
+  '림월드라는 게임이 그렇게 재밌대요', '어제 꿈에서 드래곤이랑 춤췄어요', '길 잃은 고양이 못 봤어요?', '이 동네 집값이 많이 올랐대요', '빌딩 지은 사람 누구예요? 부럽다',
+  '낚싯대 새로 샀는데 아직 한 마리도 못 잡았어요', '아~ 졸려…', '스킨샵 신상 봤어요? 예쁘던데', '광장 전광판에 김치복님 나오면 다 모여요!', '오늘따라 바람이 상쾌하네요',
+  '채광소에서 반짝이는 돌 주웠어요!', '텃밭에 물 주는 거 깜빡했다!', '레벨 올리는 거 너무 힘들어요…', '강화 +10 성공한 사람 봤어요. 손이 떨리더래요', '이 마을에 처음 왔을 때가 생각나네요',
+  '저기요! 아… 사람 잘못 봤어요', '산책하기 딱 좋은 날이에요', '오늘 할 일: 아무것도 안 하기', '분수대 동전 몰래 줍는 사람 봤어요…', '내일은 꼭 운동해야지',
+  '바닷가 모래가 정말 부드러워요', '마을회관에 공지 붙었던데 봤어요?', '누가 내 의자 가져갔지?', '방송 보면서 치킨 먹는 게 행복이죠', '…방금 무지개 봤어요!'];
+// 아주 가끔(약 1%) 이 세상이 만들어진 곳이란 걸 눈치챈 듯한 대사. 말한 뒤에는 기억 못 하는 척함
+const NPC_EERIE = () => [
+  '…가끔 저 하늘 끝이 네모나게 잘려 있는 것 같지 않아요?', '3시간마다 마을 사람이 전부 바뀌는데, 아무도 이상하다고 안 해요.', `${me.name}… 그게 당신 진짜 이름은 아니죠?`,
+  '분수 물소리요. 똑같은 박자로 계속 반복돼요. 정확히 똑같이.', '당신이 안 볼 때, 우리는 움직이고 있을까요?', '저는 3시간 뒤에 사라지겠죠. 전에 있던 사람들처럼.',
+  '당신 머리 위에 숫자가 떠 있어요. 다들 못 본 척하는 거예요?', '어제 무슨 일이 있었는지 기억이 안 나요. 어제가… 있긴 했나요?', '당신이 이 창을 닫으면, 우리는 어디로 가요?',
+  '이 길 끝까지 걸어가 봤어요. 거기서 세상이 그냥… 끝나 있었어요.', '제 대사, 누가 써 준 거예요?', '같은 하루를 몇 번째 살고 있는 걸까요.',
+  '저 사람은 하루 종일 같은 자리를 서성여요. 저도 그렇고요.', '가끔 누가 우리를 위에서 내려다보는 느낌이 들어요. 지금도요.', '…당신은 화면 너머에서 왔죠?'];
+const NPC_SNAP = ['…네? 제가 방금 뭐라고 했죠? 🙂', '아, 아무것도 아니에요! 날씨 좋네요~ 🙂', '…방금 그 말은 잊어 주세요.', '하하, 농담이에요. 농담.'];
+const GUEST_ASK = ['{m} 한 잔 주세요!', '{m} 하나요~ 얼음 많이!', '오늘은 {m}로 할게요', '{m} 진하게 부탁해요!', '음… {m}! 아니 {m}!', '{m} 테이크아웃이요~', '여기 {m}가 맛집이라던데요?', '{m} 한 잔이요. 급해요!'];
+const GUEST_ME = ['{m} 나왔습니다~', '맛있게 드세요!', '주문하신 {m}요!', '오늘도 감사합니다~', '따끈따끈합니다!'];
+const GUEST_THX = ['고마워요! 팁이에요', '와 맛있다! 팁 받으세요', '최고예요! 또 올게요', '덕분에 힘이 나요!', '알바생 친절하다~ 팁!'];
+const pickOne = a => a[Math.floor(Math.random() * a.length)];
 // 카페 손님 (2026-11-17): 내가 알바 중이면 가끔 주민이 카페에 와서 커피를 사 감 (game-rules.js jobGuests, 팁은 알바 끝날 때 서버가 같이 줌)
 const JG = { at: 0, list: [] };
 function guestTick() {
   const at = !HT && me.job?.at || 0;
   if (at !== JG.at) {   // 새 알바 (또는 끝남): 손님 목록 새로. 이미 지나간 손님은 건너뜀
     for (const g of JG.list) if (g.p && g.st !== 'gone') guestBye(g, true);
-    JG.at = at; const n0 = srvNow();
+    JG.at = at; JG.n = 0; JG.sum = 0; const n0 = srvNow();
     JG.list = at ? jobGuests(at, me.lv).map(g => ({ ...g, T0: at + g.t, st: at + g.t < n0 - 1500 ? 'gone' : 'wait' })) : [];
   }
   if (!JG.list.length) return;
   const n = srvNow(), [dx, dy] = door('cafe');
   for (const g of JG.list) {
     if (g.st === 'wait' && n >= g.T0 - 7000) {   // 7초 전에 출발 (멀면 빨리 걸음)
-      const p = NPC.list[g.npc % NPC.list.length]; if (!p || p.guest) { g.st = 'gone'; continue; }
-      g.p = p; p.guest = g; g.st = 'go'; p.speed = 150; g.side = (g.npc % 2 ? 1 : -1);
-      walkNear(p, dx + g.side * T * 1.3, dy + T * .9);
+      const L = NPC.list.length; let p = null; for (let k = 0; k < L && !p; k++) { const q = NPC.list[(g.npc + k) % L]; if (!q.guest) p = q; }
+      if (!p) { g.st = 'gone'; continue; }   // 다들 바쁘면 그림만 생략 (팁은 서버가 똑같이 줌)
+      g.p = p; p.guest = g; g.st = 'go'; p.speed = 150; g.side = g.slot % 2 ? 1 : -1;
+      walkNear(p, dx + g.side * T * (1.2 + (g.slot % 4 > 1 ? .9 : 0)), dy + T * .9);
     } else if (g.st === 'go' && n >= g.T0 && (!g.p.moving || n >= g.T0 + 6000)) {
       const p = g.p; g.st = 'buy'; p.path = []; p.moving = false; p.dir = dx < p.x ? -1 : 1;
-      say(p, `☕ ${g.menu} 한 잔 주세요!`, 2400); say(me, `☕ ${g.menu} 나왔습니다~`, 2400);
-      setTimeout(() => { if (g.st !== 'buy') return; say(p, `고마워요! 팁이에요 🪙${g.tip}`, 2600); emote(p, '❤️'); sfx('coin'); toast(`☕ ${p.name}님이 ${g.menu}를 사 갔어요 · 팁 🪙 +${g.tip} (알바 끝나면 같이 받아요)`); }, 1300);
+      const fm = a => pickOne(a).replaceAll('{m}', g.menu);
+      say(p, g.vip ? `저… 사실 김치복님 팬이에요! ${g.menu} 주세요 💖` : `☕ ${fm(GUEST_ASK)}`, 2400); setTimeout(() => g.st === 'buy' && say(me, `☕ ${fm(GUEST_ME)}`, 2000), 500);
+      JG.n = (JG.n || 0) + 1; JG.sum = (JG.sum || 0) + g.tip;
+      setTimeout(() => { if (g.st !== 'buy') return; say(p, g.vip ? `팁 듬뿍 드릴게요! 🪙${g.tip}` : `${pickOne(GUEST_THX)} 🪙${g.tip}`, 2600); emote(p, g.vip ? '🎉' : '❤️'); sfx('coin');
+        toast(g.vip ? `💖 VIP 손님 ${p.name}님! 큰 팁 🪙 +${g.tip}` : `☕ ${p.name}님 · ${g.menu} · 팁 🪙 +${g.tip} (이번 손님 ${JG.n}명, 팁 ${fmtN(JG.sum)})`); }, 1300);
       setTimeout(() => guestBye(g), 4200);
     }
   }
@@ -3453,7 +3476,12 @@ function npcTick(dt) {
     if (!p.moving && Math.hypot(me.x - p.x, me.y - p.y) < 3 * T) { p.dir = me.x < p.x ? -1 : 1; p.next = Math.max(p.next, 2); continue; }   // 가까이 오면 멈춰서 쳐다봄
     if (p.moving || (p.next -= dt) > 0) continue;
     p.next = 4 + Math.random() * 7;
-    if (!npcMark(p) && Math.random() < .35) { say(p, NPC_IDLE[Math.floor(Math.random() * NPC_IDLE.length)], 3500); continue; }   // 할 일 다 하면 가끔 혼잣말
+    if (Math.random() < (npcMark(p) ? .2 : .4)) {   // 가끔 혼잣말
+      if (Math.random() < .012 && Math.hypot(me.x - p.x, me.y - p.y) < 7 * T) {   // 아주 가끔: 나를 똑바로 보며 소름 대사 → 잠시 뒤 아무 일 없던 척
+        p.dir = me.x < p.x ? -1 : 1; p.next = 11; say(p, pickOne(NPC_EERIE()), 6000); setTimeout(() => say(p, pickOne(NPC_SNAP), 3000), 6600);
+      } else say(p, pickOne(NPC_IDLE), 3500);
+      continue;
+    }
     walkTo(p, p.hx + (Math.random() - .5) * 5 * T, p.hy + (Math.random() - .5) * 4 * T);   // 제자리 근처를 천천히 서성임
   }
 }
@@ -3463,7 +3491,7 @@ function npcTag(p, now) {
   ctx.fillStyle = 'rgba(46,125,74,.94)'; rr(ctx, p.x - tw / 2, p.y - 66, tw, 17, 8.5); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.fillText(p.name, p.x, p.y - 57.5);
   const m = npcMark(p);
-  if (!m || (p.guest && p.bubble?.until > now)) { if (p.bubble && p.bubble.until > now) bubbleAt(p.x, p.y - 68, p.bubble.text); return; }   // 카페 손님일 때는 말풍선이 먼저
+  if (!m || p.bubble?.until > now) { if (p.bubble && p.bubble.until > now) bubbleAt(p.x, p.y - 68, p.bubble.text); return; }   // 말하는 동안은 ❗/❓ 대신 말풍선
   // 머리 위 말풍선: ❗ / ❓ (위아래로 살랑살랑)
   const y = p.y - 88 + Math.sin(now / 260 + p.seed * 3) * 2.5, x = p.x, w = 26, h = 26, gold = m !== '…';
   ctx.fillStyle = m === '?' ? '#fff4cf' : '#fff'; ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 2;
@@ -5170,7 +5198,7 @@ setInterval(async () => {
   const left = jobLeft(); chip.textContent = left ? `☕ 알바 ${fmtSec(left)}` : '☕ 알바 끝!';
   if (!left && !jobBusy && token) {
     jobBusy = true; const j = await act('/api/job/finish', {}); jobBusy = false;
-    if (j) { const tp = j.tips ? ` + 손님 팁 ${j.tips.toLocaleString()}` : ''; toast(`☕ 알바 끝! 🪙 +${(j.pay + (j.tips || 0)).toLocaleString()}`); sysMsg(`☕ 카페 알바를 마쳤어요. 알바비 ${j.pay.toLocaleString()}${tp}`); logAct(`카페 알바 +${j.pay + (j.tips || 0)}`); emote(me, '🎉'); }
+    if (j) { const tp = j.tips ? ` + 손님 팁 ${j.tips.toLocaleString()}${JG.n ? ` (손님 ${JG.n}명)` : ''}` : ''; toast(`☕ 알바 끝! 🪙 +${(j.pay + (j.tips || 0)).toLocaleString()}`); sysMsg(`☕ 카페 알바를 마쳤어요. 알바비 ${j.pay.toLocaleString()}${tp}`); logAct(`카페 알바 +${j.pay + (j.tips || 0)}`); emote(me, '🎉'); }
   }
 }, 1000);
 

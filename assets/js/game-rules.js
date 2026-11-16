@@ -310,14 +310,15 @@ export const FISH_SHOP = {
 // ───────── 카페 알바 ─────────
 export const JOB = { sec: 60, pay: lv => 60 + lv * 7 };   // 카페 알바 1분 (예전 40 + 레벨×5)
 // 카페 손님 (2026-11-17): 알바 중 가끔 마을 주민이 와서 커피를 사 감 → 팁. 알바 시작 시각(jobAt)으로 정해져서 화면·서버 같은 계산
-// 1분을 3토막(10~24초 · 25~38초 · 39~52초)으로 나눠 토막마다 chance 확률로 손님 1명. 팁 = tip(레벨) × 0.8~1.4
-export const JOB_GUEST = { slots: [[10, 24], [25, 38], [39, 52]], chance: .45, tip: lv => 20 + lv * 3,
-  menu: ['아메리카노', '카페라테', '바닐라 라테', '카푸치노', '핫초코', '딸기 스무디', '녹차 라테', '아이스티'] };
+// 1분을 7토막(5초부터 7초씩)으로 나눠 토막마다 chance 확률로 손님 1명 (평균 약 5명). 팁 = tip(레벨) × 0.8~1.4, vip 확률로 VIP 손님(팁 ×5)
+// 밸런스: 30레벨 1분에 알바비 270 + 팁 약 250 (사냥 방치 시간당 약 2.8만 ≈ 1분 470)
+export const JOB_GUEST = { slots: [[5, 11], [12, 18], [19, 25], [26, 32], [33, 39], [40, 46], [47, 53]], chance: .75, tip: lv => 8 + lv * 1.2, vip: .06, vipMul: 5,
+  menu: ['아메리카노', '카페라테', '바닐라 라테', '카푸치노', '핫초코', '딸기 스무디', '녹차 라테', '아이스티', '돌체 라테', '캐러멜 마키아토', '레몬에이드', '흑당 밀크티', '에스프레소', '김치 라테(?)', '고구마 라테', '자몽 허니 블랙티'] };
 export function jobGuests(jobAt, lv) {
   const r = seeded('job' + jobAt), out = [];
   for (const [a, b] of JOB_GUEST.slots) {
-    const hit = r() < JOB_GUEST.chance, t = (a + r() * (b - a)) * 1000, npc = Math.floor(r() * 5), menu = JOB_GUEST.menu[Math.floor(r() * JOB_GUEST.menu.length)], k = .8 + r() * .6;
-    if (hit) out.push({ t: Math.round(t), npc, menu, tip: Math.round(JOB_GUEST.tip(lv) * k) });
+    const hit = r() < JOB_GUEST.chance, t = (a + r() * (b - a)) * 1000, npc = Math.floor(r() * 5), menu = JOB_GUEST.menu[Math.floor(r() * JOB_GUEST.menu.length)], k = .8 + r() * .6, vip = r() < JOB_GUEST.vip;
+    if (hit) out.push({ t: Math.round(t), slot: out.length, npc, menu, vip, tip: Math.round(JOB_GUEST.tip(lv) * k * (vip ? JOB_GUEST.vipMul : 1)) });
   }
   return out;
 }
