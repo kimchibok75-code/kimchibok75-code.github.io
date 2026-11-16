@@ -175,6 +175,12 @@
       "ko": "야요 허핑, 연기 잎사귀, 플레이크 던지는 지역 부족 기술자의 빛나는 마음에서 나온 것입니다.",
       "at": 1794721707083
     },
+    "3839041756": {
+      "src": "Customize the player's ideology icon only. Paint the symbol with multiple colors, a linear gradient, or both.",
+      "full": "플레이어의 이념 아이콘만 사용자 정의하세요. 여러 색상, 선형 그라디언트 또는 둘 다를 사용하여 기호를 칠합니다.",
+      "ko": "플레이어의 이념 아이콘만 사용자 정의하세요. 여러 색상, 선형 그라디언트 또는 둘 다를 사용하여 기호를 칠합니다.",
+      "at": 1794801262619
+    },
     "3839399827": {
       "src": "This standalone compatibility patch for *The Dead Man's Switch* base mod and its expansions fixes load errors, mech collision, weapon configs, sound issues, and cross-mod bugs in both vanilla and Comb",
       "full": "*The Dead Man's Switch* 기본 모드 및 확장판을 위한 이 독립형 호환성 패치는 바닐라와 Comb 모두에서 로드 오류, 기계 충돌, 무기 구성, 사운드 문제 및 크로스 모드 버그를 수정합니다.",
