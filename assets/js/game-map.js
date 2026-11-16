@@ -173,6 +173,10 @@ for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
   SPOTS.push(sc); for (let y = sc.y; y < sc.y + sc.h; y++) for (let x = sc.x; x < sc.x + sc.w; x++) block(x, y);
   const bi = SPOTS.findIndex(s => s.id === 'board');   // 작은 광장 전광판은 없앰 (큰 전광판이 대신함)
   if (bi >= 0) { const s = SPOTS[bi]; for (let y = s.y; y < s.y + s.h; y++) for (let x = s.x; x < s.x + s.w; x++) solid[y * MW + x] = 0; SPOTS.splice(bi, 1); }
+  // 벤치: 광장 가장자리 6개 → 전광판 앞 4×2 (가운데는 지나다니는 길). 다 지은 뒤에 옮겨서 나무·돌 번호는 그대로
+  for (const b of BENCHES) solid[b.y * MW + b.x] = 0;
+  BENCHES.splice(0, BENCHES.length, ...[25, 27].flatMap(y => [36, 38, 41, 43].map(x => ({ x, y }))));
+  for (const b of BENCHES) { set(b.x, b.y, STONE); block(b.x, b.y); }
 }
 
 // ───── 부드러운 바닥 ─────

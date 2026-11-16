@@ -311,6 +311,9 @@
   - `life.house.{lv, at, acc}`, `houseSettle`, `/api/house/up`, `/api/house/collect`, DB `houses.lv` (`0012_house_lv.sql`). 그림 `towerParts(lv)`
 - 처음 안내(`showGuide`)에 '이런 것도 있어요': 마을회관 집 · 매시 레이드 · 자동 생활
 - 화면 확인용 임시 코드는 줄 끝에 `// DEBUG-REMOVE`를 달고, 배포 전에 그 줄들을 지움
+  - **원래 있던 줄을 DEBUG-REMOVE 줄로 바꾸지 말 것** (새 줄로만 추가). 2026-11-16에 게임 화면 갱신 줄을 바꿨다가 지울 때 같이 사라져서 게임이 멈춘 적 있음
+  - 배포 전 `git diff`에서 지워진 줄(`-`)이 의도한 것인지 확인
+- 화면 오류는 `showErr`가 토스트로 "⚠️ 오류: … (파일 줄)"을 보여 주고 게임은 계속 돔. 사용자가 이 글을 알려 주면 그 줄을 보면 됨
 - CLAUDE.md에 백틱 들어간 글을 넣을 때는 bash `node -e` 말고 Write/Edit 도구로 (백틱이 명령으로 실행돼 깨짐)
 - **소리**: `assets/js/game-sound.js` — 효과음·배경 음악을 파일 없이 코드(Web Audio)로 만듦 (저작권 걱정 없음)
   - `sfx('이름')` 효과음 (목록은 `FX`), `bgm('town' | 'hunt' | 'raid')` 배경 음악 (`SONGS`, 8마디를 코드로 반복)
