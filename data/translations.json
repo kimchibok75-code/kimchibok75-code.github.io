@@ -181,6 +181,12 @@
       "ko": "*The Dead Man's Switch* 기본 모드 및 확장판을 위한 이 독립형 호환성 패치는 바닐라와 Comb 모두에서 로드 오류, 기계 충돌, 무기 구성, 사운드 문제 및 크로스 모드 버그를 수정합니다.",
       "at": 1794778452896
     },
+    "3839520750": {
+      "src": "Screenshots use Facial Animation - Retexture, IsoRimZ and Combat Extended, see suggestions.",
+      "full": "스크린샷은 얼굴 애니메이션(Retexture, IsoRimZ 및 Combat Extended)을 사용합니다. 제안 사항을 참조하세요.",
+      "ko": "스크린샷은 얼굴 애니메이션(Retexture, IsoRimZ 및 Combat Extended)을 사용합니다. 제안 사항을 참조하세요.",
+      "at": 1794799327724
+    },
     "3839572648": {
       "src": "Everyday Icons and Info makes the screens you open every day easier to read: the Work tab, the inspect pane, bills and the History tab.",
       "full": "일상 아이콘 및 정보를 사용하면 작업 탭, 검사 창, 청구서 및 기록 탭 등 매일 여는 화면을 더 쉽게 읽을 수 있습니다.",
