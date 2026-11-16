@@ -127,7 +127,7 @@ export class Town extends DurableObject {
 
   // ───── 채팅 ─────
   async say(ws, a, m) {
-    const t = now(), ch = m.ch === 'all' ? 'all' : 'near', no = why => this.send(ws, { t: 'nope', why });
+    const t = now(), ch = 'all', no = why => this.send(ws, { t: 'nope', why });
     const raw = String(m.text || '');
     if (raw.startsWith('/') && a.adm) return this.command(ws, a, raw);
     if (a.mute > t) return no(`채팅 금지 중이에요 (남은 시간 ${left(a.mute - t)})`);
@@ -138,16 +138,15 @@ export class Town extends DurableObject {
     k.sent = k.sent.filter(x => t - x < 10e3);
     if (k.sent.length && t - k.sent[k.sent.length - 1] < 1000) return no('천천히 말해 주세요 (1초에 1번)');
     if (k.sent.length >= 5) { k.cool = t + 30e3; k.sent = []; return no('10초 안에 너무 많이 보냈어요. 30초 동안 채팅을 쉬어요 (도배 방지)'); }
-    if (ch === 'all' && t - a.joined < 600e3) return no(`가입 후 10분 동안은 근처 대화만 가능해요 (남은 시간 ${left(600e3 - (t - a.joined))})`);
-    if (ch === 'all' && a.limited) return no('신고가 여러 번 들어와서, 김치복님이 확인할 때까지 근처 대화만 가능해요');
+    if (t - a.joined < 300e3) return no(`가입하고 5분이 지나면 채팅할 수 있어요 (남은 시간 ${left(300e3 - (t - a.joined))})`);
+    if (a.limited) return no('신고가 여러 번 들어와서, 김치복님이 확인할 때까지 채팅을 할 수 없어요');
     const r = cleanChat(raw);
     if (!r.ok) return r.warn ? this.warn(ws, a, r.why) : r.why && no(r.why);
     if (k.last.length >= 2 && k.last.slice(-2).every(x => x === r.text)) return no('같은 말을 3번 연속 보낼 수 없어요');
     k.last = [...k.last, r.text].slice(-3); k.sent.push(t); k.n++;
     const out = JSON.stringify({ t: 'say', id: a.id, n: a.n, text: r.text, ch });
     for (const w of this.members()) {
-      const b = w === ws ? a : this.info(w);
-      if (ch === 'all' || w === ws || (!a.hunt && !b.hunt && (a.room2 || 0) === (b.room2 || 0) && Math.hypot(b.tx - a.tx, b.ty - a.ty) < NEAR)) try { w.send(out); } catch {}
+      try { w.send(out); } catch {}
     }
     if (r.notes.length) this.send(ws, { t: 'note', notes: r.notes });
     const DB = this.env.DB;

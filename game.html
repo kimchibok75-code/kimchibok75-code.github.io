@@ -168,6 +168,7 @@ body.hunting .side { display: none; }
 .chat-tabs { display: flex; gap: 2px; padding: 6px 6px 0; }
 .chat-tabs button { border: 0; background: transparent; padding: 5px 10px; border-radius: 8px; font-weight: 700; font-size: 13px; color: var(--ink-soft); }
 .chat-tabs button[aria-selected="true"] { background: var(--paper-2); color: var(--ink); }
+.chat-tabs .chname { padding: 5px 10px; font-weight: 700; font-size: 13px; color: var(--ink); }
 .chat-tabs .rulesbtn { margin-left: auto; text-decoration: underline; font-weight: 500; }
 .chat-log { list-style: none; margin: 0; padding: 6px 12px; height: 132px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; font-size: 14px; }
 .chat-log li { line-height: 1.4; overflow-wrap: anywhere; }
@@ -638,9 +639,8 @@ body.hunting .chat-log { height: 64px; }
     <ul class="feed" id="feed" aria-hidden="true"></ul>
 
     <section class="chat" id="chat" aria-label="채팅">
-      <div class="chat-tabs" role="tablist" id="chatTabs">
-        <button role="tab" data-c="near" aria-selected="true">근처</button>
-        <button role="tab" data-c="all" aria-selected="false">마을 전체</button>
+      <div class="chat-tabs" id="chatTabs">
+        <span class="chname">💬 마을 전체 채팅</span>
         <button class="rulesbtn" id="rulesBtn" type="button">채팅 규칙</button>
       </div>
       <ul class="chat-log" id="chatLog" aria-live="polite"></ul>
@@ -650,7 +650,7 @@ body.hunting .chat-log { height: 64px; }
       <form class="chat-input" id="chatForm">
         <button type="button" class="emo-toggle chatexp" id="chatExp" aria-label="채팅 기록 펼치기">💬</button>
         <button type="button" class="emo-toggle" id="emoBtn" aria-label="감정 표현">😀</button>
-        <input id="chatIn" maxlength="60" placeholder="근처 사람에게 말하기" autocomplete="off" enterkeyhint="send">
+        <input id="chatIn" maxlength="60" placeholder="마을 전체에 말하기" autocomplete="off" enterkeyhint="send">
         <span class="count" id="chatCount">0/60</span>
         <button class="send" type="submit">보내기</button>
       </form>
@@ -918,7 +918,7 @@ const gIcon = it => `<span class="gt" style="--gc:${GRADES[it.g].c}"><img src="$
 const me = { name: '', ...newCharacter(), path: [], moving: false, seed: .3 };
 const LINES = ['안녕하세요~', '오늘 9시 방송 하나요?', '숲 늑대 너무 세요ㅠ', '카페에서 물약 사가세요', 'ㅋㅋㅋㅋ', '방금 희귀 떴다!!', '+6 강화 실패했어요…', '치복님 언제 와요?', '운 몰빵 해봤는데 골드 잘 나와요', '협곡 보스 같이 잡아요', '여기 벤치 명당이네', '굿밤~'];
 const FISH = [['🐟', '붕어'], ['🐠', '열대어'], ['🐡', '복어'], ['🦐', '새우'], ['🦀', '꽃게'], ['🐙', '문어'], ['🐢', '거북이'], ['👢', '낡은 장화']];
-const S = { zoom: 1.6, live: false, chatMode: 'near', sent: [], warns: 0, muteUntil: 0, coolUntil: 0, lastMsgs: [], blocked: new Map(), log: [], barT: 0 };
+const S = { zoom: 1.6, live: false, sent: [], warns: 0, muteUntil: 0, coolUntil: 0, lastMsgs: [], blocked: new Map(), log: [], barT: 0 };
 
 // 규칙(숫자·계산식)은 assets/js/game-rules.js 에 있어요 (서버와 같이 씀)
 const derive = (c = me) => deriveOf(c);
@@ -1219,12 +1219,33 @@ function drawFountain(s, now) {
 }
 const SP_BENCH = () => sprite('bench', 64, 36, 32, 30, g => inkDraw(g, [{ path: R(-23, -4, 4, 8, 1), c: '#5c3b20' }, { path: R(19, -4, 4, 8, 1), c: '#5c3b20' }, { path: R(-26, -26, 52, 8, 3), c: '#a86f3f' }, { path: R(-22, -19, 3, 8, 0), c: '#5c3b20' }, { path: R(19, -19, 3, 8, 0), c: '#5c3b20' }, { path: R(-26, -12, 52, 9, 3), c: '#b97a45' }, { flat: 1, path: R(-24, -10, 48, 2, 0), c: 'rgba(255,255,255,.25)' }], 1.8));
 function drawBench(b) { blit(SP_BENCH(), b.x * T + T / 2, b.y * T + 28); }
+// 전광판: 홈페이지와 같은 방송 일정(data/schedule.json)으로 다음 방송까지 남은 시간
+const SCHED = { d: null, at: 0, next: 0, nAt: 0 };
+function loadSched() { if (SCHED.at && Date.now() - SCHED.at < 30 * 60e3) return; SCHED.at = Date.now(); fetch('data/schedule.json?v=' + Math.floor(Date.now() / 600e3)).then(r => r.json()).then(j => { SCHED.d = j; SCHED.nAt = 0; }).catch(() => {}); }
+function nextLiveAt() {
+  const t = Date.now(); if (SCHED.nAt > t - 60e3 && SCHED.next > t) return SCHED.next;
+  loadSched(); const sch = SCHED.d; if (!sch) return 0;
+  const k = new Date(t + 9 * 3600e3); let best = 0;
+  for (let i = 0; i < 21 && !best; i++) {
+    const day = new Date(Date.UTC(k.getUTCFullYear(), k.getUTCMonth(), k.getUTCDate() + i)), y = day.getUTCFullYear(), m = day.getUTCMonth(), d = day.getUTCDate();
+    const key = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`, at = (h, mi) => Date.UTC(y, m, d, h, mi) - 9 * 3600e3, list = [];
+    if (!(sch.off || []).includes(key)) for (const w of sch.weekly || []) if (w.days.includes(day.getUTCDay())) { const [h, mi] = w.time.split(':').map(Number); list.push(at(h, mi)); }
+    for (const ev of sch.events || []) if (ev.date === key && ev.time) { const [h, mi] = ev.time.split(':').map(Number); list.push(at(h, mi)); }
+    best = list.filter(x => x > t).sort((a, b) => a - b)[0] || 0;
+  }
+  SCHED.next = best; SCHED.nAt = t; return best;
+}
+function boardText() {
+  const at = nextLiveAt(); if (!at) return '김치복 방송 일정 확인 중…';
+  const l = Math.max(0, Math.floor((at - Date.now()) / 1000)), dd = Math.floor(l / 86400), p = n => String(n).padStart(2, '0');
+  return `다음 방송까지 ${dd ? dd + '일 ' : ''}${p(Math.floor(l % 86400 / 3600))}:${p(Math.floor(l % 3600 / 60))}:${p(l % 60)}`;
+}
 function drawBoard(s, now) {
   const X = s.x * T, Y = s.y * T, w = s.w * T;
   inkDraw(ctx, [{ path: R(X + 18, Y - 4, 7, 30, 2), c: '#5b4636' }, { path: R(X + w - 25, Y - 4, 7, 30, 2), c: '#5b4636' }, { path: R(X + 4, Y - 34, w - 8, 40, 7), c: S.live ? '#1f2a3a' : '#33405a' }], 2.2);
   ctx.font = '700 15px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   if (S.live) { ctx.fillStyle = Math.floor(now / 500) % 2 ? '#ff4d4f' : '#ffd166'; fillTextIco(ctx, '🔴 김치복 생방송 중!', X + w / 2, Y - 14); }
-  else { ctx.fillStyle = '#c9f0d2'; ctx.fillText('다음 방송 · 금토일 밤 9시', X + w / 2, Y - 14); }
+  else { ctx.fillStyle = '#c9f0d2'; ctx.font = '700 15px "IBM Plex Sans KR", sans-serif'; ctx.fillText(boardText(), X + w / 2, Y - 14); }
 }
 function drawPortal(now) {
   const x = PORTAL.x, y = PORTAL.y, tt = now / 1000;
@@ -1998,26 +2019,32 @@ function openReport(p) {
 function trySend(raw) {
   const text = raw.replace(/\s+/g, ' ').trim(); if (!text) return false;
   if ([...text].length > 60) return sysMsg('한 번에 60글자까지 보낼 수 있어요');
-  if (!netSend({ t: 'say', text, ch: S.chatMode })) return sysMsg('마을 서버에 연결 중이에요. 잠시 뒤에 다시 보내 주세요');
+  if (!netSend({ t: 'say', text, ch: 'all' })) return sysMsg('마을 서버에 연결 중이에요. 잠시 뒤에 다시 보내 주세요');
   return true;
 }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 function addChat(m) {
   const li = document.createElement('li');
   if (m.sys) { const t = String(m.text), em = /^\p{Extended_Pictographic}/u.test(t), bad = /^(⚠️|🚫|🚨|⛔)|금지|경고|차단|쉬어/.test(t); li.className = bad ? 'sys warn' : 'sys'; li.textContent = em ? t : `${bad ? '⚠️' : '💬'} ${t}`; }
-  else { li.innerHTML = `<span class="tag">${m.mode}</span><b>${esc(m.who)}</b> ${esc(m.text)}`; }
+  else { li.innerHTML = `<b>${esc(m.who)}</b> ${esc(m.text)}`; }
   const log = $('#chatLog'); log.append(li); while (log.children.length > 80) log.firstChild.remove(); log.scrollTop = log.scrollHeight;
   const f = $('#feed'); const fl = li.cloneNode(true); f.append(fl); while (f.children.length > 4) f.firstChild.remove(); setTimeout(() => fl.remove(), 6000);
 }
 function sysMsg(t) { addChat({ sys: true, text: t }); return false; }
-function setChatMode(mode) {
-  S.chatMode = mode;
-  $$('#chatTabs [data-c]').forEach(b => b.setAttribute('aria-selected', b.dataset.c === mode));
-  $('#chatIn').placeholder = mode === 'all' ? '마을 전체에 말하기' : '근처 사람에게 말하기';
-}
-$('#chatTabs').addEventListener('click', e => { const c = e.target.closest('[data-c]')?.dataset.c; if (c) setChatMode(c); });
+// PC: 아무것도 안 하고 있을 때 Enter → 채팅 시작. 채팅 칸에서 Enter로 보내거나 빈 칸에서 Enter/Esc → 채팅 끝 (다시 화살표로 걷기)
+const PC_KEYS = matchMedia('(hover: hover) and (pointer: fine)').matches;
+if (PC_KEYS) $('#chatIn').placeholder = '마을 전체에 말하기 (Enter)';
+addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || e.isComposing || e.ctrlKey || e.altKey || e.metaKey || $('#app').hidden || !modal.hidden || S.away) return;
+  const el = document.activeElement; if (el && el !== document.body && el.closest('input, textarea, select, button, a, [contenteditable]')) return;
+  e.preventDefault(); STEER.key.clear(); $('#chatIn').focus();
+});
+$('#chatIn').addEventListener('keydown', e => {
+  if (e.isComposing) return;
+  if (e.key === 'Escape' || (e.key === 'Enter' && !e.target.value.trim())) { e.preventDefault(); e.target.blur(); }
+});
 $('#chatIn').addEventListener('input', e => { const n = [...e.target.value].length; $('#chatCount').textContent = `${n}/60`; $('#chatCount').classList.toggle('full', n >= 60); $('#chatCount').classList.toggle('near', n >= 45); });
-$('#chatForm').addEventListener('submit', e => { e.preventDefault(); const v = $('#chatIn').value; if (!v.trim()) return; if (trySend(v) !== false) { $('#chatIn').value = ''; $('#chatCount').textContent = '0/60'; $('#chatCount').classList.remove('full'); } });
+$('#chatForm').addEventListener('submit', e => { e.preventDefault(); const v = $('#chatIn').value; if (!v.trim()) return; if (trySend(v) !== false) { $('#chatIn').value = ''; $('#chatCount').textContent = '0/60'; $('#chatCount').classList.remove('full'); if (PC_KEYS) $('#chatIn').blur(); } });
 $('#emoBtn').onclick = () => { $('#emotes').hidden = !$('#emotes').hidden; if (innerWidth <= 760) $('#chat').classList.add('expanded'); };
 $('#emotes').addEventListener('click', e => { const em = e.target.closest('[data-e]')?.dataset.e; if (em) { emote(me, em); $('#emotes').hidden = true; } });
 $('#chatExp').onclick = () => $('#chat').classList.toggle('expanded');
@@ -2026,7 +2053,7 @@ $('#rulesBtn').onclick = () => openModal(`<h3>💬 채팅 규칙</h3><div style=
   <tr><td>같은 말</td><td>3번 연속 같은 말은 안 보내져요</td></tr><tr><td>반복 글자</td><td>ㅋㅋㅋ… 같은 글자는 10개까지로 줄여요</td></tr>
   <tr><td>금지어</td><td>욕설·비하는 ***로 가려요. 아주 심한 말은 안 보내지고 경고</td></tr><tr><td>경고</td><td>3번 → 10분, 또 3번 → 1시간, 또 3번 → 24시간 채팅 금지</td></tr>
   <tr><td>링크</td><td>인터넷 주소 금지 (김치복 공식 링크만 가능)</td></tr><tr><td>개인정보</td><td>전화번호·이메일은 자동으로 가려요</td></tr>
-  <tr><td>새 계정</td><td>가입 후 10분은 근처 대화만</td></tr><tr><td>근처</td><td>내 주변(9칸 안) 사람에게만 보여요</td></tr><tr><td>신고</td><td>김치복님이 직접 확인하고 처리해요. 3명 넘게 신고하면 확인 전까지 근처 대화만</td></tr></tbody></table></div>
+  <tr><td>채팅</td><td>마을 전체 채팅 하나예요. 같은 채널 모두에게 보여요</td></tr><tr><td>새 계정</td><td>가입 후 5분이 지나면 말할 수 있어요 (도배 계정 방지)</td></tr><tr><td>신고</td><td>김치복님이 직접 확인하고 처리해요. 3명 넘게 신고하면 확인 전까지 채팅이 멈춰요</td></tr></tbody></table></div>
   <p class="muted">차단: 캐릭터를 누르면 나오는 프로필 카드에서. 차단한 사람의 말과 캐릭터는 나에게 안 보여요.</p><button class="btn main" data-close>알겠어요</button>`);
 
 // ───────── 캐릭터창: 능력치 · 장비 · 스킨 · 가방 ─────────
@@ -2845,7 +2872,7 @@ function onNet(m) {
     if (S.blocked.has(m.id)) return;
     const mine = m.id === NET.me, p = mine ? me : personOf(m.id);
     if (p && (mine || shown(p))) say(p, m.text);
-    addChat({ who: m.n, text: m.text, mode: m.ch === 'all' ? '전체' : '근처', mine });
+    addChat({ who: m.n, text: m.text, mine });
   }
   else if (m.t === 'nope') sysMsg(m.why);
   else if (m.t === 'note') m.notes.forEach(n => sysMsg(n));
@@ -2882,7 +2909,7 @@ async function openAdmin(tab = ADM.tab) {
       ${j.reports.map(r => `<div class="rep"><b>🚨 ${esc(r.target)}</b> <small class="muted">← ${esc(r.reporter)} · ${esc(r.reason)} · ${fmtT(r.at)}</small>
         <details><summary>최근 채팅 ${r.lines.length}줄</summary><ul class="admlog">${r.lines.map(l => `<li><small class="muted">${fmtT(l.at)} ${l.ch === 'all' ? '전체' : '근처'}</small> ${esc(l.text)}</li>`).join('') || '<li class="muted">채팅 기록 없음</li>'}</ul></details>
         ${ADM.done ? `<small class="muted">처리: ${esc(r.note || '완료')}</small>` : `<div class="btns"><button class="mini" data-x="ok:${r.id}">문제 없음</button><button class="mini" data-x="mute:${r.id}:${r.target_id}">1시간 조용</button><button class="mini" data-x="kick:${r.id}:${r.target_id}">내보내기</button><button class="mini" data-x="ban:${r.id}:${r.target_id}" style="color:var(--kimchi)">영구 차단</button></div>`}</div>`).join('') || '<p class="muted">신고가 없어요 👍</p>'}
-      <p class="muted">같은 사람에 대한 신고는 한 번 처리하면 같이 처리돼요. 서로 다른 3명 넘게 신고하면 처리 전까지 그 사람은 근처 대화만 할 수 있어요.</p>`,
+      <p class="muted">같은 사람에 대한 신고는 한 번 처리하면 같이 처리돼요. 서로 다른 3명 넘게 신고하면 처리 전까지 그 사람은 채팅을 할 수 없어요.</p>`,
       async x => {
         if (x === 'toggle') { ADM.done = !ADM.done; return openAdmin('reports'); }
         const [a, rid, uid] = x.split(':');
