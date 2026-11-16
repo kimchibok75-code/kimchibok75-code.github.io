@@ -160,6 +160,19 @@ for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
   for (const b of BUILDINGS) if (tileAt(b.door.x, b.door.y) === G) set(b.door.x, b.door.y, PATH);
 }
 
+// 7) 가챠센터는 광장 서쪽(카페·마을회관 사이)으로 옮기고, 원래 자리(광장 북쪽)에는 큰 전광판
+//    (나무·돌 자리와 자원 번호가 안 바뀌게 자원을 다 놓은 뒤에 옮김)
+{
+  const g = BUILDINGS.find(b => b.id === 'gacha');
+  for (let y = g.y; y < g.y + g.h; y++) for (let x = g.x; x < g.x + g.w; x++) solid[y * MW + x] = 0;
+  g.x = 23; g.y = 30; g.door = { x: g.x + Math.floor(g.w / 2), y: g.y + g.h };
+  for (let y = g.y; y < g.y + g.h; y++) for (let x = g.x; x < g.x + g.w; x++) block(x, y);
+  set(g.door.x, g.door.y, PATH);
+  road([[27, 35.6], [29.5, 36.7], [32.6, 36.2]], .95, 25);              // 가챠센터 문 → 광장 남서쪽 길
+  const sc = { id: 'screen', name: '광장 대형 전광판', icon: '📺', x: 35, y: 22, w: 10, h: 2 };
+  SPOTS.push(sc); for (let y = sc.y; y < sc.y + sc.h; y++) for (let x = sc.x; x < sc.x + sc.w; x++) block(x, y);
+}
+
 // ───── 부드러운 바닥 ─────
 // 바닥 종류는 1×1 칸 그대로(집 짓기·길 찾기는 칸으로). 그림만 칸 경계를 둥글게 이은 모양으로 그림.
 // soft(종류, x, y) > .5 이면 그 자리(칸 단위 소수 좌표)에 그 바닥이 그려져 있음. 집 자리 검사도 같은 값을 씀

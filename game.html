@@ -1493,26 +1493,31 @@ function boardText() {
   const l = Math.max(0, Math.floor((at - Date.now()) / 1000)), dd = Math.floor(l / 86400), p = n => String(n).padStart(2, '0');
   return `다음 방송까지 ${dd ? dd + '일 ' : ''}${p(Math.floor(l % 86400 / 3600))}:${p(Math.floor(l % 3600 / 60))}:${p(l % 60)}`;
 }
-// 방송 중이면 전광판 위에 큰 화면 (방송 썸네일을 1분마다 새로). 누르면 창에서 같이 보기
-const boardScreen = s => { const X = s.x * T, Y = s.y * T, w = s.w * T, W = 156, H = 88; return { x: X + w / 2 - W / 2, y: Y - 40 - H, w: W, h: H }; };
-function drawLiveScreen(s, now) {
-  const r = boardScreen(s), Y = s.y * T;
-  inkDraw(ctx, [{ path: R(r.x + 22, r.y + r.h, 8, Y - 34 - (r.y + r.h), 2), c: '#3a434f' }, { path: R(r.x + r.w - 30, r.y + r.h, 8, Y - 34 - (r.y + r.h), 2), c: '#3a434f' }, { path: R(r.x - 7, r.y - 7, r.w + 14, r.h + 14, 8), c: '#1f2430' }], 2.4);
-  ctx.save(); rr(ctx, r.x, r.y, r.w, r.h, 3); ctx.clip();
-  if (LIVE_IMG.complete && LIVE_IMG.naturalWidth) ctx.drawImage(LIVE_IMG, r.x, r.y, r.w, r.h);
-  else { const g = ctx.createLinearGradient(r.x, r.y, r.x + r.w, r.y + r.h); g.addColorStop(0, '#173a2c'); g.addColorStop(1, '#0d1b2a'); ctx.fillStyle = g; ctx.fillRect(r.x, r.y, r.w, r.h);
-    ctx.fillStyle = '#00ffa3'; ctx.font = '800 20px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('CHZZK LIVE', r.x + r.w / 2, r.y + r.h / 2 - 6); }
-  ctx.fillStyle = 'rgba(255,255,255,.06)'; for (let y = r.y; y < r.y + r.h; y += 3) ctx.fillRect(r.x, y, r.w, 1);   // 전광판 줄무늬
-  ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(r.x, r.y + r.h - 20, r.w, 20);
-  ctx.fillStyle = '#fff'; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('▶ 눌러서 같이 보기', r.x + r.w / 2, r.y + r.h - 10);
+// 광장 대형 전광판 (광장 북쪽, 늘 보임): 방송 중이면 썸네일(1분마다 새로) + LIVE, 누르면 창에서 같이 보기. 아니면 다음 방송까지
+const screenRect = s => { const w = s.w * T, W = w - 16, H = Math.round(W * 9 / 16), base = (s.y + s.h) * T - 4; return { x: s.x * T + 8, y: base - 30 - H, w: W, h: H, base }; };
+function drawScreen(s, now) {
+  const r = screenRect(s), K = r.w / 156, f = (wt, px) => `${wt} ${Math.round(px * K)}px "IBM Plex Sans KR", sans-serif`;
+  inkDraw(ctx, [{ path: R(r.x + 34, r.y + r.h, 12, r.base - r.y - r.h, 3), c: '#3a434f' }, { path: R(r.x + r.w - 46, r.y + r.h, 12, r.base - r.y - r.h, 3), c: '#3a434f' },
+    { path: R(r.x - 10, r.y - 10, r.w + 20, r.h + 20, 12), c: '#1f2430' }, { flat: 1, path: R(r.x - 6, r.y - 8, r.w + 12, 4, 2), c: 'rgba(255,255,255,.12)' }], 3);
+  ctx.save(); rr(ctx, r.x, r.y, r.w, r.h, 4); ctx.clip(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (S.live) {
+    if (LIVE_IMG.complete && LIVE_IMG.naturalWidth) ctx.drawImage(LIVE_IMG, r.x, r.y, r.w, r.h);
+    else { const g = ctx.createLinearGradient(r.x, r.y, r.x + r.w, r.y + r.h); g.addColorStop(0, '#173a2c'); g.addColorStop(1, '#0d1b2a'); ctx.fillStyle = g; ctx.fillRect(r.x, r.y, r.w, r.h);
+      ctx.fillStyle = '#00ffa3'; ctx.font = f(800, 20); ctx.fillText('CHZZK LIVE', r.x + r.w / 2, r.y + r.h / 2 - 8); }
+  } else {
+    const g = ctx.createLinearGradient(r.x, r.y, r.x, r.y + r.h); g.addColorStop(0, '#22304a'); g.addColorStop(1, '#141c2c'); ctx.fillStyle = g; ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.fillStyle = '#ffd166'; ctx.font = f(800, 17); fillTextIco(ctx, '🥬 김치복 TV', r.x + r.w / 2, r.y + r.h * .3);
+    ctx.fillStyle = '#c9f0d2'; ctx.font = f(700, 11); ctx.fillText(boardText(), r.x + r.w / 2, r.y + r.h * .55);
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = f(600, 8.5); ctx.fillText('방송이 켜지면 여기서 같이 봐요', r.x + r.w / 2, r.y + r.h * .74);
+  }
+  ctx.fillStyle = 'rgba(255,255,255,.05)'; for (let y = r.y; y < r.y + r.h; y += 3) ctx.fillRect(r.x, y, r.w, 1);   // 전광판 줄무늬
+  if (S.live) { ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(r.x, r.y + r.h - 20 * K, r.w, 20 * K); ctx.fillStyle = '#fff'; ctx.font = f(700, 11); ctx.fillText('▶ 눌러서 같이 보기', r.x + r.w / 2, r.y + r.h - 10 * K); }
   ctx.restore();
-  ctx.fillStyle = Math.floor(now / 600) % 2 ? '#ff3b3b' : '#ff6b6b'; rr(ctx, r.x + 6, r.y + 6, 42, 16, 5); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.font = '800 10.5px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('● LIVE', r.x + 27, r.y + 14.5);
+  const bw = 42 * K, bh = 16 * K; ctx.fillStyle = S.live ? (Math.floor(now / 600) % 2 ? '#ff3b3b' : '#ff6b6b') : '#5d6b7e'; rr(ctx, r.x + 8, r.y + 8, bw, bh, 5 * K); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = f(800, 10); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(S.live ? '● LIVE' : 'OFF AIR', r.x + 8 + bw / 2, r.y + 8 + bh / 2 + .5);
 }
 function drawBoard(s, now) {
   const X = s.x * T, Y = s.y * T, w = s.w * T;
-  if (S.live) drawLiveScreen(s, now);
   inkDraw(ctx, [{ path: R(X + 18, Y - 4, 7, 30, 2), c: '#5b4636' }, { path: R(X + w - 25, Y - 4, 7, 30, 2), c: '#5b4636' }, { path: R(X + 4, Y - 34, w - 8, 40, 7), c: S.live ? '#1f2a3a' : '#33405a' }], 2.2);
   ctx.font = '700 15px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   if (S.live) { ctx.fillStyle = Math.floor(now / 500) % 2 ? '#ff4d4f' : '#ffd166'; fillTextIco(ctx, '🔴 김치복 생방송 중!', X + w / 2, Y - 14); }
@@ -1684,7 +1689,7 @@ function render(now) {
   for (const h of HOUSES) if (vis(h.x * T, (h.y + HOUSE_H) * T)) list.push({ y: (h.y + HOUSE_H) * T, f: () => drawHouse(h) });
   for (const d of DECO) if (vis(d.x * T, d.y * T)) list.push({ y: d.y * T + T - 3, f: () => drawDeco(d) });
   for (const n of NODES) if (vis(n.x * T, n.y * T)) list.push({ y: n.y * T + T - 3, f: () => drawNode(n, now) });
-  for (const s of SPOTS) { if (s.id === 'fountain') list.push({ y: (s.y + 1.6) * T, f: () => drawFountain(s, now) }); if (s.id === 'board') list.push({ y: s.y * T + 26, f: () => drawBoard(s, now) }); }
+  for (const s of SPOTS) { if (s.id === 'fountain') list.push({ y: (s.y + 1.6) * T, f: () => drawFountain(s, now) }); if (s.id === 'board') list.push({ y: s.y * T + 26, f: () => drawBoard(s, now) }); if (s.id === 'screen') list.push({ y: (s.y + s.h) * T, f: () => drawScreen(s, now) }); }
   if (vis(PORTAL.x, PORTAL.y)) list.push({ y: PORTAL.y, f: () => drawPortal(now) });
   for (const b of BENCHES) list.push({ y: b.y * T + 24, f: () => drawBench(b) });
   if (vis(FSIGN.x, FSIGN.y)) list.push({ y: FSIGN.y, f: () => drawFishSpot(now) });
@@ -2273,7 +2278,7 @@ function tap(sx, sy) {
     return busyToast();
   }
   if (Math.hypot(w.x - FSIGN.x, w.y - (FSIGN.y - 24)) < 26) return openFishing();
-  if (S.live) { const bs = SPOTS.find(s => s.id === 'board'), r = boardScreen(bs); if (w.x > r.x - 8 && w.x < r.x + r.w + 8 && w.y > r.y - 8 && w.y < bs.y * T - 34) return openSpot(bs); }
+  { const ss = SPOTS.find(s => s.id === 'screen'), r = screenRect(ss); if (w.x > r.x - 10 && w.x < r.x + r.w + 10 && w.y > r.y - 10 && w.y < r.base) return openSpot(ss); }   // 큰 전광판
   if (Math.abs(w.x - PORTAL.x) < 24 && w.y > PORTAL.y - 74 && w.y < PORTAL.y + 6) return openHuntSelect();
   const fo = SPOTS.find(s => s.id === 'fountain'); if (Math.hypot((w.x - (fo.x + 1) * T) / 38, (w.y - (fo.y + .8) * T) / 36) < 1) return openWish();
   if (hitP) return openProfile(hitP);
@@ -2460,13 +2465,14 @@ function openSpot(s) {
   if (s.id === 'river') return openFishing();
   if (s.id === 'farm') return openFarm();
   if (s.id === 'fountain') return openWish();
-  if (s.id === 'board' && S.live) {
+  if ((s.id === 'screen' || s.id === 'board') && S.live) {
     const src = `https://chzzk.naver.com/embed/live/${(liveInfo?.url || '').split('/live/')[1] || CHZZK_ID}`;
     return openModal(`<h3>🔴 김치복 생방송</h3>${liveInfo?.title ? `<p style="margin:0 0 6px"><b>${esc(liveInfo.title)}</b></p>` : ''}
       <div class="livebox"><iframe src="${src}" title="김치복 치지직 생방송" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
       <p class="muted">광장 근처에 있으면, 치지직 채팅에 <b>게임 닉네임과 똑같은 닉네임</b>으로 쓴 말이 마을 채팅과 말풍선으로도 보여요. 방송 중에는 마을 모두 경험치·골드 2배!</p>
       <div class="actions"><a class="btn" href="${(liveInfo?.url) || `https://chzzk.naver.com/live/${CHZZK_ID}`}" target="_blank" rel="noopener">치지직에서 크게 보기 · 채팅하기</a></div><button class="close" data-close>닫기</button>`);
   }
+  if (s.id === 'screen') return openModal(`<h3>📺 광장 대형 전광판</h3><p>김치복님이 방송을 켜면 이 전광판에서 <b>마을 사람들과 같이</b> 볼 수 있어요.</p><p><b>${boardText()}</b></p><p class="muted">방송 중에 광장 근처에 있으면, 치지직 채팅에 게임 닉네임과 똑같은 닉네임으로 쓴 말이 마을 채팅에도 보여요.</p><button class="close" data-close>닫기</button>`);
   if (s.id === 'board') openModal(`<h3>📣 광장 전광판</h3><p>${S.live ? '지금 김치복 생방송 중이에요!' : '김치복 방송 일정과 공지가 나오는 전광판.'}</p><div class="actions">${actBtn('sched', '📅 방송 일정 보기', '홈페이지 일정')}</div><button class="close" data-close>닫기</button>`, el => el.querySelector('.actions').addEventListener('click', e => { const a = e.target.closest('[data-a]')?.dataset.a; if (a) doAct(a); }));
 }
 function addGold(n) { me.gold += n; syncBars(); }
