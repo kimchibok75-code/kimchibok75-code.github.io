@@ -189,7 +189,9 @@ button.chip { cursor: pointer; font: inherit; font-weight: 700; }
 .hud .spacer { flex: 1; }
 .iconbtn { width: 38px; height: 38px; border-radius: 12px; border: 2px solid var(--ink); background: rgba(251, 252, 247, .94); font-size: calc(18px * var(--fs)); display: grid; place-items: center; }
 .placegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; margin: 8px 0; }
-.placegrid .btn { display: flex; align-items: center; gap: 8px; justify-content: flex-start; padding: 10px; }
+.placegrid .btn { display: flex; align-items: center; gap: 8px; justify-content: flex-start; padding: 8px 10px; text-align: left; }
+.placegrid .pi { font-size: 22px; flex: none; } .placegrid .pt { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; } .placegrid .pt small { font-size: 11.5px; font-weight: 500; color: #6b7686; }
+.placeh { margin: 12px 0 2px; font-size: 14px; color: #4a5566; } .placeh:first-of-type { margin-top: 6px; }
 .rcol { position: absolute; right: 10px; top: 56px; display: grid; gap: 6px; justify-items: end; }   /* 오른쪽 세로 버튼 + 확대 버튼 (버튼 수가 바뀌어도 안 겹침) */
 .side { display: grid; gap: 6px; }
 .iconbtn.lb { height: 50px; grid-template-rows: 1fr auto; padding: 4px 0 3px; line-height: 1; }
@@ -1543,39 +1545,49 @@ const BLD = {
     { path: PG([[W / 2 - 22, -6], [W / 2 - 10, -14], [W / 2 + 10, -14], [W / 2 + 22, -6], [W / 2 + 15, 2], [W / 2 + 10, -2], [W / 2 + 10, 14], [W / 2 - 10, 14], [W / 2 - 10, -2], [W / 2 - 15, 2]]), c: '#4f9dd9' },
     { flat: 1, path: g => heartPath(g, W / 2, 2, 4), c: '#fff' }],
   // 마을회관 (2.5D 시험): 위에서 비스듬히 내려다본 모습. 지붕 윗면이 넓게 보이고, 처마 두께 → 앞벽 → 계단
+  // 마을회관 (2026-11-16 새 그림): 테두리 없는 면 스타일 · 위에서 내려다본 3/4 시점 (윗면 약 80%, 앞면 약 20%, 원근 없음)
   hall: (W, H) => {
-    const eave = 78, wallT = eave + 9, ridge = -12, inset = 22;
+    const F = 1, top = -38, eave = H - 46, fr = H - 6, rg = 22, cx = W / 2;   // top~eave = 지붕 윗면, eave~fr = 앞벽
+    const RF = { back: '#4c6987', front: '#7193b5', left: '#5b7b9c', right: '#527293', lip: '#3d5672', cap: '#9db6d0' };
+    const tiles = g => { g.fillStyle = 'rgba(25,40,60,.16)'; for (let y = rg + 10; y < eave - 2; y += 10) { const k = (y - rg) / (eave - rg), x0 = 42 - 46 * k, x1 = W - 42 + 46 * k; g.fillRect(x0, y, x1 - x0, 1.6); } g.fillStyle = 'rgba(255,255,255,.08)'; for (let y = rg - 10; y > top + 4; y -= 10) { const k = (rg - y) / (rg - top), x0 = 42 - 46 * k, x1 = W - 42 + 46 * k; g.fillRect(x0, y, x1 - x0, 1.4); } };
     return [
-      // 바닥 단 (앞으로 튀어나온 돌 기단 + 계단)
-      { path: R(-6, H - 14, W + 12, 14, 3), c: '#cfc9bc' }, { flat: 1, path: R(-6, H - 14, W + 12, 4, 0), c: '#e4dfd3' },
-      { path: PG([[W / 2 - 30, H - 2], [W / 2 + 30, H - 2], [W / 2 + 26, H + 10], [W / 2 - 26, H + 10]]), c: '#bdb6a7' },
-      { flat: 1, path: R(W / 2 - 28, H + 2, 56, 2, 0), c: 'rgba(0,0,0,.12)' },
-      // 앞벽 (흰 돌) + 기둥 + 창문 + 문
-      { path: R(4, wallT - 2, W - 8, H - wallT - 10, 2), c: '#f4f1ea' },
-      { flat: 1, path: R(4, wallT - 2, W - 8, 8, 0), c: 'rgba(60,70,90,.16)' },
-      ...[14, W - 28].map(x => ({ path: R(x, wallT + 2, 14, H - wallT - 16, 2), c: '#ffffff' })),
-      ...[14, W - 28].map(x => ({ flat: 1, path: R(x + 10, wallT + 2, 4, H - wallT - 16, 0), c: 'rgba(0,0,0,.08)' })),
-      ...winP(36, wallT + 12, 26, 26), ...winP(W - 62, wallT + 12, 26, 26),
-      ...doorP(W / 2 - 18, H - 58, 36, 46),
-      { flat: 1, path: R(W / 2 - 24, H - 62, 48, 5, 2), c: '#c9b48a' },
-      // 지붕: 처마 두께(앞면) + 넓은 윗면(앞쪽 경사) + 양옆 경사면 + 용마루
-      { path: R(-12, eave, W + 24, 10, 3), c: '#3f566e' },
-      { path: PG([[-12, eave + 1], [W + 12, eave + 1], [W - inset, ridge], [inset, ridge]]), c: '#6d88a4', after: g => {
-        g.save(); g.beginPath(); g.moveTo(-12, eave + 1); g.lineTo(W + 12, eave + 1); g.lineTo(W - inset, ridge); g.lineTo(inset, ridge); g.closePath(); g.clip();
-        for (let y = ridge + 9, r = 0; y < eave; y += 9, r++) { // 기와 줄
-          g.fillStyle = 'rgba(30,45,65,.22)'; g.fillRect(-20, y, W + 40, 1.6);
-          g.fillStyle = 'rgba(255,255,255,.10)'; for (let x = -20 + (r % 2) * 9; x < W + 20; x += 18) g.fillRect(x, y - 7.5, 1.4, 7);
-        }
-        g.restore(); } },
-      { flat: 1, path: PG([[-12, eave + 1], [inset, ridge], [inset + 26, ridge + 10], [12, eave + 1]]), c: 'rgba(20,35,55,.22)' },
-      { flat: 1, path: PG([[W + 12, eave + 1], [W - inset, ridge], [W - inset - 26, ridge + 10], [W - 12, eave + 1]]), c: 'rgba(255,255,255,.12)' },
-      { path: R(inset - 4, ridge - 6, W - inset * 2 + 8, 9, 4), c: '#4b6580' },
-      // 지붕창(시계): 경사 위에 솟은 작은 박공
-      { path: R(W / 2 - 20, 26, 40, 34, 2), c: '#f4f1ea' },
-      { path: PG([[W / 2 - 26, 30], [W / 2 + 26, 30], [W / 2, 8]]), c: '#4b6580' },
-      { path: E(W / 2, 44, 11, 11), c: '#fff' }, { flat: 1, path: R(W / 2 - 1, 36, 2, 9, 1), c: INK }, { flat: 1, path: R(W / 2, 43, 7, 2, 1), c: INK },
-      // 깃대 (용마루 위)
-      { path: R(W / 2 - 1.5, ridge - 46, 3, 42, 1), c: '#5b4636' }, { path: E(W / 2, ridge - 48, 3, 3), c: '#ffd45a' }];
+      // 돌 기단: 윗면 + 앞면
+      { flat: F, path: R(-10, top + 14, W + 20, fr - top - 8, 8), c: '#d8d2c4' },
+      { flat: F, path: R(-10, fr - 2, W + 20, 12, [0, 0, 6, 6]), c: '#b3ab9a' },
+      { flat: F, path: R(-10, fr - 2, W + 20, 2, 0), c: 'rgba(255,255,255,.35)' },
+      // 앞 계단 (윗면 줄 + 앞면)
+      { flat: F, path: R(cx - 30, fr - 4, 60, 18, 3), c: '#cbc3b2' }, { flat: F, path: R(cx - 30, fr + 5, 60, 2, 0), c: 'rgba(0,0,0,.08)' }, { flat: F, path: R(cx - 30, fr + 11, 60, 3, [0, 0, 3, 3]), c: '#a9a090' },
+      // 앞벽 (지붕 처마 아래로 조금 보이는 면)
+      { flat: F, path: R(6, eave, W - 12, fr - eave, 0), c: '#efe9dc' },
+      { flat: F, path: R(6, eave, W - 12, 7, 0), c: 'rgba(40,55,75,.18)' },   // 처마 그림자
+      ...[16, 44, W - 54, W - 26].map(x => ({ flat: F, path: R(x, eave + 4, 10, fr - eave - 4, 0), c: '#fbf8f1' })),
+      ...[16, 44, W - 54, W - 26].map(x => ({ flat: F, path: R(x + 7, eave + 4, 3, fr - eave - 4, 0), c: 'rgba(0,0,0,.07)' })),
+      ...[30, W - 40].map(x => ({ flat: F, path: R(x - 4, eave + 14, 18, 16, 2), c: '#8fc6e0' })),
+      ...[30, W - 40].map(x => ({ flat: F, path: R(x - 4, eave + 14, 18, 4, [2, 2, 0, 0]), c: 'rgba(255,255,255,.4)' })),
+      { flat: F, path: R(cx - 17, eave + 8, 34, fr - eave - 8, [12, 12, 0, 0]), c: '#7a4b2a' },
+      { flat: F, path: R(cx - 13, eave + 12, 26, fr - eave - 12, [10, 10, 0, 0]), c: '#6a3f22' },
+      { flat: F, path: R(cx - 1, eave + 12, 2, fr - eave - 12, 0), c: 'rgba(0,0,0,.18)' },
+      { flat: F, path: E(cx + 7, eave + 26, 1.8, 1.8), c: '#ffd166' },
+      // 지붕 (위에서 본 모임지붕: 뒤 · 양옆 · 앞 경사면 + 용마루)
+      { flat: F, path: PG([[-6, top], [W + 6, top], [W - 42, rg], [42, rg]]), c: RF.back },
+      { flat: F, path: PG([[-6, top], [42, rg], [-6, eave]]), c: RF.left },
+      { flat: F, path: PG([[W + 6, top], [W - 42, rg], [W + 6, eave]]), c: RF.right },
+      { flat: F, path: PG([[42, rg], [W - 42, rg], [W + 6, eave], [-6, eave]]), c: RF.front, after: tiles },
+      { flat: F, path: R(-6, eave, W + 12, 6, [0, 0, 3, 3]), c: RF.lip },   // 처마 두께 (앞면)
+      { flat: F, path: PG([[-6, top], [42, rg], [44, rg + 2], [-3, top]]), c: 'rgba(255,255,255,.18)' },
+      { flat: F, path: PG([[W + 6, top], [W - 42, rg], [W - 44, rg + 2], [W + 3, top]]), c: 'rgba(255,255,255,.12)' },
+      { flat: F, path: R(40, rg - 2.5, W - 80, 5, 2.5), c: RF.cap },
+      // 시계탑 (지붕 가운데에 솟은 작은 탑: 윗면 = 작은 모임지붕, 앞면 = 시계)
+      { flat: F, path: R(cx - 18, rg - 6, 36, 20, 0), c: '#f4f1ea' },
+      { flat: F, path: R(cx - 18, rg - 6, 36, 4, 0), c: 'rgba(40,55,75,.15)' },
+      { flat: F, path: E(cx, rg + 5, 7.5, 7.5), c: '#ffffff' }, { flat: F, path: R(cx - .9, rg - 1, 1.8, 6, 1), c: '#2d3a4e' }, { flat: F, path: R(cx, rg + 4.2, 5, 1.8, 1), c: '#2d3a4e' },
+      { flat: F, path: PG([[cx - 22, rg - 40], [cx + 22, rg - 40], [cx, rg - 24]]), c: '#a8402c' },
+      { flat: F, path: PG([[cx - 22, rg - 40], [cx, rg - 24], [cx - 22, rg - 6]]), c: '#c4503a' },
+      { flat: F, path: PG([[cx + 22, rg - 40], [cx, rg - 24], [cx + 22, rg - 6]]), c: '#b94832' },
+      { flat: F, path: PG([[cx - 22, rg - 6], [cx, rg - 24], [cx + 22, rg - 6]]), c: '#e2604a' },
+      { flat: F, path: R(cx - 22, rg - 7, 44, 3, 0), c: '#8f3424' },
+      // 깃대 (시계탑 꼭대기에서 위로)
+      { flat: F, path: R(cx - 1.5, rg - 66, 3, 43, 1.5), c: '#5b4636' }, { flat: F, path: E(cx, rg - 67, 3, 3), c: '#ffd45a' }];
   },
   smith: (W, H) => [
     { path: R(6, 78, W - 12, H - 78, 4), c: '#9aa1aa', after: g => { g.strokeStyle = 'rgba(40,45,55,.25)'; g.lineWidth = 1.5; for (let y = 90; y < H; y += 14) { g.beginPath(); g.moveTo(8, y); g.lineTo(W - 8, y); g.stroke(); for (let x = 20 + (y % 28 ? 12 : 0); x < W - 10; x += 24) { g.beginPath(); g.moveTo(x, y - 14); g.lineTo(x, y); g.stroke(); } } } },
@@ -1608,7 +1620,7 @@ const BLD = {
     { path: R(W / 2 - 18, H - 44, 36, 44, 2), c: '#f3ead2', after: g => { g.strokeStyle = '#c8553d'; g.lineWidth = 3; g.beginPath(); g.moveTo(W / 2 - 15, H - 41); g.lineTo(W / 2 + 15, H - 3); g.moveTo(W / 2 + 15, H - 41); g.lineTo(W / 2 - 15, H - 3); g.stroke(); } },
     { path: R(W - 34, H - 22, 26, 20, 4), c: '#f2d06b' }, { flat: 1, path: R(W - 34, H - 15, 26, 2, 0), c: '#c9a24a' }, { path: E(W / 2, 18, 7, 7), c: '#f3ead2' }],
 };
-const LAB = { cafe: 40, gacha: 86, skin: 38, hall: 96, smith: 30, fishshop: 34, lumber: 40, quarry: 30, farmshed: 30 };
+const LAB = { cafe: 40, gacha: 86, skin: 38, hall: 86, smith: 30, fishshop: 34, lumber: 40, quarry: 30, farmshed: 30 };
 function bSprite(b) {
   const Wd = b.w * T, Hh = b.h * T;
   return sprite('b:' + b.id, Wd + 40, Hh + 100, 20, 90, g => inkDraw(g, BLD[b.id](Wd, Hh), 2.4));
@@ -1624,7 +1636,7 @@ function drawBuilding(b, now) {
     for (let k = 0; k < 3; k++) { const p = (tt * .9 + k / 3) % 1; ctx.beginPath(); ctx.arc(sx + Math.sin(p * 6 + k) * 4, sy - p * 26, (b.id === 'smith' ? 4 : 2.5) + p * 5, 0, 7); ctx.fill(); }
   }
   if (b.id === 'gacha') { for (let i = 0; i < 9; i++) { const on = (Math.floor(tt * 4) + i) % 3 === 0; ctx.fillStyle = on ? '#fff6b0' : '#ffb02e'; ctx.beginPath(); ctx.arc(X + 20 + i * (Wd - 40) / 8, Y + 71, on ? 3.4 : 2.4, 0, 7); ctx.fill(); } }
-  if (b.id === 'hall') { const fx = X + Wd / 2 + 1.5, fy = Y - 58; ctx.fillStyle = '#e8553a'; ctx.strokeStyle = INK; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(fx, fy); for (let k = 0; k <= 6; k++) ctx.lineTo(fx + k * 5, fy + Math.sin(tt * 5 + k) * 2.2); for (let k = 6; k >= 0; k--) ctx.lineTo(fx + k * 5, fy + 15 + Math.sin(tt * 5 + k) * 2.2); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+  if (b.id === 'hall') { const fx = X + Wd / 2 + 1.5, fy = Y - 44; ctx.fillStyle = '#e8553a'; ctx.strokeStyle = 'rgba(0,0,0,0)'; ctx.lineWidth = 0; ctx.beginPath(); ctx.moveTo(fx, fy); for (let k = 0; k <= 6; k++) ctx.lineTo(fx + k * 5, fy + Math.sin(tt * 5 + k) * 2.2); for (let k = 6; k >= 0; k--) ctx.lineTo(fx + k * 5, fy + 15 + Math.sin(tt * 5 + k) * 2.2); ctx.closePath(); ctx.fill(); ctx.stroke(); }
   plaque(`${b.icon} ${b.name}`, X + Wd / 2, Y + (LAB[b.id] ?? 30));
 }
 function plaque(label, x, y, bg = '#fbfcf7', fs = 13) {
@@ -3802,8 +3814,11 @@ $('#resetStats').onclick = () => {
 
 // ───────── 마을 바로가기 (설정 버튼 밑 🏘️): 누르면 그 자리로 바로 이동 ─────────
 const door = id => { const b = BUILDINGS.find(b => b.id === id); return [(b.door.x + .5) * T, (b.door.y + .5) * T]; };
-const PLACES = [['⛲', '광장 분수 앞', START.x, START.y], ['🎰', '가챠센터', ...door('gacha')], ['☕', '카페', ...door('cafe')], ['👕', '스킨샵', ...door('skin')], ['🔨', '대장간', ...door('smith')],
-  ['🏛️', '마을회관', ...door('hall')], ['🎣', '낚시터', FISH_AT.x, FISH_AT.y], ['🐚', '바닷가', SEA_AT.x, SEA_AT.y], ['🪝', '낚시점', ...door('fishshop')], ['🪓', '벌목소', ...door('lumber')], ['⛏️', '채광소', ...door('quarry')], ['🌾', '텃밭', ...door('farmshed')], ['🌀', '사냥터 포탈', BACK.x, BACK.y]];
+// 바로가기: [아이콘, 이름, x, y, 하는 일, 묶음]. 묶음은 PLACE_GROUPS 순서대로 보여 줌
+const PLACE_GROUPS = [['go', '📍 이동'], ['shop', '🏷️ 가게'], ['life', '🌱 생활 · 모으기']];
+const PLACES = [['⛲', '광장 분수 앞', START.x, START.y, '소원 빌기', 'go'], ['🏛️', '마을회관', ...door('hall'), '집 짓기 · 키우기', 'go'], ['🌀', '사냥터 포탈', BACK.x, BACK.y, '사냥 가기', 'go'],
+  ['🎰', '가챠센터', ...door('gacha'), '장비 · 스킬 뽑기', 'shop'], ['🔨', '대장간', ...door('smith'), '장비 강화', 'shop'], ['👕', '스킨샵', ...door('skin'), '겉모습 꾸미기', 'shop'], ['☕', '카페', ...door('cafe'), '물약 · 쉬기 · 알바', 'shop'], ['🪝', '낚시점', ...door('fishshop'), '낚싯대 · 미끼', 'shop'],
+  ['🎣', '낚시터', FISH_AT.x, FISH_AT.y, '강 낚시 · 자동 낚시', 'life'], ['🐚', '바닷가', SEA_AT.x, SEA_AT.y, '바다 낚시', 'life'], ['🌾', '텃밭', ...door('farmshed'), '심고 키우고 수확', 'life'], ['🪓', '벌목소', ...door('lumber'), '목재 모으기', 'life'], ['⛏️', '채광소', ...door('quarry'), '석재 모으기', 'life']];
 // 바로가기로 가면 그 시설 창도 바로 열기
 function placeOpen(n) {
   const bid = { '가챠센터': 'gacha', '카페': 'cafe', '스킨샵': 'skin', '대장간': 'smith', '마을회관': 'hall', '낚시점': 'fishshop', '벌목소': 'lumber', '채광소': 'quarry' }[n];
@@ -3824,8 +3839,9 @@ function teleport(px, py, quiet) {
 $('#townBtn').onclick = () => {
   if (RD) return toast('레이드가 끝날 때까지 나갈 수 없어요');
   if (HT) return toast('사냥 중에는 현황판의 "마을로 돌아가기"를 눌러 주세요');
-  const list = [...PLACES, ...(myHouse() ? [['🏠', '내 집', ...houseDoor(myHouse())]] : [])];
-  openModal(`<h3>🏘️ 마을 바로가기</h3><p class="muted">누르면 그 자리로 바로 가서 시설 창이 열려요.</p><div class="placegrid">${list.map(([i, n], k) => `<button class="btn" data-x="${k}"><span style="font-size:22px">${i}</span>${n}</button>`).join('')}</div><button class="close" data-close>닫기</button>`,
+  const list = [...(myHouse() ? [['🏠', '내 집', ...houseDoor(myHouse()), '내 집으로', 'go']] : []), ...PLACES];
+  const btn = ([i, n, , , d], k) => `<button class="btn" data-x="${k}"><span class="pi">${i}</span><span class="pt"><b>${n}</b><small>${d}</small></span></button>`;
+  openModal(`<h3>🏘️ 마을 바로가기</h3><p class="muted">누르면 그 자리로 바로 가서 시설 창이 열려요.</p>${PLACE_GROUPS.map(([g, t]) => `<h4 class="placeh">${t}</h4><div class="placegrid">${list.map((p, k) => p[5] === g ? btn(p, k) : '').join('')}</div>`).join('')}<button class="close" data-close>닫기</button>`,
     el => wire(el, async k => { const [, n, x, y] = list[+k]; closeModal(); ROAM.pause = 20; teleport(x, y); setTimeout(() => placeOpen(n), 250); }));
 };
 

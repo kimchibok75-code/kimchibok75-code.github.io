@@ -384,7 +384,12 @@
 - **새 버전 자동 새로 고침**: 배포할 때 update.yml이 `game.html + assets/js/game-*.js` 지문(8글자)을 `game-version.txt`에 쓰고 game.html의 `__GAMEV__`에 넣음
   - 화면은 1분마다(그리고 다시 볼 때) `game-version.txt`를 읽고 다르면 토스트 → 3초 뒤 위치 저장 → 새로 고침 (`checkVer`, `reloadSoon`). 레이드 중이면 끝난 뒤
   - 데이터 자동 갱신(봇 커밋)으로는 지문이 안 바뀌어서 새로 고침 안 됨. 내 컴퓨터에서는 `__GAMEV__` 그대로라 꺼져 있음
-- 내가 만든 그림 넣을 곳: `assets/img/game/` (아직 없음. 쓰게 되면 만들기)
+- **그림 폴더** `assets/img/game/` (2026-11-16): 지금 코드 그림을 PNG로 뽑아 둔 참고용 사본 380장 (char·item·mon·build·nature·props·ui·bg, 설명은 그 폴더 README.md). 게임은 아직 이 파일을 안 읽음
+  - 다시 뽑기: (1) 백그라운드로 `node scripts/img-export/recv.mjs` (5199 포트, 받은 PNG를 그 폴더에 씀) (2) `scripts/img-export/exporter.js` 내용을 한 줄로 합쳐 game.html의 `// 화면 이동은 실제 화면 점` 줄 앞에 `// DEBUG-REMOVE`로 넣기 (3) 로컬 서버 + 미리보기에서 로그인 후 `window.__export()` (숨긴 창이면 몇 분 걸림, `.then`으로 돌리고 기다리기) (4) DEBUG-REMOVE 지우기
+  - 사용자가 직접 그린 그림을 넣으면 그 그림을 `Image`로 불러 `sprite()` 대신 쓰게 바꾸기
+- 사냥터 보스: 30분 → **5분마다** (`HUNT.bossEvery: 300`). 보상은 그대로라 보스 수입이 6배
+- 바로가기 창: `PLACES` = [아이콘, 이름, x, y, 하는 일, 묶음], 묶음 `PLACE_GROUPS` (이동 / 가게 / 생활·모으기)
+- **새 그림 스타일 (마을회관부터)**: 테두리 없는 면(모든 조각 `flat: 1`) + 위에서 내려다본 3/4 시점 (윗면 약 80%, 앞면 약 20%, 원근·소실점 없음, 반듯한 평행선). 사용자가 다른 건물도 이 스타일로 바꿔 달라고 하면 `BLD.hall`을 참고
 
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감
