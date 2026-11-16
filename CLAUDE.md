@@ -60,6 +60,7 @@
 - git과 gh가 PATH에 없으면 먼저 실행:
   `$env:Path = "C:\Program Files\Git\cmd;C:\Program Files\GitHub CLI;" + $env:Path`
 - 미리보기 서버: `node scripts/serve.mjs`
+- `wrangler deploy`가 시작 줄(⛅️ wrangler …)만 찍고 아무것도 안 하고 끝나면: 예전에 켠 `wrangler dev`(node·workerd·esbuild)가 남아 있는 것. 그 프로세스들을 끄고 다시 배포 (`serve.mjs`는 끄지 않기)
 - push하기 전에 항상 `git pull --rebase` 하기. 자동 갱신 봇이 data 파일을 자주 커밋함.
   - `data/mods.json`이 충돌하면: `git checkout --theirs data/mods.json` → `node scripts/update.mjs mods` → add → rebase 계속.
 - PowerShell에서 `node -e`에 복잡한 정규식을 넣으면 깨짐. 이럴 땐 임시 .mjs 파일을 만들어 실행.
