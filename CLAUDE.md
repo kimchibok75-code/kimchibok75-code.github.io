@@ -325,7 +325,7 @@
   - 시험: 임시로 `window.__raid = () => { enterRaid(srvNow() + 1500); RD.tries = 99; RD.ws.onmessage = null; RD.ws.close(); RD.max = RD.hp = 1e9; }` (DEBUG-REMOVE)
 - 화면 `raidAsk/enterRaid/updateRaid/raidClaim`. 새로고침하면 localStorage `cbt-raid`로 다시 들어감. 보상은 `/api/raid/claim` (`life.raidGot`으로 한 번만)
 - **관리자 버튼**: 오른쪽 세로 버튼 맨 위 🛡️ (`#admBtn`, 관리자만 보임) → 치트 탭 맨 위 '레이드 지금 열기' (`/api/admin/raid`)
-- **자동 생활** 🧺: `life.auto`, `autoSettle`(1시간에 목재 36·석재 24·골드·코인, 최대 8시간). 사냥·알바를 시작하면 꺼짐. 화면 `autoPace`는 보여 주기용
+- ~~자동 생활 🧺: `life.auto`, `autoSettle`(시간으로 계산)~~ → 2026-11-17 새 자동 생활로 바뀜 (아래 "자동 생활 새로 만듦"). 예전 설명: 사냥·알바를 시작하면 꺼짐. 화면 `autoPace`는 보여 주기용
 - **집 단계** (마을회관): `HOUSE_TIERS` 일반 집 → 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩. 빌라부터 임대 수입(1시간 5천/1.2만/3만, 최대 `HOUSE_INC_CAP` 12시간)
   - `life.house.{lv, at, acc}`, `houseSettle`, `/api/house/up`, `/api/house/collect`, DB `houses.lv` (`0012_house_lv.sql`). 그림 `towerParts(lv)`
 - 처음 안내(`showGuide`)에 '이런 것도 있어요': 마을회관 집 · 매시 레이드 · 자동 생활
@@ -461,6 +461,15 @@
 - 물약 자동 선택: 최대 체력 1150 넘고 45% 넘게 다쳤으면 특대 음료 먼저 (서버 `drink`, 화면 `usePotion` 같은 규칙)
 - 시험 계산(사냥터마다 그 레벨대 캐릭터 1시간): 처치 수는 예전과 같음. 물약 있으면 안 쓰러짐, 물약 없으면 협곡·공장에서 20분에 1~6번 쓰러짐. 물약값 = 사냥 골드의 25~60%
   - 다시 돌리려면: 캐릭터를 레벨·장비 단계로 만들어 `startHunt` → 30초마다 `settle` 1시간, `GIMMICK.off = true`로 예전과 비교
+
+### 도구 들기 · 자동 생활 새로 만듦 — 2026-11-17 배포
+- 벌목·채광·낚시할 때 무기 대신 도구를 손에 듦: `c.tool` = axe · pick · rod (`drawChar`, 그림 `TOOL_P`). 도끼·곡괭이는 팔을 들었다 내려찍음(`c.toolT`, `c.toolBusy`). `gatherTick`이 매 장면 `me.tool`을 정함 (채집 중 / 자동 낚시 중). 손 낚시는 원래처럼 `c.fz`면 무기 없음
+- **자동 생활** 🧺 (`AU`, `autoPace`, localStorage `cbt-auto`): 캐릭터가 진짜로 걸어가서 손으로 하는 기능을 그대로 씀 → 서버는 손으로 한 것과 똑같이 셈. **게임 화면을 켜 둔 동안만** (화면을 닫으면 안 쌓임)
+  - 텃밭이 먼저 (`auFarm`): 다 자람 → 수확, 빈 칸 → 고른 씨앗(`S.seed`) 심기(골드가 씨앗값의 3배 넘을 때), 물 줄 수 있으면 물 주기. 할 일이 있으면 몰아서 다 함 (`farmTap` 그대로)
+  - 그다음 `AU_SEQ` 차례: 나무(3~5그루) → 바위(3~5) → 강 낚시(5~8번) → 나무 → 바위 → 바다 낚시 → 산책·인사. 나무·바위는 `startGather`, 낚시는 `fishAtWater`/`handFish`(미끼 필요 없음), 갈 수 없는 자리는 `AU.bad`
+  - 막 도착하면 1.2초 기다림(`AU.walked`) → 같은 일을 두 번 보내지 않게
+  - 서버: 예전 `life.auto.on`인 계정은 다음 요청 때 마지막으로 `autoSettle` 정산 후 꺼짐. `/api/auto/start`는 아무것도 안 함
+  - 사냥·알바 중에는 `BUSY()`가 그쪽을 먼저 봐서 자동은 쉼, 돌아오면 이어서 함
 
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감

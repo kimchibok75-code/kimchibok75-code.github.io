@@ -266,7 +266,7 @@ async function play(env, user, fn) {
       const max = derive(c).maxHp;
       c.hp = Math.min(max, Math.round(c.hp + Math.max(0, (at - (c.hpAt || at)) / 1000) * max * HUNT.townRegen)); c.hpAt = at;
     } else out.hunt = settle(c, at);
-    if (c.life.auto?.on) { const g = autoSettle(c, at); if (g) out.auto = g; }   // 자동 생활
+    if (c.life.auto?.on) { const g = autoSettle(c, at); if (g) out.auto = g; c.life.auto.on = 0; }   // 예전 자동 생활(시간으로 계산): 2026-11-17 마지막 정산 후 끔. 새 자동 생활은 화면이 직접 함
     const res = (await fn(c, at, out)) || {};
     if (c.life.auto?.on && (c.hunt || c.jobAt)) c.life.auto.on = 0;   // 사냥·알바를 시작하면 자동 생활은 꺼짐
     const dq = checkDaily(c, at); if (dq.length) out.daily = dq;   // 매일 의뢰 · 도장
@@ -420,7 +420,7 @@ const GAME = {
     return { n, log: ['reset-stats', String(n)] };
   },
   // 자동 생활 켜기 · 끄기 · 정산 (정산은 play()가 매번 함)
-  '/api/auto/start'(c, b, at) { townOnly(c); notWorking(c); c.life.auto = { on: 1, at, acc: c.life.auto?.acc || {} }; return { log: ['auto', 'on'] }; },
+  '/api/auto/start'() {},   // 예전 자동 생활 (더는 시간으로 쌓지 않음)
   '/api/auto/stop'(c) { if (c.life.auto) c.life.auto.on = 0; return { log: ['auto', 'off'] }; },
   '/api/auto/sync'() {},
   // 레이드 참가 (정각 30초 모집 중에만). 체력은 가득 채워서 시작
