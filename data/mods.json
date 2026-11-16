@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1794817123835,
+  "updatedAt": 1794817194193,
   "categories": [
     {
       "key": "김치복제작",
@@ -1064,43 +1064,6 @@
         "size": 198636,
         "collection": false,
         "summary": "Will force all memories fade out instead of just ending. For example instead of a divorce having -20 mood debuff for half a year and then vanish it will tick down over time. This will affect all memories, bad and good, w"
-      }
-    },
-    {
-      "id": "필수-761421485",
-      "steamId": "761421485",
-      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=761421485",
-      "name": "Allow Tool",
-      "desc": "아이템 허용/금지, 긴급 운반, 유사 물건 선택 등 다양한 작업을 한 번에 쉽게 처리하게 해주는 편의성 모드",
-      "category": "필수",
-      "section": "중요 모드",
-      "version": "1.6",
-      "kind": "mod",
-      "order": 16,
-      "source": "manual",
-      "addedAt": 1794567577770,
-      "steam": {
-        "title": "Allow Tool",
-        "preview": "https://images.steamusercontent.com/ugc/776246865735755178/CCCD0C73837BCCF95C0568802416AA79875EA281/",
-        "subs": 2203114,
-        "current": 1388767,
-        "favorited": 91287,
-        "views": 1339028,
-        "tags": [
-          "Mod",
-          "1.6",
-          "1.5",
-          "1.4",
-          "1.3",
-          "1.2",
-          "1.1",
-          "1.0"
-        ],
-        "created": 1473535534000,
-        "updated": 1752434339000,
-        "size": 1558281,
-        "collection": false,
-        "summary": "A set of tools to make your life on the Rim a bit easier. Easily forbid and unforbid items, select similar things, have things hauled urgently and affect the entire map with powerful new tool extensions. Allow Tool can b"
       }
     },
     {
@@ -6885,6 +6848,38 @@
         "size": 1884414,
         "collection": false,
         "summary": "나만의 편의성 개인용으로 만든 편의성 모음 모드입니다. 바닐라 UI에 자연스럽게 녹아들고, 대부분 우클릭이나 버튼 하나 로 씁니다. ⚙️ 모든 기능은 모드 설정 → 나만의 편의성 에서 하나씩 켜고 끌 수 있습니다. 게임을 다시 시작할 필요 없이 바로 적용되고, 기능을 꺼도 저장된 내용은 지워지지 않습니다. 📬 편지 · 알림 편지 우클릭 꾹 → 연속 삭제 빨간 편지 → 바로 띄우고 일시정지 "
+      }
+    },
+    {
+      "id": "필수-3524716849",
+      "steamId": "3524716849",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3524716849",
+      "name": "Keyz' Allow Utilities",
+      "desc": "Allow Tool을 새로 만든 가벼운 대체 모드. 허용/금지, 비슷한 물건 한 번에 고르기, 식물 관리 등 편의 기능",
+      "category": "필수",
+      "section": "중요 모드",
+      "version": "1.7",
+      "kind": "mod",
+      "order": 16,
+      "source": "manual",
+      "addedAt": 1794817194136,
+      "steam": {
+        "title": "Keyz' Allow Utilities",
+        "preview": "https://images.steamusercontent.com/ugc/10768680161356686970/B8AC1E06204F0615C1548381FF67481E618BC31F/",
+        "subs": 146520,
+        "current": 88170,
+        "favorited": 3048,
+        "views": 109915,
+        "tags": [
+          "Mod",
+          "1.7",
+          "1.6"
+        ],
+        "created": 1752411013000,
+        "updated": 1794132092000,
+        "size": 2029256,
+        "collection": false,
+        "summary": "Keyz' Allow Utilities A utility mod that adds various quality-of-life improvements for managing items and plants across your colony map. This mod focuses on enhancing selection, allow/forbid controls, and plant managemen"
       }
     }
   ],
