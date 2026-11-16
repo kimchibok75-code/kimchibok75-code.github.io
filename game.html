@@ -1215,18 +1215,23 @@ let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 214748364
 
 // 바닥을 미리 한 장으로 그려 두기 (픽셀 바닥 + 둥근 모서리)
 // GK: 바닥 그림 해상도 배율 (확대해도 덜 흐리게). 휴대폰은 메모리 때문에 조금 낮게 (iOS 캔버스 한도 1,670만 픽셀 안)
-let GK = innerWidth <= 760 ? 1.2 : 1.6, ground = null;
+// 가벼운 모드: 휴대폰이 메모리가 모자라 페이지를 다시 열면(튕김) 다음 접속부터 그림을 더 작게
+// cbt-booting = 로딩 중 표시 (로딩이 끝나고 10초 버티면 지움). 남아 있으면 지난번에 튕긴 것
+const PHONE = innerWidth <= 760 || matchMedia('(pointer: coarse)').matches;
+const LOWMEM = (() => { let n = 0; try { n = +localStorage.getItem('cbt-lowmem') || 0; if (localStorage.getItem('cbt-booting') === '1') { n = Math.min(3, n + 1); localStorage.setItem('cbt-lowmem', String(n)); } localStorage.setItem('cbt-booting', '1'); } catch {} return n; })();
+const SPR_K = PHONE ? [1.5, 1.25, 1, 1][LOWMEM] : 2;   // 건물·나무 그림 해상도
+let GK = PHONE ? [1, .75, .6, .5][LOWMEM] : 1.6, ground = null;
 // 로딩 막대 (pct = 0~100)
 function bootStep(pct, msg) {
   const b = document.getElementById('bootBar'), m = document.getElementById('bootMsg');
   if (b) b.style.width = Math.max(parseFloat(b.style.width) || 0, pct) + '%'; if (m && msg) m.textContent = msg;
   return new Promise(r => setTimeout(r));   // 화면이 막대를 다시 그릴 틈
 }
-function bootDone() { bootStep(100, '준비 끝!'); setTimeout(() => { const el = document.getElementById('boot'); if (el) { el.classList.add('done'); setTimeout(() => el.remove(), 400); } }, 150); }
+function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting', '0'); } catch {} }, 10e3); bootStep(100, '준비 끝!'); setTimeout(() => { const el = document.getElementById('boot'); if (el) { el.classList.add('done'); setTimeout(() => el.remove(), 400); } }, 150); }
 const GCOL = { [G]: ['#93cf74', '#8bc96c'], [PATH]: ['#ead6a6', '#e4cf9b'], [WATER]: ['#5db5dc', '#57aed6'], [STONE]: ['#ddd7ca', '#d4cdbf'], [SOIL]: ['#9b6b43', '#916340'], [DOCK]: ['#bb8752', '#b07c49'], [SAND]: ['#f0e2b6', '#eadaa9'], [GRAVEL]: ['#c9bfa9', '#c1b7a0'], [FOREST]: ['#72b05e', '#6aa857'] };
 async function paintGround(step) {
   const cv = document.createElement('canvas'); cv.width = Math.round(MW * T * GK); cv.height = Math.round(MH * T * GK);
-  const g = cv.getContext('2d'); if (!g) throw new Error('캔버스를 못 만듦');
+  const g = cv.getContext('2d'); if (!g) { cv.width = cv.height = 0; throw new Error('캔버스를 못 만듦'); }
   const WP = MW * T, HP = MH * T; seed = 11; g.scale(GK, GK);
   const r = (a, b) => a + rnd() * (b - a), pick = l => l[Math.floor(rnd() * l.length)];
   // 바닥 모양: soft(종류) 값을 4px 격자로 재고, 경계선을 선(벡터)으로 따서 칠함 → 확대해도 가장자리가 또렷함
@@ -1347,12 +1352,12 @@ async function paintGround(step) {
         q.restore(); } },
         { flat: 1, path: R(X + 7, Y + 7, Wd - 14, Hh - 14, 16), c: 'rgba(90,55,25,.18)' }], 2.4);
     } }
-  if (!g.getImageData(cv.width >> 1, cv.height >> 1, 1, 1).data[3]) throw new Error('빈 그림');   // 메모리가 모자라면 휴대폰이 조용히 빈 그림을 줌
+  if (!g.getImageData(cv.width >> 1, cv.height >> 1, 1, 1).data[3]) { cv.width = cv.height = 0; throw new Error('빈 그림'); }   // 메모리가 모자라면 휴대폰이 조용히 빈 그림을 줌
   return cv;
 }
 // 바닥 그리기: 실패하면 해상도를 낮춰 다시 (휴대폰 메모리 부족 대비)
 const groundReady = (async () => {
-  for (const k of [GK, 1, .75, .5]) {
+  for (const k of [GK, 1, .75, .5, .4]) {
     if (k > GK) continue; GK = k;
     try { ground = await paintGround(n => bootStep(8 + n * 7, '마을 그리는 중…')); return; } catch (x) { console.warn('바닥 다시 그리기', k, x.message); }
   }
@@ -1446,7 +1451,7 @@ function emote(ch, e) { if (ch === me) { netSend({ t: 'emo', e }); sfx('pop'); }
 const cv = $('#map'), ctx = cv.getContext('2d');
 let cam = { x: me.x, y: me.y }, W = 0, H = 0, DPR = 1;
 function resize() {
-  const d = Math.min(devicePixelRatio || 1, 2), w = cv.clientWidth, h = cv.clientHeight;
+  const d = Math.min(devicePixelRatio || 1, LOWMEM >= 2 ? 1.5 : 2), w = cv.clientWidth, h = cv.clientHeight;
   if (w === W && h === H && d === DPR) return;
   DPR = d; W = w; H = h; cv.width = W * DPR; cv.height = H * DPR;
   if (W && H && !$('#app').hidden) try { render(performance.now()); } catch {}
@@ -1457,7 +1462,7 @@ new ResizeObserver(resize).observe(cv);
 const SPR = new Map();
 function sprite(key, w, h, ox, oy, draw) {
   let s = SPR.get(key); if (s) return s;
-  const c = document.createElement('canvas'), k = 2; c.width = Math.ceil(w * k); c.height = Math.ceil(h * k);
+  const c = document.createElement('canvas'), k = SPR_K; c.width = Math.ceil(w * k); c.height = Math.ceil(h * k);
   const g = c.getContext('2d'); g.scale(k, k); g.translate(ox, oy); draw(g);
   s = { c, w, h, ox, oy }; SPR.set(key, s); return s;
 }
@@ -1941,7 +1946,7 @@ const blitTo = (g, sp, x, y, sc = 1) => g.drawImage(sp.c, x - sp.ox * sc, y - sp
 function paintHunt(f) {
   if (huntGround[f.id]) return huntGround[f.id];
   if (innerWidth <= 760) for (const k in huntGround) delete huntGround[k];
-  const A = HUNT_ART[f.id] || HUNT_ART.plain, K = 2, WP = HW * T, HP = HH * T;
+  const A = HUNT_ART[f.id] || HUNT_ART.plain, K = PHONE ? SPR_K : 2, WP = HW * T, HP = HH * T;
   const cvs = document.createElement('canvas'); cvs.width = WP * K; cvs.height = HP * K; const g = cvs.getContext('2d'); g.scale(K, K); seed = 31 + f.tier * 97;
   const r = (a, b) => a + rnd() * (b - a), pick = l => l[Math.floor(rnd() * l.length)];
   const inner = (x, y) => x > 8 && x < WP - 8 && y > 8 && y < HP - 8;
@@ -2234,7 +2239,7 @@ function exitRaid() {
 let raidGround = null;
 function paintRaid() {
   if (raidGround) return raidGround;
-  const K = 2, WP = RW(), HP = RH(), c = document.createElement('canvas'); c.width = WP * K; c.height = HP * K; const g = c.getContext('2d'); g.scale(K, K);
+  const K = PHONE ? SPR_K : 2, WP = RW(), HP = RH(), c = document.createElement('canvas'); c.width = WP * K; c.height = HP * K; const g = c.getContext('2d'); g.scale(K, K);
   let sd = 77; const r = () => ((sd = (sd * 16807) % 2147483647) - 1) / 2147483646;
   g.fillStyle = '#4a3a3a'; g.fillRect(0, 0, WP, HP);
   for (let i = 0; i < 140; i++) { g.globalAlpha = .25 + r() * .3; g.fillStyle = ['#584444', '#3e3030', '#5e4a42', '#463838'][i % 4]; g.beginPath(); g.ellipse(r() * WP, r() * HP, 20 + r() * 60, 10 + r() * 30, r() * 3, 0, 7); g.fill(); }
