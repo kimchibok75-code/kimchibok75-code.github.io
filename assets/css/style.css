@@ -650,3 +650,8 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
 .ed-faint { background: none; border: 0; padding: 4px 6px; font: inherit; font-size: 13px; color: var(--muted); opacity: .22; cursor: pointer; transition: opacity .2s; }
 .ed-faint:hover, .ed-faint:focus-visible { opacity: .7; }
 .ed-items { min-height: 24px; }
+.ed-del { margin-left: auto; flex: none; min-width: 34px; height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid transparent; background: none; color: var(--muted); font: inherit; font-size: 14px; cursor: pointer; }
+.ed-del:hover { color: #e5484d; border-color: rgba(229, 72, 77, .35); background: rgba(229, 72, 77, .08); }
+.ed-row.gone { opacity: .45; }
+.ed-row.gone .ed-name { text-decoration: line-through; }
+.ed-row.gone .ed-del { opacity: 1; color: var(--accent); border-color: rgba(255, 122, 26, .4); font-weight: 600; }

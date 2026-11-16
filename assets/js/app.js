@@ -388,9 +388,16 @@ function renderMods() {
 const GAME_API = (location.hostname === 'localhost' && new URLSearchParams(location.search).get('api')) || 'https://kimchibok-game.kimchibok.workers.dev';
 function applyModOrder(o) {
   let changed = false;
+  S.modDel = {};   // 대분류별 지운 모드 {id: 시각} — 편집 화면이 저장할 때 같이 보냄
+  for (const [cat, v] of Object.entries(o?.cats || {})) if (v && !Array.isArray(v) && v.del) S.modDel[cat] = v.del;
   for (const [cat, ids] of Object.entries(o?.cats || {})) {
-    if (!Array.isArray(ids)) continue;
-    const groups = Array.isArray(ids[0]) ? ids : [[null, ids]];   // [[소분류, [id…]], …] 또는 예전 형식 [id…]
+    const v = Array.isArray(ids) ? { g: Array.isArray(ids[0]) ? ids : [[null, ids]], del: {} } : ids;   // 예전 형식 [id…] / [[소분류, [id…]], …]도 읽음
+    if (!Array.isArray(v?.g)) continue;
+    const groups = v.g, del = v.del || {};
+    const gone = m => Object.hasOwn(del, m.id) && (m.addedAt || 0) <= del[m.id];   // 사이트에서 지운 모드 (지운 뒤 다시 추가한 건 살림)
+    const before = S.mods.items.length;
+    S.mods.items = S.mods.items.filter(m => m.category !== cat || !gone(m));
+    if (S.mods.items.length !== before) changed = true;
     const pos = new Map(), sec = new Map(); let n = 0;
     for (const [s, list] of groups) for (const id of list || []) { pos.set(id, n++); if (s) sec.set(id, s); }
     const key = m => (pos.has(m.id) ? pos.get(m.id) : 1e6 + m.order);

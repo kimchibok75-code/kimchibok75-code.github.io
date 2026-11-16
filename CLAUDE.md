@@ -40,6 +40,8 @@
     - 저장: 게임 서버 `POST /api/admin/mods-order {cat, groups: [[소분류, [id…]], …]}` → D1 `mod_order` 표 (대분류마다 그 값 그대로. 예전 형식 `[id…]`도 읽을 수 있음). **열쇠·깃허브 설정 필요 없음** (사용자가 어렵다고 해서 깃허브 커밋 방식은 버림)
     - 읽기: 누구나 `GET /api/mods-order` → `{cats: {대분류: [id…]}}`. 사이트(`app.js`의 `applyModOrder`)가 바로 적용 → 다른 사람에게도 바로 보임. 목록에 없는 모드(새로 추가한 것)는 그 대분류 맨 뒤
     - 매일 자동 갱신(`update.mjs mods`)이 같은 순서를 `data/mods.json`의 `order`에도 옮겨 적음
+    - **삭제**: 편집 중 줄마다 ✕ → 흐려지고 "되살리기" → 저장할 때 확인 창 뒤 지움. 서버 저장 값은 `{g: [[소분류,[id…]]…], del: {id: 지운 시각}}`. 사이트는 바로 숨기고, 자동 갱신이 mods.json에서도 뺌. 지운 시각보다 나중에 add-mod로 다시 넣은 모드(`addedAt`이 더 큼)는 다시 보임
+    - 드래그 중 떠다니는 칸은 `fallbackOnBody: true` (흐림 효과 상자 안에 붙이면 위치가 어긋났음)
     - add-mod로 새 모드를 넣으면 사이트에서는 그 대분류 맨 뒤에 보임 (김치복이 끌어서 옮기면 됨)
     - `GET /api/whoami` → `{nick, admin}` (게임 정산 없이 확인만)
     - 내 컴퓨터 시험: 위 "내 컴퓨터에서 서버까지 시험하기"처럼 wrangler dev → `mods.html?api=http://localhost:8787&edit`

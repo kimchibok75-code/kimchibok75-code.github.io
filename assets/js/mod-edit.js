@@ -90,15 +90,21 @@ export function initModEdit(x) {
       <div class="ed-sec" data-s="${esc(g.s)}">
         <div class="ed-h"><span class="ed-grip" title="끌어서 소분류 옮기기">⠿</span><b>${esc(g.s)}</b><small class="muted ed-n">${g.items.length}개</small></div>
         <div class="ed-items">${g.items.map(m => `
-          <div class="ed-row" data-id="${esc(m.id)}"><span class="ed-grip" title="끌어서 옮기기">⠿</span><span class="ed-th">${thumb(m)}</span><span class="ed-name">${esc(m.name)}</span></div>`).join('')}
+          <div class="ed-row" data-id="${esc(m.id)}"><span class="ed-grip" title="끌어서 옮기기">⠿</span><span class="ed-th">${thumb(m)}</span><span class="ed-name">${esc(m.name)}</span><button class="ed-del" type="button" title="지우기">✕</button></div>`).join('')}
         </div>
       </div>`).join('')}</div>`;
     $('#modMore').hidden = true;
     const mark = () => {
       E.dirty = true; $('#edSave').classList.add('pulse');
-      document.querySelectorAll('#edList .ed-sec').forEach(s => { s.querySelector('.ed-n').textContent = `${s.querySelectorAll('.ed-row').length}개`; });
+      document.querySelectorAll('#edList .ed-sec').forEach(s => { s.querySelector('.ed-n').textContent = `${s.querySelectorAll('.ed-row:not(.gone)').length}개`; });
     };
-    const opt = { handle: '.ed-grip', animation: 160, forceFallback: true, fallbackTolerance: 3, fallbackClass: 'ed-drag', ghostClass: 'ed-ghost', chosenClass: 'ed-chosen', onEnd: e => { if (e.oldIndex !== e.newIndex || e.from !== e.to) mark(); } };
+    const opt = { handle: '.ed-grip', animation: 160, forceFallback: true, fallbackOnBody: true, fallbackTolerance: 3, fallbackClass: 'ed-drag',   /* fallbackOnBody: 흐림 효과 상자 안에 붙이면 위치가 어긋남 */ ghostClass: 'ed-ghost', chosenClass: 'ed-chosen', onEnd: e => { if (e.oldIndex !== e.newIndex || e.from !== e.to) mark(); } };
+    $('#edList').onclick = e => {
+      const b = e.target.closest('.ed-del'); if (!b) return;
+      const row = b.closest('.ed-row'), on = row.classList.toggle('gone');
+      b.textContent = on ? '되살리기' : '✕'; b.title = on ? '지우지 않기' : '지우기';
+      mark();
+    };
     E.sorts.push(new window.Sortable($('#edList'), { ...opt, draggable: '.ed-sec', handle: '.ed-h .ed-grip' }));
     document.querySelectorAll('#edList .ed-items').forEach(el => E.sorts.push(new window.Sortable(el, { ...opt, draggable: '.ed-row', group: 'mods' })));   // 같은 대분류 안에서는 다른 소분류로도 옮길 수 있음
   }
@@ -129,15 +135,22 @@ export function initModEdit(x) {
   $('#edSave').onclick = async () => {
     if (!E.dirty) { stop(); return; }
     // [[소분류, [모드 id…]], …] — 비어 버린 소분류는 뺌
-    const groups = [...document.querySelectorAll('#edList .ed-sec')].map(s => [s.dataset.s, [...s.querySelectorAll('.ed-row')].map(r => r.dataset.id)]).filter(g => g[1].length);
+    const groups = [...document.querySelectorAll('#edList .ed-sec')].map(s => [s.dataset.s, [...s.querySelectorAll('.ed-row:not(.gone)')].map(r => r.dataset.id)]).filter(g => g[1].length);
+    const gone = [...document.querySelectorAll('#edList .ed-row.gone')].map(r => r.dataset.id);
+    if (gone.length && !confirm(`모드 ${gone.length}개를 목록에서 지울까요?`)) return;
+    const shown = new Set(groups.flatMap(g => g[1]));
+    const del = [...Object.keys(S.modDel?.[M.cat] || {}).filter(id => !shown.has(id)), ...gone];   // 예전에 지운 것도 계속 지운 상태로 (다시 추가해서 보이는 건 빼고)
     const btn = $('#edSave'); btn.disabled = true; btn.textContent = '저장 중…';
     try {
-      await api('/api/admin/mods-order', { cat: M.cat, groups });
+      await api('/api/admin/mods-order', { cat: M.cat, groups, del });
+      const goneSet = new Set(gone);
+      S.mods.items = S.mods.items.filter(m => !(m.category === M.cat && goneSet.has(m.id)));
+      const t = Date.now(); S.modDel = S.modDel || {}; S.modDel[M.cat] = { ...(S.modDel[M.cat] || {}) }; for (const id of gone) S.modDel[M.cat][id] = t;
       const at = new Map(); let i = 0;
       for (const [s, ids] of groups) for (const id of ids) at.set(id, { s, o: i++ });
       for (const m of S.mods.items) if (m.category === M.cat && at.has(m.id)) { m.section = at.get(m.id).s; m.order = at.get(m.id).o; }
       stop();
-      toast('저장했어요. 다른 사람에게도 바로 보여요');
+      toast(gone.length ? `저장했어요. ${gone.length}개를 지웠어요` : '저장했어요. 다른 사람에게도 바로 보여요');
     } catch (e) {
       if (e.status === 401) { toast('로그인이 끝났어요. 다시 로그인해 주세요'); login(); }
       else toast(e.message);

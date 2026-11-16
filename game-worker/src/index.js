@@ -862,13 +862,19 @@ async function modsOrder(req, env, user) {
   let b; try { b = JSON.parse(t); } catch { fail(400, '잘못된 요청이에요'); }
   // groups = [[소분류, [모드 id…]], …] (소분류 순서 → 그 안의 모드 순서). 다른 소분류로 옮긴 것도 여기에 담김
   const cat = String(b?.cat || '').slice(0, 40), groups = Array.isArray(b?.groups) ? b.groups : null;
-  if (!cat || !groups?.length || groups.length > 60) fail(400, '잘못된 요청이에요');
+  // del = 사이트에서 지운 모드 id들 (그 시각보다 나중에 다시 추가한 모드는 다시 보임)
+  if (!cat || !groups || groups.length > 60) fail(400, '잘못된 요청이에요');
   const clean = groups.map(g => [String(g?.[0] || '').trim().slice(0, 60), Array.isArray(g?.[1]) ? g[1].map(x => String(x).slice(0, 80)) : []]);
   const ids = clean.flatMap(g => g[1]);
-  if (clean.some(g => !g[0] || !g[1].length) || !ids.length || ids.length > 500 || new Set(ids).size !== ids.length) fail(400, '잘못된 요청이에요');
-  await env.DB.prepare('INSERT INTO mod_order (cat, ids, at) VALUES (?, ?, ?) ON CONFLICT(cat) DO UPDATE SET ids = excluded.ids, at = excluded.at').bind(cat, JSON.stringify(clean), now()).run();
+  const delIds = [...new Set((Array.isArray(b?.del) ? b.del : []).map(x => String(x).slice(0, 80)))].slice(-500);
+  if (clean.some(g => !g[0] || !g[1].length) || ids.length > 500 || new Set(ids).size !== ids.length || delIds.some(id => ids.includes(id)) || !(ids.length + delIds.length)) fail(400, '잘못된 요청이에요');
+  const old = await env.DB.prepare('SELECT ids FROM mod_order WHERE cat = ?').bind(cat).first();
+  let oldDel = {}; try { const v = JSON.parse(old?.ids || 'null'); if (v && !Array.isArray(v) && v.del) oldDel = v.del; } catch {}
+  const t0 = now(), del = Object.create(null);
+  for (const id of delIds) del[id] = own(oldDel, id) ? oldDel[id] : t0;
+  await env.DB.prepare('INSERT INTO mod_order (cat, ids, at) VALUES (?, ?, ?) ON CONFLICT(cat) DO UPDATE SET ids = excluded.ids, at = excluded.at').bind(cat, JSON.stringify({ g: clean, del }), t0).run();
   MOD_ORDER.at = 0;
-  await log(env, user.id, 'admin-mods-order', `${cat} ${ids.length}`);
+  await log(env, user.id, 'admin-mods-order', `${cat} ${ids.length}${delIds.length ? ` 지움 ${delIds.length}` : ''}`);
   return json({ ok: true });
 }
 

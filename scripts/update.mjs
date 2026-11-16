@@ -170,8 +170,13 @@ async function updateMods() {
   try {
     const o = await get('https://kimchibok-game.kimchibok.workers.dev/api/mods-order', { type: 'json' });
     for (const [cat, ids] of Object.entries(o?.cats || {})) {
-      if (!Array.isArray(ids)) continue;
-      const groups = Array.isArray(ids[0]) ? ids : [[null, ids]];   // [[소분류, [id…]], …] 또는 예전 형식 [id…]
+      const v = Array.isArray(ids) ? { g: Array.isArray(ids[0]) ? ids : [[null, ids]], del: {} } : ids;   // 예전 형식 [id…] / [[소분류, [id…]], …]도 읽음
+      if (!Array.isArray(v?.g)) continue;
+      const groups = v.g, del = v.del || {};
+      const gone = m => Object.hasOwn(del, m.id) && (m.addedAt || 0) <= del[m.id];   // 사이트에서 지운 모드 (지운 뒤 다시 추가한 건 살림)
+      const before = db.items.length;
+      db.items = db.items.filter(m => m.category !== cat || !gone(m));
+      if (db.items.length !== before) console.log(`[mods] 사이트에서 지운 모드 ${before - db.items.length}개 뺌 (${cat})`);
       const pos = new Map(), sec = new Map(); let n = 0;
       for (const [s, list] of groups) for (const id of list || []) { pos.set(id, n++); if (s) sec.set(id, s); }
       const key = m => (pos.has(m.id) ? pos.get(m.id) : 1e6 + m.order);
