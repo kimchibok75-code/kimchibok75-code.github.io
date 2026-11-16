@@ -3084,7 +3084,7 @@ const sizeSetHtml = () => isPC() ? `<div class="uiset" id="uiSet"><div><label>�
   <div><label>✏️ 글씨 크기</label><div class="seg">${segHtml(FS_STEPS, SZ.fs, 'fs')}</div></div><p class="muted">지도 그림 크기는 오른쪽 ＋/－ 버튼으로 바꿔요. 이 컴퓨터에만 저장돼요.</p></div>` : '';
 function wireSizeSet(el) { el.querySelector('#uiSet')?.addEventListener('click', e => { const b = e.target.closest('[data-ui], [data-fs]'); if (!b) return; if (b.dataset.ui) SZ.ui = +b.dataset.ui; else SZ.fs = +b.dataset.fs; applySize(true); b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }); }
 
-// PC: 아무것도 안 하고 있을 때 Enter → 채팅 시작. 채팅 칸에서 Enter로 보내거나 빈 칸에서 Enter/Esc → 채팅 끝 (다시 화살표로 걷기)
+// PC: 아무것도 안 하고 있을 때 Enter → 채팅 시작. 채팅 칸에서 Enter로 보내도 칸은 그대로(계속 치기), 빈 칸에서 Enter/Esc → 채팅 끝 (다시 화살표로 걷기)
 const PC_KEYS = matchMedia('(hover: hover) and (pointer: fine)').matches;
 if (PC_KEYS) $('#chatIn').placeholder = '마을 전체에 말하기 (Enter)';
 addEventListener('keydown', e => {
@@ -3097,7 +3097,7 @@ $('#chatIn').addEventListener('keydown', e => {
   if (e.key === 'Escape' || (e.key === 'Enter' && !e.target.value.trim())) { e.preventDefault(); e.target.blur(); }
 });
 $('#chatIn').addEventListener('input', e => { const n = [...e.target.value].length; $('#chatCount').textContent = `${n}/60`; $('#chatCount').classList.toggle('full', n >= 60); $('#chatCount').classList.toggle('near', n >= 45); });
-$('#chatForm').addEventListener('submit', e => { e.preventDefault(); const v = $('#chatIn').value; if (!v.trim()) return; if (trySend(v) !== false) { $('#chatIn').value = ''; $('#chatCount').textContent = '0/60'; $('#chatCount').classList.remove('full'); if (PC_KEYS) $('#chatIn').blur(); } });
+$('#chatForm').addEventListener('submit', e => { e.preventDefault(); const v = $('#chatIn').value; if (!v.trim()) return; if (trySend(v) !== false) { $('#chatIn').value = ''; $('#chatCount').textContent = '0/60'; $('#chatCount').classList.remove('full'); $('#chatIn').focus(); } });   // 보낸 뒤에도 계속 칠 수 있게
 $('#emoBtn').onclick = () => { $('#emotes').hidden = !$('#emotes').hidden; if (innerWidth <= 760) $('#chat').classList.add('expanded'); };
 $('#emotes').addEventListener('click', e => { const em = e.target.closest('[data-e]')?.dataset.e; if (em) { emote(me, em); $('#emotes').hidden = true; } });
 $('#chatExp').onclick = () => $('#chat').classList.toggle('expanded');
@@ -4436,7 +4436,7 @@ function showGuide() {
   const lvGoal = me.lv >= LV_CAP ? null : Math.min(LV_CAP, (Math.floor(me.lv / 10) + 1) * 10);
   const goals = `${tasks}<li><span>🥬</span><span>이번 주 도장 모으기 (다 모으면 큰 상자)</span><small>${s.n} / ${STAMP_GOAL}</small></li>
     ${lvGoal ? `<li><span>⭐</span><span>레벨 ${lvGoal} 달성하기 (새 칭호)</span><small>지금 ${me.lv}</small></li>` : `<li><span>🏗️</span><span>공동 건설에 기부해서 마을 키우기</span><small>📋</small></li>`}`;
-  const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 보내면 다시 걷기'], ['<kbd>←↑↓→</kbd> <kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['⚙️ 설정', '화면 크기 · 글씨 크기 바꾸기'], ['💬 채팅창', '오른쪽 위 손잡이를 끌면 크기 조절, ⚙️로 채팅 글씨 크기'], ['＋ －', '지도 크게 · 작게 보기'], ['<kbd>Esc</kbd>', '창 닫기']]
+  const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 보낸 뒤에도 계속 치기 · 빈 칸에서 Enter/Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd> <kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['⚙️ 설정', '화면 크기 · 글씨 크기 바꾸기'], ['💬 채팅창', '오른쪽 위 손잡이를 끌면 크기 조절, ⚙️로 채팅 글씨 크기'], ['＋ －', '지도 크게 · 작게 보기'], ['<kbd>Esc</kbd>', '창 닫기']]
     : [['끌기', '화면을 끌면 그 방향으로 걸어요'], ['💬', '채팅 기록 펼치기 · ⚙️로 채팅 글씨 크기'], ['⚙️ 설정', '내 정보 · 비밀번호 · 차단 목록'], ['＋ －', '지도 크게 · 작게 보기']];
   openModal(`<div class="guide"><h3>🥬 치복 타운에 어서 와요, ${esc(me.name)}님!</h3>
     <h4>🎯 오늘의 목표</h4><ul>${goals}</ul>
@@ -4536,6 +4536,7 @@ $('#newsBtn').onclick = () => openNews(); $('#evChip').onclick = () => openNews(
 
 let toastT; function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2600); }
 // 이모지 → 직접 그린 그림 (화면 글자는 자동, 캔버스는 fillTextIco)
+preloadIcons(); iconize(document.body);
 
 // 처음 열 때: 로그인 유지 중이면 바로 마을로
 showAuth('login');
