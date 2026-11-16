@@ -5,7 +5,8 @@
 //       node scripts/add-mod.mjs "<링크>" "운반 효율 대폭 증가" 필수 "중요 모드"
 // 설명을 비우면 스팀 설명을 한국어 한 줄로 요약해 넣고, 대분류·소분류도 제목·태그·설명을 보고 골라 줍니다.
 // 이름·썸네일·구독자·지원 버전은 스팀에서 자동으로 가져옵니다.
-// 삭제: node scripts/add-mod.mjs --remove "<스팀 링크 또는 id>"
+// 삭제: node scripts/add-mod.mjs --remove "<스팀 링크 또는 id>" [대분류]
+//   들어 있는 모든 대분류에서 빠집니다. 대분류를 붙이면 그 한 곳에서만 빠집니다
 import { readJson, writeJson, steamIdOf, steamDetails } from './lib.mjs';
 import { koreanSummaries } from './translate.mjs';
 
@@ -13,12 +14,19 @@ const args = process.argv.slice(2);
 const db = readJson('mods.json', { categories: [], items: [] });
 
 if (args[0] === '--remove') {
-  const key = args[1];
+  const [, key, cat] = args;
   const id = steamIdOf(key) || key;
-  const before = db.items.length;
-  db.items = db.items.filter(m => !(m.steamId === id || m.url === key));
+  const found = db.items.filter(m => m.steamId === id || m.url === key);
+  const cats = found.map(m => m.category);
+  if (!found.length) { console.log('목록에 없는 모드입니다'); process.exit(1); }
+  // 기본은 들어 있는 모든 대분류에서 뺌. 대분류를 붙이면 그 한 곳에서만
+  if (cat && !cats.includes(cat)) { console.log(`'${cat}'에는 없어요. 들어 있는 곳: ${cats.join(', ')}`); process.exit(1); }
+  const gone = new Set(found.filter(m => !cat || m.category === cat));
+  db.items = db.items.filter(m => !gone.has(m));
   writeJson('mods.json', { ...db, updatedAt: Date.now() });
-  console.log(`삭제 ${before - db.items.length}개`);
+  for (const m of gone) console.log(`삭제: [${m.category} > ${m.section}] ${m.name}`);
+  const left = found.filter(m => !gone.has(m)).map(m => m.category);
+  if (left.length) console.log(`  남은 곳: ${left.join(', ')}`);
   process.exit(0);
 }
 

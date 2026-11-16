@@ -42,7 +42,8 @@
    - 대분류: 김치복제작 / 필수 / 렉개선 / 그래픽 / 중세 / 모음집 / 맵파일 / 추천
 3. `node scripts/add-mod.mjs "<url>" "<설명>" <대분류> "<소분류>"` 실행
 4. 커밋 → `git pull -q --rebase --autostash` → `git push`. 배포 확인은 `gh run watch`
-- 삭제: `node scripts/add-mod.mjs --remove "<url>"`
+- 삭제: `node scripts/add-mod.mjs --remove "<url>"` → 들어 있는 **모든 대분류에서** 빠짐 (사용자 결정: 지우는 데는 이유가 있으니 모두 빼기)
+  - 사용자가 콕 집어 "○○에서만 빼"라고 할 때만 뒤에 대분류를 붙임: `--remove "<url>" 필수`
 - 같은 모드를 다른 대분류에도 넣으려면 대분류를 지정해서 한 번 더 추가 (대분류마다 항목 하나)
 - 버전 표시는 1.6과 1.7만 남김 (`app.js`의 `VERSIONS`). 모음집·맵파일은 해당하는 버전 칸만 보임
 
