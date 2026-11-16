@@ -1787,8 +1787,18 @@ function bubbleAt(x, y, text, mine) {
 }
 
 let last = performance.now(), clock = 0;
+// 오류를 화면에 알려 줌 (10초에 한 번). 사용자가 이 글을 알려 주면 고치기 쉬움
+let errAt = 0;
+function showErr(e) {
+  console.error(e); if (performance.now() - errAt < 10e3) return; errAt = performance.now();
+  const at = (String(e?.stack || '').split('\n').find(l => /\.(html|js)/.test(l)) || '').match(/([\w-]+\.(?:html|js))[^:]*:(\d+)/);
+  try { toast(`⚠️ 오류: ${e?.message || e}${at ? ` (${at[1]} ${at[2]}줄)` : ''}`); } catch {}
+}
+addEventListener('error', e => showErr(e.error || e.message));
+addEventListener('unhandledrejection', e => showErr(e.reason));
 function frame(now) {
   const dt = Math.min(.05, (now - last) / 1000); last = now; clock += dt;
+  if (!$('#app').hidden && !S.away) { try { update(dt, now); render(now); drawStick(); } catch (e) { showErr(e); } }   // 오류가 나도 게임이 멈추지 않게
   requestAnimationFrame(frame);
 }
 // 화면 이동은 실제 화면 점(기기 픽셀) 단위로 맞춤: 배율 125%·150% 화면에서 1칸·2칸씩 들쭉날쭉 움직이며 떨리던 것 해결
