@@ -904,7 +904,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
           <div class="arow" id="hairSw2"></div>
         </div>
         <p class="skfxsum" id="skinFxSum"></p>
-        <div class="field"><label>머리 장식</label><div class="skgrid" id="hatList"></div></div>
+        <div class="field"><label>모자</label><div class="skgrid" id="hatList"></div></div>
         <div class="field"><label>눈 모양</label><div class="skgrid" id="eyeList"></div></div>
         <div class="field"><label>의상</label><div class="skgrid" id="suitList"></div></div>
         <div class="field"><label>무기 스킨</label><div class="skgrid" id="wskList"></div></div>
@@ -1251,7 +1251,7 @@ function helmParts(it, hy) {
   if (gem && it.st !== 6) P.push({ flat: 1, path: E(0, hy + 2.5, 2.2, 2.2), c: gem });
   return P;
 }
-// 머리 장식 스킨
+// 모자 스킨
 function hatParts(kind, hy, face) {
   if (kind === 'rdragon') return [...[-1, 1].flatMap(s => [{ path: PG([[s * 5, hy + 3], [s * 9, hy - 5], [s * 17, hy - 13], [s * 13, hy - 3], [s * 11.5, hy + 4]]), c: '#4a2a20' }, { flat: 1, path: PG([[s * 13.5, hy - 8], [s * 17, hy - 13], [s * 14.5, hy - 6]]), c: '#f3e6cf' }]),
     { path: PG([[-3.5, hy + 1], [0, hy - 8], [3.5, hy + 1]]), c: '#d4473b' }, { flat: 1, path: E(0, hy - 1, 1.3, 1.3), c: '#ffd45a' }];
@@ -1323,7 +1323,7 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   P.push({ path: R(-14, hy, 28, 26, 9), c: c.face, after: g => drawEyes(g, c, hy + 16, t) });
   P.push(...hp.front);
   if (c.hat && c.hat !== 'none') P.push(...hatParts(c.hat, hy, c.face));
-  if (eq.hat?.st) P.push(...helmParts(eq.hat, hy));
+  if (eq.hat?.st && !(c.hat && c.hat !== 'none')) P.push(...helmParts(eq.hat, hy));   // 모자 스킨을 쓰면 머리 장비는 안 보임
   // 오른팔 (몸 앞) + 무기: 손(팔 끝)이 손잡이를 쥠
   // 근접: 위에서 아래로 내려침 · 원거리(지팡이·활): 팔을 앞으로 뻗고 반동
   const cl = c.cls || 'sword', wk = c.wsk?.[cl], W = c.fz ? null : eq[cl]?.st ? eq[cl] : wk ? { slot: cl, st: 1 } : null, wt = W?.slot, far = wt === 'staff' || wt === 'bow', sw = c.swing > 0 ? c.swing / .18 : 0;
@@ -4765,14 +4765,14 @@ function skinShop(b, keep) {
   const tab = btab('skin', 'hat', ['hat', 'eye', 'suit', 'wsk', 'raid']);
   const grid = (id, cls, html) => `<div class="skgrid shop${cls}"${id ? ` id="${id}"` : ''}>${html}</div>`;
   const body = {
-    hat: () => grid('shopHats', '', hats.map(h => tile('hat:' + h.id, h.n, me.hats.includes(h.id), me.hat === h.id, h.price, h.fx)).join('')) + '<p class="muted">머리 장식을 안 쓰면 장착한 모자(장비)가 보여요.</p>',
+    hat: () => grid('shopHats', '', hats.map(h => tile('hat:' + h.id, h.n, me.hats.includes(h.id), me.hat === h.id, h.price, h.fx)).join('')) + '<p class="muted">모자 스킨을 안 쓰면 장착한 머리 장비가 보여요.</p>',
     eye: () => grid('shopEyes', '', eyes.map(e => tile('eye:' + e.id, e.n, me.hats.includes('eye:' + e.id), me.eyes === e.id, e.price, e.fx)).join('')),
     suit: () => grid('shopSuits', '', suits.map(x => tile('suit:' + x.id, x.n, me.hats.includes('suit:' + x.id), me.suit === x.id, x.price, x.fx)).join('')),
     wsk: () => WT.map(([t, tn]) => `<div class="bs-sec">${tn}</div>${grid('', ' shopW', WSKINS.filter(w => w.t === t && !w.raid).map(w => tile(wskKey(w), w.n, me.hats.includes(wskKey(w)), me.wsk?.[t] === w.id, w.price, w.fx)).join(''))}`).join(''),
     raid: () => `<p class="muted">매시 정각 레드 드래곤 레이드에서만 얻어요. 같은 스킨을 또 얻으면 <b>레벨이 올라 효과가 세져요</b> (레벨마다 +${RSK.step * 100}%).</p>` + grid('shopRaid', ' raid', rset.map(k => { const it = rItem(k), n = rskCount(me, k), lv = rskLv(n), need = rskNeed(lv);
       return tile('raid|' + k, it.n, !!n, worn(k), 0, rskFx(it.fx, Math.max(1, lv))).replace(/<\/button>$/, `<b class="rlv">${n ? `Lv.${lv}${need ? ` · ${n}/${need}` : ' · 최고'}` : '🔒 미보유'}</b></button>`); }).join('')),
   }[tab]();
-  bsOpen(b, { tag: '꾸미기 · 가지고만 있어도 보유 효과', wal: ['gold'], tabs: [['hat', '🎩 머리'], ['eye', '👀 눈'], ['suit', '👔 의상'], ['wsk', '⚔️ 무기'], ['raid', '🐉 레이드']], tab,
+  bsOpen(b, { tag: '꾸미기 · 가지고만 있어도 보유 효과', wal: ['gold'], tabs: [['hat', '🎩 모자'], ['eye', '👀 눈'], ['suit', '👔 의상'], ['wsk', '⚔️ 무기'], ['raid', '🐉 레이드']], tab,
     body: `<p class="skfxsum">✨ 지금 보유 효과: <b>${fxText(skinFx(me)) || '없음'}</b></p>${body}`,
     help: '<p>스킨은 <b>가지고만 있어도 보유 효과</b>가 붙어요 (안 써도 돼요). 현금 결제는 없어요.</p><p>칸을 누르면 미리보기 · 구매, 가진 스킨은 누르면 바로 쓰기 / 벗기.</p>',
     ready: el => {
@@ -4786,7 +4786,7 @@ function skinShop(b, keep) {
     } },
     async x => {
       const raid = x.startsWith('raid|'); if (raid) x = x.slice(5);
-      const [a, id, id2] = x.split(':'), isEye = a === 'eye', kind = a === 'eye' ? '눈 모양' : a === 'suit' ? '의상' : a === 'wsk' ? '무기 스킨' : '머리 장식';
+      const [a, id, id2] = x.split(':'), isEye = a === 'eye', kind = a === 'eye' ? '눈 모양' : a === 'suit' ? '의상' : a === 'wsk' ? '무기 스킨' : '모자';
       const key = a === 'hat' ? id : x, item = a === 'hat' ? HATS.find(k => k.id === id) : rItem(x); if (!item) return;
       const wear = () => { if (isEye) me.eyes = id; else if (a === 'suit') me.suit = id; else if (a === 'wsk') me.wsk = { ...(me.wsk || {}), [id]: id2 }; else me.hat = id; };
       if (me.hats.includes(key)) {   // 가진 것: 쓰기/벗기
