@@ -2,7 +2,7 @@
 // 숫자는 plan/웹게임-기획서.md 3장·4장과 같아요. 여기를 고치면 화면과 서버가 함께 바뀌어요.
 
 export const T = 32;                 // 타일 한 칸 크기 (px)
-export const MW = 80, MH = 60;       // 마을 지도 칸 수 (지도 모양은 game-map.js)
+export const MW = 80, MH = 72;       // 마을 지도 칸 수 (지도 모양은 game-map.js)
 export const START = { x: 40.5 * T, y: 34.5 * T };   // 광장 분수 아래
 export const FACES = ['#ffe0c2', '#f7c9a0', '#d9a77a', '#a8754f', '#ffd4e0', '#c9f0d2', '#d6e4ff', '#fff3b0'];
 export const BODIES = ['#e8553a', '#4f9d5a', '#3d7bd9', '#9a5ad6', '#e9a23b', '#2f3b4f', '#ef7fa6', '#2bb3a6'];
@@ -257,13 +257,23 @@ export const FISH_GRADES = {
   legend: { n: '전설', c: '#e0731c', p: .5 },
 };
 // 물고기: [아이콘, 이름, 최소 cm, 최대 cm, 기본 값(골드)]
-export const FISH = {
+// 강(연못 포함)과 바다에서 나는 물고기가 달라요. 등급별 확률은 같음
+export const FISH_RIVER = {
   normal: [['🐟', '붕어', 15, 40, 10], ['🐟', '피라미', 6, 15, 6], ['🐍', '미꾸라지', 8, 20, 8], ['🐟', '송사리', 3, 6, 5], ['🐟', '잉어', 25, 70, 14], ['👢', '낡은 장화', 25, 30, 1]],
   uncommon: [['🐟', '메기', 30, 90, 30], ['🐟', '빙어', 8, 15, 24], ['🐟', '은어', 12, 30, 28], ['🐠', '쏘가리', 20, 50, 36], ['🐟', '가물치', 40, 100, 40]],
-  rare: [['🌈', '무지개송어', 30, 70, 90], ['🐍', '장어', 40, 120, 110], ['🐡', '복어', 15, 40, 85], ['🐙', '문어', 30, 90, 100], ['🦀', '꽃게', 10, 25, 80]],
-  epic: [['🦈', '철갑상어', 80, 200, 350], ['🐟', '참치', 100, 250, 400], ['🐢', '바다거북', 30, 80, 300], ['🦈', '상어', 150, 350, 450]],
-  legend: [['🥬', '김치 잉어', 50, 120, 1500], ['🐉', '강의 용', 100, 300, 2000], ['🐋', '아기 고래', 300, 800, 1800], ['👑', '황금 붕어', 20, 50, 1200]],
+  rare: [['🌈', '무지개송어', 30, 70, 90], ['🐍', '장어', 40, 120, 110], ['🐟', '산천어', 20, 40, 85], ['🦀', '참게', 5, 10, 80]],
+  epic: [['🦈', '철갑상어', 80, 200, 350], ['🐢', '자라', 20, 40, 300], ['🐟', '괴물 메기', 120, 250, 420]],
+  legend: [['🥬', '김치 잉어', 50, 120, 1500], ['🐉', '강의 용', 100, 300, 2000], ['👑', '황금 붕어', 20, 50, 1200]],
 };
+export const FISH_SEA = {
+  normal: [['🐟', '고등어', 20, 40, 10], ['🐟', '전갱이', 15, 35, 8], ['🐟', '멸치', 5, 12, 5], ['⭐', '불가사리', 8, 25, 6], ['🐚', '소라', 5, 15, 9], ['👢', '낡은 장화', 25, 30, 1]],
+  uncommon: [['🐟', '우럭', 20, 45, 30], ['🐟', '광어', 30, 80, 38], ['🦀', '꽃게', 10, 25, 32], ['🦐', '대하', 12, 25, 28], ['🐠', '쥐치', 15, 30, 26]],
+  rare: [['🐡', '복어', 15, 40, 85], ['🐙', '문어', 30, 90, 100], ['🐠', '참돔', 30, 80, 95], ['🐟', '갈치', 60, 150, 90]],
+  epic: [['🐟', '참치', 100, 250, 400], ['🐢', '바다거북', 30, 80, 300], ['🦈', '상어', 150, 350, 450], ['🐋', '돌고래', 150, 250, 380]],
+  legend: [['🐋', '아기 고래', 300, 800, 1800], ['🦈', '고래상어', 500, 1200, 2000], ['🐙', '대왕문어', 150, 400, 1600], ['👑', '황금 참치', 100, 200, 1500]],
+};
+// 이름으로 찾기용 (강 + 바다 합침). 예전 기록의 물고기(아기 고래 등)도 여기서 찾음
+export const FISH = Object.fromEntries(Object.keys(FISH_RIVER).map(g => [g, [...FISH_RIVER[g], ...FISH_SEA[g].filter(f => !FISH_RIVER[g].some(r => r[1] === f[1]))]]));
 export const FISHING = { cooldown: 10e3, waitMin: 1500, waitMax: 4000, dayFull: 400 };   // wait: 던지고 입질까지(ms). dayFull: 하루에 이만큼 넘게 낚으면 값·코인 절반
 // 낚을 확률: 기본 60% + 낚싯대 1단계마다 +6%p + 칭호·스킨·마을 효과(fishZ, %p). 최대 95%. 자동 낚시는 10%p 낮음
 export const FISH_HIT = { base: .6, rod: .06, max: .95, auto: .1 };
@@ -277,13 +287,13 @@ export function fishOdds(luk = 0, rod = 0, bait = 0) {
   return Object.fromEntries(w.map(([g, p]) => [g, p / sum * 100]));
 }
 // 물고기 하나 정하기. 길이가 길수록 드물게
-export function rollFish(luk = 0, rod = 0, bait = 0) {
+export function rollFish(luk = 0, rod = 0, bait = 0, sea = false) {
   let r = Math.random() * 100, grade = 'normal';
   for (const [g, p] of Object.entries(fishOdds(luk, rod, bait))) { if (r < p) { grade = g; break; } r -= p; }
-  const [i, n, min, max, base] = pick(FISH[grade]);
+  const [i, n, min, max, base] = pick((sea ? FISH_SEA : FISH_RIVER)[grade]);
   const k = Math.pow(Math.random(), 2.2);   // 긴 물고기일수록 드묾
   const len = Math.round((min + (max - min) * k) * 10) / 10;
-  return { i, n, grade, len, price: Math.max(1, Math.round(base * (.6 + 1.4 * k))) };
+  return { i, n, grade, len, price: Math.max(1, Math.round(base * (.6 + 1.4 * k))), sea };
 }
 
 // 낚시 코인: 낚을 때마다 등급만큼

@@ -181,6 +181,8 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; lette
 .livebox { position: relative; width: 100%; aspect-ratio: 16 / 9; border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; background: #000; }
 .livebox iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 button.chip { cursor: pointer; font: inherit; font-weight: 700; }
+.fishdex { border: 1.5px solid var(--line); border-radius: 12px; background: #fff; padding: 8px 10px; margin: 8px 0; } .fishdex summary { cursor: pointer; font-weight: 700; }
+.fdx { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .fdx p { margin: 4px 0; font-size: calc(13px * var(--fs)); line-height: 1.45; } @media (max-width: 520px) { .fdx { grid-template-columns: 1fr; } }
 .autofish { border: 2px solid var(--ink); border-radius: 12px; background: #fff; padding: 9px 10px; display: grid; gap: 6px; margin: 8px 0; }
 .autofish .af-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .autofish .af-h span { margin-left: auto; }
 .autofish .af-all { display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; } .autofish .af-all input { width: 18px; height: 18px; }
@@ -847,13 +849,13 @@ a.iconbtn { color: inherit; text-decoration: none; }
 <script type="module">
 'use strict';
 import { needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
-  T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, fishHit, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
+  T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, fishHit, FISH_RIVER, FISH_SEA, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx } from './assets/js/game-rules.js?v=__BUILD__';
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
 import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico } from './assets/js/game-icons.js?v=__BUILD__';
 import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSolid, noise2, inCore, BUILDINGS as MAP_BUILDINGS, SPOTS, PORTAL, BACK, FISH_AT, PLOTS, BENCHES, NODES, DECO,
-  HOUSE_W, HOUSE_H, canHouse, ROOM_W, ROOM_H, ROOM_DOOR, soft, PLAZA_C, PLAZA_R, nearWater, shoreNear } from './assets/js/game-map.js?v=__BUILD__';
+  HOUSE_W, HOUSE_H, canHouse, ROOM_W, ROOM_H, ROOM_DOOR, soft, PLAZA_C, PLAZA_R, nearWater, shoreNear, seaAt, coastY, SEA_AT } from './assets/js/game-map.js?v=__BUILD__';
 const API = (location.hostname === 'localhost' && new URLSearchParams(location.search).get('api')) || 'https://kimchibok-game.kimchibok.workers.dev';   // 시험용: localhost에서만 ?api=http://localhost:8787 로 바꿀 수 있음
 const LIVE_API = 'https://kimchibok-live.kimchibok.workers.dev/live';
 const $ = s => document.querySelector(s);
@@ -1318,6 +1320,21 @@ async function paintGround(step) {
     blobs(I, 120, ['#76c4e4', '#57afd8'], [20, 60], [8, 20], [.25, .45]);
     inside(D, q => { q.strokeStyle = 'rgba(255,255,255,.55)'; q.lineWidth = 2;
       for (let i = 0; i < 520; i++) { const x = r(0, WP), y = r(0, HP), w = r(6, 12); q.beginPath(); q.moveTo(x, y); q.quadraticCurveTo(x + w / 2, y - 3, x + w, y); q.stroke(); } }); }
+  // 5-2) 바다: 해안에서 멀어질수록 진한 파랑 + 해안선을 따라 하얀 파도 거품 (강·연못은 그대로)
+  { const fieldF = fn => { const f = new Float32Array(NX * NY).fill(-1); for (let j = 0; j < NY; j++) { const fy = j * ST / T; if (fy < 57) continue; for (let i = 0; i < NX; i++) f[j * NX + i] = fn(i * ST / T, fy); } return f; };
+    const sv = k => (fx, fy) => Math.min(soft(WATER, fx, fy) - .5, (fy - coastY(fx) - k) / 2) + .1 * noise2(fx * .7, fy * .7, 60 + k);
+    for (const [k, col] of [[1.1, '#47a7d4'], [3, '#3b97c9'], [5.8, '#2f88bd']]) { g.fillStyle = col; g.fill(shape(fieldF(sv(k)), 0)); }
+    g.lineCap = 'round';
+    for (const [off, al, lw] of [[.3, .8, 2.4], [.95, .45, 1.8], [1.7, .25, 1.4]]) {
+      g.globalAlpha = al; g.strokeStyle = '#fff'; g.lineWidth = lw; g.beginPath(); let on = false;
+      for (let fx = 0; fx <= MW; fx += .15) {
+        const fy = coastY(fx) + off + .18 * Math.sin(fx * 2.1 + off * 7), ok = soft(WATER, fx, fy) > .75 && (on || rnd() < .5);
+        if (ok && on) g.lineTo(fx * T, fy * T); else if (ok) g.moveTo(fx * T, fy * T);
+        on = ok && rnd() > .04;   // 가끔 끊어서 자연스럽게
+      }
+      g.stroke();
+    }
+    g.globalAlpha = 1; }
   await step(6);
   // 6) 길: 테두리 → 흙 → 얼룩 · 자갈
   { const f = field(PATH), O = shape(f, .5), I = shape(f, .56);
@@ -1852,7 +1869,7 @@ function update(dt, now) {
   if (me.room) { follow(dt, ROOM_W * T, ROOM_H * T); setPlace(`${S.roomNick || ''}님의 집`); return; }
   follow(dt, MW * T, MH * T);
   const tx0 = Math.floor(me.x / T), ty0 = Math.floor(me.y / T), v = tileAt(tx0, ty0);
-  const place = v === STONE ? '광장' : v === DOCK ? '강가 선착장' : v === SOIL ? '텃밭' : v === FOREST ? '벌목 숲' : v === GRAVEL ? '채굴 언덕' : tx0 >= 70 ? '사냥터 포탈' : inCore(tx0, ty0) ? '마을 가운데' : '마을 외곽';
+  const place = ty0 >= 58 && (v === SAND || seaAt(tx0, ty0 + 1) || seaAt(tx0, ty0 + 2)) ? '바닷가' : v === STONE ? '광장' : v === DOCK ? '강가 선착장' : v === SOIL ? '텃밭' : v === FOREST ? '벌목 숲' : v === GRAVEL ? '채굴 언덕' : tx0 >= 70 ? '사냥터 포탈' : inCore(tx0, ty0) ? '마을 가운데' : '마을 외곽';
   setPlace(place);
 }
 function setPlace(place) { if ($('#placeChip').dataset.p !== place) { $('#placeChip').dataset.p = place; $('#placeChip').textContent = `📍 ${place}`; } }
@@ -3566,13 +3583,14 @@ $('#resetStats').onclick = () => {
 // ───────── 마을 바로가기 (설정 버튼 밑 🏘️): 누르면 그 자리로 바로 이동 ─────────
 const door = id => { const b = BUILDINGS.find(b => b.id === id); return [(b.door.x + .5) * T, (b.door.y + .5) * T]; };
 const PLACES = [['⛲', '광장 분수 앞', START.x, START.y], ['🎰', '가챠센터', ...door('gacha')], ['☕', '카페', ...door('cafe')], ['👕', '스킨샵', ...door('skin')], ['🔨', '대장간', ...door('smith')],
-  ['🏛️', '마을회관', ...door('hall')], ['🎣', '낚시터', FISH_AT.x, FISH_AT.y], ['🪝', '낚시점', ...door('fishshop')], ['🪓', '벌목소', ...door('lumber')], ['⛏️', '채광소', ...door('quarry')], ['🌾', '텃밭', ...door('farmshed')], ['🌀', '사냥터 포탈', BACK.x, BACK.y]];
+  ['🏛️', '마을회관', ...door('hall')], ['🎣', '낚시터', FISH_AT.x, FISH_AT.y], ['🐚', '바닷가', SEA_AT.x, SEA_AT.y], ['🪝', '낚시점', ...door('fishshop')], ['🪓', '벌목소', ...door('lumber')], ['⛏️', '채광소', ...door('quarry')], ['🌾', '텃밭', ...door('farmshed')], ['🌀', '사냥터 포탈', BACK.x, BACK.y]];
 // 바로가기로 가면 그 시설 창도 바로 열기
 function placeOpen(n) {
   const bid = { '가챠센터': 'gacha', '카페': 'cafe', '스킨샵': 'skin', '대장간': 'smith', '마을회관': 'hall', '낚시점': 'fishshop', '벌목소': 'lumber', '채광소': 'quarry' }[n];
   if (bid) return openBuilding(BUILDINGS.find(b => b.id === bid));
   if (n === '광장 분수 앞') return openWish();
   if (n === '낚시터') return openFishing();
+  if (n === '바닷가') return toast('🐚 바다를 누르면 바다 물고기를 낚아요');
   if (n === '텃밭') return openFarm();
   if (n === '사냥터 포탈') return openHuntSelect();
   if (n === '내 집' && myHouse()) return openHouse(myHouse());
@@ -4328,7 +4346,7 @@ async function handFish(px, py) {
   F.busy = true; if (me.sit >= 0) standUp(me); me.path = []; me.moving = false;
   const [bx, by] = bobberAt(px, py), r = me.life.fish.rod || 0;
   rodOut(me, bx, by, r); const mine = me.fz; netSend({ t: 'fish', s: 1, bx: Math.round(bx), by: Math.round(by), r }); sfx('cast');
-  let j; try { j = await api('/api/fish/hand', {}); took(j); }
+  let j; try { j = await api('/api/fish/hand', { w: [Math.floor(bx / T), Math.floor(by / T)] }); took(j); }
   catch (x) { F.busy = false; if (me.fz === mine) { me.fz = null; netSend({ t: 'fish', s: 0 }); } toast(x.message); return; }
   F.nextAt = Date.now() + j.cooldown;
   await sleep(j.wait);
@@ -4342,7 +4360,7 @@ function fishShow(j, here, auto) {
   if (j.caught) {
     sfx('catch'); if (here) rodEnd(me, f, j.big); else toast(bragText(f, j.big));
     netSend({ t: 'fish', s: 2, g: f.grade, n: f.n, len: f.len, big: !!j.big });
-    F.msg = `${auto ? '🤖 ' : ''}${fishTag(f)} ${f.len}cm${j.big ? ' <b>대어!</b>' : ''} → ${goldTxt(f.price)} · ${COIN.fish[0]} +${j.coin || 0}${j.tired ? ' (오늘 많이 낚아서 절반)' : ''}`;
+    F.msg = `${auto ? '🤖 ' : ''}${j.sea ? '[바다] ' : '[강] '}${fishTag(f)} ${f.len}cm${j.big ? ' <b>대어!</b>' : ''} → ${goldTxt(f.price)} · ${COIN.fish[0]} +${j.coin || 0}${j.tired ? ' (오늘 많이 낚아서 절반)' : ''}`;
     townFloat(me.x, me.y - 20, `+${f.price.toLocaleString()}`, '#ffd166');
     if (!auto) logAct(`${f.i} ${f.n} ${f.len}cm +${f.price}`);
     if (['epic', 'legend'].includes(f.grade)) sysMsg(`🎣 ${FG[f.grade].n} 물고기! ${f.n} ${f.len}cm`);
@@ -4414,6 +4432,8 @@ function paintFishing() {
       <small class="muted">강가에 서서 알아서 던지고 당겨요. 한 번에 미끼 1개 · 낚을 확률 ${pc(fishHit(L.fish.rod, fx, true))}%. 창을 닫아도 계속해요.</small>
       <label class="af-all"><input type="checkbox" id="afAll" ${F.all ? 'checked' : ''}> 미끼 다 쓸 때까지 계속 낚시하기</label>
       <button class="btn ${F.auto ? '' : 'main'}" id="afBtn" type="button">${F.auto ? '⏹ 자동 낚시 멈추기' : (F.all ? '🤖 자동 낚시 시작' : '🤖 자동으로 한 번 낚기')}</button></div>
+    <details class="fishdex"><summary>🐟 강 물고기 · 🐚 바다 물고기 보기</summary><p class="muted">강·연못과 바다에서 나는 물고기가 달라요. 바다는 마을 남쪽 바닷가에서!</p>
+      <div class="fdx">${[['🐟 강 · 연못', FISH_RIVER], ['🐚 바다', FISH_SEA]].map(([t, P]) => `<div><b>${t}</b>${Object.entries(P).map(([g, l]) => `<p><span style="color:${FG[g].c};font-weight:700">${FG[g].n}</span> ${l.map(f => `${f[0]} ${esc(f[1])}`).join(' · ')}</p>`).join('')}</div>`).join('')}</div></details>
     <div class="points" style="background:#fff;border-color:var(--line);margin-top:8px"><span>내 기록</span><span style="font-size:13px">${m ? `${m.count.toLocaleString()}마리 · 번 골드 ${m.gold.toLocaleString()}` : '아직 없음'}</span></div>
     <div class="rtabs" id="rtabs">${[['price', '💰 제일 비싼'], ['len', '📏 제일 큰'], ['count', '🎣 제일 많이']].map(([k, n]) => `<button type="button" data-t="${k}" aria-pressed="${F.tab === k}">${n}</button>`).join('')}</div>
     <div id="rankBox">${rankList()}</div><button class="close" data-close>닫기</button></div>`, el => {
@@ -4446,12 +4466,13 @@ async function autoFishTick() {
   if (!F.auto) return;
   if (HT || S.away) return autoFishStop('자동 낚시를 멈췄어요');
   if (F.busy || document.visibilityState === 'hidden') { F.autoT = setTimeout(autoFishTick, 1000); return; }   // 창이 숨겨지면 잠깐 쉼
-  let j; try { j = await api('/api/fish/auto', {}); took(j); }
+  const [bx, by] = waterNear();
+  let j; try { j = await api('/api/fish/auto', { w: [Math.floor(bx / T), Math.floor(by / T)] }); took(j); }
   catch (x) { if (x.status === 429) { F.autoT = setTimeout(autoFishTick, 1500); return; } return autoFishStop(x.message); }
   F.nextAt = Date.now() + j.cooldown; F.autoN++; if (j.caught) F.autoG += j.fish.price;
   fishChip();
   // 던지는 모습 → 입질 → 결과 (결과는 이미 서버에서 정해짐)
-  const [bx, by] = waterNear(); F.busy = true; rodOut(me, bx, by, me.life.fish.rod || 0); const mine = me.fz;
+  F.busy = true; rodOut(me, bx, by, me.life.fish.rod || 0); const mine = me.fz;
   netSend({ t: 'fish', s: 1, bx: Math.round(bx), by: Math.round(by), r: me.life.fish.rod || 0 }); sfx('cast');
   await sleep(j.wait); if (me.fz === mine) { mine.ph = 'bite'; sfx('bite'); await sleep(600); }
   F.busy = false; fishShow(j, me.fz === mine, true);
@@ -4508,6 +4529,7 @@ const GUIDE = () => [
   ]],
   ['🎣', '낚시', [
     ['손 낚시', '아무 물이나 누르면 물가로 걸어가서 바로 낚싯대를 던져요. 잡으면 머리 위로 자랑해요!'],
+    ['강 · 바다', '강·연못과 마을 남쪽 바다에서 나는 물고기가 달라요. 목록은 낚시터 창에서 볼 수 있어요.'],
     ['보상', '낚은 물고기는 바로 팔려서 골드가 되고, 🐚 낚시 코인도 받아요. 10초에 한 번 던질 수 있어요.'],
     ['낚시점', '낚시 코인으로 낚싯대(낚을 확률 ↑)와 미끼(좋은 등급 ↑)를 올려요.'],
     ['자동 낚시', '낚시터 표지판(강가)을 누르면 자동 낚시. 골드로 산 자동용 미끼를 1개씩 써요.'],

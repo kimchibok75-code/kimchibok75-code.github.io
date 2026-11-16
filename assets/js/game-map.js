@@ -1,15 +1,18 @@
 // 치복 타운 마을 지도 — 화면(game.html)과 서버(game-worker)가 같이 씀
 // 삼각함수(sin·cos) 없이 정수 계산 + 곱셈·제곱근만으로 만들어서, 어느 브라우저·서버에서나 똑같은 지도가 나와요.
 // 지도를 바꾸면 화면과 서버가 함께 바뀌어요 (집 자리 검사도 이 지도로 함).
-const T = 32, MW = 80, MH = 60;   // game-rules.js 의 T · MW · MH 와 꼭 같게 (화면이 규칙 파일을 두 번 불러오지 않게 여기 따로 적음)
+const T = 32, MW = 80, MH = 72;   // game-rules.js 의 T · MW · MH 와 꼭 같게 (화면이 규칙 파일을 두 번 불러오지 않게 여기 따로 적음)
+// 예전 지도 높이. 1)~7)은 이 높이로 똑같이 만들어서 나무·돌·건물 자리와 자원 번호가 그대로 (8)에서 아래에 바다를 붙임)
+const OMH = 60;
+let LIM = OMH;   // 만드는 동안은 예전 높이까지만 지도로 봄 (8)에서 MH로)
 
 export const G = 0, PATH = 1, WATER = 2, STONE = 3, SOIL = 4, DOCK = 5, SAND = 6, GRAVEL = 7, FOREST = 8;
 export const tiles = new Uint8Array(MW * MH);      // 바닥 종류
 export const solid = new Uint8Array(MW * MH);      // 못 지나가는 칸 (물·건물·나무·바위·벤치)
-export const tileAt = (x, y) => (x < 0 || y < 0 || x >= MW || y >= MH ? WATER : tiles[y * MW + x]);
-export const isSolid = (x, y) => x < 0 || y < 0 || x >= MW || y >= MH || solid[y * MW + x] === 1;
-const set = (x, y, v) => { if (x >= 0 && y >= 0 && x < MW && y < MH) tiles[y * MW + x] = v; };
-const block = (x, y) => { if (x >= 0 && y >= 0 && x < MW && y < MH) solid[y * MW + x] = 1; };
+export const tileAt = (x, y) => (x < 0 || y < 0 || x >= MW || y >= LIM ? WATER : tiles[y * MW + x]);
+export const isSolid = (x, y) => x < 0 || y < 0 || x >= MW || y >= LIM || solid[y * MW + x] === 1;
+const set = (x, y, v) => { if (x >= 0 && y >= 0 && x < MW && y < LIM) tiles[y * MW + x] = v; };
+const block = (x, y) => { if (x >= 0 && y >= 0 && x < MW && y < LIM) solid[y * MW + x] = 1; };
 
 // ───── 똑같이 나오는 난수 · 잡음 ─────
 function rng(s) { return () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -32,7 +35,7 @@ export const riverX = y => 9 + 3.4 * n1(y / 11, 5) + 1.2 * n1(y / 4.3, 6);
 const riverHalf = y => 1.7 + .5 * n1(y / 7, 9);
 
 // 1) 바닥
-for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+for (let y = 0; y < OMH; y++) for (let x = 0; x < MW; x++) {
   if (forestZ(x, y)) set(x, y, FOREST);
   else if (quarryZ(x, y)) set(x, y, GRAVEL);
   const d = Math.abs(x + .5 - riverX(y)), hw = riverHalf(y);
@@ -111,7 +114,7 @@ for (const b of BENCHES) { set(b.x, b.y, STONE); block(b.x, b.y); }
 for (let y = 29; y <= 32; y++) for (let x = 38; x <= 41; x++) if (tileAt(x, y) !== STONE) set(x, y, STONE);
 for (let y = 30; y <= 31; y++) for (let x = 39; x <= 40; x++) block(x, y);
 // 물은 못 들어감
-for (let i = 0; i < MW * MH; i++) if (tiles[i] === WATER) solid[i] = 1;
+for (let i = 0; i < MW * OMH; i++) if (tiles[i] === WATER) solid[i] = 1;
 
 // 4) 채집 자원 (나무·바위). 사람마다 따로 자라요. 항상 막힌 칸 (베면 그루터기·돌무더기)
 const R = rng(20261116);
@@ -121,7 +124,7 @@ const freeFor = (x, y) => !isSolid(x, y) && !isSolid(x, y + 1) && tileAt(x, y + 
 export const NODES = [];
 function addNodes(k, n, test, gap) {
   for (let tries = 0; tries < 4000 && n > 0; tries++) {
-    const x = 1 + Math.floor(R() * (MW - 2)), y = 1 + Math.floor(R() * (MH - 2));
+    const x = 1 + Math.floor(R() * (MW - 2)), y = 1 + Math.floor(R() * (OMH - 2));
     if (!test(x, y) || !freeFor(x, y) || near(NODES, x, y, gap)) continue;
     NODES.push({ i: NODES.length, k, x, y }); block(x, y); n--;
   }
@@ -134,8 +137,8 @@ addNodes('rock', 5, (x, y) => tileAt(x, y) === G && !inCore(x, y), 5);
 // 5) 나머지 나무·돌. 지도 가장자리(2칸)는 꾸밈(못 캠), 그 안쪽은 모두 캘 수 있는 자원 (v = 그림 종류, s = 크기)
 //    번호(i)는 위의 자원 뒤로 이어 붙여서, 예전 자원 번호는 그대로
 export const DECO = [];
-for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
-  const v = tileAt(x, y), edge = Math.min(x, y, MW - 1 - x, MH - 1 - y);
+for (let y = 0; y < OMH; y++) for (let x = 0; x < MW; x++) {
+  const v = tileAt(x, y), edge = Math.min(x, y, MW - 1 - x, OMH - 1 - y);
   if (v !== G && v !== FOREST && v !== GRAVEL) continue;
   const p = edge < 2 ? .7 : v === FOREST ? .2 : v === GRAVEL ? .06 : inCore(x, y) ? .015 : .035;
   const r = R(), r2 = R();
@@ -151,7 +154,7 @@ for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
 // 6) 둥근 광장: 원 안은 돌바닥, 예전 울퉁불퉁한 가장자리는 풀밭으로 → 그 자리를 지나던 길은 다시 이어 줌
 {
   const inP = (x, y) => Math.hypot(x + .5 - PLAZA_C.x, y + .5 - PLAZA_C.y) < PLAZA_R;
-  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+  for (let y = 0; y < OMH; y++) for (let x = 0; x < MW; x++) {
     const v = tileAt(x, y);
     if (inP(x, y)) { if (v === G || v === PATH) set(x, y, STONE); }
     else if (v === STONE && !BENCHES.some(b => b.x === x && b.y === y)) set(x, y, G);
@@ -178,6 +181,46 @@ for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
   BENCHES.splice(0, BENCHES.length, ...[25, 27].flatMap(y => [36, 38, 41, 43].map(x => ({ x, y }))));
   for (const b of BENCHES) { set(b.x, b.y, STONE); block(b.x, b.y); }
 }
+
+// 8) 남쪽 바다 (2026-11-16): 지도를 아래로 12칸 넓히고, 굽이진 해안선 + 모래사장. 강은 그대로 흘러 내려가 하구에서 넓어지며 바다와 만남
+//    예전 지도(위 1~7)는 그대로라 나무·돌·건물·집 자리와 자원 번호가 안 바뀜. 바뀌는 곳은 맨 아래 꾸밈 나무 줄(58~59)뿐
+const bump = (x, c, w) => Math.max(0, 1 - ((x - c) / w) ** 2);
+// 해안선 (칸 단위 y). 이 아래는 바다. 동쪽에 오목한 만, 강 하구 쪽은 조금 들어감
+export const coastY = x => 62 + 1.7 * n1(x / 10, 51) + .8 * n1(x / 4.1, 52) - 1.6 * bump(x, 50, 11) - .9 * bump(x, 12, 6);
+const beachTop = x => Math.max(59, coastY(x) - 1.7 - .8 * n1(x / 6, 53));
+export const SEA = new Uint8Array(MW * MH);   // 1 = 바다 (강·연못과 다른 물고기)
+{
+  LIM = MH;
+  const nodeAt = (x, y) => NODES.some(n => n.x === x && n.y === y);
+  // 바닷가로 가는 길 (남쪽 · 남서쪽 길을 이어 줌)
+  road([[41, 58.5], [41.4, 60], [42, 61.5]], 1.0, 26);
+  road([[26, 55], [25.2, 57.5], [24.6, 60.5]], .95, 27);
+  for (let y = OMH - 2; y < MH; y++) for (let x = 0; x < MW; x++) {
+    if (nodeAt(x, y)) continue;   // 캘 수 있는 나무·돌은 그대로
+    const c = coastY(x);
+    // 강: 같은 식으로 계속 흐르고, 바다에 가까울수록 넓어짐 (하구)
+    const wide = 1 + Math.max(0, y - (OMH - 1)) * .22, d = Math.abs(x + .5 - riverX(y)), hw = riverHalf(y) * wide;
+    if (y + .5 >= c) { set(x, y, WATER); SEA[y * MW + x] = 1; }
+    else if (y >= OMH && d < hw) set(x, y, WATER);
+    else if (y + .5 >= beachTop(x) || (y >= OMH && d < hw + 1.05)) { if (tileAt(x, y) !== PATH || y + .5 >= c - .6) set(x, y, SAND); }
+    else if (y >= OMH) set(x, y, G);
+  }
+  // 바다와 이어진 강 하구 물도 바다 쪽 아래 절반은 바다로 (해안선보다 아래면 이미 바다)
+  for (let i = MW * (OMH - 2); i < MW * MH; i++) solid[i] = tiles[i] === WATER ? 1 : 0;
+  for (const n of NODES) block(n.x, n.y);
+  // 맨 아래 꾸밈 나무 줄: 이제 가장자리가 아니라서 바닷가 쪽은 듬성듬성만 남김
+  for (let k = DECO.length - 1; k >= 0; k--) {
+    const d = DECO[k]; if (d.y < OMH - 2) continue;
+    const v = tileAt(d.x, d.y), keep = (v === G || v === FOREST) && (d.x < 2 || d.x > MW - 3 || h1(d.x * 31 + d.y, 54) < .3);
+    if (keep) block(d.x, d.y); else DECO.splice(k, 1);
+  }
+  // 새 땅(60줄 아래 풀밭)의 양쪽 가장자리는 꾸밈 나무
+  for (let y = OMH; y < MH; y++) for (const x of [0, 1, MW - 2, MW - 1]) if (tileAt(x, y) === G && h1(x * 17 + y * 5, 55) < .7) { DECO.push({ x, y, k: h1(x + y, 56) < .5 ? 'pine' : 'round', s: .85 + h1(x * 3 + y, 57) * .35 }); block(x, y); }
+}
+// 바다인지 (칸). 강·연못 물은 0
+export const seaAt = (tx, ty) => tx >= 0 && ty >= 0 && tx < MW && ty < MH && SEA[ty * MW + tx] === 1;
+// 바다 낚시하기 좋은 자리 (만 안쪽 모래사장, 발 위치 픽셀)
+export const SEA_AT = (() => { const x = 49; let y = Math.floor(coastY(x)); while (y > 0 && tileAt(x, y) === WATER) y--; return { x: (x + .5) * T, y: (y + .6) * T }; })();
 
 // ───── 부드러운 바닥 ─────
 // 바닥 종류는 1×1 칸 그대로(집 짓기·길 찾기는 칸으로). 그림만 칸 경계를 둥글게 이은 모양으로 그림.
