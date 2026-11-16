@@ -1468,7 +1468,7 @@ function walkTo(ch, wx, wy, then) {
 const walkToTile = (ch, tx, ty, then) => walkTo(ch, tx * T + T / 2, ty * T + T / 2, then);
 function stepChar(ch, dt) {
   if (!ch.path?.length) { ch.moving = false; return; }
-  const tgt = ch.path[0], dx = tgt.x - ch.x, dy = tgt.y - ch.y, d = Math.hypot(dx, dy), sp = (ch.speed || 110) * dt;
+  const tgt = ch.path[0], dx = tgt.x - ch.x, dy = tgt.y - ch.y, d = Math.hypot(dx, dy), sp = (ch.speed || 165) * dt;
   ch.moving = true; if (Math.abs(dx) > 1) ch.dir = dx < 0 ? -1 : 1;
   if (d <= sp) { ch.x = tgt.x; ch.y = tgt.y; ch.path.shift(); if (!ch.path.length) { ch.moving = false; if (ch === me) savePos(); if (ch.then) { const f = ch.then; ch.then = null; f(); } } }
   else { ch.x += dx / d * sp; ch.y += dy / d * sp; }
@@ -1478,7 +1478,7 @@ function stepChar(ch, dt) {
 let people = [];
 function mkPerson(d) {
   return { id: d.id, name: d.n, adm: d.adm, lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {},
-    x: d.tx ?? d.x, y: d.ty ?? d.y, path: [], seed: (d.id % 17) * .37, speed: 130, hunt: !!d.hunt, room: d.room || 0, sit: -1, bubble: null, emote: null };
+    x: d.tx ?? d.x, y: d.ty ?? d.y, path: [], seed: (d.id % 17) * .37, speed: 195, hunt: !!d.hunt, room: d.room || 0, sit: -1, bubble: null, emote: null };
 }
 const personOf = id => people.find(p => p.id === id);
 const shown = p => !p.hunt && !S.blocked.has(p.id) && (p.room || 0) === (me.room || 0);
@@ -2497,6 +2497,11 @@ function raidSkill({ s, p }, D, D0) {
   RD.cd[s.id] = p.cd; RD.skT = .7; sfx('skill');
   const col = SK_COL[s.cls] || '#ffcf5a';
   raidFloat(me.x, me.y - 86, `${s.i} ${s.n}!`, col, 17); RD.fx.push({ k: 'ring', x: me.x, y: me.y - 20, c: col, r: 44, t: 0, life: .45 }); me.swing = .22;
+  if (p.dash) {   // 돌진: 드래곤 바로 앞까지 쭉 (먼지를 남기며)
+    const x1 = D0.x + Math.max(-1.6 * T, Math.min(1.6 * T, me.x - D0.x)), y1 = D0.y + 1.2 * T;
+    for (let k = 0; k <= 6; k++) raidBurst(me.x + (x1 - me.x) * k / 6, me.y + (y1 - me.y) * k / 6, '#d8c9ac', 2, 60, 2.6);
+    if (Math.abs(x1 - me.x) > 4) me.dir = x1 < me.x ? -1 : 1; me.x = x1; me.y = y1; RD.goal = null; sfx('warp');
+  }
   if (s.k === 'hit') {
     const meteor = s.id === 'm_meteor';
     for (let i = 0; i < p.n; i++) RD.q.push({ t: i * .13 + (meteor ? .35 : 0), f: () => {
@@ -2700,8 +2705,11 @@ function updateHunt(dt) {
       else { me.moving = false; if (HT.atkT <= 0) { HT.atkT = D.gap; if (D.far) shoot(tg, D); else hitMon(tg, D); } }
     }
     // 쿨타임이 찬 스킬은 공격 거리 안에서 자동으로 씀 (쿨타임이 긴 것부터)
-    if (d <= ok && !HT.dying && !tg.dead) { let ready = null; for (const k of D.skills) if (HT.cd[k.s.id] <= 0 && (!ready || k.p.cd > ready.p.cd)) ready = k; if (ready) castSkill(ready, tg, D); }
+    if (d < 6 * T && !HT.dash && !HT.dying && !tg.dead) { let ready = null; for (const k of D.skills) if (HT.cd[k.s.id] <= 0 && (d <= ok || k.p.dash) && (!ready || k.p.cd > ready.p.cd)) ready = k; if (ready) castSkill(ready, tg, D); }
   } else me.moving = false;
+  // 돌진: 0.16초 동안 몬스터 앞까지 쭉 미끄러짐 + 잔상
+  if (HT.dash) { const k = HT.dash; k.t += dt; const e = Math.min(1, k.t / k.dur), f = 1 - (1 - e) ** 3; me.x = k.x0 + (k.x1 - k.x0) * f; me.y = k.y0 + (k.y1 - k.y0) * f; me.moving = true; (HT.trail ||= []).push({ x: me.x, y: me.y, t: 0 }); fxBurst(me.x, me.y, '#d8c9ac', 2, 50, 2.6, -20); if (e >= 1) { HT.dash = null; HT.chase = false; } }
+  if (HT.trail) { for (const g of HT.trail) g.t += dt; HT.trail = HT.trail.filter(g => g.t < .22); }
   // 몬스터
   for (const m of HT.mons) {
     if (m.dead) { m.deadT += dt; continue; }
@@ -2759,9 +2767,13 @@ function castSkill({ s, p }, tg, D) {
   HT.cd[s.id] = p.cd;
   const col = SK_COL[s.cls], cy = y => y - 22;
   floatText(me.x, me.y - 80, `${s.i} ${s.n}!`, col, 17, 1.1, true); fxRing(me.x, cy(me.y), col, 44, .45); me.swing = .22;
+  if (p.dash && tg && !tg.dead) {   // 돌진: 몬스터 바로 앞까지
+    const dx = tg.x - me.x, dy = tg.y - me.y, d = Math.hypot(dx, dy) || 1, stop = Math.min(d, 20 + tg.d.s * 10);
+    HT.dash = { x0: me.x, y0: me.y, x1: tg.x - dx / d * stop, y1: tg.y - dy / d * stop, t: 0, dur: .16 }; me.dir = dx < 0 ? -1 : 1; sfx('warp');
+  }
   if (s.k === 'hit') {
     const meteor = s.id === 'm_meteor';
-    for (let i = 0; i < p.n; i++) HT.q.push({ t: i * .13 + (meteor ? .35 : 0), f: () => {
+    for (let i = 0; i < p.n; i++) HT.q.push({ t: i * .13 + (meteor ? .35 : 0) + (p.dash ? .16 : 0), f: () => {
       const m = !tg.dead ? tg : HT.mons.find(x => !x.dead && Math.hypot(x.x - me.x, x.y - me.y) < 6 * T); if (!m) return;
       const h = skHit(m, D, p.m);
       if (meteor) { fxBurst(m.x, m.y - 10, '#ff9f43', 40, 360, 5); fxBurst(m.x, m.y - 10, '#ffd34d', 20, 220, 3); fxRing(m.x, m.y, '#ffb36b', 90, .5); fxShake(12); applyHit(m, h, D, 'magic'); }
@@ -2769,6 +2781,7 @@ function castSkill({ s, p }, tg, D) {
       else { const sx = me.x + (me.dir || 1) * 16, sy = me.y - 30; HT.shots.push({ k: s.cls === 'staff' ? 'magic' : 'arrow', x: sx, y: sy, m, h, sp: 620, t: 0, a: 0 }); }
       if (i === 0 && p.stun) { m.atkT += p.stun; floatText(m.x, m.y - 50 * m.d.s, s.id === 'm_ice' ? '❄️ 얼음!' : '💫 기절!', '#9fe0ff', 14, 1); fxRing(m.x, m.y, '#9fe0ff', 30, .5); }
       if (s.id === 's_quake') { fxBurst(m.x, m.y, '#b08a5a', 24, 260, 4); fxShake(9); }
+      if (p.dash) { fxBurst(m.x, m.y - 14, '#fff3c4', 14, 240, 3); fxShake(5); m.vx += (me.dir || 1) * 160; }
     } });
     if (p.dot) for (let k = 1; k <= 4; k++) HT.q.push({ t: k * .9, f: () => { const m = tg; if (m.dead) return; const dmg = Math.max(1, Math.round(D.hit * p.dot / 4)); m.hp -= dmg; floatText(m.x + 10, m.y - 34 * m.d.s, `☠ ${dmg}`, '#8be06a', 14); fxBurst(m.x, m.y - 14, '#8be06a', 5, 60, 2.4, -40); if (m.hp <= 0) killMon(m, D); } });
   } else if (s.k === 'heal') {
@@ -2869,7 +2882,8 @@ function renderHunt(now) {
   if (HT.target && !HT.target.dead) { const m = HT.target; ctx.strokeStyle = 'rgba(232,85,58,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(m.x, m.y + 2, 16 * m.d.s, 5 * m.d.s, 0, 0, 7); ctx.stroke(); }
   const list = HT.mons.map(m => ({ y: m.y, f: () => drawMon(m, clock) }));
   const lx = me.lunge > 0 ? (me.dir || 1) * Math.sin(me.lunge / .12 * Math.PI) * 9 : 0;
-  list.push({ y: me.y, f: () => { drawChar(ctx, me.x + lx, me.y + 6, me, clock);
+  list.push({ y: me.y, f: () => { for (const g of HT.trail || []) { ctx.save(); ctx.globalAlpha = .35 * (1 - g.t / .22); drawChar(ctx, g.x, g.y + 6, me, clock); ctx.restore(); }
+    drawChar(ctx, me.x + lx, me.y + 6, me, clock);
     if (HT.sh > 0) { ctx.save(); ctx.globalAlpha = .28 + Math.sin(clock * 6) * .06; ctx.fillStyle = '#8fd3ff'; ctx.beginPath(); ctx.ellipse(me.x + lx, me.y - 18, 26, 32, 0, 0, 7); ctx.fill(); ctx.globalAlpha = .8; ctx.strokeStyle = '#d6f1ff'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore(); }
     if (HT.bt > 0) { ctx.save(); ctx.globalAlpha = .5; ctx.strokeStyle = SK_COL[me.cls] || '#ffcf5a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(me.x + lx, me.y + 6, 20 + Math.sin(clock * 8) * 2, 7, 0, 0, 7); ctx.stroke(); ctx.restore(); } } });
   list.sort((a, b) => a.y - b.y).forEach(o => o.f());
@@ -2940,13 +2954,13 @@ function steerTick(dt) {
   if (!d) { if (STEER.on) { STEER.on = false; me.moving = false; STEER.t = 0; netGo(); savePos(); } return; }
   if (!STEER.on) { STEER.on = true; standUp(me); me.path = []; me.then = null; GA = null; closePanel?.(); STEER.t = 0; }
   ROAM.pause = 15;
-  const l = Math.hypot(d[0], d[1]) || 1, sp = (me.speed || 110) * dt, vx = d[0] / l * sp, vy = d[1] / l * sp, Sc = sceneOf(me);
+  const l = Math.hypot(d[0], d[1]) || 1, sp = (me.speed || 165) * dt, vx = d[0] / l * sp, vy = d[1] / l * sp, Sc = sceneOf(me);
   let moved = false;
   if (vx && freeAt(Sc, me.x + vx, me.y)) { me.x += vx; moved = true; }
   if (vy && freeAt(Sc, me.x, me.y + vy)) { me.y += vy; moved = true; }
   me.moving = moved; if (Math.abs(d[0]) > .15) me.dir = d[0] < 0 ? -1 : 1;
   if ((STEER.t -= dt) <= 0) {
-    STEER.t = .5; const ah = (me.speed || 110) * .55, tx = me.x + d[0] / l * ah, ty = me.y + d[1] / l * ah, ok = moved && freeAt(Sc, tx, ty) && clear(Sc, me.x, me.y, tx, ty);
+    STEER.t = .5; const ah = (me.speed || 165) * .55, tx = me.x + d[0] / l * ah, ty = me.y + d[1] / l * ah, ok = moved && freeAt(Sc, tx, ty) && clear(Sc, me.x, me.y, tx, ty);
     netSend({ t: 'go', x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(ok ? tx : me.x), ty: Math.round(ok ? ty : me.y) });
   }
 }
@@ -3362,7 +3376,7 @@ function renderStats() {
   const rows = [[D.magic ? '공격력' : '공격력 ⚔️', D.atk], [D.magic ? '마력 ⚔️' : '마력', D.mag], ['물리 방어', D.def], ['마법 방어', D.mdef], ['최대 체력', D.maxHp.toLocaleString()], ['공격 간격', `${D.gap.toFixed(2)}초`], ['이동 속도', `${Math.round(D.spd * 100)}%`], ['치명타', `${D.crit.toFixed(1)}%`], ['치명타 피해', `×${D.critM.toFixed(2)}`], ['회피', `${D.eva.toFixed(1)}%`], ['필살기 확률', `${D.sp.toFixed(1)}%`], ['필살기 피해', `×${D.spMul.toFixed(2)}`], ['골드 보너스', `+${D.goldB.toFixed(1)}%`], ['강화 확률', `+${D.enhB.toFixed(2)}%p`]];
   $('#derived').innerHTML = rows.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('');
   $('#resetStats').textContent = `🔄 능력치 초기화 · ${goldTxt(me.lv * 100)}`; $('#resetStats').disabled = !spentPoints(me);
-  me.speed = 110 * D.spd;   // 민첩 → 이동 속도
+  me.speed = 165 * D.spd;   // 민첩 → 이동 속도 (마을 걷기, 2026-11-16 1.5배)
 }
 $('#statRows').addEventListener('click', e => {
   const inf = e.target.closest('.info');
@@ -3544,6 +3558,23 @@ async function act(path, body) {
 // 위치 저장: 멈췄을 때 (너무 자주는 안 보냄)
 let lastSaved = '', moveT = null, savedAt = 0;
 const SAVE_GAP = 45e3;
+// 새 버전 확인: 게임 파일이 바뀌어 배포되면 자동으로 새로 고침 (배포할 때 __GAMEV__ 자리에 게임 파일 지문이 들어감)
+const GAMEV = '__GAMEV__';
+let verNew = false;
+async function checkVer() {
+  if (GAMEV.startsWith('__') || verNew) return;
+  try {
+    const v = (await (await fetch(`game-version.txt?t=${Date.now()}`, { cache: 'no-store' })).text()).trim();
+    if (/^[0-9a-f]{8}$/.test(v) && v !== GAMEV) { verNew = true; reloadSoon(); }
+  } catch {}
+}
+function reloadSoon() {
+  if (RD) return setTimeout(reloadSoon, 5000);   // 레이드 중이면 끝난 뒤에
+  toast('🔄 게임이 새로 바뀌었어요! 잠깐 뒤 다시 시작할게요');
+  setTimeout(() => { try { savePos(true); } catch {} setTimeout(() => location.reload(), 700); }, 3000);
+}
+setInterval(checkVer, 60000); setTimeout(checkVer, 8000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkVer(); });
 function savePos(now) {
   if (!token || $('#app').hidden || S.away || me.room) return;
   const send = () => {

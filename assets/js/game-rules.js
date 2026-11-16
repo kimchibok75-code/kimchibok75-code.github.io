@@ -565,7 +565,7 @@ export function worldFx(w, t) {
 // r: 희귀도 1 보통 · 2 희귀 · 3 전설 (뽑기 확률이 다름)
 const SK = (id, cls, n, i, r, cd, k, o, d) => ({ id, cls, n, i, r, cd, k, ...o, d });
 export const SKILLS = [
-  SK('s_bash', 'sword', '강타', '💥', 1, 6, 'hit', { m: 2 }, '검을 크게 내려쳐 한 방에 큰 피해'),
+  SK('s_bash', 'sword', '돌진 베기', '🏃', 1, 6, 'hit', { m: 2.1, stun: .5, dash: 1 }, '멀리 있는 몬스터에게 순식간에 달려들어 베고 잠깐 휘청이게 함'),
   SK('s_whirl', 'sword', '회오리 베기', '⚔️', 1, 10, 'hit', { m: .75, x: 3 }, '몸을 돌리며 빠르게 세 번 벰'),
   SK('s_guard', 'sword', '철벽 방패', '🛡️', 2, 15, 'shield', { x: 2 }, '방패를 들어 다음 공격을 막음'),
   SK('s_roar', 'sword', '전투 함성', '📣', 2, 20, 'buff', { atk: 30, dur: 6 }, '함성을 질러 잠깐 공격력이 오름'),
@@ -594,7 +594,7 @@ export const skLv = n => SK_NEED.filter(x => n >= x).length;
 export function skPow(s, lv) {
   const L = Math.max(0, lv - 1);
   return { m: (s.m || 0) * (1 + .1 * L), n: s.x || 1, stun: s.stun || 0, dot: (s.dot || 0) * (1 + .1 * L), v: (s.v || 0) * (1 + .07 * L),
-    sh: (s.k === 'shield' ? s.x : 0) + Math.floor(L / 3), atk: (s.atk || 0) * (1 + .07 * L), crit: (s.crit || 0) * (1 + .07 * L), dur: s.dur || 0, cd: s.cd * (1 - .02 * L) };
+    sh: (s.k === 'shield' ? s.x : 0) + Math.floor(L / 3), atk: (s.atk || 0) * (1 + .07 * L), crit: (s.crit || 0) * (1 + .07 * L), dur: s.dur || 0, dash: s.dash || 0, cd: s.cd * (1 - .02 * L) };
 }
 export function skText(s, lv) {
   const p = skPow(s, lv), pc = x => Math.round(x * 100) + '%';
