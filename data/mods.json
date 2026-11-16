@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1794816947129,
+  "updatedAt": 1794816993641,
   "categories": [
     {
       "key": "김치복제작",
@@ -297,7 +297,7 @@
         "subs": 3145,
         "current": 2948,
         "favorited": 268,
-        "views": 5232,
+        "views": 5233,
         "tags": [
           "Mod",
           "1.7",
@@ -612,74 +612,6 @@
       }
     },
     {
-      "id": "필수-2599942235",
-      "steamId": "2599942235",
-      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=2599942235",
-      "name": "DragSelect",
-      "desc": "여러가지 상황에서 드래그로 편하게 선택할 수 있게 해주는 모드\n진심 이게 왜 바닐라에 없는지 이해가 안 됨",
-      "category": "필수",
-      "section": "필수 모드",
-      "version": "",
-      "kind": "mod",
-      "order": 1,
-      "source": "sheet",
-      "addedAt": 1794567577770,
-      "steam": {
-        "title": "DragSelect",
-        "preview": "https://images.steamusercontent.com/ugc/1698409547910579981/44FE1AD027D28402C838C0C7FCCA5669FBC413F2/",
-        "subs": 911652,
-        "current": 606072,
-        "favorited": 29586,
-        "views": 325704,
-        "tags": [
-          "Mod",
-          "1.7",
-          "1.6",
-          "1.5",
-          "1.4",
-          "1.3"
-        ],
-        "created": 1631433956000,
-        "updated": 1792329083000,
-        "size": 218005,
-        "collection": false,
-        "summary": "This simple mod allows you to drag and select multiple items in trade, caravan, and transporter loading windows. Special Compatibility with Trade UI Revised (Left or right dragging in trade window). (1.5) Now it works on"
-      }
-    },
-    {
-      "id": "필수-2889812094",
-      "steamId": "2889812094",
-      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=2889812094",
-      "name": "Max Buy, Max Sell",
-      "desc": "상단 거래 시 최대 금액에 맞춰서 구매 및 판매할 수 있게 해주는 모드",
-      "category": "필수",
-      "section": "필수 모드",
-      "version": "1.6",
-      "kind": "mod",
-      "order": 2,
-      "source": "sheet",
-      "addedAt": 1794567577770,
-      "steam": {
-        "title": "Max Buy, Max Sell",
-        "preview": "https://images.steamusercontent.com/ugc/1975419820282061865/7F0AB51644EFE1EAAE3406EE855141558FAA405E/",
-        "subs": 61291,
-        "current": 37408,
-        "favorited": 1332,
-        "views": 29485,
-        "tags": [
-          "Mod",
-          "1.6",
-          "1.5",
-          "1.4"
-        ],
-        "created": 1668711170000,
-        "updated": 1751713888000,
-        "size": 71836,
-        "collection": false,
-        "summary": "Adds \"Sell/Buy as many as possible\" button to the trade dialog. This button replaces \"<<\" and \">>\" buttons in the trade window when you can buy or sell only some of the items available with the silver you or the trader w"
-      }
-    },
-    {
       "id": "필수-1434137894",
       "steamId": "1434137894",
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=1434137894",
@@ -868,10 +800,10 @@
       "steam": {
         "title": "RimHUD",
         "preview": "https://images.steamusercontent.com/ugc/1687146164330163452/43BA9FD0FD6A3123B367C2FDAC84A663856CC242/",
-        "subs": 2264543,
-        "current": 1579566,
+        "subs": 2264545,
+        "current": 1579568,
         "favorited": 91444,
-        "views": 1395063,
+        "views": 1395064,
         "tags": [
           "Mod",
           "1.6",
@@ -1406,7 +1338,7 @@
         "title": "Pawn Target Fix",
         "preview": "https://images.steamusercontent.com/ugc/770617500632341635/E5D41EF24982D42A23F835592B45C60AA6319F5E/",
         "subs": 569880,
-        "current": 235519,
+        "current": 235521,
         "favorited": 18174,
         "views": 264545,
         "tags": [
@@ -1510,7 +1442,7 @@
         "title": "Storage Memory",
         "preview": "https://images.steamusercontent.com/ugc/15301340464932073876/99C70F3C0596820145699880ECE2B128CB33000B/",
         "subs": 19104,
-        "current": 8091,
+        "current": 8092,
         "favorited": 556,
         "views": 13602,
         "tags": [
@@ -1772,8 +1704,8 @@
       "steam": {
         "title": "Butter++ (Smooth FPS)",
         "preview": "https://images.steamusercontent.com/ugc/12977554789124046018/4FAD154EAED91AC004F77303C7985774487120DB/",
-        "subs": 98576,
-        "current": 56711,
+        "subs": 98577,
+        "current": 56708,
         "favorited": 4369,
         "views": 92035,
         "tags": [
@@ -2590,8 +2522,8 @@
       "steam": {
         "title": "Yet Another Research Tree (YART)",
         "preview": "https://images.steamusercontent.com/ugc/10784814698037339783/B8DADA274AB73EFE3DB96A3936ABB689C1918898/",
-        "subs": 121032,
-        "current": 91728,
+        "subs": 121033,
+        "current": 91730,
         "favorited": 4877,
         "views": 136354,
         "tags": [
@@ -2622,10 +2554,10 @@
       "steam": {
         "title": "[NL] Facial Animation - WIP",
         "preview": "https://images.steamusercontent.com/ugc/1017193655265345108/B24544D5CDB8934EA49E904FC03946A6BAFA5205/",
-        "subs": 1238709,
+        "subs": 1238711,
         "current": 823195,
         "favorited": 50808,
-        "views": 867356,
+        "views": 867359,
         "tags": [
           "Mod",
           "1.7",
@@ -3098,7 +3030,7 @@
         "title": "Yayo's Animation (Continued)",
         "preview": "https://images.steamusercontent.com/ugc/17028521122209171203/0089C7E5E4749CDBEA01BB78BE5D9C64D548D2DF/",
         "subs": 927900,
-        "current": 670477,
+        "current": 670473,
         "favorited": 31733,
         "views": 562879,
         "tags": [
@@ -3654,7 +3586,7 @@
         "title": "Tribal Backstories - Medieval Patch",
         "preview": "https://images.steamusercontent.com/ugc/12469262845057946814/1045BCE836D5107834DC21BDC1DAD26118979AD1/",
         "subs": 32554,
-        "current": 9903,
+        "current": 9902,
         "favorited": 392,
         "views": 11133,
         "tags": [
@@ -3756,7 +3688,7 @@
       "steam": {
         "title": "Medieval Adventures: Implants",
         "preview": "https://images.steamusercontent.com/ugc/34437671273385426/0BC6760E944F45339A1F4260CF62A1CD4346B6B9/",
-        "subs": 168993,
+        "subs": 168994,
         "current": 71776,
         "favorited": 3416,
         "views": 123089,
@@ -4531,7 +4463,7 @@
         "subs": 44392,
         "current": 19410,
         "favorited": 2417,
-        "views": 62946,
+        "views": 62947,
         "tags": [
           "Mod",
           "1.6"
@@ -5129,7 +5061,7 @@
         "title": "Adaptive Primitive Storage",
         "preview": "https://images.steamusercontent.com/ugc/33313055661494204/EF7744A1E79A4A8134996EF885D41CE5F8BE4B55/",
         "subs": 421277,
-        "current": 253340,
+        "current": 253336,
         "favorited": 9764,
         "views": 274343,
         "tags": [
@@ -5331,7 +5263,7 @@
         "title": "Dark Ages : Crypts and Tombs",
         "preview": "https://images.steamusercontent.com/ugc/2068882989442900514/8E2C1AD17D5657D318B1E616F76FA21D9A5401B8/",
         "subs": 340310,
-        "current": 161217,
+        "current": 161216,
         "favorited": 8786,
         "views": 255961,
         "tags": [
@@ -5893,9 +5825,9 @@
         "title": "Hospitality",
         "preview": "https://images.steamusercontent.com/ugc/17554395187834558866/343827474849523088116325825B09C312CE24D3/",
         "subs": 1698387,
-        "current": 771481,
+        "current": 771478,
         "favorited": 74282,
-        "views": 1340882,
+        "views": 1340883,
         "tags": [
           "Mod",
           "1.0",
@@ -6160,7 +6092,7 @@
         "title": "Medieval Anomaly",
         "preview": "https://images.steamusercontent.com/ugc/12583187484528696842/9EA69C9606F2AD6E1EFA5CEC3D856CF5F9DFC1A8/",
         "subs": 78170,
-        "current": 30871,
+        "current": 30870,
         "favorited": 2141,
         "views": 67983,
         "tags": [
@@ -6908,10 +6840,10 @@
       "steam": {
         "title": "SQUISHY Melee",
         "preview": "https://images.steamusercontent.com/ugc/10794798281109748820/43C158FAE832AC939AE5CE8EB9B385380D32363E/",
-        "subs": 7415,
-        "current": 6990,
+        "subs": 7417,
+        "current": 6992,
         "favorited": 928,
-        "views": 17756,
+        "views": 17761,
         "tags": [
           "Mod",
           "1.7"
@@ -6921,6 +6853,38 @@
         "size": 1253958,
         "collection": false,
         "summary": "Introducing Squishy Melee This mod is an add-on for SQUISHY Ranged that adds melee combat animations. Squishy Melee does not affect combat balance. It only adds visual effects. Recommended *PAWN DEPTH ORDER I created thi"
+      }
+    },
+    {
+      "id": "필수-3834819085",
+      "steamId": "3834819085",
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3834819085",
+      "name": "[KCB] 나만의 편의성",
+      "desc": "개인적으로 쓰려고 만든 편의성 모드",
+      "category": "필수",
+      "section": "필수 모드",
+      "version": "1.7",
+      "kind": "mod",
+      "order": 29,
+      "source": "manual",
+      "addedAt": 1794816986820,
+      "steam": {
+        "title": "[KCB] 나만의 편의성",
+        "preview": "https://images.steamusercontent.com/ugc/13711280550170498696/D28A6298EBB7633538434502FDE19DFCD0E26AD9/",
+        "subs": 127,
+        "current": 119,
+        "favorited": 6,
+        "views": 381,
+        "tags": [
+          "Mod",
+          "1.7",
+          "1.6"
+        ],
+        "created": 1793988014000,
+        "updated": 1794762950000,
+        "size": 1884414,
+        "collection": false,
+        "summary": "나만의 편의성 개인용으로 만든 편의성 모음 모드입니다. 바닐라 UI에 자연스럽게 녹아들고, 대부분 우클릭이나 버튼 하나 로 씁니다. ⚙️ 모든 기능은 모드 설정 → 나만의 편의성 에서 하나씩 켜고 끌 수 있습니다. 게임을 다시 시작할 필요 없이 바로 적용되고, 기능을 꺼도 저장된 내용은 지워지지 않습니다. 📬 편지 · 알림 편지 우클릭 꾹 → 연속 삭제 빨간 편지 → 바로 띄우고 일시정지 "
       }
     }
   ],
