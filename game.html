@@ -882,6 +882,40 @@ function inkDraw(ctx, parts, O = 2.2) {
   for (const p of parts) { if (p.c) { p.path(ctx); ctx.fillStyle = p.c; ctx.fill(); } p.after?.(ctx); }
   ctx.restore();
 }
+// ───────── 마을 그림 스타일 (2026-11-16): 테두리 없는 면 + 위에서 내려다본 3/4 시점 (윗면 약 80%, 앞면 약 20%, 원근 없음) ─────────
+// 색 밝게(k>0)·어둡게(k<0)
+const sh = (hex, k) => { const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(k > 0 ? v + (255 - v) * k : v * (1 + k))); return '#' + c.map(v => v.toString(16).padStart(2, '0')).join(''); };
+// 테두리 없이 칠하기 (모든 조각을 flat으로)
+const flatInk = (g, P) => inkDraw(g, P.map(p => ({ ...p, flat: 1 })), 0);
+// 위에서 본 건물 한 채: 돌 기단 → 앞벽(창·문) → 지붕(hip 모임 / gable 맞배 / flat 평지붕) → 처마 두께
+// W·H = 차지하는 칸(픽셀). 반환: { P, top, eave, fr, rg, cx } (좌표는 꾸밈을 더 얹을 때 씀)
+function topB(W, H, o = {}) {
+  const fh = o.fh ?? Math.round(H * .27), fr = H - 6, eave = fr - fh, top = o.top ?? -Math.round(H * .22), cx = W / 2, P = [];
+  const wall = o.wall || '#efe9dc', rc = o.roof || '#7193b5', L = o.L ?? -4, Rr = o.R ?? W + 4, rg = o.rg ?? Math.round((top + eave) / 2) - 4;
+  if (o.base !== false) { const gc = o.ground || '#d8d2c4'; P.push({ path: R(L - 6, top + 14, Rr - L + 12, fr - top - 8, 8), c: gc }, { path: R(L - 6, fr - 2, Rr - L + 12, 10, [0, 0, 6, 6]), c: sh(gc, -.2) }, { path: R(L - 6, fr - 2, Rr - L + 12, 2, 0), c: 'rgba(255,255,255,.3)' }); }
+  P.push({ path: R(L + 8, eave, Rr - L - 16, fr - eave, 0), c: wall }, { path: R(L + 8, eave, Rr - L - 16, 6, 0), c: 'rgba(40,55,75,.2)' });
+  if (o.wallLines) for (let y = eave + 12; y < fr; y += 9) P.push({ path: R(L + 8, y, Rr - L - 16, 1.5, 0), c: 'rgba(0,0,0,.1)' });
+  for (const [x, w, c] of o.wins || []) P.push({ path: R(x, eave + 9, w, Math.max(8, fh - 22), 2), c: c || '#8fc6e0' }, { path: R(x, eave + 9, w, 3, [2, 2, 0, 0]), c: 'rgba(255,255,255,.45)' }, { path: R(x, eave + 9 + Math.max(8, fh - 22), w, 2.5, 1), c: sh(wall, -.15) });
+  if (o.door) { const [dx, dw, dc = '#7a4b2a'] = o.door, dt = eave + 7; P.push({ path: R(dx, dt, dw, fr - dt, [dw / 2, dw / 2, 0, 0]), c: dc }, { path: R(dx + 3, dt + 4, dw - 6, fr - dt - 4, [dw / 2 - 3, dw / 2 - 3, 0, 0]), c: 'rgba(0,0,0,.16)' }, { path: E(dx + dw - 6, dt + (fr - dt) * .55, 1.7, 1.7), c: '#ffd166' }, { path: R(dx - 6, fr - 1, dw + 12, 9, 2), c: sh(o.ground || '#d8d2c4', -.08) }); }
+  const lines = (x0f, x1f, y0, y1, step, c) => g => { g.fillStyle = c; for (let y = y0 + step; y < y1 - 1; y += step) { const k = (y - y0) / (y1 - y0), x0 = x0f(k), x1 = x1f(k); g.fillRect(x0, y, x1 - x0, 1.5); } };
+  if (o.kind === 'gable') {   // 맞배지붕: 용마루가 가로로 → 뒤 경사(어두움) + 앞 경사(밝음)
+    P.push({ path: R(L, top, Rr - L, rg - top, [4, 4, 0, 0]), c: sh(rc, -.2), after: lines(() => L, () => Rr, top, rg, 9, 'rgba(255,255,255,.07)') },
+      { path: R(L, rg, Rr - L, eave - rg, 0), c: rc, after: lines(() => L, () => Rr, rg, eave, 9, 'rgba(20,30,45,.15)') },
+      { path: R(L, rg - 2.5, Rr - L, 5, 2.5), c: sh(rc, .28) }, { path: R(L, top, 4, eave - top, 0), c: 'rgba(0,0,0,.08)' }, { path: R(Rr - 4, top, 4, eave - top, 0), c: 'rgba(255,255,255,.08)' });
+  } else if (o.kind === 'flat') {   // 평지붕: 난간 테두리 + 안쪽 바닥
+    P.push({ path: R(L, top, Rr - L, eave - top, 3), c: sh(rc, -.1) }, { path: R(L + 6, top + 6, Rr - L - 12, eave - top - 10, 2), c: o.floor || sh(rc, .25) }, { path: R(L + 6, top + 6, Rr - L - 12, 3, 0), c: 'rgba(0,0,0,.1)' });
+  } else {   // 모임지붕: 뒤 · 양옆 · 앞 경사면 + 짧은 용마루
+    const ix = o.ix ?? Math.min(42, (Rr - L) * .24);
+    P.push({ path: PG([[L, top], [Rr, top], [Rr - ix, rg], [L + ix, rg]]), c: sh(rc, -.22) },
+      { path: PG([[L, top], [L + ix, rg], [L, eave]]), c: sh(rc, -.1) }, { path: PG([[Rr, top], [Rr - ix, rg], [Rr, eave]]), c: sh(rc, -.16) },
+      { path: PG([[L + ix, rg], [Rr - ix, rg], [Rr, eave], [L, eave]]), c: rc, after: lines(k => L + ix - ix * k, k => Rr - ix + ix * k, rg, eave, 9, 'rgba(20,30,45,.15)') },
+      { path: PG([[L, top], [L + ix, rg], [L + ix + 2, rg + 2], [L + 3, top]]), c: 'rgba(255,255,255,.16)' }, { path: R(L + ix - 2, rg - 2.5, Rr - L - ix * 2 + 4, 5, 2.5), c: sh(rc, .3) });
+  }
+  P.push({ path: R(L, eave, Rr - L, 6, [0, 0, 3, 3]), c: sh(rc, -.35) });
+  return { P, top, eave, fr, rg, cx, L, Rr };
+}
+// 줄무늬 차양 (위에서 본 천막): 앞벽 위에 튀어나옴
+const awning = (x, y, w, c1, c2 = '#ffffff', d = 12) => { const P = [], n = Math.max(3, Math.round(w / 14)), sw = w / n; for (let i = 0; i < n; i++) P.push({ path: R(x + i * sw, y, sw + .5, d, 0), c: i % 2 ? c2 : c1 }); P.push({ path: R(x, y + d, w, 3, [0, 0, 2, 2]), c: sh(c1, -.25) }, { path: R(x, y, w, 2, 0), c: 'rgba(0,0,0,.12)' }); return P; };
 // 장비 색 (단계 1~6)
 const ARMOR_C = ['#e3d6bb', '#b07a45', '#9aa5b1', '#dfe6ee', '#b8433a', '#f2c14e'];
 const SHOE_C = ['#d2b06a', '#7a4a2a', '#7f8b98', '#5d7690', '#3fb6a8', '#e0b23a'];
@@ -1389,12 +1423,12 @@ async function paintGround(step) {
   { let x0 = MW, y0 = MH, x1 = 0, y1 = 0; for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (tileAt(x, y) === SOIL) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
     if (x1 >= x0) {
       const X = x0 * T + 3, Y = y0 * T + 3, Wd = (x1 - x0 + 1) * T - 6, Hh = (y1 - y0 + 1) * T - 6;
-      inkDraw(g, [{ path: R(X, Y, Wd, Hh, 22), c: '#a9774b', after: q => {
+      flatInk(g, [{ path: R(X, Y + 6, Wd, Hh, 22), c: '#8a5f3a' }, { path: R(X, Y, Wd, Hh, 22), c: '#a9774b', after: q => {
         q.save(); q.beginPath(); q.roundRect(X, Y, Wd, Hh, 22); q.clip();
         q.fillStyle = 'rgba(255,255,255,.08)'; q.fillRect(X, Y, Wd, 6);
         q.fillStyle = 'rgba(70,40,15,.18)'; for (let i = 0; i < 160; i++) { q.beginPath(); q.arc(X + rnd() * Wd, Y + rnd() * Hh, .8 + rnd() * 1.6, 0, 7); q.fill(); }
         q.restore(); } },
-        { flat: 1, path: R(X + 7, Y + 7, Wd - 14, Hh - 14, 16), c: 'rgba(90,55,25,.18)' }], 2.4);
+        { flat: 1, path: R(X + 7, Y + 7, Wd - 14, Hh - 14, 16), c: 'rgba(90,55,25,.18)' }]);
     } }
   if (LY) { LY.width = LY.height = 0; LY = null; }
   if (!g.getImageData(cv.width >> 1, cv.height >> 1, 1, 1).data[3]) { cv.width = cv.height = 0; throw new Error('빈 그림'); }   // 메모리가 모자라면 휴대폰이 조용히 빈 그림을 줌
@@ -1518,32 +1552,34 @@ const winP = (x, y, w, h) => [{ path: R(x, y, w, h, 3), c: '#9fd3ea' }, { flat: 
 const doorP = (x, y, w, h, c = '#7a4b2a') => [{ path: R(x, y, w, h, [w / 2, w / 2, 0, 0]), c }, { flat: 1, path: R(x + 3, y + 6, w - 6, h - 6, [w / 2 - 3, w / 2 - 3, 0, 0]), c: 'rgba(0,0,0,.12)' }, { flat: 1, path: E(x + w - 6, y + h * .55, 1.8, 1.8), c: '#ffd166' }];
 // 건물마다 다른 모양 (가로 W, 세로 H = 차지하는 칸. 지붕은 위로 올라감). lab: 간판 높이
 const BLD = {
-  cafe: (W, H) => [
-    { path: R(6, 46, W - 12, H - 46, 4), c: '#fff1dc' }, { flat: 1, path: R(6, H - 16, W - 12, 16, 0), c: '#d98b5f' },
-    { path: PG([[-4, 52], [W + 4, 52], [W - 16, 4], [16, 4]]), c: '#8a4b2a' }, { flat: 1, path: R(18, 4, W - 36, 7, 3), c: '#6b3a20' },
-    { path: R(10, 56, W - 20, 13, 3), c: '#e8553a', after: g => { g.fillStyle = '#fff'; for (let x = 18; x < W - 14; x += 18) g.fillRect(x, 56, 9, 13); } },
-    ...Array.from({ length: Math.floor((W - 20) / 18) + 1 }, (_, i) => ({ flat: 1, path: E(16 + i * 18, 69, 8, 5), c: i % 2 ? '#fff' : '#e8553a' })),
-    ...winP(20, 78, 40, 28), ...winP(W - 60, 78, 40, 28), ...doorP(W / 2 - 14, H - 44, 28, 44),
-    { path: E(W / 2, 2, 24, 5), c: '#e8553a' }, { path: R(W / 2 - 17, -26, 34, 27, [2, 2, 12, 12]), c: '#fff' }, { path: g => { g.beginPath(); g.ellipse(W / 2 + 19, -14, 7, 8, 0, 0, 7); g.ellipse(W / 2 + 19, -14, 3.5, 4.5, 0, 0, 7, true); }, c: '#fff' },
-    { flat: 1, path: E(W / 2, -24, 14, 3.5), c: '#7a4a2a' }, { flat: 1, path: g => heartPath(g, W / 2, -11, 5), c: '#e8553a' }],
-  gacha: (W, H) => [
-    { path: R(8, 64, W - 16, H - 64, 16), c: '#e0304a' }, { flat: 1, path: R(8, 64, W - 16, 14, 0), c: '#ffd45a' },
-    { path: g => { g.beginPath(); g.ellipse(W / 2, 70, W / 2 - 26, 72, 0, Math.PI, 0); g.closePath(); }, c: '#d6f1fb', after: g => {
-      g.save(); g.beginPath(); g.ellipse(W / 2, 70, W / 2 - 30, 68, 0, Math.PI, 0); g.closePath(); g.clip();
-      const cs = ['#ff6fa0', '#ffd45a', '#7fd6e8', '#8fdc6a', '#b98cff', '#ff9b54'];
-      for (let i = 0; i < 26; i++) { const x = 36 + ((i * 53) % (W - 72)), y = 70 - ((i * 29) % 40) - (i > 13 ? 22 : 0); g.fillStyle = cs[i % 6]; g.beginPath(); g.arc(x, y, 11, 0, 7); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(x, y, 11, Math.PI, 0); g.fill(); g.strokeStyle = 'rgba(0,0,0,.18)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x - 11, y); g.lineTo(x + 11, y); g.stroke(); }
-      g.fillStyle = 'rgba(255,255,255,.55)'; g.beginPath(); g.ellipse(W / 2 - 50, 20, 14, 30, -.5, 0, 7); g.fill(); g.restore(); } },
-    { path: R(W / 2 - 22, -8, 44, 12, 6), c: '#ffd45a' },
-    { path: E(46, H - 40, 17, 17), c: '#f3f3f3' }, { flat: 1, path: R(43, H - 56, 6, 32, 3), c: '#e0304a' }, { flat: 1, path: R(30, H - 43, 32, 6, 3), c: '#e0304a' },
-    { path: R(W - 82, H - 60, 46, 40, 10), c: '#3a2440' }, { flat: 1, path: E(W - 59, H - 32, 10, 10), c: '#7fd6e8' }, { flat: 1, path: E(W - 59, H - 32, 10, 10, Math.PI), c: '#7fd6e8' },
-    ...doorP(W / 2 - 18, H - 46, 36, 46, '#7a2438'), { flat: 1, path: g => starPath(g, W / 2, 72, 6), c: '#e0304a' }],
-  skin: (W, H) => [
-    { path: R(6, 46, W - 12, H - 46, 4), c: '#fff0f5' },
-    { path: PG([[-2, 54], [W + 2, 54], [W - 18, 8], [18, 8]]), c: '#ef7fa6' }, ...Array.from({ length: Math.floor(W / 16) + 1 }, (_, i) => ({ flat: 1, path: E(i * 16 + 2, 55, 8, 6), c: i % 2 ? '#f9b8d0' : '#ef7fa6' })),
-    { path: R(16, 70, 62, H - 82, 5), c: '#cdeefa' }, { flat: 1, path: E(47, 82, 6, 6), c: '#fff' }, { flat: 1, path: PG([[40, 88], [54, 88], [60, H - 14], [34, H - 14]]), c: '#9a5ad6' },
-    ...doorP(W - 62, H - 52, 30, 52, '#c2457a'),
-    { path: PG([[W / 2 - 22, -6], [W / 2 - 10, -14], [W / 2 + 10, -14], [W / 2 + 22, -6], [W / 2 + 15, 2], [W / 2 + 10, -2], [W / 2 + 10, 14], [W / 2 - 10, 14], [W / 2 - 10, -2], [W / 2 - 15, 2]]), c: '#4f9dd9' },
-    { flat: 1, path: g => heartPath(g, W / 2, 2, 4), c: '#fff' }],
+  // 카페: 맞배지붕 + 빨간 줄무늬 차양 + 지붕 위 커피잔 간판 (위에서 본 잔)
+  cafe: (W, H) => {
+    const b = topB(W, H, { kind: 'gable', roof: '#9a5a36', wall: '#fff1dc', wins: [[20, 40], [W - 60, 40]], door: [W / 2 - 14, 28] }), y = b.rg + 2, x = W / 2;
+    return [...b.P, ...awning(14, b.eave - 3, W - 28, '#e8553a', '#ffffff', 9),
+      { path: E(x, y + 3, 19, 14), c: '#e2d9ca' }, { path: E(x + 16, y + 1, 6.5, 5), c: '#ffffff' }, { path: E(x + 16, y + 1, 3, 2.2), c: '#e2d9ca' },
+      { path: E(x, y, 13, 10), c: '#ffffff' }, { path: E(x, y + 1, 10, 7.5), c: '#7a4a2a' }, { path: g => heartPath(g, x, y + 1, 3.6), c: '#f3dcc0' }, { path: E(x - 6, y - 5, 4, 1.6), c: 'rgba(255,255,255,.6)' }];
+  },
+  // 가챠센터: 평지붕 위에 커다란 유리 돔 (캡슐이 가득) + 노란 앞벽 · 불빛 줄
+  gacha: (W, H) => {
+    const b = topB(W, H, { kind: 'flat', roof: '#e0304a', floor: '#f16a7d', wall: '#ffd45a', wins: [[26, 44, '#3a2440'], [W - 70, 44, '#3a2440']], door: [W / 2 - 18, 36, '#7a2438'] });
+    const x = W / 2, y = b.rg + 4, rx = 74, ry = 54, cs = ['#ff6fa0', '#ffd45a', '#7fd6e8', '#8fdc6a', '#b98cff', '#ff9b54'], P = [...b.P];
+    P.push({ path: E(x, y + 5, rx + 6, ry + 5), c: '#b8243a' }, { path: E(x, y, rx + 6, ry + 4), c: '#ffd45a' }, { path: E(x, y, rx, ry), c: '#cfeefa' });
+    for (let i = 0; i < 30; i++) {
+      const a = i * 2.39996, d = Math.sqrt((i + .5) / 30), cx2 = x + Math.cos(a) * d * (rx - 13), cy2 = y + Math.sin(a) * d * (ry - 11), c = cs[i % 6];
+      P.push({ path: E(cx2, cy2, 10, 9), c }, { path: g => { g.beginPath(); g.ellipse(cx2, cy2, 10, 9, 0, Math.PI, 0); g.closePath(); }, c: '#ffffff' }, { path: R(cx2 - 10, cy2 - .7, 20, 1.4, 0), c: 'rgba(0,0,0,.12)' });
+    }
+    P.push({ path: E(x - 30, y - 22, 22, 11, -.4), c: 'rgba(255,255,255,.45)' }, { path: E(x + 40, y + 24, 10, 4, -.4), c: 'rgba(255,255,255,.3)' });
+    for (const wx of [26, W - 70]) P.push({ path: E(wx + 22, b.eave + 22, 8, 7), c: '#7fd6e8' }, { path: E(wx + 22, b.eave + 20, 4, 2), c: 'rgba(255,255,255,.6)' });
+    return P;
+  },
+  // 스킨샵: 분홍 모임지붕 + 줄무늬 차양 + 지붕 위에 누운 파란 셔츠 간판 + 진열창
+  skin: (W, H) => {
+    const b = topB(W, H, { kind: 'hip', roof: '#ef7fa6', wall: '#fff0f5', wins: [[16, 52, '#cdeefa']], door: [W - 54, 28, '#c2457a'] }), x = W / 2, y = b.rg + 8;
+    const sp = [[-20, -5], [-9, -12], [9, -12], [20, -5], [14, 2], [9, -2], [9, 12], [-9, 12], [-9, -2], [-14, 2]];
+    return [...b.P, ...awning(10, b.eave - 3, W - 20, '#ef7fa6', '#fbd3e2', 9),
+      { path: PG(sp.map(([a, c]) => [x + a, y + c + 2])), c: 'rgba(80,30,60,.18)' }, { path: PG(sp.map(([a, c]) => [x + a, y + c])), c: '#4f9dd9' }, { path: R(x - 9, y - 4, 18, 3, 1), c: '#7fbbea' }, { path: g => heartPath(g, x, y + 3, 4), c: '#ffffff' },
+      { path: E(42, b.eave + 22, 5, 5), c: '#ffffff' }, { path: PG([[36, b.eave + 26], [48, b.eave + 26], [52, b.fr - 3], [32, b.fr - 3]]), c: '#9a5ad6' }];
+  },
   // 마을회관 (2.5D 시험): 위에서 비스듬히 내려다본 모습. 지붕 윗면이 넓게 보이고, 처마 두께 → 앞벽 → 계단
   // 마을회관 (2026-11-16 새 그림): 테두리 없는 면 스타일 · 위에서 내려다본 3/4 시점 (윗면 약 80%, 앞면 약 20%, 원근 없음)
   hall: (W, H) => {
@@ -1589,41 +1625,54 @@ const BLD = {
       // 깃대 (시계탑 꼭대기에서 위로)
       { flat: F, path: R(cx - 1.5, rg - 66, 3, 43, 1.5), c: '#5b4636' }, { flat: F, path: E(cx, rg - 67, 3, 3), c: '#ffd45a' }];
   },
-  smith: (W, H) => [
-    { path: R(6, 78, W - 12, H - 78, 4), c: '#9aa1aa', after: g => { g.strokeStyle = 'rgba(40,45,55,.25)'; g.lineWidth = 1.5; for (let y = 90; y < H; y += 14) { g.beginPath(); g.moveTo(8, y); g.lineTo(W - 8, y); g.stroke(); for (let x = 20 + (y % 28 ? 12 : 0); x < W - 10; x += 24) { g.beginPath(); g.moveTo(x, y - 14); g.lineTo(x, y); g.stroke(); } } } },
-    { path: R(10, 48, W - 20, 34, 2), c: '#a0714a' }, { flat: 1, path: R(10, 60, W - 20, 3, 0), c: 'rgba(0,0,0,.15)' },
-    { path: R(W - 56, -34, 26, 56, 3), c: '#7d756c' }, { path: PG([[-6, 54], [W + 6, 54], [W - 26, 6], [26, 6]]), c: '#4a3a35' },
-    { path: R(22, H - 58, 54, 44, [22, 22, 4, 4]), c: '#3a2420' }, { flat: 1, path: E(49, H - 26, 20, 11), c: '#ffb347' }, { flat: 1, path: E(49, H - 24, 11, 6), c: '#fff1b0' },
-    ...doorP(W / 2 + 12, H - 60, 32, 60, '#6b3d22'),
-    { path: PG([[W - 46, H - 18], [W - 14, H - 18], [W - 20, H - 12], [W - 24, H - 12], [W - 22, H - 2], [W - 38, H - 2], [W - 36, H - 12], [W - 42, H - 12]]), c: '#4b5563' }],
-  fishshop: (W, H) => [
-    { path: R(10, H - 12, 6, 14, 2), c: '#7a5332' }, { path: R(W - 16, H - 12, 6, 14, 2), c: '#7a5332' },
-    { path: R(4, 36, W - 8, H - 46, 3), c: '#c9a06a', after: g => { g.fillStyle = 'rgba(90,60,30,.25)'; for (let y = 44; y < H - 10; y += 9) g.fillRect(6, y, W - 12, 1.5); } },
-    { path: PG([[-8, 42], [W + 8, 42], [W / 2, -4]]), c: '#2bb3a6' }, ...doorP(W / 2 - 11, H - 46, 22, 36),
-    { path: E(W / 2 - 2, 22, 15, 8), c: '#ffb02e' }, { path: PG([[W / 2 + 11, 22], [W / 2 + 22, 14], [W / 2 + 22, 30]]), c: '#ffb02e' }, { flat: 1, path: E(W / 2 - 9, 20, 2, 2), c: INK },
-    { path: R(W - 24, H - 32, 16, 22, 5), c: '#8a5a30' }, { flat: 1, path: R(W - 24, H - 25, 16, 2.5, 0), c: '#4b3a2a' }],
-  lumber: (W, H) => [
-    { path: R(6, 48, W - 12, H - 48, 6), c: '#a8743f', after: g => { g.fillStyle = 'rgba(70,40,20,.35)'; for (let y = 58; y < H; y += 11) g.fillRect(8, y, W - 16, 2); g.fillStyle = '#e2b77a'; for (let y = 54; y < H - 4; y += 11) { g.beginPath(); g.arc(9, y, 4.5, 0, 7); g.arc(W - 9, y, 4.5, 0, 7); g.fill(); } } },
-    { path: PG([[-8, 56], [W + 8, 56], [W / 2, -4]]), c: '#4f8a3f' }, { flat: 1, path: PG([[W / 2, 6], [W / 2 + 14, 22], [W / 2 - 14, 22]]), c: '#3f6f32' },
-    ...doorP(W / 2 - 14, H - 48, 28, 48, '#6b3d22'), ...winP(18, 70, 26, 20),
-    ...[[W - 34, H - 10], [W - 18, H - 10], [W - 26, H - 24]].map(([x, y]) => ({ path: E(x, y, 9, 9), c: '#c48a4f', after: g => { g.strokeStyle = 'rgba(90,55,25,.6)'; g.lineWidth = 1.2; g.beginPath(); g.arc(x, y, 5, 0, 7); g.stroke(); } }))],
-  quarry: (W, H) => [
-    { path: PG([[-8, H], [-4, 50], [18, 22], [44, 30], [70, 4], [104, 14], [130, 6], [W + 4, 40], [W + 8, H]]), c: '#8d8478' },
-    { flat: 1, path: PG([[24, 34], [44, 36], [64, 14], [80, 18], [56, 44]]), c: '#a39a8c' }, { flat: 1, path: PG([[110, 22], [132, 16], [146, 40], [120, 36]]), c: '#a39a8c' },
-    { path: R(W / 2 - 32, 48, 64, H - 48, [32, 32, 0, 0]), c: '#7a5332' }, { flat: 1, path: R(W / 2 - 23, 57, 46, H - 57, [23, 23, 0, 0]), c: '#241c18' },
-    { path: R(W - 54, H - 30, 38, 20, 4), c: '#6b7684' }, { flat: 1, path: E(W - 44, H - 31, 7, 5), c: '#d9b25a' }, { flat: 1, path: E(W - 30, H - 32, 8, 6), c: '#c9a35a' },
-    { path: E(W - 46, H - 8, 4.5, 4.5), c: '#2f3b4f' }, { path: E(W - 24, H - 8, 4.5, 4.5), c: '#2f3b4f' },
-    { path: R(14, H - 46, 4, 36, 1), c: '#5b4636' }, { path: R(9, H - 54, 14, 10, 3), c: '#ffd166' }],
-  farmshed: (W, H) => [
-    { path: R(6, 34, W - 12, H - 34, 3), c: '#c8553d' }, { flat: 1, path: R(6, 34, W - 12, 4, 0), c: 'rgba(0,0,0,.15)' },
-    { path: PG([[-6, 40], [12, 12], [W / 2, -2], [W - 12, 12], [W + 6, 40]]), c: '#7a2a24' },
-    { path: R(W / 2 - 18, H - 44, 36, 44, 2), c: '#f3ead2', after: g => { g.strokeStyle = '#c8553d'; g.lineWidth = 3; g.beginPath(); g.moveTo(W / 2 - 15, H - 41); g.lineTo(W / 2 + 15, H - 3); g.moveTo(W / 2 + 15, H - 41); g.lineTo(W / 2 - 15, H - 3); g.stroke(); } },
-    { path: R(W - 34, H - 22, 26, 20, 4), c: '#f2d06b' }, { flat: 1, path: R(W - 34, H - 15, 26, 2, 0), c: '#c9a24a' }, { path: E(W / 2, 18, 7, 7), c: '#f3ead2' }],
+  // 대장간: 어두운 맞배지붕 + 돌벽 + 굴뚝(위에서 본 구멍) + 화덕 불빛 + 앞마당 모루
+  smith: (W, H) => {
+    const b = topB(W, H, { kind: 'gable', roof: '#4a4440', wall: '#a3aab3', wallLines: 1, wins: [[22, 50, '#3a2420']], door: [W / 2 + 16, 30, '#6b3d22'] }), cx = W - 46, cy = b.rg - 22;
+    return [...b.P,
+      { path: E(47, b.eave + 26, 20, 10), c: '#ffb347' }, { path: E(47, b.eave + 27, 11, 5), c: '#fff1b0' },
+      { path: R(cx - 13, cy - 8, 26, 18, 2), c: '#8d857b' }, { path: R(cx - 13, cy + 10, 26, 8, 0), c: '#6f675e' }, { path: E(cx, cy + 1, 7, 4.5), c: '#2a2420' }, { path: R(cx - 13, cy - 8, 26, 2.5, 0), c: 'rgba(255,255,255,.2)' },
+      { path: R(W - 48, b.fr - 16, 32, 10, 3), c: '#5b6573' }, { path: PG([[W - 48, b.fr - 14], [W - 58, b.fr - 11], [W - 48, b.fr - 8]]), c: '#5b6573' }, { path: R(W - 44, b.fr - 6, 24, 8, [0, 0, 2, 2]), c: '#3e4652' }, { path: R(W - 46, b.fr - 15, 26, 2, 0), c: 'rgba(255,255,255,.25)' }];
+  },
+  // 낚시점: 작은 청록 모임지붕 + 나무벽 + 지붕 위 주황 물고기 간판 + 통
+  fishshop: (W, H) => {
+    const b = topB(W, H, { kind: 'hip', roof: '#2bb3a6', wall: '#c9a06a', wallLines: 1, fh: 26, top: -22, ix: 22, door: [W / 2 - 11, 22] }), x = W / 2 - 2, y = b.rg + 9;
+    return [...b.P,
+      { path: E(x, y, 14, 7.5), c: '#ffb02e' }, { path: PG([[x + 11, y], [x + 21, y - 7], [x + 21, y + 7]]), c: '#ffb02e' }, { path: E(x - 7, y - 2, 1.8, 1.8), c: '#2d3a4e' }, { path: E(x - 2, y - 3, 6, 2), c: 'rgba(255,255,255,.35)' },
+      { path: E(W - 8, b.fr - 6, 9, 7), c: '#a26a38' }, { path: E(W - 8, b.fr - 6, 6, 4.5), c: '#7a4a24' }, { path: R(W - 17, b.fr - 6, 18, 9, [0, 0, 4, 4]), c: '#8a5a30' }, { path: R(W - 17, b.fr - 2, 18, 1.6, 0), c: '#4b3a2a' }];
+  },
+  // 벌목소: 초록 맞배지붕 + 나무벽 + 앞에 쌓인 통나무 (위에서 본 통나무, 나이테는 앞 끝)
+  lumber: (W, H) => {
+    const b = topB(W, H, { kind: 'gable', roof: '#4f8a3f', wall: '#a8743f', wallLines: 1, wins: [[16, 26]], door: [W / 2 - 14, 28, '#6b3d22'] }), P = [...b.P];
+    for (const [x, y, w] of [[W - 54, b.fr - 18, 44], [W - 50, b.fr - 8, 44], [W - 58, b.fr + 2, 44]]) P.push({ path: R(x, y, w, 10, 5), c: '#9a6235' }, { path: R(x, y, w, 3, [5, 5, 0, 0]), c: 'rgba(255,255,255,.18)' }, { path: E(x + w - 4, y + 5, 4.5, 4.5), c: '#e2b77a' }, { path: E(x + w - 4, y + 5, 2, 2), c: '#c48a4f' });
+    P.push({ path: E(18, b.fr - 2, 10, 7), c: '#d8a56a' }, { path: E(18, b.fr - 2, 5, 3.5), c: '#c48a4f' }, { path: R(8, b.fr - 2, 20, 7, [0, 0, 4, 4]), c: '#8a5a30' }, { path: R(16, b.fr - 14, 4, 12, 1), c: '#6b4a2a' }, { path: PG([[14, b.fr - 14], [26, b.fr - 18], [26, b.fr - 10]]), c: '#b8c1cc' });
+    return P;
+  },
+  // 채광소: 위에서 본 바위 언덕(밝은 윗면 + 어두운 절벽 앞면) + 갱도 입구 + 광석 수레 + 등불
+  quarry: (W, H) => {
+    const fr = H - 6, cl = H - 46, top = [[-6, cl], [-2, 8], [20, -14], [52, -22], [96, -18], [132, -24], [W + 4, -4], [W + 8, cl]];
+    return [{ path: PG([...top, [W + 8, fr + 4], [-6, fr + 4]]), c: '#7d746a' },
+      { path: PG(top), c: '#a39a8c' }, { path: PG([[18, 6], [44, -6], [70, 2], [52, 20]]), c: '#b4ac9f' }, { path: PG([[96, 0], [128, -10], [146, 8], [118, 18]]), c: '#b4ac9f' },
+      { path: E(30, 30, 10, 7), c: '#8e8579' }, { path: E(30, 28, 7, 4), c: '#b9b0a3' }, { path: E(W - 30, 34, 12, 8), c: '#8e8579' }, { path: E(W - 30, 32, 8, 5), c: '#b9b0a3' },
+      { path: R(-6, cl, W + 14, 4, 0), c: 'rgba(255,255,255,.15)' }, ...[[20, cl + 8, 26], [W - 44, cl + 10, 30]].map(([x, y, w]) => ({ path: R(x, y, w, 2, 1), c: 'rgba(0,0,0,.15)' })),
+      { path: R(W / 2 - 26, cl + 2, 52, fr - cl - 2, [26, 26, 0, 0]), c: '#7a5332' }, { path: R(W / 2 - 19, cl + 8, 38, fr - cl - 8, [19, 19, 0, 0]), c: '#241c18' },
+      { path: R(W / 2 - 10, fr - 2, 3, 12, 0), c: '#6b5a4a' }, { path: R(W / 2 + 7, fr - 2, 3, 12, 0), c: '#6b5a4a' },
+      { path: R(W - 56, fr - 20, 36, 16, 3), c: '#6b7684' }, { path: E(W - 46, fr - 14, 6, 4), c: '#d9b25a' }, { path: E(W - 33, fr - 13, 7, 4.5), c: '#e8c55a' }, { path: E(W - 40, fr - 9, 5, 3), c: '#bfe9ff' },
+      { path: R(W - 56, fr - 4, 36, 6, [0, 0, 2, 2]), c: '#4b5563' }, { path: E(W - 50, fr + 3, 3.5, 2.5), c: '#2f3b4f' }, { path: E(W - 26, fr + 3, 3.5, 2.5), c: '#2f3b4f' },
+      { path: R(14, fr - 40, 4, 40, 1), c: '#5b4636' }, { path: E(16, fr - 42, 7, 6), c: '#ffd166' }, { path: E(16, fr - 43, 3.5, 3), c: '#fff6c8' }];
+  },
+  // 텃밭 창고: 빨간 맞배지붕 헛간 + X자 흰 문 + 지붕 환기창 + 건초 더미
+  farmshed: (W, H) => {
+    const b = topB(W, H, { kind: 'gable', roof: '#b5483a', wall: '#c8553d', fh: 30, top: -22 }), x = W / 2, dt = b.eave + 5;
+    return [...b.P,
+      { path: R(x - 16, dt, 32, b.fr - dt, 2), c: '#f3ead2', after: g => { g.strokeStyle = '#c8553d'; g.lineWidth = 3; g.beginPath(); g.moveTo(x - 13, dt + 3); g.lineTo(x + 13, b.fr - 3); g.moveTo(x + 13, dt + 3); g.lineTo(x - 13, b.fr - 3); g.stroke(); } },
+      { path: R(x - 9, b.rg - 9, 18, 14, 2), c: '#f3ead2' }, { path: R(x - 9, b.rg + 5, 18, 5, 0), c: '#d9cdb0' }, { path: R(x - 11, b.rg - 11, 22, 5, 2), c: '#8f3424' },
+      { path: R(W - 32, b.fr - 16, 26, 14, 4), c: '#f2d06b' }, { path: R(W - 32, b.fr - 2, 26, 6, [0, 0, 3, 3]), c: '#c9a24a' }, { path: R(W - 32, b.fr - 10, 26, 1.6, 0), c: 'rgba(150,110,30,.4)' }];
+  },
 };
-const LAB = { cafe: 40, gacha: 86, skin: 38, hall: 86, smith: 30, fishshop: 34, lumber: 40, quarry: 30, farmshed: 30 };
+const LAB = { cafe: 62, gacha: 100, skin: 66, hall: 86, smith: 72, fishshop: 50, lumber: 66, quarry: 50, farmshed: 46 };
 function bSprite(b) {
   const Wd = b.w * T, Hh = b.h * T;
-  return sprite('b:' + b.id, Wd + 40, Hh + 100, 20, 90, g => inkDraw(g, BLD[b.id](Wd, Hh), 2.4));
+  return sprite('b:' + b.id, Wd + 40, Hh + 100, 20, 90, g => flatInk(g, BLD[b.id](Wd, Hh)));
 }
 function drawBuilding(b, now) {
   const X = b.x * T, Y = b.y * T, Wd = b.w * T, Hh = b.h * T;
@@ -1631,11 +1680,11 @@ function drawBuilding(b, now) {
   blit(bSprite(b), X, Y);
   const tt = now / 1000;
   if (b.id === 'smith' || b.id === 'cafe') {   // 굴뚝 연기 · 커피 김
-    const sx = b.id === 'smith' ? X + Wd - 43 : X + Wd / 2, sy = b.id === 'smith' ? Y - 36 : Y - 30;
+    const sx = b.id === 'smith' ? X + Wd - 46 : X + Wd / 2, sy = b.id === 'smith' ? Y + 8 : Y + 20;
     ctx.fillStyle = b.id === 'smith' ? 'rgba(235,235,235,.75)' : 'rgba(255,255,255,.7)';
     for (let k = 0; k < 3; k++) { const p = (tt * .9 + k / 3) % 1; ctx.beginPath(); ctx.arc(sx + Math.sin(p * 6 + k) * 4, sy - p * 26, (b.id === 'smith' ? 4 : 2.5) + p * 5, 0, 7); ctx.fill(); }
   }
-  if (b.id === 'gacha') { for (let i = 0; i < 9; i++) { const on = (Math.floor(tt * 4) + i) % 3 === 0; ctx.fillStyle = on ? '#fff6b0' : '#ffb02e'; ctx.beginPath(); ctx.arc(X + 20 + i * (Wd - 40) / 8, Y + 71, on ? 3.4 : 2.4, 0, 7); ctx.fill(); } }
+  if (b.id === 'gacha') { for (let i = 0; i < 9; i++) { const on = (Math.floor(tt * 4) + i) % 3 === 0; ctx.fillStyle = on ? '#fff6b0' : '#ffb02e'; ctx.beginPath(); ctx.arc(X + 20 + i * (Wd - 40) / 8, Y + 114, on ? 3.4 : 2.4, 0, 7); ctx.fill(); } }
   if (b.id === 'hall') { const fx = X + Wd / 2 + 1.5, fy = Y - 44; ctx.fillStyle = '#e8553a'; ctx.strokeStyle = 'rgba(0,0,0,0)'; ctx.lineWidth = 0; ctx.beginPath(); ctx.moveTo(fx, fy); for (let k = 0; k <= 6; k++) ctx.lineTo(fx + k * 5, fy + Math.sin(tt * 5 + k) * 2.2); for (let k = 6; k >= 0; k--) ctx.lineTo(fx + k * 5, fy + 15 + Math.sin(tt * 5 + k) * 2.2); ctx.closePath(); ctx.fill(); ctx.stroke(); }
   plaque(`${b.icon} ${b.name}`, X + Wd / 2, Y + (LAB[b.id] ?? 30));
 }
@@ -1644,40 +1693,48 @@ function plaque(label, x, y, bg = '#fbfcf7', fs = 13) {
   ctx.fillStyle = bg; ctx.strokeStyle = INK; ctx.lineWidth = 2; rr(ctx, x - tw / 2, y - 10, tw, 20, 7); ctx.fill(); ctx.stroke();
   ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; fillTextIco(ctx, label, x, y + .5);
 }
-// 집 (작은 오두막). 지붕 색은 주인이 고름
-function houseParts(roof) {
-  const W = HOUSE_W * T, H = HOUSE_H * T;
-  return [{ path: R(W - 30, -24, 12, 22, 2), c: '#9a7a6a' }, { path: R(6, 22, W - 12, H - 22, 3), c: '#f6f1e6' },
-    { path: PG([[-6, 28], [W + 6, 28], [W - 14, -12], [14, -12]]), c: roof }, { flat: 1, path: R(16, -12, W - 32, 5, 2), c: 'rgba(0,0,0,.18)' },
-    ...winP(12, 32, 16, 13), ...winP(W - 28, 32, 16, 13), ...doorP(W / 2 - 10, H - 28, 20, 28), { path: R(W / 2 - 14, H - 2, 28, 4, 2), c: '#c9a06a' }];
-}
+// 집 (단계별): 위에서 본 3/4 시점, 테두리 없음. 높은 건물일수록 앞면(층)이 길어지고 지붕은 그만큼 위로
 const HOUSE_EX = [0, 34, 40, 66, 96, 150];   // 단계마다 위로 더 필요한 높이
-function towerParts(lv, roof) {
-  const W = HOUSE_W * T, H = HOUSE_H * T, win = (x, y, w = 12, h = 10, c = '#bfe3f2') => [{ path: R(x, y, w, h, 2), c }, { flat: 1, path: R(x + 1.5, y + 1.5, w / 2 - 2, h - 3, 1), c: 'rgba(255,255,255,.45)' }];
-  const P = [];
-  if (lv === 1) {   // 2층 집
-    P.push({ path: R(W - 28, -50, 12, 24, 2), c: '#9a7a6a' }, { path: R(6, -4, W - 12, H + 4, 3), c: '#f6f1e6' }, { flat: 1, path: R(6, 26, W - 12, 3, 0), c: 'rgba(0,0,0,.08)' },
-      { path: PG([[-6, 2], [W + 6, 2], [W - 14, -40], [14, -40]]), c: roof }, ...win(14, 8, 16, 13), ...win(W - 30, 8, 16, 13), ...win(12, 34, 16, 13), ...win(W - 28, 34, 16, 13));
-  } else if (lv === 2) {   // 큰 집: 양옆으로 조금 넓고 현관 지붕
-    P.push({ path: R(W - 22, -58, 12, 26, 2), c: '#9a7a6a' }, { path: R(-4, -8, W + 8, H + 8, 3), c: '#f3e7d2' }, { path: PG([[-14, -2], [W + 14, -2], [W - 10, -48], [10, -48]]), c: roof },
-      ...win(4, 6, 14, 13), ...win(W / 2 - 7, 4, 14, 13), ...win(W - 18, 6, 14, 13), ...win(2, 34, 16, 13), ...win(W - 18, 34, 16, 13),
-      { path: PG([[W / 2 - 20, H - 26], [W / 2 + 20, H - 26], [W / 2 + 14, H - 36], [W / 2 - 14, H - 36]]), c: roof });
-  } else if (lv === 3) {   // 빌라: 3층, 평평한 지붕, 발코니
-    P.push({ path: R(2, -40, W - 4, H + 40, 3), c: '#f1e2c8' }, { path: R(-2, -46, W + 4, 8, 2), c: roof });
-    for (let f = 0; f < 3; f++) { const y = -32 + f * 24; P.push(...win(10, y, 14, 12), ...win(W / 2 - 7, y, 14, 12), ...win(W - 24, y, 14, 12)); if (f < 2) P.push({ path: R(6, y + 14, W - 12, 4, 1.5), c: '#c9b08a' }); }
-  } else if (lv === 4) {   // 4층 건물: 벽돌
-    P.push({ path: R(W - 26, -84, 16, 14, 3), c: '#8a929c' }, { path: R(2, -70, W - 4, H + 70, 2), c: '#c98a6a' }, { path: R(-2, -74, W + 4, 7, 2), c: roof });
-    for (let f = 0; f < 4; f++) for (let k = 0; k < 4; k++) P.push(...win(8 + k * 21, -62 + f * 24, 12, 13));
-    P.push({ flat: 1, path: R(2, -16, W - 4, 2, 0), c: 'rgba(0,0,0,.12)' });
-  } else {   // 빌딩: 유리 건물 + 안테나
-    P.push({ path: R(W / 2 - 1.5, -150, 3, 26, 1), c: '#5d6b7e' }, { path: E(W / 2, -150, 3, 3), c: '#ff4d4f' }, { path: R(4, -126, W - 8, H + 126, 3), c: '#7aa4c0' }, { path: R(0, -130, W, 9, 2), c: roof });
-    for (let f = 0; f < 6; f++) for (let k = 0; k < 5; k++) P.push({ flat: 1, path: R(10 + k * 16, -116 + f * 22, 11, 15, 1.5), c: (f + k) % 3 ? '#cfe8f5' : '#a9d3ea' });
-    P.push({ flat: 1, path: R(8, -124, 10, H + 120, 0), c: 'rgba(255,255,255,.18)' });
+function houseTop(lv, roof) {
+  const W = HOUSE_W * T, H = HOUSE_H * T, fr = H - 6, P = [];
+  const FH = [22, 42, 42, 66, 94, 148][lv], eave = fr - FH, top = lv ? eave - 56 : -24;
+  const win = (x, y, w = 12, h = 10, c = '#9fd0e8') => [{ path: R(x, y, w, h, 2), c }, { path: R(x, y, w, 3, [2, 2, 0, 0]), c: 'rgba(255,255,255,.45)' }];
+  const door = (c = '#7a4b2a') => [{ path: R(W / 2 - 10, fr - 24, 20, 24, [10, 10, 0, 0]), c }, { path: R(W / 2 - 7, fr - 21, 14, 21, [7, 7, 0, 0]), c: 'rgba(0,0,0,.16)' }, { path: E(W / 2 + 5, fr - 11, 1.6, 1.6), c: '#ffd166' }, { path: R(W / 2 - 15, fr - 1, 30, 7, 2), c: '#c9a06a' }];
+  const chim = (x, y) => [{ path: R(x, y, 12, 10, 1.5), c: '#9a7a6a' }, { path: R(x, y + 10, 12, 5, 0), c: '#7a5e50' }, { path: E(x + 6, y + 5, 3.5, 2.5), c: '#3a2a22' }];
+  if (lv === 0) {   // 오두막
+    const b = topB(W, H, { kind: 'gable', roof, wall: '#f6f1e6', fh: FH, top, ground: '#d9cdb4', wins: [[10, 16], [W - 26, 16]] });
+    P.push(...b.P, ...chim(W - 30, top + 4), ...door());
+  } else if (lv === 1) {   // 2층 집
+    const b = topB(W, H, { kind: 'gable', roof, wall: '#f6f1e6', fh: FH, top, ground: '#d9cdb4' });
+    P.push(...b.P, ...chim(W - 28, top + 4), ...win(12, eave + 8, 16, 11), ...win(W - 28, eave + 8, 16, 11), { path: R(-4 + 8, eave + 22, W - 8, 2, 0), c: 'rgba(0,0,0,.08)' }, ...win(10, eave + 26, 14, 10), ...win(W - 24, eave + 26, 14, 10), ...door());
+  } else if (lv === 2) {   // 큰 집: 옆으로 넓은 모임지붕 + 현관 지붕
+    const b = topB(W, H, { kind: 'hip', roof, wall: '#f3e7d2', fh: FH, top, L: -14, R: W + 14, ix: 30, ground: '#d9cdb4' });
+    P.push(...b.P, ...chim(W - 20, top + 6), ...win(-2, eave + 8, 14, 11), ...win(W / 2 - 7, eave + 7, 14, 10), ...win(W - 12, eave + 8, 14, 11), ...win(-4, eave + 26, 16, 10), ...win(W - 12, eave + 26, 16, 10), ...door(),
+      { path: R(W / 2 - 18, fr - 30, 36, 8, 2), c: roof }, { path: R(W / 2 - 18, fr - 22, 36, 3, 0), c: sh(roof, -.3) });
+  } else if (lv === 3) {   // 빌라: 3층 + 평지붕 위 물탱크
+    const b = topB(W, H, { kind: 'flat', roof, floor: '#e9e2d4', wall: '#f1e2c8', fh: FH, top, ground: '#d6d0c2' });
+    P.push(...b.P);
+    for (let f = 0; f < 3; f++) { const y = eave + 7 + f * 19; P.push(...win(10, y, 14, 10), ...win(W / 2 - 7, y, 14, 10), ...win(W - 24, y, 14, 10)); if (f < 2) P.push({ path: R(6, y + 13, W - 12, 3, 1), c: '#c9b08a' }); }
+    P.push(...door(), { path: E(26, top + 22, 11, 9), c: '#9aa6b2' }, { path: E(26, top + 21, 8, 6), c: '#c3ccd5' }, { path: R(W - 34, top + 14, 18, 12, 2), c: '#8a929c' }, { path: R(W - 31, top + 17, 12, 2, 0), c: '#5d6670' });
+  } else if (lv === 4) {   // 4층 벽돌 건물: 평지붕 + 실외기
+    const b = topB(W, H, { kind: 'flat', roof, floor: '#d9d3c6', wall: '#c98a6a', fh: FH, top, ground: '#d6d0c2' });
+    P.push(...b.P);
+    for (let y = eave + 8; y < fr - 4; y += 7) P.push({ path: R(4, y, W - 8, 1.2, 0), c: 'rgba(90,40,20,.18)' });
+    for (let f = 0; f < 4; f++) for (let k = 0; k < 4; k++) P.push(...win(8 + k * 21, eave + 8 + f * 18, 12, 11));
+    P.push(...door('#5b3a24'));
+    for (const x of [14, 40]) P.push({ path: R(x, top + 14, 18, 14, 2), c: '#b9c0c8' }, { path: E(x + 9, top + 21, 5, 5), c: '#7d8792' });
+  } else {   // 빌딩: 유리 외벽 + 옥상 헬기장 + 안테나
+    const b = topB(W, H, { kind: 'flat', roof, floor: '#8c96a3', wall: '#7aa4c0', fh: FH, top, ground: '#cfd3d8' });
+    P.push(...b.P);
+    for (let f = 0; f < 7; f++) for (let k = 0; k < 5; k++) P.push({ path: R(8 + k * 17, eave + 8 + f * 18, 12, 13, 1.5), c: (f + k) % 3 ? '#cfe8f5' : '#a9d3ea' });
+    P.push({ path: R(6, eave + 4, 10, FH - 8, 0), c: 'rgba(255,255,255,.18)' }, ...door('#3d5672'),
+      { path: E(W / 2, top + 28, 20, 17), c: '#f2c14e' }, { path: E(W / 2, top + 28, 17, 14), c: '#5d6773' },
+      { path: R(W / 2 - 7, top + 20, 3, 16, 0), c: '#ffffff' }, { path: R(W / 2 + 4, top + 20, 3, 16, 0), c: '#ffffff' }, { path: R(W / 2 - 4, top + 26.5, 8, 3, 0), c: '#ffffff' },
+      { path: R(W - 18, top - 18, 3, 26, 1), c: '#5d6b7e' }, { path: E(W - 16.5, top - 19, 3, 3), c: '#ff4d4f' });
   }
-  P.push(...doorP(W / 2 - 10, H - 28, 20, 28), { path: R(W / 2 - 14, H - 2, 28, 4, 2), c: '#c9a06a' });
   return P;
 }
-const houseSprite = (roof, lv = 0) => sprite(`h:${roof}:${lv}`, HOUSE_W * T + 40, HOUSE_H * T + 50 + HOUSE_EX[lv], 20, 40 + HOUSE_EX[lv], g => inkDraw(g, lv ? towerParts(lv, HOUSE.roofs[roof] || HOUSE.roofs[0]) : houseParts(HOUSE.roofs[roof] || HOUSE.roofs[0]), 2.2));
+const houseSprite = (roof, lv = 0) => sprite(`h3:${roof}:${lv}`, HOUSE_W * T + 40, HOUSE_H * T + 50 + HOUSE_EX[lv], 20, 40 + HOUSE_EX[lv], g => flatInk(g, houseTop(lv, HOUSE.roofs[roof] || HOUSE.roofs[0])));
 function drawHouse(h) {
   const X = h.x * T, Y = h.y * T, Wd = HOUSE_W * T;
   ctx.fillStyle = 'rgba(31,42,58,.16)'; ctx.beginPath(); ctx.ellipse(X + Wd / 2 + 3, Y + HOUSE_H * T, Wd / 2 + 4, 5, 0, 0, 7); ctx.fill();
@@ -1685,24 +1742,34 @@ function drawHouse(h) {
   plaque(`🏠 ${h.nick}${h.lv ? ` · ${HOUSE_TIERS[h.lv].n}` : ''}`, X + Wd / 2, Y + HOUSE_H * T + 12, h.id === me.uid ? '#fff4e0' : '#fbfcf7', 11);
 }
 // 나무 · 바위 (꾸밈 + 채집 자원)
-const treeP = (k, c1 = '#3f8f4c', c2 = '#2f7a4a') => k === 'pine'
-  ? [{ path: R(-3, -12, 6, 12, 1), c: '#7a5332' }, { path: PG([[0, -50], [13, -28], [-13, -28]]), c: c2 }, { path: PG([[0, -40], [17, -16], [-17, -16]]), c: c2 }, { path: PG([[0, -30], [20, -6], [-20, -6]]), c: c2 }, { flat: 1, path: PG([[0, -46], [5, -36], [-4, -32]]), c: 'rgba(255,255,255,.2)' }]
-  : [{ path: R(-3.5, -14, 7, 14, 1), c: '#7a5332' }, { path: E(-9, -22, 10, 9), c: c1 }, { path: E(9, -22, 10, 9), c: c1 }, { path: E(0, -31, 15, 13), c: c1 }, { flat: 1, path: E(-5, -35, 6, 4), c: 'rgba(255,255,255,.22)' }];
-// 새 나무 3종: 색은 기존 나무와 같은 초록, 모양만 다름 (이름표는 예전 그대로 birch·cherry·maple)
-// birch = 키 큰 포플러 · cherry = 넓게 퍼진 두 덩이 나무 · maple = 우산처럼 납작한 나무
-const TG1 = '#3f8f4c', TG2 = '#4a9a55', TRUNK = '#7a5332';
-const birchP = [{ path: R(-3, -16, 6, 16, 1), c: TRUNK }, { path: E(0, -38, 9.5, 24), c: TG1 }, { path: E(-3, -30, 6, 10), c: TG2 }, { flat: 1, path: E(-3, -48, 3.5, 7), c: 'rgba(255,255,255,.2)' }];
-const cherryP = [{ path: R(-3.5, -14, 7, 14, 1), c: TRUNK }, { path: PG([[-1, -12], [-12, -22], [-9, -24], [1, -15]]), c: TRUNK }, { path: PG([[1, -12], [12, -21], [9, -23], [-1, -15]]), c: TRUNK },
-  { path: E(-13, -26, 11, 9), c: TG1 }, { path: E(13, -26, 11, 9), c: TG1 }, { path: E(0, -30, 10, 10), c: TG2 }, { flat: 1, path: E(-15, -30, 5, 3), c: 'rgba(255,255,255,.2)' }, { flat: 1, path: E(10, -30, 5, 3), c: 'rgba(255,255,255,.18)' }];
-const mapleP = [{ path: R(-3, -24, 6, 24, 1), c: TRUNK }, { path: PG([[-17, -24], [-10, -34], [10, -34], [17, -24], [10, -21], [-10, -21]]), c: TG1 }, { path: E(0, -34, 12, 5), c: TG2 }, { flat: 1, path: E(-5, -35, 6, 2), c: 'rgba(255,255,255,.22)' }];
-const rockP = (c = '#9aa0a8', ore) => [{ path: PG([[-15, 0], [-17, -9], [-9, -19], [4, -21], [15, -13], [17, 0]]), c }, { flat: 1, path: PG([[-9, -17], [3, -19], [-2, -10], [-12, -8]]), c: 'rgba(255,255,255,.3)' },
-  ...(ore ? [{ flat: 1, path: E(6, -8, 2.6, 2), c: '#e8c55a' }, { flat: 1, path: E(-4, -5, 2, 1.6), c: '#e8c55a' }, { flat: 1, path: E(10, -14, 1.6, 1.4), c: '#bfe9ff' }] : [])];
-const stumpP = [{ path: R(-8, -8, 16, 8, 2), c: '#8a5a30' }, { path: E(0, -8, 8, 3.6), c: '#d8a56a', after: g => { g.strokeStyle = 'rgba(120,75,35,.6)'; g.lineWidth = 1; g.beginPath(); g.ellipse(0, -8, 4, 1.7, 0, 0, 7); g.stroke(); } }, { flat: 1, path: E(9, -2, 3, 1.5, .5), c: '#6cc35a' }];
-const rubbleP = [{ path: E(-6, -3, 5, 3.5), c: '#9aa0a8' }, { path: E(5, -3, 4, 3), c: '#8d939b' }, { path: E(0, -6, 3.5, 3), c: '#a8aeb6' }];
-const SP_TREE = { birch: () => sprite('t:birch2', 40, 70, 20, 64, g => inkDraw(g, birchP, 2)), cherry: () => sprite('t:cherry2', 60, 50, 30, 44, g => inkDraw(g, cherryP, 2)), maple: () => sprite('t:maple2', 50, 50, 25, 44, g => inkDraw(g, mapleP, 2)),
-  round: () => sprite('t:round', 50, 60, 25, 54, g => inkDraw(g, treeP('round'), 2)), pine: () => sprite('t:pine', 50, 62, 25, 56, g => inkDraw(g, treeP('pine'), 2)), stone: () => sprite('t:stone', 44, 30, 22, 26, g => inkDraw(g, rockP('#a39a8c'), 2)) };
-const SP_NODE = { tree: () => sprite('n:tree', 50, 60, 25, 54, g => inkDraw(g, treeP('round', '#58a856'), 2)), rock: () => sprite('n:rock', 44, 30, 22, 26, g => inkDraw(g, rockP('#a3a8b0', true), 2)),
-  stump: () => sprite('n:stump', 30, 18, 15, 14, g => inkDraw(g, stumpP, 1.8)), rubble: () => sprite('n:rubble', 30, 16, 15, 12, g => inkDraw(g, rubbleP, 1.8)) };
+// 나무 · 바위 (꾸밈 + 채집 자원): 위에서 내려다본 모습, 테두리 없음. 수관(잎)은 위에서 보이고, 아래쪽에 어두운 앞면 + 짧은 줄기
+const TRUNK = '#7a5332';
+// 둥근 잎 덩어리: [x, y, rx, ry] 여러 개 → 아래로 어두운 앞면, 위는 밝은 면, 왼쪽 위 빛
+const crown = (blobs, c, trunkH = 8) => {
+  const d = sh(c, -.28), l = sh(c, .18), hl = sh(c, .38);
+  return [{ path: R(-3.5, -trunkH, 7, trunkH, 2), c: TRUNK }, { path: R(-3.5, -trunkH, 7, 3, 0), c: 'rgba(0,0,0,.25)' },
+    ...blobs.map(([x, y, rx, ry]) => ({ path: E(x, y + 4, rx, ry), c: d })), ...blobs.map(([x, y, rx, ry]) => ({ path: E(x, y, rx, ry), c })),
+    ...blobs.map(([x, y, rx, ry]) => ({ path: E(x - rx * .22, y - ry * .25, rx * .62, ry * .55), c: l })), ...blobs.slice(0, 2).map(([x, y, rx, ry]) => ({ path: E(x - rx * .38, y - ry * .42, rx * .25, ry * .2), c: hl }))];
+};
+// 뾰족 잎 (소나무를 위에서 본 별 모양 층)
+const spiky = (x, y, r, n, c) => g => { g.beginPath(); for (let i = 0; i < n * 2; i++) { const a = -Math.PI / 2 + i * Math.PI / n, k = i % 2 ? r * .72 : r; g.lineTo(x + Math.cos(a) * k, y + Math.sin(a) * k * .9); } g.closePath(); };
+const TG = '#4a9a55';
+const treeP = (k, c = TG) => k === 'pine'
+  ? [{ path: R(-3, -8, 6, 8, 1.5), c: TRUNK }, { path: spiky(0, -22, 21, 11, 0), c: '#2c6440' }, { path: spiky(0, -26, 20, 11, 0), c: '#3a7d4e' }, { path: spiky(0, -29, 14, 9, 0), c: '#4d9660' }, { path: spiky(-1, -32, 7.5, 7, 0), c: '#68b277' }, { path: E(-4, -34, 2.5, 2), c: '#8fd09a' }]
+  : crown([[-9, -22, 11, 9.5], [9, -22, 11, 9.5], [0, -29, 15, 12.5]], c);
+const birchP = crown([[0, -42, 10, 13], [0, -30, 11, 12], [0, -20, 9, 8]], '#4a9a55', 10);
+const cherryP = crown([[-13, -22, 12, 9.5], [13, -22, 12, 9.5], [0, -26, 11, 10]], '#4a9a55', 8);
+const mapleP = crown([[0, -24, 20, 12], [-8, -27, 9, 6], [8, -26, 9, 6]], '#4a9a55', 9);
+// 바위: 밝은 윗면 + 짧은 어두운 앞면
+const rockP = (c = '#9aa0a8', ore) => [{ path: PG([[-16, -8], [-17, -1], [-12, 3], [12, 3], [17, -1], [16, -8]]), c: sh(c, -.32) },
+  { path: PG([[-16, -8], [-13, -16], [-4, -21], [8, -20], [15, -14], [16, -8], [8, -4], [-8, -4]]), c }, { path: PG([[-11, -14], [-4, -19], [5, -18], [0, -12], [-8, -10]]), c: sh(c, .22) },
+  ...(ore ? [{ path: E(7, -10, 2.8, 2.1), c: '#e8c55a' }, { path: E(-5, -8, 2.2, 1.7), c: '#e8c55a' }, { path: E(10, -15, 1.7, 1.4), c: '#bfe9ff' }] : [])];
+const stumpP = [{ path: R(-8, -7, 16, 8, [0, 0, 3, 3]), c: '#8a5a30' }, { path: E(0, -7, 8, 5), c: '#d8a56a' }, { path: E(0, -7, 4.5, 2.8), c: '#c48a4f' }, { path: E(0, -7, 1.6, 1), c: '#a0703c' }, { path: E(9, -1, 3, 1.6, .5), c: '#6cc35a' }];
+const rubbleP = [{ path: E(-6, -2, 5, 3.4), c: '#7e848c' }, { path: E(-6, -3.5, 5, 3), c: '#a3a9b1' }, { path: E(5, -2, 4, 3), c: '#757b83' }, { path: E(5, -3.2, 4, 2.6), c: '#9aa0a8' }, { path: E(0, -5, 3.5, 2.6), c: '#b4bac2' }];
+const SP_TREE = { birch: () => sprite('t:birch3', 40, 70, 20, 64, g => flatInk(g, birchP)), cherry: () => sprite('t:cherry3', 60, 50, 30, 44, g => flatInk(g, cherryP)), maple: () => sprite('t:maple3', 50, 50, 25, 44, g => flatInk(g, mapleP)),
+  round: () => sprite('t:round3', 50, 60, 25, 54, g => flatInk(g, treeP('round'))), pine: () => sprite('t:pine3', 50, 62, 25, 56, g => flatInk(g, treeP('pine'))), stone: () => sprite('t:stone3', 44, 30, 22, 26, g => flatInk(g, rockP('#a39a8c'))) };
+const SP_NODE = { tree: () => sprite('n:tree3', 50, 60, 25, 54, g => flatInk(g, treeP('round', '#58a856'))), rock: () => sprite('n:rock3', 44, 30, 22, 26, g => flatInk(g, rockP('#a3a8b0', true))),
+  stump: () => sprite('n:stump3', 30, 18, 15, 14, g => flatInk(g, stumpP)), rubble: () => sprite('n:rubble3', 30, 16, 15, 12, g => flatInk(g, rubbleP)) };
 const nodeReady = n => !((me.life?.nodes?.[n.i] || 0) > Date.now());
 function drawDeco(d) { const x = d.x * T + T / 2, y = d.y * T + T - 3; ctx.fillStyle = 'rgba(31,42,58,.15)'; ctx.beginPath(); ctx.ellipse(x, y, 13 * d.s, 4, 0, 0, 7); ctx.fill(); blit(SP_TREE[d.k](), x, y, d.s); }
 function drawNode(n, now) {
@@ -1712,14 +1779,15 @@ function drawNode(n, now) {
   else blit(SP_NODE[ok ? n.k : n.k === 'tree' ? 'stump' : 'rubble'](), x + shake, y, n.k === 'tree' ? 1.05 : 1);
 }
 // 분수 · 벤치 · 전광판 · 포탈
-const SP_FOUNT = () => sprite('fount', 90, 80, 45, 50, g => inkDraw(g, [{ path: E(0, 6, 36, 20), c: '#cfc6b4' }, { flat: 1, path: E(0, 4, 29, 14), c: '#7cc6e6' }, { flat: 1, path: E(-8, 2, 10, 3), c: 'rgba(255,255,255,.4)' },
-  { path: R(-5, -26, 10, 30, 2), c: '#cfc6b4' }, { path: E(0, -26, 15, 5), c: '#cfc6b4' }, { flat: 1, path: E(0, -27, 11, 3), c: '#9fdcf5' }, { path: E(0, -34, 4, 4), c: '#cfc6b4' }], 2.2));
+// 분수 · 벤치 · 전광판 · 포탈 (위에서 본 모습, 테두리 없음)
+const SP_FOUNT = () => sprite('fount3', 90, 80, 45, 50, g => flatInk(g, [{ path: E(0, 9, 38, 24), c: '#a99f8c' }, { path: E(0, 4, 38, 24), c: '#d8d0bf' }, { path: E(0, 4, 31, 18), c: '#5fb3d6' }, { path: E(0, 6, 31, 15), c: '#7cc6e6' }, { path: E(-12, 0, 10, 3.5), c: 'rgba(255,255,255,.45)' },
+  { path: R(-6, -18, 12, 22, 2), c: '#bfb5a2' }, { path: R(-6, -18, 6, 22, 0), c: '#d0c7b5' }, { path: E(0, -18, 16, 10), c: '#a99f8c' }, { path: E(0, -21, 16, 10), c: '#d8d0bf' }, { path: E(0, -21, 12, 7), c: '#8fd3ef' }, { path: E(0, -25, 4.5, 4), c: '#d8d0bf' }]));
 function drawFountain(s, now) {
   const x = (s.x + 1) * T, y = (s.y + 1) * T + 4, tt = now / 300; blit(SP_FOUNT(), x, y);
   ctx.fillStyle = 'rgba(255,255,255,.85)'; for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2 + tt * .4, p = (tt * .5 + k / 6) % 1; ctx.beginPath(); ctx.arc(x + Math.cos(a) * (4 + p * 14), y - 36 + p * p * 34, 2, 0, 7); ctx.fill(); }
   if (me.life && (me.life.wishAt || 0) + WISH.cd < Date.now() && Math.sin(now / 300) > .6) { ctx.fillStyle = '#ffe28a'; starPath(ctx, x + 22, y - 40, 4); ctx.fill(); }
 }
-const SP_BENCH = () => sprite('bench', 64, 36, 32, 30, g => inkDraw(g, [{ path: R(-23, -4, 4, 8, 1), c: '#5c3b20' }, { path: R(19, -4, 4, 8, 1), c: '#5c3b20' }, { path: R(-26, -26, 52, 8, 3), c: '#a86f3f' }, { path: R(-22, -19, 3, 8, 0), c: '#5c3b20' }, { path: R(19, -19, 3, 8, 0), c: '#5c3b20' }, { path: R(-26, -12, 52, 9, 3), c: '#b97a45' }, { flat: 1, path: R(-24, -10, 48, 2, 0), c: 'rgba(255,255,255,.25)' }], 1.8));
+const SP_BENCH = () => sprite('bench3', 64, 36, 32, 30, g => flatInk(g, [{ path: R(-24, -3, 4, 5, 1), c: '#4a2f1a' }, { path: R(20, -3, 4, 5, 1), c: '#4a2f1a' }, { path: R(-26, -27, 52, 6, 2), c: '#a86f3f' }, { path: R(-26, -21, 52, 3, 0), c: '#7a4f2c' }, { path: R(-26, -16, 52, 13, 2), c: '#c08550' }, { path: R(-26, -11.5, 52, 1.4, 0), c: 'rgba(90,50,20,.3)' }, { path: R(-26, -7, 52, 1.4, 0), c: 'rgba(90,50,20,.3)' }, { path: R(-26, -3, 52, 4, [0, 0, 2, 2]), c: '#8a5a33' }, { path: R(-26, -16, 52, 2, 0), c: 'rgba(255,255,255,.25)' }]));
 function drawBench(b) { blit(SP_BENCH(), b.x * T + T / 2, b.y * T + 28); }
 // 전광판: 홈페이지와 같은 방송 일정(data/schedule.json)으로 다음 방송까지 남은 시간
 const SCHED = { d: null, at: 0, next: 0, nAt: 0 };
@@ -1746,8 +1814,8 @@ function boardText() {
 const screenRect = s => { const w = s.w * T, W = w - 16, H = Math.round(W * 9 / 16), base = (s.y + s.h) * T - 4; return { x: s.x * T + 8, y: base - 30 - H, w: W, h: H, base }; };
 function drawScreen(s, now) {
   const r = screenRect(s), K = r.w / 156, f = (wt, px) => `${wt} ${Math.round(px * K)}px "IBM Plex Sans KR", sans-serif`;
-  inkDraw(ctx, [{ path: R(r.x + 34, r.y + r.h, 12, r.base - r.y - r.h, 3), c: '#3a434f' }, { path: R(r.x + r.w - 46, r.y + r.h, 12, r.base - r.y - r.h, 3), c: '#3a434f' },
-    { path: R(r.x - 10, r.y - 10, r.w + 20, r.h + 20, 12), c: '#1f2430' }, { flat: 1, path: R(r.x - 6, r.y - 8, r.w + 12, 4, 2), c: 'rgba(255,255,255,.12)' }], 3);
+  flatInk(ctx, [{ path: R(r.x + 34, r.y + r.h, 12, r.base - r.y - r.h, 3), c: '#3a434f' }, { path: R(r.x + r.w - 46, r.y + r.h, 12, r.base - r.y - r.h, 3), c: '#3a434f' },
+    { path: R(r.x - 10, r.y - 10, r.w + 20, r.h + 20, 12), c: '#1f2430' }, { flat: 1, path: R(r.x - 6, r.y - 8, r.w + 12, 4, 2), c: 'rgba(255,255,255,.12)' }]);
   ctx.save(); rr(ctx, r.x, r.y, r.w, r.h, 4); ctx.clip(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   if (S.live) {
     if (LIVE_IMG.complete && LIVE_IMG.naturalWidth) ctx.drawImage(LIVE_IMG, r.x, r.y, r.w, r.h);
@@ -1768,11 +1836,13 @@ function drawScreen(s, now) {
 function drawPortal(now) {
   const x = PORTAL.x, y = PORTAL.y, tt = now / 1000;
   ctx.fillStyle = 'rgba(31,42,58,.2)'; ctx.beginPath(); ctx.ellipse(x, y, 22, 5, 0, 0, 7); ctx.fill();
-  inkDraw(ctx, [{ path: R(x - 23, y - 62, 9, 62, 3), c: '#8d8478' }, { path: R(x + 14, y - 62, 9, 62, 3), c: '#8d8478' }, { path: R(x - 27, y - 71, 54, 12, 4), c: '#a39a8c' },
+  flatInk(ctx, [{ path: E(x, y - 4, 24, 9), c: '#5a4398' }, { path: E(x, y - 5, 19, 6.5), c: '#7d62d4' },
+    { path: R(x - 25, y - 60, 11, 60, 2), c: '#8d8478' }, { path: R(x - 25, y - 60, 5, 60, 0), c: '#a39a8c' }, { path: R(x + 14, y - 60, 11, 60, 2), c: '#7d746a' }, { path: R(x + 14, y - 60, 5, 60, 0), c: '#948b7e' },
+    { path: R(x - 29, y - 74, 58, 10, 3), c: '#b4ac9f' }, { path: R(x - 29, y - 64, 58, 5, [0, 0, 3, 3]), c: '#7d746a' },
     { path: E(x, y - 29, 15, 27), c: '#6c4fc2', after: g => {
       g.save(); g.beginPath(); g.ellipse(x, y - 29, 15, 27, 0, 0, 7); g.clip();
       for (let k = 0; k < 4; k++) { const r = ((tt * .6 + k / 4) % 1); g.strokeStyle = `rgba(214,190,255,${1 - r})`; g.lineWidth = 3; g.beginPath(); g.ellipse(x, y - 29, 15 * (1 - r), 27 * (1 - r), tt * 2 + k, 0, 5); g.stroke(); }
-      g.fillStyle = 'rgba(255,255,255,.55)'; g.beginPath(); g.ellipse(x, y - 29, 4 + Math.sin(tt * 3) * 1.5, 8, 0, 0, 7); g.fill(); g.restore(); } }], 2.2);
+      g.fillStyle = 'rgba(255,255,255,.55)'; g.beginPath(); g.ellipse(x, y - 29, 4 + Math.sin(tt * 3) * 1.5, 8, 0, 0, 7); g.fill(); g.restore(); } }]);
   for (let k = 0; k < 4; k++) { const a = tt * 1.5 + k * 1.57; ctx.fillStyle = 'rgba(200,170,255,.85)'; ctx.beginPath(); ctx.arc(x + Math.cos(a) * 22, y - 29 + Math.sin(a * 1.3) * 26, 1.8, 0, 7); ctx.fill(); }
   plaque('⚔️ 사냥터 포탈', x, y - 86, '#f3e3c3', 12);
 }
@@ -1785,7 +1855,7 @@ function cropPlant(x, y, k, cr, idx, now) {
   const s = Math.min(1, .45 + k * .7);
   const parts = [{ path: R(x - 1, y - 9 * s, 2, 9 * s, 1), c: '#3f8a35' }, { path: E(x - 4.5 * s + sway, y - 8 * s, 5 * s, 2.4 * s, .55), c: leaf }, { path: E(x + 4.5 * s + sway, y - 9 * s, 5 * s, 2.4 * s, -.55), c: leaf }];
   if (k > .55) parts.push({ path: E(x + sway, y - 12 * s, 3.6 * s, 2.2 * s, 0), c: leaf });
-  inkDraw(ctx, parts, 1.2);
+  flatInk(ctx, parts);
   if (k >= 1) { ctx.font = '15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; fillTextIco(ctx, cr.i, x + sway, y - 11 + Math.sin(now / 300 + idx) * 1); }
 }
 function drawPlots(now) {
@@ -1915,7 +1985,7 @@ function drawTownFloats() {
 }
 // 낚시터 표지판 (낚시는 어느 물가에서나 할 수 있음)
 const FSIGN = { x: FISH_AT.x + 1.7 * T, y: FISH_AT.y - 4 };
-const SP_FSIGN = () => sprite('fsign', 50, 64, 25, 60, g => inkDraw(g, [{ path: R(-2.5, -36, 5, 36, 1.5), c: '#8a5a32' }, { path: R(-19, -56, 38, 24, 6), c: '#c98a4b' }, { flat: 1, path: R(-15, -53, 30, 3.5, 1.7), c: 'rgba(255,255,255,.25)' }, { flat: 1, path: E(0, 0, 8, 2.6), c: 'rgba(0,0,0,.18)' }], 2));
+const SP_FSIGN = () => sprite('fsign3', 50, 64, 25, 60, g => flatInk(g, [{ path: E(0, -1, 7, 3), c: 'rgba(0,0,0,.15)' }, { path: R(-2.5, -34, 5, 34, 1.5), c: '#7a4f2c' }, { path: R(-20, -58, 40, 8, 3), c: '#e0a868' }, { path: R(-20, -50, 40, 18, [0, 0, 4, 4]), c: '#c98a4b' }, { path: R(-20, -50, 40, 2, 0), c: 'rgba(0,0,0,.12)' }]));
 function drawFishSpot() {
   blit(SP_FSIGN(), FSIGN.x, FSIGN.y);
   ctx.font = '17px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; fillTextIco(ctx, '🎣', FSIGN.x, FSIGN.y - 44);
@@ -1969,11 +2039,11 @@ function renderRoom(now) {
   const z = S.zoom, ox = pxR(W / 2 - cam.x * z), oy = pxR(H / 2 - cam.y * z);
   ctx.setTransform(DPR * z, 0, 0, DPR * z, ox * DPR, oy * DPR);
   ctx.drawImage(roomGround, 0, 0);
-  inkDraw(ctx, [...winP(2 * T, 10, 44, 34), ...winP(ROOM_W * T - 2 * T - 44, 10, 44, 34), { path: R(ROOM_W * T / 2 - 40, 8, 80, 26, 5), c: '#fbfcf7' }], 2);
+  flatInk(ctx, [...winP(2 * T, 10, 44, 34), ...winP(ROOM_W * T - 2 * T - 44, 10, 44, 34), { path: R(ROOM_W * T / 2 - 40, 8, 80, 26, 5), c: '#fbfcf7' }]);
   ctx.font = '700 12px "IBM Plex Sans KR", sans-serif'; ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; fillTextIco(ctx, `🏠 ${S.roomNick || ''}님의 집`, ROOM_W * T / 2, 21.5);
   // 문 (누르면 나감)
   const dx = ROOM_DOOR.x * T + T / 2, dy = ROOM_H * T;
-  inkDraw(ctx, [{ path: R(dx - 22, dy - 8, 44, 10, 3), c: '#7a4b2a' }, { path: R(dx - 26, dy - 22, 52, 14, 6), c: '#e8553a' }, { flat: 1, path: R(dx - 20, dy - 18, 40, 6, 3), c: '#f2a24a' }], 2);
+  flatInk(ctx, [{ path: R(dx - 22, dy - 8, 44, 10, 3), c: '#7a4b2a' }, { path: R(dx - 26, dy - 22, 52, 14, 6), c: '#e8553a' }, { flat: 1, path: R(dx - 20, dy - 18, 40, 6, 3), c: '#f2a24a' }]);
   ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; ctx.fillStyle = '#fff'; fillTextIco(ctx, '🚪 나가기', dx, dy - 15);
   ctx.font = '600 12px "IBM Plex Sans KR", sans-serif'; ctx.fillStyle = 'rgba(80,50,25,.55)'; fillTextIco(ctx, '가구는 곧 들어와요 🛋️', ROOM_W * T / 2, 2.6 * T);
   const chars = [me, ...people.filter(shown)];
