@@ -103,6 +103,12 @@
       "ko": "포켓 맵은 연결이 끊긴 사이드 룸을 중지합니다.",
       "at": 1794687907644
     },
+    "3837268384": {
+      "src": "Adds Steins;Gate-inspired time leap and divergence animations when loading a save.",
+      "full": "저장 파일을 로드할 때 Steins;Gate에서 영감을 받은 시간 도약 및 발산 애니메이션을 추가합니다.",
+      "ko": "저장 파일을 로드할 때 Steins;Gate에서 영감을 받은 시간 도약 및 발산 애니메이션을 추가합니다.",
+      "at": 1794817264370
+    },
     "3837314353": {
       "src": "With their outdated technology and struggling economies, the ratkin kingdoms stood little chance against the rogue mechanoids scattered across the planet.",
       "full": "구식 기술과 어려움을 겪고 있는 경제로 인해 쥐족 왕국은 행성 전역에 흩어져 있는 불량 기계체에 맞서 싸울 가능성이 거의 없었습니다.",
