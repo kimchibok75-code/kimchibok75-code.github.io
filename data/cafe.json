@@ -1,8 +1,21 @@
 {
-  "updatedAt": 1794816947984,
+  "updatedAt": 1794831712173,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 199,
+      "title": "타이난 집 주소 불러라 [ 림월드 500% 상한해제 (6) ]",
+      "board": "⏰ 영상 알림",
+      "head": "풀치복",
+      "author": "김치복",
+      "time": 1794828812343,
+      "comments": 0,
+      "likes": 0,
+      "image": false,
+      "thumb": null,
+      "url": "https://cafe.naver.com/kimchibok/199"
+    },
     {
       "id": 198,
       "title": "나만의 편의성 모드 업데이트 했습니다!",
@@ -249,19 +262,6 @@
       "image": false,
       "thumb": null,
       "url": "https://cafe.naver.com/kimchibok/179"
-    },
-    {
-      "id": 178,
-      "title": "하... 림월드 이 똥겜...",
-      "board": "🗺️ 림월드 자유 게시판",
-      "head": null,
-      "author": "김치복2",
-      "time": 1794201343407,
-      "comments": 2,
-      "likes": 0,
-      "image": false,
-      "thumb": null,
-      "url": "https://cafe.naver.com/kimchibok/178"
     }
   ]
 }
