@@ -593,7 +593,7 @@ const GAME = {
   // 채집: 마을의 나무·바위 (사람마다 따로 자람)
   '/api/gather'(c, b, at) {
     townOnly(c); notWorking(c);
-    const n = NODES[Number(b.node)]; if (!n) fail(400, '없는 자원이에요');
+    const n = NODES[Number(b.node)]; if (!n || n.off) fail(400, '없는 자원이에요');
     const L = c.life, G = GATHER[n.k];
     if (at - L.gatherAt < GATHER.gap) fail(429, '너무 빨라요');
     if ((L.nodes[n.i] || 0) > at) fail(400, `아직 자라는 중이에요 (${Math.ceil((L.nodes[n.i] - at) / 60e3)}분)`);

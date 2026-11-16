@@ -367,6 +367,7 @@
 - 해안선 `coastY(x)` (만·하구 굴곡), 바다 칸 표 `SEA`, `seaAt(tx, ty)`, 바닷가 낚시 자리 `SEA_AT` (바로가기 '바닷가'). 강은 그대로 흘러 내려가 넓어지며 바다와 만남
 - 물고기: `FISH_RIVER`(강·연못) / `FISH_SEA`(바다), `FISH`는 둘을 합친 것(town.js 확인용). `rollFish(luk, rod, bait, sea)`
 - 낚시 요청에 찌를 던진 물 칸 `w: [tx, ty]`를 보냄 → 서버 `fishOnce`가 `seaAt`으로 바다인지 판단, 응답 `sea`
+- 해안 가까이는 나무·돌이 적음: 해안선에서 3칸 안은 없음, 13칸까지 점점 늘어남 (`COAST_NONE`, `COAST_FADE`, `keepAt`). 꾸밈 나무(DECO)는 빼고, 캘 수 있는 것(NODES)은 번호가 저장돼 있어서 빼지 않고 `n.off = true` (화면·서버 `/api/gather`가 건너뜀)
 - 바닥 그림: paintGround 5-2)에서 해안에서 멀수록 진한 파랑 + 해안선 따라 파도 거품. 낚시터 창에 강/바다 물고기 목록(`.fishdex`)
 
 ### 다음: 4-2단계

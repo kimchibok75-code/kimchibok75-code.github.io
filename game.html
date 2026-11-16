@@ -1928,7 +1928,7 @@ function render(now) {
   for (const b of BUILDINGS) if (vis(b.x * T + b.w * T / 2, (b.y + b.h) * T)) list.push({ y: (b.y + b.h) * T, f: () => drawBuilding(b, now) });
   for (const h of HOUSES) if (vis(h.x * T, (h.y + HOUSE_H) * T)) list.push({ y: (h.y + HOUSE_H) * T, f: () => drawHouse(h) });
   for (const d of DECO) if (vis(d.x * T, d.y * T)) list.push({ y: d.y * T + T - 3, f: () => drawDeco(d) });
-  for (const n of NODES) if (vis(n.x * T, n.y * T)) list.push({ y: n.y * T + T - 3, f: () => drawNode(n, now) });
+  for (const n of NODES) if (!n.off && vis(n.x * T, n.y * T)) list.push({ y: n.y * T + T - 3, f: () => drawNode(n, now) });
   for (const s of SPOTS) { if (s.id === 'fountain') list.push({ y: (s.y + 1.6) * T, f: () => drawFountain(s, now) }); if (s.id === 'screen') list.push({ y: (s.y + s.h) * T, f: () => drawScreen(s, now) }); }
   if (vis(PORTAL.x, PORTAL.y)) list.push({ y: PORTAL.y, f: () => drawPortal(now) });
   for (const b of BENCHES) list.push({ y: b.y * T + 24, f: () => drawBench(b) });
@@ -2819,7 +2819,7 @@ function tap(sx, sy) {
     return;
   }
   // 나무 · 바위: 걸어가서 도끼 · 곡괭이질
-  const n = NODES.find(n => Math.abs(w.x - (n.x + .5) * T) < 18 && w.y > n.y * T + (n.k === 'tree' ? -30 : 6) && w.y < (n.y + 1) * T);
+  const n = NODES.find(n => !n.off && Math.abs(w.x - (n.x + .5) * T) < 18 && w.y > n.y * T + (n.k === 'tree' ? -30 : 6) && w.y < (n.y + 1) * T);
   if (n) return startGather(n);
   const h = HOUSES.find(h => w.x > h.x * T - 4 && w.x < (h.x + HOUSE_W) * T + 4 && w.y > (h.y - .5) * T && w.y < (h.y + HOUSE_H) * T);
   if (h) return openHouse(h);
@@ -3630,7 +3630,7 @@ const AUTO_ST = [
   { k: 'farm', i: '🌱', say: ['🌱 쑥쑥 자라라', '💧 물 주는 중', '🥕 수확!'], at: () => [PLOTS[4].x, PLOTS[4].y + T] },
   { k: 'walk', i: '🚶', walk: 1 },   // 산책: 돌아다니며 인사 (예전 자유 행동)
 ];
-function autoNode(k) { let b = null, bd = 1e9; for (const n of NODES) { if (n.k !== k) continue; const d = Math.hypot(n.x * T - me.x, n.y * T - me.y); if (d < bd) { bd = d; b = n; } } return b ? [(b.x + .5) * T, (b.y + 1.5) * T] : [me.x, me.y]; }
+function autoNode(k) { let b = null, bd = 1e9; for (const n of NODES) { if (n.k !== k || n.off) continue; const d = Math.hypot(n.x * T - me.x, n.y * T - me.y); if (d < bd) { bd = d; b = n; } } return b ? [(b.x + .5) * T, (b.y + 1.5) * T] : [me.x, me.y]; }
 function autoPace(dt) {
   if (me.sit >= 0) standUp(me);
   if (me.path.length) return;

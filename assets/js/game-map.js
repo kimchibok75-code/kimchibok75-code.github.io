@@ -184,6 +184,7 @@ for (let y = 0; y < OMH; y++) for (let x = 0; x < MW; x++) {
 
 // 8) 남쪽 바다 (2026-11-16): 지도를 아래로 12칸 넓히고, 굽이진 해안선 + 모래사장. 강은 그대로 흘러 내려가 하구에서 넓어지며 바다와 만남
 //    예전 지도(위 1~7)는 그대로라 나무·돌·건물·집 자리와 자원 번호가 안 바뀜. 바뀌는 곳은 맨 아래 꾸밈 나무 줄(58~59)뿐
+const COAST_NONE = 3, COAST_FADE = 13;
 const bump = (x, c, w) => Math.max(0, 1 - ((x - c) / w) ** 2);
 // 해안선 (칸 단위 y). 이 아래는 바다. 동쪽에 오목한 만, 강 하구 쪽은 조금 들어감
 export const coastY = x => 62 + 1.7 * n1(x / 10, 51) + .8 * n1(x / 4.1, 52) - 1.6 * bump(x, 50, 11) - .9 * bump(x, 12, 6);
@@ -208,14 +209,16 @@ export const SEA = new Uint8Array(MW * MH);   // 1 = 바다 (강·연못과 다�
   // 바다와 이어진 강 하구 물도 바다 쪽 아래 절반은 바다로 (해안선보다 아래면 이미 바다)
   for (let i = MW * (OMH - 2); i < MW * MH; i++) solid[i] = tiles[i] === WATER ? 1 : 0;
   for (const n of NODES) block(n.x, n.y);
-  // 맨 아래 꾸밈 나무 줄: 이제 가장자리가 아니라서 바닷가 쪽은 듬성듬성만 남김
+  // 해안에 가까울수록 나무·돌을 줄임: 해안선에서 COAST_NONE칸 안은 없음, COAST_FADE칸까지 점점 늘어남
+  // (예전 지도 맨 아래 가장자리 나무 줄도 이걸로 사라짐)
+  const keepAt = (x, y, salt) => { const dc = coastY(x + .5) - (y + .5); if (dc >= COAST_FADE) return true; if (dc < COAST_NONE) return false; return (h1(x * 31 + y * 7, salt) + 1) / 2 < (dc - COAST_NONE) / (COAST_FADE - COAST_NONE); };
+  const unblock = (x, y) => { if (tileAt(x, y) !== WATER) solid[y * MW + x] = 0; };
   for (let k = DECO.length - 1; k >= 0; k--) {
-    const d = DECO[k]; if (d.y < OMH - 2) continue;
-    const v = tileAt(d.x, d.y), keep = (v === G || v === FOREST) && (d.x < 2 || d.x > MW - 3 || h1(d.x * 31 + d.y, 54) < .3);
-    if (keep) block(d.x, d.y); else DECO.splice(k, 1);
+    const d = DECO[k], v = tileAt(d.x, d.y);
+    if ((v === G || v === FOREST || v === GRAVEL) && keepAt(d.x, d.y, 54)) block(d.x, d.y); else { DECO.splice(k, 1); unblock(d.x, d.y); }
   }
-  // 새 땅(60줄 아래 풀밭)의 양쪽 가장자리는 꾸밈 나무
-  for (let y = OMH; y < MH; y++) for (const x of [0, 1, MW - 2, MW - 1]) if (tileAt(x, y) === G && h1(x * 17 + y * 5, 55) < .7) { DECO.push({ x, y, k: h1(x + y, 56) < .5 ? 'pine' : 'round', s: .85 + h1(x * 3 + y, 57) * .35 }); block(x, y); }
+  // 캘 수 있는 나무·돌은 번호(i)가 저장돼 있어서 빼지 않고 off 표시만 (화면·서버가 건너뜀)
+  for (const n of NODES) if (!keepAt(n.x, n.y, 58) || tileAt(n.x, n.y) === SAND || tileAt(n.x, n.y) === WATER) { n.off = true; unblock(n.x, n.y); }
 }
 // 바다인지 (칸). 강·연못 물은 0
 export const seaAt = (tx, ty) => tx >= 0 && ty >= 0 && tx < MW && ty < MH && SEA[ty * MW + tx] === 1;
