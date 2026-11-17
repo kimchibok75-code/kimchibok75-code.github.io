@@ -178,8 +178,21 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .rk-me { background: #fff1ec; border-color: #f3b9a8; grid-template-columns: auto minmax(0, 1fr) auto; padding-left: 12px; } .rk-me span:first-child { color: var(--ink-soft); font-weight: 700; } .rk-me b { font-size: calc(17px * var(--fs)); }
 .bs .swatches button { width: 40px; height: 40px; }
 @media (max-width: 600px) { .bs { --sb: max(18px, env(safe-area-inset-bottom, 0px)); } .bs-head h3 { font-size: calc(19px * var(--fs)); } }
+/* 2026-11-17 넓은 화면: 건물 창을 넓게 쓰고 목록을 두 줄로 → 창 높이가 반쯤 */
+@media (min-width: 1000px) {
+  .sheet:has(> .bs) { width: min(720px, 100%); }
+  .bs-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bs-list > .bs-row.stack { grid-template-columns: 34px minmax(0, 1fr); }
+  .bs-list > .bs-row.stack .bs-qty { grid-column: 1 / -1; }
+  .sheet .skgrid.shop { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
+  .sheet .skgrid.shop canvas { aspect-ratio: 5 / 4; object-fit: contain; }
+  .bs-list:has(> .bs-row.stack:nth-child(3):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sheet:has(.placegrid) { width: min(500px, 100%); }
+  .sheet:has(.field-card) { width: min(640px, 100%); }
+  .sheet:has(#fishSheet) { width: min(640px, 100%); }
+}
 /* 2026-11-17 촘촘하게: PC(마우스)이거나 화면 높이가 낮으면 건물 창을 작게 (해상도 낮은 모니터에서도 한 화면에) */
-@media (pointer: fine), (max-height: 820px) {
+@media (pointer: fine), (min-width: 761px) and (max-height: 820px) {
   .sheet:has(> .bs) { padding: 12px 14px; gap: 8px; max-height: calc(100% - 12px); }
   .bs { gap: 7px; --sb: 12px; }
   .bs-head { grid-template-columns: 38px minmax(0, 1fr); gap: 8px; min-height: 38px; padding-right: 44px; }
@@ -3770,15 +3783,14 @@ function openBuilding(b, keep) {
 // ───────── 카페: 체력 · 음료 · 알바 ─────────
 function cafeSheet(b, keep) {
   reopen = () => cafeSheet(b, true);
-  const D = derive(), hp = Math.round(Math.min(me.hp, D.maxHp)), full = hp >= D.maxHp, pay = JOB.pay(me.lv), left = me.job ? jobLeft() : 0;
+  const pay = JOB.pay(me.lv), left = me.job ? jobLeft() : 0;
   const pots = Object.entries(POTS).map(([k, p]) => `<li class="bs-row stack"><span class="bs-ri">${p.i}</span><div><b class="t">${p.n}</b><div class="cs">${chip(p.d, 'up')}${chip(`가진 것 ${me.pots[k]}개`)}</div></div><span></span>
     <div class="bs-qty">${[1, 5, 10].map(n => bbtn(`${k}:${n}`, `${n}개`, `🪙 ${fmtN(p.price * n)}`, { main: n === 5, dis: me.gold < p.price * n })).join('')}</div></li>`).join('');
   const job = me.job
-    ? `<div class="bs-card"><h4>☕ 카페 알바 ${chip('일하는 중', 'up')}</h4>${pbar(1 - left / JOB.sec, `${fmtSec(left)} 남음 · 끝나면 🪙 ${fmtN(me.job.pay)}`)}${bbtn('quit', '그만두기', '', { wide: true })}</div>`
-    : `<div class="bs-card"><h4>☕ 카페 알바<span class="cs">${chip('1분')}${chip(`🪙 ${fmtN(pay)}`, 'gold')}${chip(`✨ ${fmtN(lifeExp(me, 'job'))}`, 'up')}</span></h4>${bbtn('job', '알바 시작', '카페 앞에서 1분 동안 일해요', { wide: true })}</div>`;
-  bsOpen(b, { tag: '체력 음료 · 1분 알바', wal: ['gold'], live: !!me.job || !full,
-    body: `<div class="bs-card hero"><h4>❤️ 내 체력 <small>${fmtN(hp)} / ${fmtN(D.maxHp)}</small></h4>${pbar(hp / D.maxHp, `${Math.round(hp / D.maxHp * 100)}%`)}</div>
-      <div class="bs-sec">🥤 체력 음료</div><ul class="bs-list">${pots}</ul>${job}`,
+    ? `<div class="bs-card hero"><h4>☕ 카페 알바 ${chip('일하는 중', 'up')}</h4>${pbar(1 - left / JOB.sec, `${fmtSec(left)} 남음 · 끝나면 🪙 ${fmtN(me.job.pay)}`)}${bbtn('quit', '그만두기', '', { wide: true })}</div>`
+    : `<div class="bs-card hero"><h4>☕ 카페 알바<span class="cs">${chip('1분')}${chip(`🪙 ${fmtN(pay)}`, 'gold')}${chip(`✨ ${fmtN(lifeExp(me, 'job'))}`, 'up')}</span></h4>${bbtn('job', '알바 시작', '카페 앞에서 1분 동안 일해요', { wide: true })}</div>`;
+  bsOpen(b, { tag: '1분 알바 · 체력 음료', wal: ['gold'], live: !!me.job,   // 2026-11-17 내 체력 칸 없앰, 알바가 맨 위
+    body: `${job}<div class="bs-sec">🥤 체력 음료</div><ul class="bs-list">${pots}</ul>`,
     help: `<p>사냥 중에 체력이 <b>${me.potAt}%</b> 아래로 내려가면 음료를 자동으로 마셔요.</p><p>마을에서는 가만히 있어도 1초에 2%씩 체력이 차요.</p><p>알바 돈은 레벨이 높을수록 많아요. 생활 경험치(✨)도 받아요.</p>` },
     async x => {
       if (x === 'job') { if (await act('/api/job/start', {})) { closeModal(); say(me, '☕ 알바 중…', 4000); walkNear(me, ...door('cafe')); toast('☕ 알바 시작! 1분 동안 카페 앞에서 일해요. 끝나면 골드가 들어와요'); } return; }
@@ -4056,8 +4068,10 @@ const CHAT_FS = [[.9, '작게'], [1, '보통'], [1.15, '크게'], [1.3, '아주 
 const SZ = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem('cbt-size') || '{}') || {}; } catch {} const pick = (v, list, d) => list.some(([x]) => x === v) ? v : d;
   return { ui: pick(o.ui, UI_STEPS, 1.2), fs: pick(o.fs, FS_STEPS, 1), cfs: pick(o.cfs, CHAT_FS, 1), cw: +o.cw || 460, ch: +o.ch || 132 }; })();
 const isPC = () => innerWidth > 760;
+// 2026-11-17 화면 맞춤: 설정한 배율은 큰 화면(창 높이 940 · 너비 1700 이상) 기준. 낮은 해상도 모니터에서는 그만큼 줄여서 한 화면에 들어오게
+const uiFit = () => Math.min(1, innerHeight / 940, innerWidth / 1700);
 function applySize(save) {
-  const r = document.documentElement.style, pc = isPC(), ui = pc ? SZ.ui : 1;
+  const r = document.documentElement.style, pc = isPC(), ui = pc ? Math.max(.8, Math.min(SZ.ui, +(SZ.ui * uiFit()).toFixed(3))) : 1;
   // 화면 크기에 맞게 채팅창 크기 제한 (UI 배율로 나눈 크기 기준)
   const stg = $('#stage'), sw = (stg?.clientWidth || innerWidth) / ui, sh = (stg?.clientHeight || innerHeight) / ui;
   SZ.cw = Math.round(Math.max(300, Math.min(SZ.cw, sw - 24, 900))); SZ.ch = Math.round(Math.max(60, Math.min(SZ.ch, sh - 200, 600)));
