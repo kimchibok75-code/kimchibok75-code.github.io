@@ -174,6 +174,22 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .rk-who { min-width: 0; } .rk-who b { display: block; font-size: calc(15px * var(--fs)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rk-who small { display: block; color: var(--ink-soft); font-size: calc(12px * var(--fs)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rk-v { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; } .rk-v small { display: block; font-weight: 600; font-size: calc(11.5px * var(--fs)); color: var(--ink-soft); }
+/* 시작 안내 (2026-11-17) */
+.bs-list.gd { gap: 6px; }
+.gd-row { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 48px; padding: 6px 12px 6px 8px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-size: calc(14.5px * var(--fs)); }
+.gd-row > span:first-child { font-size: calc(21px * var(--fs)); text-align: center; }
+.gd-row > small { color: var(--ink-soft); font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.gd-row.ok { background: #eef7ec; border-color: #b9dbb5; } .gd-row.ok .t { color: var(--ink-soft); }
+.gd-row .t { display: block; } .gd-row small.d { display: block; color: var(--ink-soft); font-size: calc(12.5px * var(--fs)); margin-top: 1px; }
+button.gd-row { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; } button.gd-row:hover { border-color: var(--bcl); background: var(--bcs); }
+.gd-row .go { font-size: calc(20px * var(--fs)); }
+.gd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.gd-card { display: grid; align-content: start; gap: 3px; padding: 10px; border: 1.5px solid var(--line); border-radius: 13px; background: #fff; }
+.gd-card b { font-size: calc(14.5px * var(--fs)); } .gd-card small { color: var(--ink-soft); font-size: calc(12.5px * var(--fs)); line-height: 1.4; }
+.gd-key { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; min-height: 44px; padding: 6px 12px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-size: calc(14px * var(--fs)); }
+.gd-key > span:first-child { display: flex; gap: 4px; min-width: 58px; font-weight: 700; white-space: nowrap; }
+.bs kbd { display: inline-block; padding: 1px 7px; border: 1px solid #b9c4b4; border-bottom-width: 3px; border-radius: 6px; background: #fff; font: 700 calc(12.5px * var(--fs)) var(--font-body); white-space: nowrap; }
+.gd-skip { display: flex; gap: 8px; align-items: center; justify-content: center; min-height: 32px; margin-bottom: 6px; font-size: calc(13.5px * var(--fs)); color: var(--ink-soft); cursor: pointer; } .gd-skip input { width: 18px; height: 18px; margin: 0; }
 .bs.rk .bs-tabs button { white-space: normal; line-height: 1.15; font-size: calc(12.5px * var(--fs)); padding: 4px 1px; }
 .rk-me { background: #fff1ec; border-color: #f3b9a8; grid-template-columns: auto minmax(0, 1fr) auto; padding-left: 12px; } .rk-me span:first-child { color: var(--ink-soft); font-weight: 700; } .rk-me b { font-size: calc(17px * var(--fs)); }
 .bs .swatches button { width: 40px; height: 40px; }
@@ -3735,7 +3751,7 @@ function spend(n) { if (me.gold < n) { toast('골드가 부족해요'); return f
 //  · 점진적 공개 · 밀러의 법칙: 긴 설명은 접은 '도움말'에, 화면에는 한 줄 소개 + 숫자 꼬리표만
 //  · 상태 보이기: 진행 막대, 모자란 재료는 빨간 꼬리표에 '얼마 모자란지'까지
 //  · 일관성(제이콥의 법칙): 모든 건물이 같은 순서 — 머리 → 지갑 → 탭 → 내용 → 도움말 → 주 버튼
-const BC = { cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b' };
+const BC = { cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a' };
 S.btab = {}; S.bhelp = {};
 const WAL = { gold: () => ['🪙', me.gold], wood: () => [RES.wood.i, LIFE().res.wood], stone: () => [RES.stone.i, LIFE().res.stone], fish: () => [COIN.fish[0], LIFE().coins.fish], farm: () => [COIN.farm[0], LIFE().coins.farm] };
 const fmtN = n => Math.floor(n || 0).toLocaleString();
@@ -5689,24 +5705,43 @@ $('#rankBtn').onclick = () => openRank();
 
 // ───────── 시작 안내 창: 게임을 켤 때마다 (오늘 하루 보지 않기 가능) ─────────
 const guideOn = () => { try { return localStorage.getItem('cbt-guide-skip') !== dayKey(Date.now()); } catch { return true; } };
-function showGuide() {
+// 2026-11-17 건물 창 틀(bsWrap)로 다시 만듦: 탭 3개(오늘 할 일 · 놀거리 · 조작) + 아래 고정 버튼
+function showGuide(keep) {
+  reopen = () => showGuide(true);
   const day = dayKey(Date.now()), d = me.life?.daily, s = me.life?.stamp || { n: 0 }, pc = isPC();
-  const tasks = d && d.day === day ? dailyTasks(day).map((q, i) => { const p = Math.min(q.v, dailyProg(me, q)), ok = d.done.includes(i); return `<li class="${ok ? 'ok' : ''}"><span>${q.i}</span><span>${q.n}</span><small>${ok ? '✅' : `${p.toLocaleString()} / ${q.v.toLocaleString()}`}</small></li>`; }).join('') : '';
-  const lvGoal = me.lv >= LV_CAP ? null : Math.min(LV_CAP, (Math.floor(me.lv / 10) + 1) * 10);
-  const goals = `${tasks}<li><span>🥬</span><span>이번 주 도장 모으기 (다 모으면 큰 상자)</span><small>${s.n} / ${STAMP_GOAL}</small></li>
-    ${lvGoal ? `<li><span>⭐</span><span>레벨 ${lvGoal} 달성하기 (새 칭호)</span><small>지금 ${me.lv}</small></li>` : `<li><span>🏗️</span><span>공동 건설에 기부해서 마을 키우기</span><small>📋</small></li>`}`;
-  const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 보낸 뒤에도 계속 치기 · 빈 칸에서 Enter/Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd> <kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['⚙️ 설정', '화면 크기 · 글씨 크기 바꾸기'], ['💬 채팅창', '오른쪽 위 손잡이를 끌면 크기 조절, ⚙️로 채팅 글씨 크기'], ['＋ －', '지도 크게 · 작게 보기'], ['<kbd>Esc</kbd>', '창 닫기']]
-    : [['끌기', '화면을 끌면 그 방향으로 걸어요'], ['💬', '채팅 기록 펼치기 · ⚙️로 채팅 글씨 크기'], ['⚙️ 설정', '내 정보 · 비밀번호 · 차단 목록'], ['＋ －', '지도 크게 · 작게 보기']];
-  openModal(`<div class="guide"><h3>🥬 치복 타운에 어서 와요, ${esc(me.name)}님!</h3>
-    <h4>🎯 오늘의 목표</h4><ul>${goals}</ul>
-    <h4 style="margin-top:12px">🗺️ 이런 것도 있어요</h4><ul class="tips">${[['🏛️ 마을회관', '내 집을 지을 수 있어요. 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩으로 올리면 빌라부터 임대 수입!'], ['🐉 매시 정각', '레드 드래곤 레이드! 2분 안에 참여하면 큰 보상 + 확률로 전용 스킨'], ['🎣 낚시', '아무 물이나 누르면 바로 낚싯대를 던져요. 잡으면 머리 위로 자랑!']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
-    <h4 style="margin-top:12px">👉 오른쪽 버튼</h4><ul class="tips">${[['🏘️ 바로가기', '가고 싶은 곳을 누르면 바로 이동해요'], ['🧺 자동', '캐릭터가 직접 걸어가서 텃밭·벌목·채광·낚시를 해요'], ['📖 가이드', '<b>모든 놀거리 설명은 여기에!</b> 궁금하면 언제든 눌러요'], ['🏆 랭킹', '레벨 · 번 돈 · 물고기 · 강화 · 기여도 순위를 봐요']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
-    <h4 style="margin-top:12px">⚙️ 알아 두면 편해요</h4><ul class="tips">${tips.map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul></div>
-    <label class="skip guide"><input type="checkbox" id="guideSkip"> 오늘 하루 보지 않기</label>
-    <div class="actions"><button class="btn" data-g="book">📖 가이드 보기</button><button class="btn" data-g="news">📋 오늘 의뢰 · 마을 소식</button><button class="btn main" data-g="go">시작하기</button></div>`, el => {
-    el.querySelector('#guideSkip').onchange = e => { try { if (e.target.checked) localStorage.setItem('cbt-guide-skip', day); else localStorage.removeItem('cbt-guide-skip'); } catch {} };
-    el.querySelector('.actions').onclick = e => { const g = e.target.closest('[data-g]')?.dataset.g; if (g === 'go') closeModal(); else if (g === 'news') openNews('daily'); else if (g === 'book') openGuideBook(); };
-  });
+  const tab = btab('guide', 'goal', ['goal', 'play', 'keys']);
+  const row = (i, t, k, right, ok) => `<li class="gd-row${ok ? ' ok' : ''}"><span>${i}</span><div><span class="t">${t}</span>${ok ? '' : thinBar(k)}</div><small>${right}</small></li>`;
+  let body;
+  if (tab === 'goal') {
+    const qs = d && d.day === day ? dailyTasks(day) : [], done = qs.filter((q, i) => d.done.includes(i)).length;
+    const tasks = qs.map((q, i) => { const p = Math.min(q.v, dailyProg(me, q)), ok = d.done.includes(i); return row(q.i, q.n, p / q.v, ok ? '✅' : `${fmtN(p)} / ${fmtN(q.v)}`, ok); }).join('');
+    const lvGoal = me.lv >= LV_CAP ? null : Math.min(LV_CAP, (Math.floor(me.lv / 10) + 1) * 10);
+    body = (qs.length ? `<div class="bs-card hero"><h4>🎯 오늘 의뢰 ${chip(done === qs.length ? '다 했어요!' : `${done} / ${qs.length}`, done === qs.length ? 'up' : '')}</h4>${steps(done, qs.length)}</div><ul class="bs-list gd">${tasks}</ul>` : '')
+      + `<div class="bs-sec">🗓️ 길게 보는 목표</div><ul class="bs-list gd">${row('🥬', '이번 주 도장 (다 모으면 큰 상자)', s.n / STAMP_GOAL, `${s.n} / ${STAMP_GOAL}`)}${lvGoal ? row('⭐', `레벨 ${lvGoal} 달성 (새 칭호)`, (me.lv % 10) / 10, `지금 ${me.lv}`) : row('🏗️', '공동 건설에 기부해서 마을 키우기', 0, '📋')}</ul>`
+      + bbtn('news', '📋 의뢰 · 마을 소식 자세히', '', { wide: true });
+  } else if (tab === 'play') {
+    const fun = [['🏛️', '마을회관', '집 짓고 올리기 · 빌라부터 임대 수입'], ['🐉', '매시 정각 레이드', '2분 안에 참여 · 전용 스킨'], ['🎣', '낚시', '아무 물이나 누르면 바로 던져요'], ['🎁', '가챠센터', '장비 · 스킬 뽑기']];
+    const btn = [['town', '🏘️', '바로가기', '가고 싶은 곳으로 바로 이동'], ['auto', '🧺', '자동', '텃밭 · 벌목 · 채광 · 낚시를 알아서'], ['book', '📖', '가이드', '모든 놀거리 설명'], ['rank', '🏆', '랭킹', '레벨 · 번 돈 · 물고기 · 강화 · 기여도']];
+    body = `<div class="gd-grid">${fun.map(([i, n, t]) => `<div class="gd-card"><b>${i} ${n}</b><small>${t}</small></div>`).join('')}</div>
+      <div class="bs-sec">👉 오른쪽 버튼 (눌러서 바로 열기)</div>
+      <ul class="bs-list gd">${btn.map(([x, i, n, t]) => `<li><button class="gd-row" data-x="${x}"><span>${i}</span><div><b class="t">${n}</b><small class="d">${t}</small></div><small class="go">›</small></button></li>`).join('')}</ul>`;
+  } else {
+    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 빈 칸에서 Enter/Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>Esc</kbd>', '창 닫기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
+      : [['끌기', '화면을 끌면 그 방향으로 걸어요'], ['누르기', '바닥 · 건물 · 사람을 누르면 그곳으로'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅 기록 펼치기 · ⚙️로 글씨 크기'], ['⚙️', '설정: 내 정보 · 비밀번호 · 차단 목록']];
+    body = `<ul class="bs-list gd">${tips.map(([k, t]) => `<li class="gd-key"><span>${k}</span><span>${t}</span></li>`).join('')}</ul>`;
+  }
+  const skip = (() => { try { return localStorage.getItem('cbt-guide-skip') === day; } catch { return false; } })();
+  bsOpen({ id: 'guide', icon: '🥬', name: `어서 와요, ${esc(me.name)}님!` }, { tag: '오늘 할 일부터 확인해 볼까요?',
+    tabs: [['goal', '🎯 오늘 할 일'], ['play', '🗺️ 놀거리'], ['keys', pc ? '⌨️ 조작' : '👆 조작']], tab, body,
+    foot: `<label class="gd-skip"><input type="checkbox" id="guideSkip"${skip ? ' checked' : ''}> 오늘 하루 보지 않기</label><div class="bs-two">${bbtn('book', '📖 가이드')}${bbtn('go', '시작하기', '', { main: true })}</div>`,
+    ready: el => { el.querySelector('#guideSkip').onchange = e => { try { if (e.target.checked) localStorage.setItem('cbt-guide-skip', day); else localStorage.removeItem('cbt-guide-skip'); } catch {} }; } },
+    x => {
+      if (x === 'go') return closeModal();
+      if (x === 'news') return openNews('daily');
+      if (x === 'book') return openGuideBook();
+      if (x === 'rank') return openRank();
+      closeModal(); $(x === 'town' ? '#townBtn' : '#autoBtn').click();
+    }, keep);
 }
 const NEWS = { tab: 'daily', data: null, at: 0, give: { wood: 0, stone: 0, gold: 0 } };
 const bar = (v, max, c = '') => `<i class="pbar ${c}"><b style="width:${Math.min(100, max ? v / max * 100 : 0)}%"></b></i>`;
