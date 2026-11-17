@@ -175,6 +175,12 @@
       "ko": "저는 이것이 Vanilla Gravships 2 이후 가장 기대되는 모드라는 것을 알고 있습니다. 드디어 출시되었습니다.",
       "at": 1794694713395
     },
+    "3838085030": {
+      "src": "Organs your colony harvests before it reaches the industrial age are Van's organ jars.",
+      "full": "식민지가 산업화 시대에 도달하기 전에 수확하는 장기는 Van의 장기 단지입니다.",
+      "ko": "식민지가 산업화 시대에 도달하기 전에 수확하는 장기는 Van의 장기 단지입니다.",
+      "at": 1794901761383
+    },
     "3838111458": {
       "src": "A visual overhaul for fire, snow, weather and shadows in RimWorld 1.7.",
       "full": "RimWorld 1.7의 불, 눈, 날씨 및 그림자에 대한 시각적 점검.",
@@ -192,6 +198,18 @@
       "full": "Black & White(Lionhead, 2001)의 신성한 손에서 영감을 받은 이 모드를 사용하면 매우 다른 두 손, 즉 천사의 손과 악마의 손을 사용하여 식민지 주민과 직접 상호 작용할 수 있습니다.",
       "ko": "Black & White(Lionhead, 2001)의 신성한 손에서 영감을 받은 이 모드를 사용하면 매우 다른 두 손, 즉 천사의 손과 악마의 손을 사용하여 식민지 주민과 직접 상호 작용할 수 있습니다.",
       "at": 1794809925386
+    },
+    "3838946841": {
+      "src": "기존 시점을 '담장뷰'로 변경",
+      "full": "기존 시점을 '담장뷰'로 변경",
+      "ko": "기존 시점을 '담장뷰'로 변경",
+      "at": 1794901758768
+    },
+    "3838976337": {
+      "src": "Some features might not function since I had to decompile the source and some of the transpiling harmony-code I could not figure out.",
+      "full": "소스를 디컴파일해야 했고 일부 트랜스파일 하모니 코드를 알아낼 수 없었기 때문에 일부 기능이 작동하지 않을 수도 있습니다.",
+      "ko": "소스를 디컴파일해야 했고 일부 트랜스파일 하모니 코드를 알아낼 수 없었기 때문에 일부 기능이 작동하지 않을 수도 있습니다.",
+      "at": 1794901760784
     },
     "3838987100": {
       "src": "From the brilliant mind of a yayo huffing, smokeleaf crackin, flake flinging local tribal engineer.",
@@ -230,10 +248,10 @@
       "at": 1794694712912
     },
     "3839642536": {
-      "src": "This mod is an add-on for SQUISHY Ranged that adds melee combat animations.",
-      "full": "이 모드는 근접 전투 애니메이션을 추가하는 SQUISHY Ranged의 추가 기능입니다.",
-      "ko": "이 모드는 근접 전투 애니메이션을 추가하는 SQUISHY Ranged의 추가 기능입니다.",
-      "at": 1794687918177
+      "src": "✅ This mod is an add-on for SQUISHY Ranged that adds melee combat animations.",
+      "full": "✅ 이 모드는 근접 전투 애니메이션을 추가하는 SQUISHY Ranged의 추가 기능입니다.",
+      "ko": "✅ 이 모드는 근접 전투 애니메이션을 추가하는 SQUISHY Ranged의 추가 기능입니다.",
+      "at": 1794901757224
     },
     "3840043127": {
       "src": "MOD AND INFOGRAPHICS ARE UNDER CONSTRUCTION. ANYTHING CAN CHANGE AT ANY TIME. THINK OF THE CURRENT BETA AS AN ADVENTURE WITHOUT THE INFOGRAPHICS",
@@ -246,6 +264,18 @@
       "full": "I Am Mother는 2019년 영화에서 영감을 받아 자동화된 난자 채취 및 처리 체인을 추가합니다.",
       "ko": "I Am Mother는 2019년 영화에서 영감을 받아 자동화된 난자 채취 및 처리 체인을 추가합니다.",
       "at": 1794843039051
+    },
+    "3840876824": {
+      "src": "UI Rethemed - Relationships adds a Relationships tab to the bottom bar, styled to match the rest of the Rethemed mods.",
+      "full": "UI 재구성 - 관계는 나머지 재구성 모드와 일치하도록 스타일이 지정된 하단 표시줄에 관계 탭을 추가합니다.",
+      "ko": "UI 재구성 - 관계는 나머지 재구성 모드와 일치하도록 스타일이 지정된 하단 표시줄에 관계 탭을 추가합니다.",
+      "at": 1794901760038
+    },
+    "3841078351": {
+      "src": "A new spacer-tier warcasket for Vanilla Factions Expanded - Pirates.",
+      "full": "Vanilla Factions Expanded - Pirates를 위한 새로운 스페이서 등급 전쟁통입니다.",
+      "ko": "Vanilla Factions Expanded - Pirates를 위한 새로운 스페이서 등급 전쟁통입니다.",
+      "at": 1794901758368
     }
   }
 }
