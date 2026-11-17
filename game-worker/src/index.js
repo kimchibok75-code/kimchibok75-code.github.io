@@ -331,7 +331,6 @@ const GAME = {
     if (c.pots[k] + n > 999) fail(400, '물약은 종류마다 999개까지예요');
     spend(c, POTS[k].price * n); c.pots[k] += n;
   },
-  '/api/rest'(c) { townOnly(c); c.hp = derive(c).maxHp; },
   '/api/pot-at'(c, b) { const v = Number(b.v); if (!Number.isInteger(v) || v < 10 || v > 90) fail(400, '10~90 사이로 정해 주세요'); c.potAt = v; },
   // 가챠센터: 무기 뽑기 · 방어구 뽑기 (1회 / 10회)
   // 지금 낀 것보다 좋은 장비는 칸마다 가장 좋은 것 하나만 "바꿀지 고르기"로 남기고, 나머지는 자동으로 분해(골드)

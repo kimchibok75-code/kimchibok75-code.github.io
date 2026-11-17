@@ -1,6 +1,6 @@
 // 자동 사냥 계산 (기획서 4장). 화면의 전투는 보여 주기용이고, 실제 결과는 여기서 정해짐.
 // 흐른 시간만큼 몬스터를 한 마리씩 잡는 과정을 빠르게 흉내 냄.
-import { FIELDS, MONS, HUNT, POTS, FAR, derive, expPenalty, addExp, pick, biteDmg, cntAdd, gimOf, gimDmg } from '../../assets/js/game-rules.js';
+import { FIELDS, MONS, HUNT, POTS, FAR, derive, expPenalty, addExp, pick, biteDmg, cntAdd, gimOf, gimDmg, potPick, offlineLife } from '../../assets/js/game-rules.js';
 
 const MAX_STEPS = 300000;   // 한 번 계산할 때 최대 반복 (안전장치)
 
@@ -63,8 +63,7 @@ function fight(st, D, mon, boss) {
   return { t, dead: hp > 0 };
 }
 function drink(st, D) {
-  const p = st.pots, miss = D.maxHp - st.hp;
-  const k = p.xl && D.maxHp > 1150 && miss >= D.maxHp * .45 ? 'xl' : miss >= 200 && p.l ? 'l' : p.s ? 's' : p.l ? 'l' : p.xl ? 'xl' : null;   // 체력이 많을 때(특대가 큰 음료보다 싸게 먹힘) 많이 다쳤으면 특대(50%)부터
+  const p = st.pots, k = potPick(p, D.maxHp, st.hp);   // 화면(usePotion)과 같은 규칙
   if (!k) return;
   p[k]--; st.used++; st.hp = Math.min(D.maxHp, st.hp + POTS[k].heal(D.maxHp) * (1 + D.potP / 100));
 }
@@ -79,8 +78,10 @@ export function settle(c, at) {
   const h = c.hunt; if (!h) return null;
   const gap = Math.max(0, (at - h.last) / 1000);
   const online = Math.min(gap, HUNT.onlineGap), offline = Math.min(gap - online, HUNT.offlineMax);
-  // 화면을 닫은 시간은 70% 효율, 최대 8시간. debt: 지난번에 미리 당겨 쓴 시간 (자주 불러도 빨라지지 않게)
-  let sec = online + offline * HUNT.offlineEff - (h.debt || 0);
+  // 화면을 닫은 시간은 50% 효율, 최대 8시간. 그중 절반(offlineHunt)은 사냥, 나머지는 마을 일(offlineLife: 생활 경험치·골드·자원)
+  // debt: 지난번에 미리 당겨 쓴 시간 (자주 불러도 빨라지지 않게)
+  const offEff = offline * HUNT.offlineEff;
+  let sec = online + offEff * HUNT.offlineHunt - (h.debt || 0);
   h.last = at;
   const f = FIELDS[h.f], out = { sec: gap, offline, kills: 0, exp: 0, gold: 0, drops: [], sold: 0, up: 0, pots: 0, bosses: [], bossSkip: [], died: false };
   let D = derive(c);
@@ -108,6 +109,7 @@ export function settle(c, at) {
   h.debt = sec < 0 ? -sec : 0; h.cd = Object.fromEntries(Object.entries(st.cd).map(([k, v]) => [k, Math.max(0, +v.toFixed(2))]));
   c.hp = Math.max(0, Math.round(st.hp)); out.pots = st.used; h.pots += st.used;
   cntAdd(c, 'kills', out.kills); if (out.bosses.length) cntAdd(c, 'boss', out.bosses.length);
+  if (offline >= 60 && !out.died) out.life = offlineLife(c, offEff * (1 - HUNT.offlineHunt));
   if (out.died) {
     cntAdd(c, 'died');
     const lost = Math.floor(h.gold * HUNT.deathLoss);

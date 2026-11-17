@@ -217,8 +217,11 @@ export const spentPoints = c => c.str + c.dex + c.int + c.luk - 20;
 
 // ───────── 사냥터 (기획서 4장) ─────────
 export const LV_CAP = 55;            // 지금 열린 최고 레벨 (사냥터를 추가하면 올리기)
-export const HUNT = { offlineMax: 8 * 3600, offlineEff: .7, onlineGap: 90, bossEvery: 300, deathLoss: .1, townRegen: .02, huntRegen: .015, goldMul: .6 };   // huntRegen 2026-11-17 .02 → .015 (몬스터 기믹과 함께: 물약이 필요하게)   // 2026-11-16 1.15 → .6 (사냥 골드가 낚시·알바보다 너무 많아서 절반쯤으로)   // goldMul: 사냥에서 장비가 안 떨어지는 대신 골드 +15%
-export const POTS = { s: { n: '작은 음료', i: '🥤', d: '체력 +50', price: 20, heal: () => 50 }, l: { n: '큰 음료', i: '🧋', d: '체력 +200', price: 70, heal: () => 200 }, xl: { n: '특대 음료', i: '🍹', d: '최대 체력의 50%', price: 200, heal: max => Math.round(max * .5) } };
+export const HUNT = { offlineMax: 8 * 3600, offlineEff: .5, offlineHunt: .5, onlineGap: 90, bossEvery: 300, deathLoss: .1, townRegen: .02, huntRegen: .015, goldMul: .6 };   // huntRegen 2026-11-17 .02 → .015 (몬스터 기믹과 함께: 물약이 필요하게)   // 2026-11-16 1.15 → .6 (사냥 골드가 낚시·알바보다 너무 많아서 절반쯤으로)   // goldMul: 사냥에서 장비가 안 떨어지는 대신 골드 +15%
+// 2026-11-17: 모두 최대 체력 비율로 (작은 20% · 큰 50% · 특대 100%)
+export const POTS = { s: { n: '작은 음료', i: '🥤', d: '최대 체력의 20%', price: 20, heal: max => Math.round(max * .2) }, l: { n: '큰 음료', i: '🧋', d: '최대 체력의 50%', price: 70, heal: max => Math.round(max * .5) }, xl: { n: '특대 음료', i: '🍹', d: '최대 체력의 100%', price: 200, heal: max => Math.round(max) } };
+// 어떤 음료를 마실지 (화면·서버 같은 규칙): 많이 다쳤을수록 큰 것부터, 없으면 있는 것
+export const potPick = (p, max, hp) => { const m = (max - hp) / max; return m >= .75 && p.xl ? 'xl' : m >= .4 && p.l ? 'l' : p.s ? 's' : p.l ? 'l' : p.xl ? 'xl' : null; };
 // 몬스터: n 이름, lv, hp, atk, exp, gold, c 색, s 크기, f 생김새
 // mg: 마법 공격 (마법 방어력으로 막음), 없으면 물리 공격 (물리 방어력으로 막음)
 const M = (n, lv, hp, atk, exp, gold, c, s, f, mg = false, k = '') => ({ n, lv, hp, atk, exp, gold, c, s, f, mg, k });
@@ -394,7 +397,7 @@ export function workSettle(w, kind, now) {
 }
 
 // ───────── 집 ─────────
-export const HOUSE = { cost: { gold: 3000, wood: 60, stone: 40 }, move: { gold: 500, wood: 10, stone: 10 },
+export const HOUSE = { cost: { gold: 10000, wood: 60, stone: 40 }, move: { gold: 500, wood: 10, stone: 10 },
   roofs: ['#4f9d5a', '#2bb3a6', '#3d7bd9', '#9a5ad6', '#e8553a', '#e9a23b', '#ef7fa6', '#5d6b7e'] };
 export const costText = o => Object.entries(o).map(([k, v]) => `${k === 'gold' ? '🪙' : RES[k].i} ${v.toLocaleString()}`).join(' · ');
 
@@ -703,7 +706,7 @@ export function rollSkill(lv = 1) {
 // 정각에 30초 모집 → 신청한 사람만 레이드 맵으로. 보스는 무조건 잡힘(시간이 지나면 저절로 체력이 깎임), 1~2분.
 // 끝날 때까지 나갈 수 없음. 쓰러져도 끝까지 기다리면 보상(조금 적게)
 export const RAID = {
-  every: 3600e3, recruit: 30e3,      // 매시 정각부터 30초 모집 → 30초에 시작
+  every: 3600e3, recruit: 120e3,     // 매시 정각부터 2분 모집 → 2분에 시작 (2026-11-17 30초 → 2분)
   max: 150e3,                        // 아무리 늦어도 2분 30초면 끝
   drain: 120,                        // 아무도 안 때려도 120초면 보스 체력이 0 (무조건 잡힘)
   hpSec: 100,                        // 보스 체력 = 참가자 초당 피해 합 × 100초 → 다 같이 열심히 치면 약 55초
@@ -750,7 +753,7 @@ export const LIFE_EXP_RATE = .5;
 export const lifeExpHour = lv => Math.round(huntIdleExp(lv) * LIFE_EXP_RATE);
 // 직접 하는 생활 한 번에 주는 경험치 = 자동 생활 1시간 경험치 ÷ 아래 숫자 (직접 하면 자동과 비슷하거나 조금 많게)
 //   낚시 성공 1마리(10초마다) · 채집 1번 · 카페 알바 1번(1분) · 작물 1포기 수확
-export const LIFE_EXP_DIV = { fish: 250, gather: 60, job: 55, crop: 40 };
+export const LIFE_EXP_DIV = { fish: 1000, gather: 300, job: 120, crop: 150 };   // 2026-11-17 너무 많이 올라서 줄임 (예전 250 · 60 · 55 · 40)
 export const lifeExp = (c, k, n = 1) => Math.max(1, Math.round(lifeExpHour(c.lv) / LIFE_EXP_DIV[k] * n * (1 + (derive(c).expB || 0) / 100)));
 
 // ───────── 자동 생활 (마을에서 벌목·채광·알바·낚시·농사를 알아서 돌아가며 함) ─────────
@@ -768,6 +771,19 @@ export function autoSettle(c, now) {
   if (got.wood) L.res.wood += got.wood; if (got.stone) L.res.stone += got.stone;
   if (got.fish) L.coins.fish += got.fish; if (got.farm) L.coins.farm += got.farm; if (got.gold) c.gold += got.gold; if (got.exp) got.up = addExp(c, got.exp);
   return Object.keys(got).length ? { ...got, sec: Math.round(sec) } : null;
+}
+
+// ───────── 화면을 닫은 동안 (2026-11-17): 효율 50% 중 절반은 사냥(settle), 절반은 마을 일 ─────────
+// 1시간어치(효율 적용 뒤) 마을 일로 받는 것: 경험치·골드는 사냥 1시간과 비슷, 그리고 자원·코인
+export const OFFLINE_LIFE = lv => ({ exp: huntIdleExp(lv) / .7, gold: (1500 * lv + 8000) * .3, wood: 40, stone: 28, fish: 6, farm: 5 });
+export function offlineLife(c, sec) {
+  if (sec < 1) return null;
+  const D = derive(c), P = OFFLINE_LIFE(c.lv), h = sec / 3600, L = c.life, got = {};
+  for (const k of ['wood', 'stone', 'fish', 'farm']) got[k] = Math.floor(P[k] * h);
+  got.gold = Math.round(P.gold * h * (1 + (D.goldB || 0) / 100)); got.exp = Math.round(P.exp * h * (1 + (D.expB || 0) / 100));
+  if (L) { L.res.wood += got.wood; L.res.stone += got.stone; L.coins.fish += got.fish; L.coins.farm += got.farm; }
+  c.gold += got.gold; got.up = addExp(c, got.exp);
+  return got;
 }
 
 // ───────── 집 업그레이드 (마을회관): 일반 집 → 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩 ─────────

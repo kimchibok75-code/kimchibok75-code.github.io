@@ -178,6 +178,39 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .rk-me { background: #fff1ec; border-color: #f3b9a8; grid-template-columns: auto minmax(0, 1fr) auto; padding-left: 12px; } .rk-me span:first-child { color: var(--ink-soft); font-weight: 700; } .rk-me b { font-size: calc(17px * var(--fs)); }
 .bs .swatches button { width: 40px; height: 40px; }
 @media (max-width: 600px) { .bs { --sb: max(18px, env(safe-area-inset-bottom, 0px)); } .bs-head h3 { font-size: calc(19px * var(--fs)); } }
+/* 2026-11-17 촘촘하게: PC(마우스)이거나 화면 높이가 낮으면 건물 창을 작게 (해상도 낮은 모니터에서도 한 화면에) */
+@media (pointer: fine), (max-height: 820px) {
+  .sheet:has(> .bs) { padding: 12px 14px; gap: 8px; max-height: calc(100% - 12px); }
+  .bs { gap: 7px; --sb: 12px; }
+  .bs-head { grid-template-columns: 38px minmax(0, 1fr); gap: 8px; min-height: 38px; padding-right: 44px; }
+  .bs-ic { width: 38px; height: 38px; border-radius: 11px; font-size: calc(21px * var(--fs)); }
+  .bs-head h3 { font-size: calc(17px * var(--fs)); } .bs-head p { font-size: calc(12.5px * var(--fs)); line-height: 1.3; }
+  .bs-wal > span { padding: 2px 9px 2px 6px; font-size: calc(13px * var(--fs)); }
+  .bs-tabs { padding: 3px; border-radius: 10px; } .bs-tabs button { min-height: 32px; font-size: calc(13px * var(--fs)); border-radius: 8px; }
+  .bs-body { gap: 7px; }
+  .bs-card { padding: 8px 10px; gap: 6px; border-radius: 11px; } .bs-card h4 { font-size: calc(14px * var(--fs)); }
+  .bs-sec { font-size: calc(12.5px * var(--fs)); margin: 2px 2px -3px; }
+  .bs-list { gap: 5px; }
+  .bs-row { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 8px; min-height: 44px; padding: 5px 8px; border-radius: 11px; }
+  .bs-ri { width: 34px; height: 34px; border-radius: 9px; font-size: calc(19px * var(--fs)); }
+  .bs-row .t { font-size: calc(14px * var(--fs)); }
+  .bs-qty { gap: 4px; } .bs-row.stack .bs-qty { grid-column: auto; } .bs-row.stack > span:empty { display: none; } .bs-row.stack .bs-qty .bb { min-width: 0; padding: 2px 8px; }
+  .c { padding: 1px 7px; font-size: calc(12px * var(--fs)); } .cs { margin-top: 2px; }
+  .bb { min-height: 32px; min-width: 52px; padding: 3px 10px; border-radius: 10px; box-shadow: 0 2px 0 var(--ink); font-size: calc(13px * var(--fs)); }
+  .bb small { font-size: calc(11.5px * var(--fs)); margin-top: 0; }
+  .bb:active:not(:disabled) { transform: translateY(2px); }
+  .bb.wide { min-height: 38px; font-size: calc(14px * var(--fs)); }
+  .bs-two .bb { min-height: 40px; } .bs-three .bb { min-height: 42px; padding: 3px 4px; }
+  .bs-bar { height: 18px; } .bs-bar span { line-height: 18px; font-size: calc(12px * var(--fs)); }
+  .bs-help summary { min-height: 32px; font-size: calc(13px * var(--fs)); } .bs-help > div { font-size: calc(13px * var(--fs)); line-height: 1.45; }
+  .bs-foot { margin: -4px -14px -12px; padding: 8px 14px 12px; }
+  .bs-alert { min-height: 38px; padding: 5px 10px; border-radius: 11px; }
+  .bs-seedpick { grid-template-columns: 34px minmax(0, 1fr) auto; min-height: 44px; padding: 5px 10px; border-radius: 11px; } .bs-seedpick > span { font-size: 22px; }
+  .gx-h { grid-template-columns: 38px minmax(0, 1fr) auto; } .gx-i { width: 38px; height: 38px; font-size: calc(22px * var(--fs)); border-radius: 11px; }
+  .gx-gear .emp { height: 32px; font-size: 22px; } .wk-p span { height: 30px; font-size: 17px; }
+  .rk-list { gap: 4px; } .rk-list li, .rk-me { min-height: 40px; padding: 4px 10px 4px 4px; } .rk-list li.top .rk-n { font-size: 19px; }
+  .bs .swatches button { width: 32px; height: 32px; }
+}
 html, body { height: 100%; }
 body { margin: 0; background: var(--sky); color: var(--ink); font-family: var(--font-body); font-size: calc(15px * var(--fs)); overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; -webkit-tap-highlight-color: transparent; }
 button, input, select { font: inherit; color: inherit; }
@@ -279,9 +312,9 @@ button.chip { cursor: pointer; font: inherit; font-weight: 700; }
 .autofish .af-all { display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; } .autofish .af-all input { width: 18px; height: 18px; }
 .hud .spacer { flex: 1; }
 .iconbtn { width: 38px; height: 38px; border-radius: 12px; border: 2px solid var(--ink); background: rgba(251, 252, 247, .94); font-size: calc(18px * var(--fs)); display: grid; place-items: center; }
-.placegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; margin: 8px 0; }
-.placegrid .btn { display: flex; align-items: center; gap: 8px; justify-content: flex-start; padding: 8px 10px; text-align: left; }
-.placegrid .pi { font-size: 22px; flex: none; } .placegrid .pt { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; } .placegrid .pt small { font-size: 11.5px; font-weight: 500; color: #6b7686; }
+.placegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 5px; margin: 2px 0; }
+.placegrid .btn { display: flex; align-items: center; gap: 5px; justify-content: flex-start; padding: 6px 8px; min-height: 0; text-align: left; white-space: nowrap; }
+.placegrid .pi { font-size: 18px; flex: none; } .placegrid .pt { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; } .placegrid .pt small { font-size: 11.5px; font-weight: 500; color: #6b7686; }
 .placeh { margin: 12px 0 2px; font-size: 14px; color: #4a5566; } .placeh:first-of-type { margin-top: 6px; }
 .rcol { position: absolute; right: 10px; top: 56px; display: grid; gap: 6px; justify-items: end; }   /* 오른쪽 세로 버튼 + 확대 버튼 (버튼 수가 바뀌어도 안 겹침) */
 .side { display: grid; gap: 6px; }
@@ -999,7 +1032,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 import { jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, fishHit, FISH_RIVER, FISH_SEA, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
-  dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp } from './assets/js/game-rules.js?v=__BUILD__';
+  dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
 import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico, icoImgFlat } from './assets/js/game-icons.js?v=__BUILD__';
 import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSolid, noise2, inCore, BUILDINGS as MAP_BUILDINGS, SPOTS, PORTAL, BACK, FISH_AT, PLOTS, BENCHES, NODES, DECO,
@@ -2028,12 +2061,13 @@ function drawPlots(now) {
 }
 // 지도에서 두둑을 누르면: 빈 밭 → 고른 씨앗 심기 · 다 자람 → 모두 수확 · 자라는 중 → 물 주기(가능하면)
 function plotAt(wx, wy) { const f = me.life?.farm; if (!f || me.room) return -1; return PLOTS.findIndex(P => Math.abs(wx - P.x) < BED_W / 2 && Math.abs(wy - P.y) < BED_H / 2 + 4); }
-function farmTap(i) {
+function farmTap(i, all) {   // all: 빈 칸이면 빈 칸 모두에 심기 (자동 생활)
   const f = LIFE().farm, P = PLOTS[i];
   if (i >= f.plots.length) return openFarm();
   const doIt = async () => {
     const now = Date.now(), p = f.plots[i];
     if (!f.seeds.includes(S.seed)) S.seed = f.seeds[0];
+    if (!p && all) { const cr = cropOf(S.seed); const j = await act('/api/farm/plantall', { crop: S.seed }); if (j) { emote(me, '🌱'); logAct(`${cr.i} ${cr.n} ${j.n}칸 심음`); } return; }
     if (!p) { const cr = cropOf(S.seed); if (me.gold < cr.cost) return toast('골드가 모자라요'); const j = await act('/api/farm/plant', { i, crop: S.seed }); if (j) { emote(me, '🌱'); logAct(`${cr.i} ${cr.n} 심음 −${cr.cost}`); } return; }
     if (!plotLeft(p, f, now)) return farmHarvest();
     if (f.wetAt + FARM.cd <= now) { const j = await act('/api/farm/water', {}); if (j) { toast(`🚿 물을 줬어요! 5분 동안 ${CANS.mul[LIFE().farm.can]}배 빨리 자라요`); emote(me, '❤️'); } return; }
@@ -2347,7 +2381,7 @@ function drawAmbient(f, t) {
 function openHuntSelect() {
   openModal(`<h3>⚔️ 사냥터 입구</h3><p>사냥터를 고르면 바로 <b>자동 사냥</b>이 시작돼요. 캐릭터가 알아서 싸우고, 체력이 낮으면 물약을 마셔요.</p>
     <div class="actions">${FIELDS.map((f, i) => { const tag = me.lv < f.min ? ['bad', '⚠️ 위험'] : me.lv > f.max + 9 ? ['', '경험치 ↓'] : ['good', '추천']; return `<button class="btn field-card" data-f="${i}"><span style="font-size:26px">${f.i}</span><span><b>${f.n}</b><small style="display:block">Lv.${f.min}–${f.max} · ${f.mons.map(k => (MONS[k].mg ? '🔮' : '') + MONS[k].n).join(', ')}</small></span><span class="tagok ${tag[0]}">${tag[1]}</span></button>`; }).join('')}</div>
-    <p class="muted">🔮 표시는 <b>마법 공격</b> 몬스터예요 (마법 방어력으로 막아요. 지력을 올리면 늘어요).<br>물약 ${me.pots.s + me.pots.l + me.pots.xl}개 · 체력 ${me.potAt}% 이하일 때 자동으로 마셔요.<br>화면을 닫아도 <b>최대 8시간</b>까지 계속 사냥해요 (효율 70%). 다시 들어오면 결과를 보여 줘요.</p><button class="close" data-close>닫기</button>`,
+    <p class="muted">🔮 표시는 <b>마법 공격</b> 몬스터예요 (마법 방어력으로 막아요. 지력을 올리면 늘어요).<br>물약 ${me.pots.s + me.pots.l + me.pots.xl}개 · 체력 ${me.potAt}% 이하일 때 자동으로 마셔요.<br>화면을 닫아도 <b>최대 8시간</b>까지 계속 움직여요 (효율 50%, 절반은 사냥 · 절반은 생활). 다시 들어오면 결과를 보여 줘요.</p><button class="close" data-close>닫기</button>`,
   el => el.querySelector('.actions').addEventListener('click', async e => {
     const i = e.target.closest('[data-f]')?.dataset.f; if (i == null || huntBusy) return; huntBusy = true;
     try { const j = await api('/api/hunt/start', { f: +i }); took(j); closeModal(); closePanel(); sysMsg(`${FIELDS[+i].i} ${FIELDS[+i].n}에 들어왔어요. 자동 사냥 시작!`); logAct(`${FIELDS[+i].n} 사냥 시작`); }
@@ -2357,7 +2391,7 @@ function openHuntSelect() {
 let huntBusy = false, syncT = null;
 // 서버의 사냥 상태(h)로 사냥 화면 열기. 화면의 전투는 보여 주기용이고, 실제 결과는 서버가 30초마다 계산
 // ───────── 레이드 (매시 정각 · 레드 드래곤) ─────────
-// 정각에 모두에게 참여 창 → 30초 안에 누른 사람만 레이드 맵으로. 끝날 때까지 못 나감. 쓰러지면 끝까지 구경
+// 정각에 모두에게 참여 창 → 2분 안에 누른 사람만 레이드 맵으로. 끝날 때까지 못 나감. 쓰러지면 끝까지 구경
 // 보스 공격 순서는 시작 시각으로 정해져서 모두의 화면이 같음 (raidPattern). 보스 체력은 레이드 방(서버)이 1초마다 알려 줌
 let RD = null;                   // 지금 레이드 중인 상태
 const RAIDQ = { asked: 0, skew: 0, t: null, tick: null };   // asked = 이미 물어본 레이드, skew = 서버 시계 - 내 시계
@@ -2384,9 +2418,9 @@ async function raidCheck() {
 function raidAsk(start, joined) {
   sfx('alarm');
   const R = raidReward(me.lv), B = RAID_BOSS.rdragon;
-  sysMsg(`${B.i} ${B.n} 레이드 모집 중! 30초 안에 참여하세요`);
+  sysMsg(`${B.i} ${B.n} 레이드 모집 중! 2분 안에 참여하세요`);
   openModal(`<h3>${B.i} ${B.n} 레이드!</h3>
-    <div class="raidask"><b id="raidLeft">30</b><small>초 남음</small></div>
+    <div class="raidask"><b id="raidLeft">${Math.max(0, Math.ceil((start - srvNow()) / 1000))}</b><small>초 남음</small></div>
     <p>마을 사람들과 다 같이 <b>${B.n}</b>를 잡아요. 약 1~2분이면 끝나요.</p>
     <ul class="raidinfo"><li>🪙 골드 약 <b>${R.gold.toLocaleString()}</b> · 경험치 약 <b>${R.exp.toLocaleString()}</b></li><li>🐉 확률로 <b>레드 드래곤 전용 스킨</b> (머리·눈·의상·무기 6종, 효과가 좋아요)</li>
       <li>⚠️ 참여하면 <b>끝날 때까지 나올 수 없어요.</b> 바닥이 빨개지면 피하세요! 쓰러져도 끝까지 있으면 보상을 받아요</li></ul>
@@ -3240,9 +3274,9 @@ function killMon(m, D) {   // 보여 주기용: 진짜 경험치·골드·장비
 const expPen = (lv, mlv) => { const d = lv - mlv; return d >= 10 ? Math.max(.2, 1 - (d - 9) * .1) : 1; };
 function usePotion(D) {
   const miss = D.maxHp - me.hp, p = me.pots;
-  const k = p.xl && D.maxHp > 1150 && miss >= D.maxHp * .45 ? 'xl' : miss >= 200 && p.l ? 'l' : p.s ? 's' : p.l ? 'l' : p.xl ? 'xl' : null;   // 체력이 많을 때(특대가 큰 음료보다 싸게 먹힘) 많이 다쳤으면 특대(50%)부터
+  const k = potPick(p, D.maxHp, me.hp);   // 서버(hunt.js drink)와 같은 규칙
   if (!k) return;
-  p[k]--; const heal = Math.round((k === 's' ? 50 : k === 'l' ? 200 : D.maxHp * .5) * (1 + (D.potP || 0) / 100));
+  p[k]--; const heal = Math.round(POTS[k].heal(D.maxHp) * (1 + (D.potP || 0) / 100));
   me.hp = Math.min(D.maxHp, me.hp + heal); HT.potCD = 1; fxBurst(me.x, me.y - 24, '#8af0a0', 10, 80, 2.6, -60); floatText(me.x, me.y - 72, `🥤 +${heal}`, '#8af0a0', 15);
 }
 function huntSummary(h) {
@@ -3742,14 +3776,13 @@ function cafeSheet(b, keep) {
   const job = me.job
     ? `<div class="bs-card"><h4>☕ 카페 알바 ${chip('일하는 중', 'up')}</h4>${pbar(1 - left / JOB.sec, `${fmtSec(left)} 남음 · 끝나면 🪙 ${fmtN(me.job.pay)}`)}${bbtn('quit', '그만두기', '', { wide: true })}</div>`
     : `<div class="bs-card"><h4>☕ 카페 알바<span class="cs">${chip('1분')}${chip(`🪙 ${fmtN(pay)}`, 'gold')}${chip(`✨ ${fmtN(lifeExp(me, 'job'))}`, 'up')}</span></h4>${bbtn('job', '알바 시작', '카페 앞에서 1분 동안 일해요', { wide: true })}</div>`;
-  bsOpen(b, { tag: '체력 음료 · 쉬기 · 1분 알바', wal: ['gold'], live: !!me.job || !full,
-    body: `<div class="bs-card hero"><h4>❤️ 내 체력 <small>${fmtN(hp)} / ${fmtN(D.maxHp)}</small></h4>${pbar(hp / D.maxHp, `${Math.round(hp / D.maxHp * 100)}%`)}${bbtn('rest', '🪑 창가 자리에서 쉬기', full ? '이미 가득 찼어요' : '무료 · 바로 가득 차요', { wide: true, dis: full })}</div>
+  bsOpen(b, { tag: '체력 음료 · 1분 알바', wal: ['gold'], live: !!me.job || !full,
+    body: `<div class="bs-card hero"><h4>❤️ 내 체력 <small>${fmtN(hp)} / ${fmtN(D.maxHp)}</small></h4>${pbar(hp / D.maxHp, `${Math.round(hp / D.maxHp * 100)}%`)}</div>
       <div class="bs-sec">🥤 체력 음료</div><ul class="bs-list">${pots}</ul>${job}`,
     help: `<p>사냥 중에 체력이 <b>${me.potAt}%</b> 아래로 내려가면 음료를 자동으로 마셔요.</p><p>마을에서는 가만히 있어도 1초에 2%씩 체력이 차요.</p><p>알바 돈은 레벨이 높을수록 많아요. 생활 경험치(✨)도 받아요.</p>` },
     async x => {
       if (x === 'job') { if (await act('/api/job/start', {})) { closeModal(); say(me, '☕ 알바 중…', 4000); walkNear(me, ...door('cafe')); toast('☕ 알바 시작! 1분 동안 카페 앞에서 일해요. 끝나면 골드가 들어와요'); } return; }
       if (x === 'quit') { const j = await act('/api/job/quit', {}); if (j) { toast(j.tips ? `알바를 그만뒀어요 · 손님 팁 🪙 +${j.tips.toLocaleString()}` : '알바를 그만뒀어요'); reopen?.(); } return; }
-      if (x === 'rest') { if (await act('/api/rest', {})) { emote(me, '❤️'); toast('푹 쉬었어요. 체력이 가득 찼어요'); reopen?.(); } return; }
       const [k, n] = x.split(':'), j = await act('/api/pots', { k, n: +n });
       if (j) { logAct(`${POTS[k].n} ${n}개 −${POTS[k].price * n}`); toast(`${POTS[k].i} ${n}개 샀어요`); reopen?.(); }
     }, keep);
@@ -4003,7 +4036,7 @@ function trySend(raw) {
 sndUnlock();
 document.addEventListener('click', e => { const b = e.target.closest('button, .gcard, [data-x], [data-a]'); if (b && !b.disabled && !b.closest('[data-close], .close')) sfx('click'); }, true);
 // 서버 버튼(act)이 성공했을 때 소리
-const ACT_SND = [[/house\/(build|up)/, 'build'], [/(collect|job\/finish|sell|claim)/, 'coin'], [/(skin|pots|shop|pack|hire|unlock|farm\/can|farm\/plot|title)/, 'buy'], [/farm\/(plant|plantall)/, 'plant'], [/farm\/water/, 'water'], [/farm\/harvest/, 'harvest'], [/village\/give|wish/, 'coin'], [/rest/, 'pop'], [/equip|unequip|preset|stats/, 'pop']];
+const ACT_SND = [[/house\/(build|up)/, 'build'], [/(collect|job\/finish|sell|claim)/, 'coin'], [/(skin|pots|shop|pack|hire|unlock|farm\/can|farm\/plot|title)/, 'buy'], [/farm\/(plant|plantall)/, 'plant'], [/farm\/water/, 'water'], [/farm\/harvest/, 'harvest'], [/village\/give|wish/, 'coin'], [/equip|unequip|preset|stats/, 'pop']];
 const actSnd = path => { for (const [re, k] of ACT_SND) if (re.test(path)) return sfx(k); };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 function addChat(m) {
@@ -4208,7 +4241,7 @@ function renderSkills() {
 }
 $('#skClsBar').addEventListener('click', e => { const k = e.target.closest('[data-skc]')?.dataset.skc; if (k) { skTab = k; renderSkills(); } });
 function renderBag() {
-  const P = [['s', '🥤', '작은 음료', '체력 +50'], ['l', '🧋', '큰 음료', '체력 +200'], ['xl', '🍹', '특대 음료', '최대 체력의 50%']];
+  const P = ['s', 'l', 'xl'].map(k => [k, POTS[k].i, POTS[k].n, POTS[k].d]);
   $('#potList').innerHTML = P.map(([k, ic, n, d]) => row(ic, `${n} × ${me.pots[k]}`, d, '')).join('');
 }
 function setPotAt(v) { me.potAt = +v; $('#potAt').value = v; $('#hbPot').value = v; }
@@ -4269,8 +4302,10 @@ function took(j) {
     if (h.bossSkip?.length) sysMsg(`👑 보스 ${h.bossSkip[0]}가 너무 강해서 피했어요 (손해 없음)`);
     for (const it of h.drops || []) if (it.g && ['epic', 'legend', 'myth'].includes(it.g)) { toast(`✨ ${GRADES[it.g].n} 장비! ${itemName(it)}`); sysMsg(`✨ ${GRADES[it.g].n} 장비 획득: ${itemName(it)}`); }
     if (HT && h.drops?.length) h.drops.slice(0, 3).forEach((it, i) => floatText(me.x + (i - 1) * 26, me.y - 84 - i * 10, `${itemIcon(it)} ${GRADES[it.g].n}`, it.g === 'normal' ? '#e6ebf2' : GRADES[it.g].c, 14, 1.8));
-    if (h.offline >= 60 && !h.died) openModal(`<h3>🌙 자리 비운 동안</h3><p>${Math.floor(h.sec / 3600)}시간 ${Math.floor(h.sec % 3600 / 60)}분 동안 계속 사냥했어요${h.offline >= HUNT.offlineMax ? ' (최대 8시간까지만 계산)' : ''}. 화면을 닫은 시간은 효율 70%예요.</p>
-      <table class="ruletable"><tbody><tr><td>처치</td><td>${h.kills.toLocaleString()}마리</td></tr><tr><td>경험치</td><td>+${h.exp.toLocaleString()}${h.up ? ` (레벨 +${h.up})` : ''}</td></tr><tr><td>골드</td><td>+${h.gold.toLocaleString()}</td></tr><tr><td>물약</td><td>${h.pots}개 마심</td></tr></tbody></table><button class="btn main" data-close>확인</button>`);
+    if (h.offline >= 60 && !h.died) { const L = h.life || {}, n = v => (v || 0).toLocaleString();
+      openModal(`<h3>🌙 자리 비운 동안</h3><p>${Math.floor(h.sec / 3600)}시간 ${Math.floor(h.sec % 3600 / 60)}분 동안 부지런히 움직였어요!${h.offline >= HUNT.offlineMax ? ' (최대 8시간까지만 계산)' : ''} 사냥도 하고 마을 일도 했어요. (화면을 닫은 시간은 효율 ${Math.round(HUNT.offlineEff * 100)}%, 그 절반은 사냥 · 절반은 생활)</p>
+      <h4 class="placeh">⚔️ 사냥</h4><table class="ruletable"><tbody><tr><td>처치</td><td>${h.kills.toLocaleString()}마리</td></tr><tr><td>경험치</td><td>+${h.exp.toLocaleString()}${h.up ? ` (레벨 +${h.up})` : ''}</td></tr><tr><td>골드</td><td>+${h.gold.toLocaleString()}</td></tr><tr><td>물약</td><td>${h.pots}개 마심</td></tr></tbody></table>
+      ${h.life ? `<h4 class="placeh">🧺 생활</h4><table class="ruletable"><tbody><tr><td>생활 경험치</td><td>+${n(L.exp)}${L.up ? ` (레벨 +${L.up})` : ''}</td></tr><tr><td>골드</td><td>+${n(L.gold)}</td></tr><tr><td>목재 · 석재</td><td>🪵 +${n(L.wood)} · 🪨 +${n(L.stone)}</td></tr><tr><td>코인</td><td>${COIN.fish[0]} +${n(L.fish)} · ${COIN.farm[0]} +${n(L.farm)}</td></tr></tbody></table>` : ''}<button class="btn main" data-close>확인</button>`); }
     if (h.died) {
       if (HT) exitHuntView();
       emote(me, '💤');
@@ -4545,20 +4580,19 @@ $('#resetStats').onclick = () => {
 
 // ───────── 마을 바로가기 (설정 버튼 밑 🏘️): 누르면 그 자리로 바로 이동 ─────────
 const door = id => { const b = BUILDINGS.find(b => b.id === id); return [(b.door.x + .5) * T, (b.door.y + .5) * T]; };
-// 바로가기: [아이콘, 이름, x, y, 하는 일, 묶음]. 묶음은 PLACE_GROUPS 순서대로 보여 줌
-const PLACE_GROUPS = [['go', '📍 이동'], ['shop', '🏷️ 가게'], ['life', '🌱 생활 · 모으기']];
-const PLACES = [['⛲', '광장 분수 앞', START.x, START.y, '소원 빌기', 'go'], ['🏛️', '마을회관', ...door('hall'), '집 짓기 · 키우기', 'go'], ['🌀', '사냥터 포탈', BACK.x, BACK.y, '사냥 가기', 'go'],
-  ['🎰', '가챠센터', ...door('gacha'), '장비 · 스킬 뽑기', 'shop'], ['🔨', '대장간', ...door('smith'), '장비 강화', 'shop'], ['👕', '스킨샵', ...door('skin'), '겉모습 꾸미기', 'shop'], ['☕', '카페', ...door('cafe'), '물약 · 쉬기 · 알바', 'shop'], ['🪝', '낚시점', ...door('fishshop'), '낚싯대 · 미끼', 'shop'],
-  ['🎣', '낚시터', FISH_AT.x, FISH_AT.y, '강 낚시 · 자동 낚시', 'life'], ['🐚', '바닷가', SEA_AT.x, SEA_AT.y, '바다 낚시', 'life'], ['🌾', '텃밭', ...door('farmshed'), '심고 키우고 수확', 'life'], ['🪓', '벌목소', ...door('lumber'), '목재 모으기', 'life'], ['⛏️', '채광소', ...door('quarry'), '석재 모으기', 'life']];
+// 바로가기: [아이콘, 이름, x, y]. 2026-11-17 이름만 짧게 (한 화면에 다 들어오게)
+const PLACES = [['⛲', '광장', START.x, START.y], ['🏛️', '마을회관', ...door('hall')], ['🌀', '사냥', BACK.x, BACK.y],
+  ['🎰', '가챠', ...door('gacha')], ['🔨', '강화', ...door('smith')], ['👕', '스킨', ...door('skin')], ['☕', '카페', ...door('cafe')], ['🪝', '낚시', ...door('fishshop')],
+  ['🎣', '강', FISH_AT.x, FISH_AT.y], ['🐚', '바다', SEA_AT.x, SEA_AT.y], ['🌾', '텃밭', ...door('farmshed')], ['🪓', '벌목', ...door('lumber')], ['⛏️', '채광', ...door('quarry')]];
 // 바로가기로 가면 그 시설 창도 바로 열기
 function placeOpen(n) {
-  const bid = { '가챠센터': 'gacha', '카페': 'cafe', '스킨샵': 'skin', '대장간': 'smith', '마을회관': 'hall', '낚시점': 'fishshop', '벌목소': 'lumber', '채광소': 'quarry' }[n];
+  const bid = { '가챠': 'gacha', '카페': 'cafe', '스킨': 'skin', '강화': 'smith', '마을회관': 'hall', '낚시': 'fishshop', '벌목': 'lumber', '채광': 'quarry' }[n];
   if (bid) return openBuilding(BUILDINGS.find(b => b.id === bid));
-  if (n === '광장 분수 앞') return openWish();
-  if (n === '낚시터') return openFishing();
-  if (n === '바닷가') return toast('🐚 바다를 누르면 바다 물고기를 낚아요');
+  if (n === '광장') return openWish();
+  if (n === '강') return openFishing();
+  if (n === '바다') return toast('🐚 바다를 누르면 바다 물고기를 낚아요');
   if (n === '텃밭') return openFarm();
-  if (n === '사냥터 포탈') return openHuntSelect();
+  if (n === '사냥') return openHuntSelect();
   if (n === '내 집' && myHouse()) return openHouse(myHouse());
 }
 function teleport(px, py, quiet) {
@@ -4570,9 +4604,9 @@ function teleport(px, py, quiet) {
 $('#townBtn').onclick = () => {
   if (RD) return toast('레이드가 끝날 때까지 나갈 수 없어요');
   if (HT) return toast('사냥 중에는 현황판의 "마을로 돌아가기"를 눌러 주세요');
-  const list = [...(myHouse() ? [['🏠', '내 집', ...houseDoor(myHouse()), '내 집으로', 'go']] : []), ...PLACES];
-  const btn = ([i, n, , , d], k) => `<button class="btn" data-x="${k}"><span class="pi">${i}</span><span class="pt"><b>${n}</b><small>${d}</small></span></button>`;
-  openModal(`<h3>🏘️ 마을 바로가기</h3><p class="muted">누르면 그 자리로 바로 가서 시설 창이 열려요.</p>${PLACE_GROUPS.map(([g, t]) => `<h4 class="placeh">${t}</h4><div class="placegrid">${list.map((p, k) => p[5] === g ? btn(p, k) : '').join('')}</div>`).join('')}<button class="close" data-close>닫기</button>`,
+  const list = [...(myHouse() ? [['🏠', '내 집', ...houseDoor(myHouse())]] : []), ...PLACES];
+  const btn = ([i, n], k) => `<button class="btn" data-x="${k}"><span class="pi">${i}</span><b>${n}</b></button>`;
+  openModal(`<h3>🏘️ 바로가기</h3><div class="placegrid">${list.map(btn).join('')}</div><button class="close" data-close>닫기</button>`,
     el => wire(el, async k => { const [, n, x, y] = list[+k]; closeModal(); ROAM.pause = 20; teleport(x, y); setTimeout(() => placeOpen(n), 250); }));
 };
 
@@ -4631,7 +4665,7 @@ function autoPace(dt) {
   const now = Date.now();
   // 1) 텃밭이 먼저: 할 일이 있으면 몰아서 다 함 (같은 칸·같은 일은 6초 안에 다시 안 함)
   { const i = auFarm(now), f = LIFE()?.farm, key = i === null ? '' : `${i}:${f.plots[i]?.c || '-'}:${f.wetAt}`;
-    if (i !== null && (key !== AU.fk || now >= AU.farmT)) { if (AU.fk === '' || !AU.fk) say(me, pick(AU_SAY.farm), 1800); AU.fk = key; AU.farmT = now + 6000; farmTap(i); AU.wait = .6; return; }
+    if (i !== null && (key !== AU.fk || now >= AU.farmT)) { if (AU.fk === '' || !AU.fk) say(me, pick(AU_SAY.farm), 1800); AU.fk = key; AU.farmT = now + 6000; farmTap(i, true); AU.wait = .6; return; }
     if (i === null) AU.fk = ''; }
   if (!AU.mode || AU.left <= 0) auNext();
   const m = AU.mode;
@@ -5283,7 +5317,7 @@ async function openAdmin(tab = ADM.tab) {
   if (tab === 'cheat') {   // 관리자 시험용 치트 (내 캐릭터만 바뀜, 서버 기록에 남음)
     const god = !!me.life?.god, B = (k, n, label) => `<button class="mini" data-x="${k}:${n}">${label}</button>`;
     return show(`<p class="muted">시험용이에요. <b>내 캐릭터만</b> 바뀌고, 쓴 기록은 서버에 남아요.</p>
-      <div class="btns cheat">${B('raid', 0, '🐉 레이드 지금 열기 (30초 모집, 모두에게 창이 떠요)')}</div>
+      <div class="btns cheat">${B('raid', 0, '🐉 레이드 지금 열기 (2분 모집, 모두에게 창이 떠요)')}</div>
       <div class="btns cheat">${B('god', 0, god ? '😇 갓모드 끄기' : '😇 갓모드 켜기 (안 맞음 · 공격력 10배)')}</div>
       <div class="btns cheat">${B('gold', 1e6, '🪙 골드 +100만')}${B('gold', 1e8, '🪙 골드 +1억')}${B('lv', 55, '🌟 55레벨')}${B('lv', 1, '🌱 1레벨로')}</div>
       <div class="btns cheat">${B('gear', 0, '🗡️ 최고 장비 + 최고 강화')}${B('titles', 0, '🏷️ 칭호 모두')}${B('skins', 0, '👕 스킨 모두')}${B('pots', 0, '🥤 물약·체력 가득')}</div>
@@ -5293,7 +5327,7 @@ async function openAdmin(tab = ADM.tab) {
       <div class="admform"><input id="cN" type="number" placeholder="숫자" value="1000"><select id="cK"><option value="gold">골드 더하기</option><option value="exp">경험치 더하기</option><option value="lv">레벨 정하기</option><option value="wood">목재 더하기</option><option value="stone">석재 더하기</option><option value="fishCoin">낚시 코인 더하기</option><option value="farmCoin">텃밭 코인 더하기</option></select><button class="mini main" data-x="custom">적용</button></div>`,
       async (x, el) => {
         let [k, n] = x.split(':');
-        if (k === 'raid') { const j = await api('/api/admin/raid', {}); closeModal(); toast('🐉 레이드 모집을 열었어요 (30초)'); RAIDQ.asked = 0; setTimeout(raidCheck, 300); return; }
+        if (k === 'raid') { const j = await api('/api/admin/raid', {}); closeModal(); toast('🐉 레이드 모집을 열었어요 (2분)'); RAIDQ.asked = 0; setTimeout(raidCheck, 300); return; }
         if (k === 'custom') { k = el.querySelector('#cK').value; n = el.querySelector('#cN').value; }
         if (k === 'lv' && !confirm(`${n}레벨로 바꿀까요? 능력치가 다시 계산돼요.`)) return;
         const j = await act('/api/admin/cheat', { k, n: Number(n) }); if (!j) return;
@@ -5353,24 +5387,36 @@ function fishAtWater(px, py) {
   if (F.auto) return openFishing();
   if (F.busy) return toast('🎣 지금 낚시 중이에요');
   const s = shoreNear(px, py); if (!s) return toast('여기서는 물가로 갈 수 없어요');
-  const go = () => handFish(px, py);
+  const go = () => handFish(px, py, !AU.on);   // 2026-11-17: 한 번 누르면 움직이기 전까지 계속 낚음 (자동 생활은 자기가 알아서)
   const [mx, my] = meTile(); if (mx === s.x && my === s.y) return go();
   if (!walkToTile(me, s.x, s.y, go)) toast('여기서는 물가로 갈 수 없어요');
 }
-async function handFish(px, py) {
+// 계속 낚시: F.loop = { px, py, x, y } (던진 자리). 걷거나 다른 일을 하면 멈춤
+function fishLoopOk(L) {
+  const moved = Math.hypot(me.x - L.x, me.y - L.y) > 6 || me.path.length || me.moving;
+  if (F.loop !== L || moved || F.auto || AU.on || HT || RD || me.room || me.job || document.hidden) { if (F.loop === L) F.loop = null; return false; }
+  return true;
+}
+function fishLoopNext() {
+  const L = F.loop; if (!L || !fishLoopOk(L)) return;
+  clearTimeout(F.loopT); F.loopT = setTimeout(() => { if (fishLoopOk(L)) handFish(L.px, L.py, true); }, Math.max(1700, F.nextAt - Date.now() + 100));
+}
+async function handFish(px, py, loop) {
   if (F.busy || F.auto || HT || me.room) return;
+  if (loop) { if (!F.loop) say(me, '🎣 계속 낚을게요 (움직이면 멈춰요)', 2200); F.loop = { px, py, x: me.x, y: me.y }; } else F.loop = null;
   const w = Math.ceil((F.nextAt - Date.now()) / 1000); if (w > 0) return toast(`⏳ ${w}초 뒤에 다시 던질 수 있어요`);
   if (!nearWater(...meTile())) return toast('물가에서만 낚시할 수 있어요');
   F.busy = true; if (me.sit >= 0) standUp(me); me.path = []; me.moving = false;
   const [bx, by] = bobberAt(px, py), r = me.life.fish.rod || 0;
   rodOut(me, bx, by, r); const mine = me.fz; netSend({ t: 'fish', s: 1, bx: Math.round(bx), by: Math.round(by), r }); sfx('cast');
   let j; try { j = await api('/api/fish/hand', { w: [Math.floor(bx / T), Math.floor(by / T)] }); took(j); }
-  catch (x) { F.busy = false; if (me.fz === mine) { me.fz = null; netSend({ t: 'fish', s: 0 }); } toast(x.message); return; }
+  catch (x) { F.busy = false; F.loop = null; if (me.fz === mine) { me.fz = null; netSend({ t: 'fish', s: 0 }); } toast(x.message); return; }
   F.nextAt = Date.now() + j.cooldown;
   await sleep(j.wait);
   if (me.fz === mine) { mine.ph = 'bite'; sfx('bite'); await sleep(600); }
   F.busy = false;
   fishShow(j, me.fz === mine);
+  if (loop && F.loop) fishLoopNext();   // 던진 자리에서 움직였으면 멈춤
 }
 // 결과 보여 주기 (손 낚시·자동 낚시 같이). here = 아직 그 자리에서 낚시하는 모습이면 true
 function fishShow(j, here, auto) {
@@ -5530,7 +5576,7 @@ const GUIDE = () => [
   ]],
   ['⚔️', '사냥', [
     ['시작', '마을 오른쪽 끝 보라색 포탈을 눌러 사냥터를 골라요. 사냥은 자동으로 해요.'],
-    ['화면을 닫아도', `최대 ${HUNT.offlineMax / 3600}시간까지 효율 ${Math.round(HUNT.offlineEff * 100)}%로 계속 사냥해요.`],
+    ['화면을 닫아도', `최대 ${HUNT.offlineMax / 3600}시간까지 효율 ${Math.round(HUNT.offlineEff * 100)}%로 계속 움직여요. 절반은 사냥(경험치·골드), 절반은 생활(생활 경험치·골드·목재·석재·코인)로 받아요.`],
     ['보스', '사냥터마다 보스가 있어요. 이길 수 있을 만큼 세지면 자동으로 싸워요.'],
     ['몬스터 기믹', '몬스터는 가끔 💨 돌진 · 💢 달려들기 · 🪶 급강하 · 💥 내려찍기를 써요. 빨간 표시가 뜨면 곧 크게 아파요! 체력 음료를 꼭 챙기고, 기절 스킬로 끊을 수도 있어요.'],
     ['쓰러지면', `그 사냥에서 번 골드의 ${Math.round(HUNT.deathLoss * 100)}%를 잃고 마을로 돌아와요. 카페 음료(물약)를 챙겨요.`],
@@ -5549,7 +5595,7 @@ const GUIDE = () => [
     ['대장간', `장비 칸을 강화해요 (최대 +${ENH_MAX}, 1단계마다 +${Math.round(ENH_STEP * 100)}%). 장비를 바꿔도 칸 강화는 그대로예요.`],
   ]],
   ['🎣', '낚시', [
-    ['손 낚시', '아무 물이나 누르면 물가로 걸어가서 바로 낚싯대를 던져요. 잡으면 머리 위로 자랑해요!'],
+    ['손 낚시', '아무 물이나 누르면 물가로 걸어가서 바로 낚싯대를 던져요. 한 번 누르면 움직이기 전까지 계속 낚아요. 잡으면 머리 위로 자랑해요!'],
     ['강 · 바다', '강·연못과 마을 남쪽 바다에서 나는 물고기가 달라요. 목록은 낚시터 창에서 볼 수 있어요.'],
     ['보상', '낚은 물고기는 바로 팔려서 골드가 되고, 🐚 낚시 코인도 받아요. 2초에 한 번 던질 수 있어요.'],
     ['낚시점', '낚시 코인으로 낚싯대(낚을 확률 ↑)와 미끼(좋은 등급 ↑)를 올려요.'],
@@ -5562,7 +5608,7 @@ const GUIDE = () => [
     ['벌목소·채광소', '알바를 고용하면 화면을 꺼도 목재·석재가 쌓여요 (최대 10시간). 가서 받기를 눌러요.'],
   ]],
   ['☕', '카페 · 알바', [
-    ['음료', '사냥에 쓰는 체력 음료를 사요. 쉬기로 체력을 채울 수도 있어요.'],
+    ['음료', '사냥에 쓰는 체력 음료를 사요. 작은 음료 20% · 큰 음료 50% · 특대 음료 100% 회복.'],
     ['카페 알바', '1분 일하면 골드를 받아요. 알바 중에는 카페 앞에서만 있어요.'],
   ]],
   ['🧺', '자동', [
@@ -5579,7 +5625,7 @@ const GUIDE = () => [
     ['헤어', '헤어와 색은 무료. 캐릭터창 → 스킨에서 바꿔요.'],
   ]],
   ['🐉', '레이드', [
-    ['언제', '매시 정각! 30초 안에 참여 버튼을 누르면 다 같이 레드 드래곤과 싸워요.'],
+    ['언제', '매시 정각! 2분 안에 참여 버튼을 누르면 다 같이 레드 드래곤과 싸워요.'],
     ['보상', '골드·경험치 + 확률로 레이드 전용 스킨. 같은 스킨을 또 얻으면 스킨 레벨이 올라 효과가 커져요.'],
   ]],
   ['📋', '마을 소식판', [
@@ -5639,7 +5685,7 @@ function showGuide() {
     : [['끌기', '화면을 끌면 그 방향으로 걸어요'], ['💬', '채팅 기록 펼치기 · ⚙️로 채팅 글씨 크기'], ['⚙️ 설정', '내 정보 · 비밀번호 · 차단 목록'], ['＋ －', '지도 크게 · 작게 보기']];
   openModal(`<div class="guide"><h3>🥬 치복 타운에 어서 와요, ${esc(me.name)}님!</h3>
     <h4>🎯 오늘의 목표</h4><ul>${goals}</ul>
-    <h4 style="margin-top:12px">🗺️ 이런 것도 있어요</h4><ul class="tips">${[['🏛️ 마을회관', '내 집을 지을 수 있어요. 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩으로 올리면 빌라부터 임대 수입!'], ['🐉 매시 정각', '레드 드래곤 레이드! 30초 안에 참여하면 큰 보상 + 확률로 전용 스킨'], ['🎣 낚시', '아무 물이나 누르면 바로 낚싯대를 던져요. 잡으면 머리 위로 자랑!']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
+    <h4 style="margin-top:12px">🗺️ 이런 것도 있어요</h4><ul class="tips">${[['🏛️ 마을회관', '내 집을 지을 수 있어요. 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩으로 올리면 빌라부터 임대 수입!'], ['🐉 매시 정각', '레드 드래곤 레이드! 2분 안에 참여하면 큰 보상 + 확률로 전용 스킨'], ['🎣 낚시', '아무 물이나 누르면 바로 낚싯대를 던져요. 잡으면 머리 위로 자랑!']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
     <h4 style="margin-top:12px">👉 오른쪽 버튼</h4><ul class="tips">${[['🏘️ 바로가기', '가고 싶은 곳을 누르면 바로 이동해요'], ['🧺 자동', '캐릭터가 직접 걸어가서 텃밭·벌목·채광·낚시를 해요'], ['📖 가이드', '<b>모든 놀거리 설명은 여기에!</b> 궁금하면 언제든 눌러요'], ['🏆 랭킹', '레벨 · 번 돈 · 비싼 물고기 · 큰 물고기 · 강화 합 순위를 봐요']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
     <h4 style="margin-top:12px">⚙️ 알아 두면 편해요</h4><ul class="tips">${tips.map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul></div>
     <label class="skip guide"><input type="checkbox" id="guideSkip"> 오늘 하루 보지 않기</label>
