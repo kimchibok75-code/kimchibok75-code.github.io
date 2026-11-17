@@ -230,10 +230,10 @@
       "at": 1794801262619
     },
     "3839399827": {
-      "src": "This is a dedicated compatibility patch for **The Dead Man's Switch** and its expansion series.",
-      "full": "이것은 **The Dead Man's Switch** 및 해당 확장 시리즈 전용 호환성 패치입니다.",
-      "ko": "이것은 **The Dead Man's Switch** 및 해당 확장 시리즈 전용 호환성 패치입니다.",
-      "at": 1794842297767
+      "src": "Mods shown in the Required Items list only indicate which mods have been patched for compatibility.",
+      "full": "필수 항목 목록에 표시된 모드는 호환성을 위해 패치된 모드만 나타냅니다.",
+      "ko": "필수 항목 목록에 표시된 모드는 호환성을 위해 패치된 모드만 나타냅니다.",
+      "at": 1794948620315
     },
     "3839520750": {
       "src": "Screenshots use Facial Animation - Retexture, IsoRimZ and Combat Extended, see suggestions.",
