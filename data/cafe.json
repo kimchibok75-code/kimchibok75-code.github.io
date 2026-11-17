@@ -1,8 +1,21 @@
 {
-  "updatedAt": 1794831712173,
+  "updatedAt": 1794884006958,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 200,
+      "title": "쉬는 시간에 이러고 놉니다 [ 림월드 500% 상한해제 (6.5) ]",
+      "board": "⏰ 영상 알림",
+      "head": "풀치복",
+      "author": "김치복",
+      "time": 1794877589560,
+      "comments": 0,
+      "likes": 0,
+      "image": false,
+      "thumb": null,
+      "url": "https://cafe.naver.com/kimchibok/200"
+    },
     {
       "id": 199,
       "title": "타이난 집 주소 불러라 [ 림월드 500% 상한해제 (6) ]",
@@ -249,19 +262,6 @@
       "image": false,
       "thumb": null,
       "url": "https://cafe.naver.com/kimchibok/181"
-    },
-    {
-      "id": 179,
-      "title": "ㅋㅋㅋㅋ기 빨리는데 엄청 크게 웃었네",
-      "board": "🤣 유머 게시판",
-      "head": null,
-      "author": "김치복2",
-      "time": 1794205943267,
-      "comments": 0,
-      "likes": 0,
-      "image": false,
-      "thumb": null,
-      "url": "https://cafe.naver.com/kimchibok/179"
     }
   ]
 }
