@@ -479,6 +479,8 @@
 - 건물 창 촘촘하게: `@media (pointer: fine), (max-height: 820px)` 블록 (style 맨 위 `.bs` 부분 끝). 바로가기는 이름만 13칸(광장·마을회관·사냥·가챠·강화·스킨·카페·낚시·강·바다·텃밭·벌목·채광)
 - 자동 생활 텃밭: 빈 칸은 `farmTap(i, true)` → `/api/farm/plantall`로 한 번에
 - 손 낚시: 한 번 누르면 움직이기 전까지 계속 (`F.loop`, `fishLoopNext`). 자동 생활 중·창 숨김·알바 중이면 멈춤
+- 랭킹·낚시터 순위에서 빠지는 계정: 김치복 · 테스트 · zz로 시작 (index.js `RANK_HIDE`)
+- 낚시 입질까지 3~8초(예전 1.5~4초), `fishWait`: 8%는 더 빨리, 7%는 더 오래 (평균 약 5.5초). 손·자동 같이
 - **wrangler 최신(4.163)이 이 컴퓨터에서 묶기 단계에서 조용히 꺼짐** → `npx --yes wrangler@4.45.0 dev/deploy`로. deploy는 끝에 rc 127로 꺼져도 `deployments list`에 새 시각이 있으면 성공
 
 ### 다음: 4-2단계

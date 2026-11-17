@@ -4,7 +4,7 @@ import { jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, F
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, AUTO_FISH, FISH_SHOP, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
-  dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp } from '../../assets/js/game-rules.js';
+  dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait } from '../../assets/js/game-rules.js';
 import { canHouse, isSolid, NODES, BACK, tileAt, WATER, seaAt } from '../../assets/js/game-map.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
@@ -792,7 +792,7 @@ async function fishOnce(c, b, at, env, user, auto) {
   if (left > 0) fail(429, `${left}초 뒤에 다시 던질 수 있어요`);
   if (auto) c.life.fish.pack--;
   const w = Array.isArray(b.w) && b.w.length === 2 && b.w.every(Number.isInteger) ? b.w : null, sea = !!w && tileAt(w[0], w[1]) === WATER && seaAt(w[0], w[1]);
-  const D = derive(c), F = c.life.fish, fish = rollFish(D.luk, F.rod, F.bait, sea), wait = Math.round(FISHING.waitMin + Math.random() * (FISHING.waitMax - FISHING.waitMin));
+  const D = derive(c), F = c.life.fish, fish = rollFish(D.luk, F.rod, F.bait, sea), wait = fishWait();
   const mark = () => env.DB.prepare("INSERT INTO fishing (user_id, bait, last_cast) VALUES (?, '', ?) ON CONFLICT(user_id) DO UPDATE SET bait = '', last_cast = excluded.last_cast").bind(user.id, at).run();
   const base = { wait, cooldown: FISHING.cooldown, left: F.pack, sea };
   if (Math.random() >= fishHit(F.rod, D.fx, auto)) return { ...base, caught: false, fish: { i: fish.i, n: fish.n, grade: fish.grade }, after: mark };
@@ -820,9 +820,11 @@ const RANK = {
 };
 const RANK_MEM = {};
 const rankFish = s => { try { return s ? JSON.parse(s) : null; } catch { return null; } };
+// 랭킹에 안 나오는 계정 (2026-11-17 사용자 요청: 김치복 · 테스트, 그리고 시험용 zz 계정)
+const RANK_HIDE = "u.nick NOT IN ('김치복', '테스트') AND u.nick NOT LIKE 'zz%'";
 async function rankList(env, user, k) {
   if (!own(RANK, k)) fail(400, '잘못된 요청이에요');
-  const R = RANK[k], from = 'FROM characters c JOIN users u ON u.id = c.user_id LEFT JOIN fishing f ON f.user_id = c.user_id WHERE u.banned = 0';
+  const R = RANK[k], from = 'FROM characters c JOIN users u ON u.id = c.user_id LEFT JOIN fishing f ON f.user_id = c.user_id WHERE u.banned = 0 AND ' + RANK_HIDE;
   let M = RANK_MEM[k];
   if (!M || now() - M.at > 60e3) {
     const r = await env.DB.prepare(`SELECT u.id, u.nick, c.lv, c.cls, c.title, ${R.v} AS v, ${R.t} AS t, ${R.i || 'NULL'} AS i ${from} AND ${R.v} > 0 ORDER BY v DESC, t DESC, u.id LIMIT 50`).all();
@@ -834,7 +836,7 @@ async function rankList(env, user, k) {
 }
 
 async function fishRank(env, user) {
-  const q = (order, where) => env.DB.prepare(`SELECT u.nick, f.count, f.best_price_fish, f.best_len_fish FROM fishing f JOIN users u ON u.id = f.user_id WHERE ${where} AND u.banned = 0 ORDER BY ${order} DESC LIMIT 10`);
+  const q = (order, where) => env.DB.prepare(`SELECT u.nick, f.count, f.best_price_fish, f.best_len_fish FROM fishing f JOIN users u ON u.id = f.user_id WHERE ${where} AND u.banned = 0 AND ${RANK_HIDE} ORDER BY ${order} DESC LIMIT 10`);
   const [price, len, count, mine] = await env.DB.batch([q('f.best_price', 'f.best_price > 0'), q('f.best_len', 'f.best_len > 0'), q('f.count', 'f.count > 0'),
     env.DB.prepare('SELECT count, gold, best_price_fish, best_len_fish FROM fishing WHERE user_id = ?').bind(user.id)]);
   const fish = s => (s ? JSON.parse(s) : null);

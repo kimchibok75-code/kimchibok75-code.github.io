@@ -290,11 +290,14 @@ export const FISH_SEA = {
 };
 // 이름으로 찾기용 (강 + 바다 합침). 예전 기록의 물고기(아기 고래 등)도 여기서 찾음
 export const FISH = Object.fromEntries(Object.keys(FISH_RIVER).map(g => [g, [...FISH_RIVER[g], ...FISH_SEA[g].filter(f => !FISH_RIVER[g].some(r => r[1] === f[1]))]]));
-export const FISHING = { cooldown: 2e3, waitMin: 1500, waitMax: 4000, dayFull: 400 };   // wait: 던지고 입질까지(ms). dayFull: 하루에 이만큼 넘게 낚으면 값·코인 절반
+export const FISHING = { cooldown: 2e3, waitMin: 3000, waitMax: 8000, dayFull: 400 };   // 2026-11-17 두 배로 (예전 1.5~4초). wait: 던지고 입질까지(ms), fishWait로 무작위. dayFull: 하루에 이만큼 넘게 낚으면 값·코인 절반
 // 낚을 확률: 기본 60% + 낚싯대 1단계마다 +6%p + 칭호·스킨·마을 효과(fishZ, %p). 최대 95%. 자동 낚시는 10%p 낮음
 export const FISH_HIT = { base: .6, rod: .06, max: .95, auto: .1 };
 export const fishHit = (rod = 0, fx = {}, auto = false) => Math.max(.3, Math.min(FISH_HIT.max, FISH_HIT.base + FISH_HIT.rod * rod + (fx.fishZ || 0) / 100) - (auto ? FISH_HIT.auto : 0));
 // 대어: 그 물고기 길이 범위의 위쪽 30%
+// 입질까지 기다리는 시간: 3~8초 사이 무작위. 가끔(15%) 금방 물거나 오래 걸려서 매번 다르게 느껴지게
+export const fishWait = () => { const r = Math.random(), lo = FISHING.waitMin, hi = FISHING.waitMax;
+  return Math.round(r < .08 ? lo * (.6 + Math.random() * .4) : r < .15 ? hi * (1 + Math.random() * .3) : lo + Math.random() * (hi - lo)); };
 export const isBigFish = f => { const d = (FISH[f.grade] || []).find(x => x[1] === f.n); return !!d && f.len >= d[2] + (d[3] - d[2]) * .7; };
 // 등급별 확률(%) — 운 · 낚싯대(rod) · 미끼(bait)가 높을수록 좋은 등급이 잘 나옴
 export function fishOdds(luk = 0, rod = 0, bait = 0) {
