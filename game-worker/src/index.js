@@ -809,14 +809,17 @@ async function fishOnce(c, b, at, env, user, auto) {
       .bind(price, day, dayN, price, info, price, fish.len, info, fish.len, user.id).run(); } };
 }
 
-// ───────── 랭킹 (2026-11-17): 레벨 · 번 돈 · 낚시 · 강화 합. 상위 50명 + 내 순위. 1분 동안 기억 ─────────
-const ENH_SUM = ['sword', 'bow', 'staff', 'hat', 'armor', 'shoes'].map(k => `COALESCE(json_extract(c.enh, '$.${k}'), 0)`).join(' + ');
+// ───────── 랭킹 (2026-11-17): 레벨 · 번 돈 · 낚시 · 강화 합 · 기여도. 상위 50명 + 내 순위. 1분 동안 기억 ─────────
+// json 칸이 비었거나 깨진 계정이 하나라도 있으면 json_extract가 검색 전체를 실패시킴 → json_valid로 먼저 확인 (2026-11-17)
+const jx = (col, path) => `COALESCE(CASE WHEN json_valid(${col}) THEN json_extract(${col}, '${path}') END, 0)`;
+const ENH_SUM = ['sword', 'bow', 'staff', 'hat', 'armor', 'shoes'].map(k => jx('c.enh', '$.' + k)).join(' + ');
 const RANK = {
   lv: { v: 'c.lv', t: 'c.exp' },
-  earn: { v: "COALESCE(json_extract(c.life, '$.earn'), 0)", t: 'c.lv' },
+  earn: { v: jx('c.life', '$.earn'), t: 'c.lv' },
   fishp: { v: 'COALESCE(f.best_price, 0)', t: 'COALESCE(f.count, 0)', i: 'f.best_price_fish' },   // 제일 비싼 물고기
   fishl: { v: 'COALESCE(f.best_len, 0)', t: 'COALESCE(f.count, 0)', i: 'f.best_len_fish' },       // 제일 큰 물고기
   enh: { v: `(${ENH_SUM})`, t: 'c.lv' },
+  give: { v: 'ROUND(COALESCE(g.score, 0))', t: 'c.lv' },   // 기여도: 공동 건설에 기부한 점수
 };
 const RANK_MEM = {};
 const rankFish = s => { try { return s ? JSON.parse(s) : null; } catch { return null; } };
@@ -824,7 +827,7 @@ const rankFish = s => { try { return s ? JSON.parse(s) : null; } catch { return 
 const RANK_HIDE = "u.nick NOT IN ('김치복', '테스트') AND u.nick NOT LIKE 'zz%'";
 async function rankList(env, user, k) {
   if (!own(RANK, k)) fail(400, '잘못된 요청이에요');
-  const R = RANK[k], from = 'FROM characters c JOIN users u ON u.id = c.user_id LEFT JOIN fishing f ON f.user_id = c.user_id WHERE u.banned = 0 AND ' + RANK_HIDE;
+  const R = RANK[k], from = 'FROM characters c JOIN users u ON u.id = c.user_id LEFT JOIN fishing f ON f.user_id = c.user_id LEFT JOIN village_give g ON g.user_id = c.user_id WHERE u.banned = 0 AND ' + RANK_HIDE;
   let M = RANK_MEM[k];
   if (!M || now() - M.at > 60e3) {
     const r = await env.DB.prepare(`SELECT u.id, u.nick, c.lv, c.cls, c.title, ${R.v} AS v, ${R.t} AS t, ${R.i || 'NULL'} AS i ${from} AND ${R.v} > 0 ORDER BY v DESC, t DESC, u.id LIMIT 50`).all();

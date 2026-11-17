@@ -438,7 +438,7 @@
 
 ### 랭킹 · 낚시 쿨타임 — 2026-11-17 배포
 - 오른쪽 버튼 📖 가이드 밑에 **🏆 랭킹** (`#rankBtn`, `openRank`, bsWrap 틀, 색 `BC.rank`). 탭: 레벨 / 번 돈 / 비싼 물고기 / 큰 물고기 / 강화 합. 상위 50명 + 내 순위 (물고기 탭은 그 물고기 이름도 보임, 응답의 `f`)
-- 서버 `GET /api/rank?k=lv|earn|fish|enh` (index.js `RANK`, `rankList`, 1분 기억 `RANK_MEM`)
+- 서버 `GET /api/rank?k=lv|earn|fishp|fishl|enh|give` (give = 기여도: `village_give.score`). json 칸은 `jx()`로 `json_valid` 먼저 확인 (빈 life 계정 하나 때문에 번 돈이 통째로 실패했었음) (index.js `RANK`, `rankList`, 1분 기억 `RANK_MEM`)
   - 레벨: lv → exp 순 · 비싼 물고기 `fishp`: `fishing.best_price` · 큰 물고기 `fishl`: `fishing.best_len` · 강화 합: `c.enh` 6칸 합
   - **번 돈** = `life.earn`: `play()`에서 (나중 골드 − 처음 골드 + 그 사이 `spend`로 쓴 돈)이 양수면 더함. 치트 골드는 `c._noEarn`으로 빼고 셈. 2026-11-17부터 센 값 (예전 수입은 없음)
 - 아이콘 🏆 = game-icons.js `trophy`

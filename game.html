@@ -3752,7 +3752,7 @@ const btab = (id, def, ok) => (ok.includes(S.btab[id]) ? S.btab[id] : def);
 // o: { tag 한 줄 소개, wal 지갑 [키], tabs [[키, 이름, 배지]], tab, body, help, foot, live(1초마다 다시 그림), ready(그린 뒤 할 일) }
 function bsWrap(b, o) {
   return `<div class="bs" style="--bc:${BC[b.id] || '#4f9d5a'}"${o.live ? ' data-live' : ''}>
-    <header class="bs-head"><span class="bs-ic">${b.icon}</span><div><h3>${b.name}</h3><p>${o.tag}</p></div></header>
+    <header class="bs-head"><span class="bs-ic">${b.icon}</span><div><h3>${b.name}</h3>${o.tag ? `<p>${o.tag}</p>` : ''}</div></header>
     ${o.wal ? `<div class="bs-wal">${o.wal.map(k => { const [i, v] = WAL[k](); return `<span>${i}<b>${fmtN(v)}</b></span>`; }).join('')}</div>` : ''}
     ${o.tabs ? `<div class="bs-tabs" role="tablist">${o.tabs.map(([k, n, bd]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${o.tab === k}">${n}${bd ? `<b class="bdg">${bd}</b>` : ''}</button>`).join('')}</div>` : ''}
     <div class="bs-body">${o.body}</div>
@@ -5584,7 +5584,7 @@ const GUIDE = () => [
     ['건물 이용', '건물을 누르면 그 앞까지 걸어가서 바로 창이 열려요.'],
     ['🏘️ 바로가기', '오른쪽 버튼. 가고 싶은 곳을 누르면 그 자리로 바로 이동하고 시설 창도 열려요.'],
     ['채팅·이모트', '아래 채팅 칸은 같은 채널의 모두에게 보여요. 😊 버튼으로 이모트. 귓속말·친구·거래는 없어요.'],
-    ['🏆 랭킹', '오른쪽 버튼. 레벨 · 번 돈 · 비싼 물고기 · 큰 물고기 · 강화 합 순위(상위 50명)와 내 순위를 봐요. 번 돈은 2026-11-17부터 센 값이에요.'],
+    ['🏆 랭킹', '오른쪽 버튼. 레벨 · 번 돈 · 비싼 물고기 · 큰 물고기 · 강화 합 · 기여도 순위(상위 50명)와 내 순위를 봐요.'],
     ['캐릭터창', '내 캐릭터를 누르면 능력치·장비·스킬·스킨·칭호를 볼 수 있어요.'],
     ['📜 주민 임무', '마을에 주민 5명이 돌아다녀요(3시간마다 새 주민). 머리 위 ❗ 말풍선을 누르면 소소한 임무를 받고, 다 하면 ❓로 바뀌어요. 다시 찾아가면 보상! 받은 임무는 왼쪽 위 임무창에 보여요 (한 번에 3개까지).'],
   ]],
@@ -5668,7 +5668,7 @@ function openGuideBook(open = 0) {
 }
 $('#guideBtn').onclick = () => openGuideBook();
 // ───────── 🏆 랭킹 (2026-11-17, 가이드 밑 버튼): 레벨 · 번 돈 · 낚시 · 강화 합. 서버 /api/rank?k= (상위 50명, 1분마다 새로) ─────────
-const RANKS = [['lv', '⭐ 레벨', x => `Lv.${x}`], ['earn', '💰 번 돈', x => `🪙 ${fmtN(x)}`], ['fishp', '💎 비싼 물고기', x => `🪙 ${fmtN(x)}`], ['fishl', '📏 큰 물고기', x => `${x}cm`], ['enh', '🔨 강화', x => `+${fmtN(x)}`]];
+const RANKS = [['lv', '⭐ 레벨', x => `Lv.${x}`], ['earn', '💰 번 돈', x => `🪙 ${fmtN(x)}`], ['fishp', '💎 비싼 물고기', x => `🪙 ${fmtN(x)}`], ['fishl', '📏 큰 물고기', x => `${x}cm`], ['enh', '🔨 강화', x => `+${fmtN(x)}`], ['give', '🏗️ 기여도', x => `${fmtN(x)}점`]];
 const RK = { k: 'lv', data: {} };
 async function openRank(k = RK.k) {
   RK.k = k; const R = RANKS.find(r => r[0] === k), d = RK.data[k];
@@ -5676,7 +5676,7 @@ async function openRank(k = RK.k) {
   const rows = !d ? '<p class="muted" style="text-align:center;padding:20px 0">순위를 불러오는 중…</p>' : d.error ? `<p class="muted">${esc(d.error)}</p>` : !d.list.length ? '<p class="muted" style="text-align:center;padding:20px 0">아직 기록이 없어요. 첫 1등이 되어 보세요!</p>'
     : `<ol class="rk-list">${d.list.map((x, i) => `<li class="${x.id === me.uid ? 'mine' : ''}${i < 3 ? ' top' : ''}"><span class="rk-n">${['🥇', '🥈', '🥉'][i] || i + 1}</span><span class="rk-who"><b>${esc(x.nick)}</b><small>Lv.${x.lv} · ${CLASSES[x.cls]?.i || ''} ${CLASSES[x.cls]?.n || ''}${x.title && x.title !== 'new' ? ` · 「${esc(titleName(x.title))}」` : ''}</small></span><span class="rk-v">${R[2](x.v)}${x.f ? `<small>${x.f.i} ${esc(x.f.n)}</small>` : ''}</span></li>`).join('')}</ol>`;
   const mine = d && !d.error ? `<div class="rk-me"><span>내 순위</span><b>${d.me.rank ? `${d.me.rank}위` : '순위 없음'}</b><span class="rk-v">${R[2](d.me.v)}${d.me.f ? `<small>${d.me.f.i} ${esc(d.me.f.n)}</small>` : ''}</span></div>` : '';
-  openModal(bsWrap({ id: 'rank', icon: '🏆', name: '랭킹' }, { tag: k === 'earn' ? '2026-11-17부터 번 골드를 모두 더해요' : k === 'enh' ? '장비 칸 6개의 강화 단계를 모두 더해요' : k === 'fishp' ? '지금까지 낚은 물고기 중 가장 비싸게 팔린 한 마리' : k === 'fishl' ? '지금까지 낚은 물고기 중 가장 큰 한 마리' : '레벨이 같으면 경험치가 많은 순서',
+  openModal(bsWrap({ id: 'rank', icon: '🏆', name: '랭킹' }, { tag: k === 'earn' ? '' : k === 'give' ? '공동 건설에 기부한 점수를 모두 더해요' : k === 'enh' ? '장비 칸 6개의 강화 단계를 모두 더해요' : k === 'fishp' ? '지금까지 낚은 물고기 중 가장 비싸게 팔린 한 마리' : k === 'fishl' ? '지금까지 낚은 물고기 중 가장 큰 한 마리' : '레벨이 같으면 경험치가 많은 순서',
     tabs: RANKS.map(([id, n]) => [id, n]), tab: k, body: rows, foot: mine }), el => {
     el.querySelector('.bs-tabs').onclick = e => { const t = e.target.closest('[data-tab]')?.dataset.tab; if (t && t !== RK.k) { openRank(t); sheet.scrollTop = 0; } };
     el.querySelector('.bs')?.classList.add('rk');
@@ -5700,7 +5700,7 @@ function showGuide() {
   openModal(`<div class="guide"><h3>🥬 치복 타운에 어서 와요, ${esc(me.name)}님!</h3>
     <h4>🎯 오늘의 목표</h4><ul>${goals}</ul>
     <h4 style="margin-top:12px">🗺️ 이런 것도 있어요</h4><ul class="tips">${[['🏛️ 마을회관', '내 집을 지을 수 있어요. 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩으로 올리면 빌라부터 임대 수입!'], ['🐉 매시 정각', '레드 드래곤 레이드! 2분 안에 참여하면 큰 보상 + 확률로 전용 스킨'], ['🎣 낚시', '아무 물이나 누르면 바로 낚싯대를 던져요. 잡으면 머리 위로 자랑!']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
-    <h4 style="margin-top:12px">👉 오른쪽 버튼</h4><ul class="tips">${[['🏘️ 바로가기', '가고 싶은 곳을 누르면 바로 이동해요'], ['🧺 자동', '캐릭터가 직접 걸어가서 텃밭·벌목·채광·낚시를 해요'], ['📖 가이드', '<b>모든 놀거리 설명은 여기에!</b> 궁금하면 언제든 눌러요'], ['🏆 랭킹', '레벨 · 번 돈 · 비싼 물고기 · 큰 물고기 · 강화 합 순위를 봐요']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
+    <h4 style="margin-top:12px">👉 오른쪽 버튼</h4><ul class="tips">${[['🏘️ 바로가기', '가고 싶은 곳을 누르면 바로 이동해요'], ['🧺 자동', '캐릭터가 직접 걸어가서 텃밭·벌목·채광·낚시를 해요'], ['📖 가이드', '<b>모든 놀거리 설명은 여기에!</b> 궁금하면 언제든 눌러요'], ['🏆 랭킹', '레벨 · 번 돈 · 물고기 · 강화 · 기여도 순위를 봐요']].map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul>
     <h4 style="margin-top:12px">⚙️ 알아 두면 편해요</h4><ul class="tips">${tips.map(([k, t]) => `<li><span>${k}</span><span>${t}</span></li>`).join('')}</ul></div>
     <label class="skip guide"><input type="checkbox" id="guideSkip"> 오늘 하루 보지 않기</label>
     <div class="actions"><button class="btn" data-g="book">📖 가이드 보기</button><button class="btn" data-g="news">📋 오늘 의뢰 · 마을 소식</button><button class="btn main" data-g="go">시작하기</button></div>`, el => {
