@@ -4,7 +4,7 @@ import { jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, F
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, AUTO_FISH, FISH_SHOP, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
-  offlineLife, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait } from '../../assets/js/game-rules.js';
+  offlineLife, offlineHuntAway, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait } from '../../assets/js/game-rules.js';
 import { canHouse, isSolid, NODES, BACK, tileAt, WATER, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
@@ -286,9 +286,9 @@ async function play(env, user, fn) {
       const max = derive(c).maxHp;
       c.hp = Math.min(max, Math.round(c.hp + Math.max(0, (at - (c.hpAt || at)) / 1000) * max * HUNT.townRegen)); c.hpAt = at;
     } else out.hunt = settle(c, at);
-    // 2026-11-18 마을에서 화면을 닫아도 자리 비움: 마지막 접속 신호(life.seen) 뒤 5분 넘게 비었으면 효율 50%로 마을 일 (최대 8시간)
+    // 2026-11-18 마을에서 화면을 닫아도 자리 비움: 마지막 접속 신호(life.seen) 뒤 5분 넘게 비었으면 효율 50%로 마을 일 + 사냥 반반 (최대 8시간)
     if (!c.hunt && !out.hunt) { const gap = c.life.seen ? (at - c.life.seen) / 1000 : 0;
-      if (gap >= AWAY_MIN) { const off = Math.min(gap - HUNT.onlineGap, HUNT.offlineMax), life = offlineLife(c, off * HUNT.offlineEff); if (life) out.away = { sec: Math.round(gap), off: Math.round(off), life }; } }
+      if (gap >= AWAY_MIN) { const off = Math.min(gap - HUNT.onlineGap, HUNT.offlineMax), eff = off * HUNT.offlineEff, life = offlineLife(c, eff * (1 - HUNT.offlineHunt)), hunt = offlineHuntAway(c, eff * HUNT.offlineHunt); if (life || hunt) out.away = { sec: Math.round(gap), off: Math.round(off), life, hunt }; } }   // 절반은 마을 일, 절반은 사냥
     c.life.seen = at;
     if (c.life.fish?.pack > 0) { const g = c.life.fish.pack * 9; c.gold += g; out.refund = g; c._noEarn = 1; c.life.fish.pack = 0; }   // 2026-11-18 자동 낚시 삭제: 남은 자동 미끼 1개 = 9골드
     if (c.life.auto?.on) { const g = autoSettle(c, at); if (g) out.auto = g; c.life.auto.on = 0; }   // 예전 자동 생활(시간으로 계산): 2026-11-17 마지막 정산 후 끔. 새 자동 생활은 화면이 직접 함
@@ -467,18 +467,19 @@ const GAME = {
     if (!res.ok) fail(res.status, j.error || '보상을 받지 못했어요');
     const D = derive(c), RW = raidReward(c.lv), m = (j.dead ? RAID.deadMul : 1) * (.85 + .3 * Math.min(1, j.share * j.n)) * raidCrowd(j.n);
     let gold = Math.round(RW.gold * m * (1 + D.goldB / 100)); const exp = Math.round(RW.exp * m * (1 + D.expB / 100));
-    let skin = null, skinLv = 0, skinN = 0;
-    if (Math.random() < (j.dead ? RAID.dropDead : RAID.drop)) {   // 세트 6부위 중 하나. 이미 있으면 개수가 늘어 레벨이 오름
+    let skin = null, skinLv = 0, skinN = 0; const skins = [];
+    // 2026-11-18 전용 스킨은 무조건 1개, RAID.drop2 확률로 2개. 세트 6부위 중 하나씩. 이미 있으면 개수가 늘어 레벨이 오름
+    const nDrop = 1 + (Math.random() < RAID.drop2 ? 1 : 0);
+    for (let i = 0; i < nDrop; i++) {
       const all = raidSet(RAID_BOSS[j.boss]?.set || 'rdragon').filter(k => rskLv(rskCount(c, k)) < RSK.max);
-      if (all.length) {
-        skin = all[Math.floor(Math.random() * all.length)];
-        const rsk = c.life.rsk || (c.life.rsk = {});
-        if (!c.hats.includes(skin)) { c.hats.push(skin); rsk[skin] = 1; } else rsk[skin] = rskCount(c, skin) + 1;
-        skinN = rsk[skin]; skinLv = rskLv(skinN);
-      } else gold += Math.round(RW.gold * .5);   // 전부 최고 레벨이면 골드로
+      if (!all.length) { gold += Math.round(RW.gold * .5); continue; }   // 전부 최고 레벨이면 골드로
+      const k = all[Math.floor(Math.random() * all.length)], rsk = c.life.rsk || (c.life.rsk = {});
+      if (!c.hats.includes(k)) { c.hats.push(k); rsk[k] = 1; } else rsk[k] = rskCount(c, k) + 1;
+      skins.push({ skin: k, lv: rskLv(rsk[k]), n: rsk[k] });
     }
+    if (skins[0]) ({ skin, lv: skinLv, n: skinN } = skins[0]);
     c.gold += gold; const up = addExp(c, exp); c.life.raidGot = start; c.hp = D.maxHp; c.hpAt = at;
-    return { raid: { gold, exp, up, skin, skinLv, skinN, crowd: Math.round((raidCrowd(j.n) - 1) * 100), dead: j.dead, rank: j.rank, n: j.n, dmg: j.dmg }, log: ['raid', `${gold} ${exp} ${skin || ''}`.trim()],
+    return { raid: { gold, exp, up, skin, skinLv, skinN, skins, crowd: Math.round((raidCrowd(j.n) - 1) * 100), dead: j.dead, rank: j.rank, n: j.n, dmg: j.dmg }, log: ['raid', `${gold} ${exp} ${skins.map(x => x.skin).join(' ')}`.trim()],
       chron: skin ? ['raid', `${RAID_BOSS[j.boss]?.n || '레이드'} 레이드에서 전용 스킨을 얻었어요!`] : null };
   },
   // 스킨샵 (겉모습만, 현금 결제 없음)

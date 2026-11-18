@@ -598,17 +598,32 @@ body.hunting .side { display: none; }
 .sndset input[type=range] { width: 100%; accent-color: #e8553a; }
 .skgrid.raid button { position: relative; } .skgrid.raid .rlv { position: absolute; left: 4px; top: 4px; z-index: 1; background: #b8392f; color: #fff; border-radius: 7px; padding: 1px 5px; font-size: 10.5px; line-height: 1.3; pointer-events: none; }
 .iconbtn.adm { background: #efe7ff; border-color: #6c4fc2; }
-.raidbox { position: absolute; top: 62px; left: 50%; transform: translateX(-50%); width: min(440px, calc(100% - 24px)); background: rgba(38,24,24,.94); color: #fff; border: 2px solid var(--ink); border-radius: 14px; padding: 8px 12px; z-index: 6; box-shadow: var(--shadow); }
-.raidbox .rb-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: calc(14px * var(--fs)); }
+.raidbox { position: absolute; top: 62px; left: 12px; width: min(250px, calc(58% - 12px)); background: rgba(38,24,24,.94); color: #fff; border: 2px solid var(--ink); border-radius: 14px; padding: 8px 12px; z-index: 6; box-shadow: var(--shadow); }
+.raidbox .rb-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 8px; font-size: calc(14px * var(--fs)); }
 .raidbox .rb-top b { margin-right: auto; }
 .raidbox .rb-out { flex: none; min-height: 30px; padding: 3px 10px; border-radius: 9px; border: 1.5px solid #1f1414; background: #f3ead2; color: #3a2420; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
 .raidbox .rb-out:hover { background: #fff6dc; }
-.raidbox .rb-bar { position: relative; height: 18px; background: #4a3030; border-radius: 9px; overflow: hidden; margin: 6px 0; border: 1.5px solid #1f1414; }
+.raidbox .rb-bar { display: none; position: relative; height: 18px; background: #4a3030; border-radius: 9px; overflow: hidden; margin: 6px 0; border: 1.5px solid #1f1414; }
 .raidbox .rb-bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: linear-gradient(90deg, #ff4a2a, #ffb02e); transition: width .4s; }
 .raidbox .rb-bar span { position: relative; display: block; text-align: center; font-size: 12px; font-weight: 800; line-height: 16px; text-shadow: 0 1px 2px #000; }
 .raidbox .hb-sk { margin-top: 6px; } .raidbox .hb-sk small { color: #e8d6cc; }
-.raidbox p { margin: 0; font-size: calc(12.5px * var(--fs)); opacity: .92; }
+.raidbox p { margin: 6px 0 0; font-size: calc(12.5px * var(--fs)); opacity: .92; }
 body.raiding .huntbox, body.raiding .placebar, body.raiding .roombtn { display: none !important; }
+.rq-ic { width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 2px 0 rgba(0,0,0,.25)); }
+.rq-hero { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; padding: 12px 14px; border-radius: 16px; background: linear-gradient(135deg, #3a1512, #7a1f1a 60%, #b8392f); color: #fff3e0; }
+.rq-time { position: relative; width: 92px; height: 92px; display: grid; place-content: center; text-align: center; }
+.rq-time svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.rq-time circle { fill: none; stroke-width: 3.2; } .rq-time .bg { stroke: rgba(255,255,255,.18); } .rq-time .fg { stroke: #ffc83d; stroke-linecap: round; transition: stroke-dasharray .25s linear; }
+.rq-time b { font-size: 34px; line-height: 1; color: #ffd84a; } .rq-time small { font-size: 11px; font-weight: 700; opacity: .85; }
+.rq-who { display: grid; gap: 2px; } .rq-who b { font-size: calc(26px * var(--fs)); line-height: 1.1; } .rq-who span { font-weight: 700; opacity: .85; } .rq-who em { font-style: normal; font-size: calc(13px * var(--fs)); color: #ffd84a; font-weight: 700; }
+.rq-rew { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.rq-rew span { display: grid; justify-items: center; gap: 1px; padding: 8px 4px; border-radius: 12px; background: var(--bcs); border: 1.5px solid var(--bcl); text-align: center; font-size: 20px; }
+.rq-rew b { font-size: calc(14.5px * var(--fs)); } .rq-rew small { font-size: calc(11.5px * var(--fs)); color: var(--ink-soft); font-weight: 700; }
+.rq-rew .sk { background: #fff1d6; border-color: #e8a33b; } .rq-rew .sk b { color: #b8392f; }
+.rq-tips { margin: 0; padding-left: 4px; list-style: none; display: grid; gap: 4px; font-size: calc(13px * var(--fs)); color: var(--ink-soft); }
+.chip.raidc { background: #7a1f1a; color: #fff3e0; border-color: #1f1414; animation: rqpulse 1.4s ease-in-out infinite; cursor: pointer; } .chip.raidc b { color: #ffd84a; }
+@keyframes rqpulse { 50% { box-shadow: 0 0 0 4px rgba(232,85,58,.35); } }
+@media (max-width: 420px) { .rq-time { width: 78px; height: 78px; } .rq-time b { font-size: 28px; } .rq-rew span { font-size: 17px; } }
 .raidask { display: flex; align-items: baseline; justify-content: center; gap: 4px; margin: 4px 0 8px; } .raidask b { font-size: 44px; color: #e8553a; line-height: 1; } .raidask small { font-weight: 700; }
 .raidinfo { margin: 8px 0; padding-left: 18px; display: grid; gap: 4px; font-size: calc(14px * var(--fs)); } .raidinfo .raidskin { color: #b8392f; }
 .skgrid.raid button { background: linear-gradient(#ffe9d6, #f6c9a8); border-color: #d9734e; }
@@ -1028,6 +1043,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
       <span class="chip" id="jobChip" hidden>☕ 알바 1:00</span>
       <button type="button" class="chip" id="autoChip" hidden title="자동 생활 중 (누르면 멈춤)">🧺 자동 생활</button>
       <span class="chip" id="buffChip" hidden title="분수 버프"></span>
+      <button type="button" class="chip raidc" id="raidChip" hidden title="레이드 모집 중 (누르면 참여 창)"></button>
       <span class="chip ev" id="evChip" hidden></span>
       <span class="spacer"></span>
       <a class="iconbtn" id="homeBtn" href="./" aria-label="김치복 홈페이지로" title="김치복 홈페이지로 돌아가기">🏠</a>
@@ -1120,7 +1136,7 @@ const PG = pts => g => { g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo
 const at = (x, y, a, f) => g => { g.save(); g.translate(x, y); g.rotate(a); f(g); g.restore(); };
 function inkDraw(ctx, parts, O = 2.2) {
   ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.fillStyle = INK; ctx.strokeStyle = INK; ctx.lineWidth = O * 2;
-  for (const p of parts) if (!p.flat) { p.path(ctx); ctx.fill(); ctx.stroke(); }
+  for (const p of parts) if (p.ink) p.ink(ctx, O); else if (!p.flat) { p.path(ctx); ctx.fill(); ctx.stroke(); }   // ink = 그림 조각의 바깥 테두리
   for (const p of parts) { if (p.c) { p.path(ctx); ctx.fillStyle = p.c; ctx.fill(); } p.after?.(ctx); }
   ctx.restore();
 }
@@ -1229,8 +1245,8 @@ function bowArc(ro, th, col, cx = 4 - ro) {
 const swirl = (cx, cy, r, c) => g => { g.save(); g.strokeStyle = c; g.lineWidth = 1.8; g.beginPath(); for (let a = 0; a < 12.6; a += .25) g.lineTo(cx + Math.cos(a) * a * r / 12.6, cy + Math.sin(a) * a * r / 12.6); g.stroke(); g.restore(); };
 function wskParts(type, id) {
   const P = [], glint = (x, y) => ({ flat: 1, path: E(x, y, 1.3, 1.3), c: 'rgba(255,255,255,.8)' });
-  if (type === 'bow' && id === 'rdragon' && ART['rd-bow']) return [imgPart('rd-bow', -8.6, -18, 15.4, 36)];   // 줄은 왼쪽, 손잡이(보석) = 손
-  if (type === 'staff' && id === 'rdragon' && ART['rd-staff']) return [imgPart('rd-staff', -13, -37, 26, 48)];
+  if (type === 'bow' && id === 'rdragon' && ART['rd-bow']) return [imgPart('rd-bow', -11.625, -20.375, 18.625, 41.75)];   // 2026-11-18 템플릿 틀 그대로 (손잡이 = 기준점)
+  if (type === 'staff' && id === 'rdragon' && ART['rd-staff']) return [imgPart('rd-staff', -14.875, -39.125, 28.375, 53.25)];
   if (type === 'bow') {
     const col = { leaf: '#6cc35a', bone: '#efe6cf', candy: '#ff8fab', ice: '#9fdcff', rainbow: '#ff6b6b', star: '#34407a', rdragon: '#9c2a22' }[id] || '#b07a45';
     const B = bowArc(17, id === 'rdragon' ? 4.4 : 3.6, col); P.push(B.str);
@@ -1277,7 +1293,7 @@ function wskParts(type, id) {
     case 'ladle': return [{ path: R(-1.4, -22, 2.8, 31, 1.4), c: '#c9d2dc' }, { path: E(0, -27.5, 6.8, 5.4), c: '#c9d2dc' }, { flat: 1, path: E(0, -28.2, 4.8, 3.4), c: '#8d99a6' }, glint(-3, -29)];
     case 'laser': return [{ flat: 1, path: R(-4.2, -36, 8.4, 34, 4.2), c: 'rgba(127,247,255,.3)' }, { path: R(-2, -3, 4, 12, 1.5), c: '#3a3f4b' }, { path: R(-3.6, -4.5, 7.2, 2.8, 1), c: '#8a929c' },
       { path: R(-1.8, -34, 3.6, 30, 1.8), c: '#7ff7ff' }, { flat: 1, path: R(-.6, -33, 1.2, 28, .6), c: '#fff' }, { flat: 1, path: E(0, 2.5, 1, 1), c: '#e8553a' }];
-    case 'rdragon': if (ART['rd-sword']) return [imgPart('rd-sword', -10.4, -33.8, 20.7, 47, Math.PI)];   // 그림은 날이 아래 → 뒤집음 (손잡이가 손)
+    case 'rdragon': if (ART['rd-sword']) return [imgPart('rd-sword', -10, -30.625, 20, 46.125)];   // 템플릿 틀 그대로 (날은 위)
       return [{ path: R(-1.8, -2, 3.6, 11, 1.4), c: '#3a2420' }, { path: E(0, 9.5, 2.8, 2.8), c: '#ffcf5a' }, { path: PG([[-10, -9], [-3, -4], [3, -4], [10, -9], [7, -2], [-7, -2]]), c: '#7a1f1a' },
       { path: PG([[-4, -4.5], [4, -4.5], [5.5, -14], [3, -18], [5, -24], [0, -37], [-5, -24], [-3, -18], [-5.5, -14]]), c: '#e2552f' },
       { flat: 1, path: PG([[-1.5, -6], [1.5, -6], [2.5, -15], [0, -31], [-2.5, -15]]), c: '#ffb02e' }, { path: E(0, -4, 2.4, 2.4), c: '#ffd45a' }];
@@ -1304,7 +1320,7 @@ function suitParts(id, bob, hy) {
     case 'cabbage': sl = '#bfe39a'; F.push(body('#bfe39a'), { flat: 1, path: R(-.5, y + 2, 1, 11, .5), c: 'rgba(255,255,255,.6)' }, { flat: 1, path: PG([[0, y + 7], [-5, y + 4], [-5, y + 5.2], [0, y + 8.5]]), c: 'rgba(255,255,255,.45)' },
       ...[-8, -3, 3, 8].map(x => ({ path: E(x, y + 1, 3.8, 2.6, x * .06), c: '#7fcf6a' }))); break;
     case 'rdragon': sl = '#a8322a';
-      if (ART['rd-suit']) { F.push(imgPart('rd-suit', -10, y - 3, 20, 19.7)); break; }
+      if (ART['rd-suit']) { F.push(imgPart('rd-suit', -14.5, y - 3.25, 29, 21)); break; }   // 템플릿 틀 그대로 (몸 위치 y = -20 기준)
       for (const s of [-1, 1]) B.push({ path: PG([[s * 5, y + 3], [s * 21, y - 9], [s * 18, y + 1], [s * 23, y + 3], [s * 15, y + 8], [s * 7, y + 10]]), c: '#7a1f1a' }, { flat: 1, path: PG([[s * 8, y + 4], [s * 19, y - 6], [s * 14, y + 6]]), c: '#a8322a' });
       F.push(body('#b8392f'), { flat: 1, path: R(-3.2, y + 2.5, 6.4, 11, 2), c: '#f2c14e' }, ...[5.5, 8.5, 11.5].map(d => ({ flat: 1, path: R(-3.2, y + d, 6.4, .9, 0), c: '#c98a2e' })));
       for (let i = 0; i < 2; i++) for (const s of [-1, 1]) { const x = s * 6.3, yy = y + 3 + i * 4; F.push({ flat: 1, path: PG([[x - 1.8, yy], [x, yy + 2.4], [x + 1.8, yy]]), c: '#7a1f1a' }); }
@@ -1356,7 +1372,7 @@ function helmParts(it, hy) {
 }
 // 모자 스킨
 function hatParts(kind, hy, face) {
-  if (kind === 'rdragon' && ART['rd-hat']) return [imgPart('rd-hat', -19, hy - 12.7, 38, 36.9)];   // 얼굴 자리는 뚫려 있음
+  if (kind === 'rdragon' && ART['rd-hat']) return [imgPart('rd-hat', -25.25, hy - 21.5, 50.5, 50.75)];   // 템플릿 틀 그대로 (머리 꼭대기 hy = -45 기준), 얼굴 자리는 뚫려 있음
   if (kind === 'rdragon') return [...[-1, 1].flatMap(s => [{ path: PG([[s * 5, hy + 3], [s * 9, hy - 5], [s * 17, hy - 13], [s * 13, hy - 3], [s * 11.5, hy + 4]]), c: '#4a2a20' }, { flat: 1, path: PG([[s * 13.5, hy - 8], [s * 17, hy - 13], [s * 14.5, hy - 6]]), c: '#f3e6cf' }]),
     { path: PG([[-3.5, hy + 1], [0, hy - 8], [3.5, hy + 1]]), c: '#d4473b' }, { flat: 1, path: E(0, hy - 1, 1.3, 1.3), c: '#ffd45a' }];
   if (kind === 'ribbon') return [
@@ -1436,7 +1452,7 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   const arm = tool === 'axe' || tool === 'pick' ? -2.5 + tw * 2.3 : (c.fz || tool === 'rod') && !HT ? -1.25 : sw ? (far ? -1.5 + sw * .35 : -2.6 + (1 - sw) * 2.1) : -.25 - walk * .45, sx = 9, sy = -17 - bob;
   P.push({ path: at(sx, sy, arm, R(-2.5, 0, 5, 10, 2.5)), c: su?.sleeve || c.face });
   if (tool && TOOL_P[tool] && !(tool === 'rod' && c.fz)) for (const p of TOOL_P[tool]) P.push({ ...p, path: at(sx, sy, arm, at(0, 9, tool === 'rod' ? 1.95 : 1.25, p.path)) });   // 도구 (낚싯대는 던졌을 때 drawRods가 그림)
-  if (W) { const tilt = wt === 'bow' ? -arm : wt === 'staff' ? (sw ? -arm + .5 : .3) : 1.2; for (const p of (wk ? wskParts(wt, wk) : weaponParts(W))) P.push({ ...p, path: at(sx, sy, arm, at(0, 9, tilt, p.path)), ...(p.after && { after: at(sx, sy, arm, at(0, 9, tilt, p.after)) }) }); }
+  if (W) { const tilt = wt === 'bow' ? -arm : wt === 'staff' ? (sw ? -arm + .5 : .3) : 1.2; for (const p of (wk ? wskParts(wt, wk) : weaponParts(W))) P.push({ ...p, path: at(sx, sy, arm, at(0, 9, tilt, p.path)), ...(p.after && { after: at(sx, sy, arm, at(0, 9, tilt, p.after)) }), ...(p.ink && { ink: (g, O) => at(sx, sy, arm, at(0, 9, tilt, q => p.ink(q, O)))(g) }) }); }
   P.push({ path: at(sx, sy, arm, E(0, 9, 3.1, 3.1)), c: c.face });
   inkDraw(ctx, P, 2.2);
   ctx.restore();
@@ -1537,10 +1553,24 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 const ART = {};
 const ART_N = ['b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg',
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
-  ...['head', 'wingL', 'wingR', 'armL', 'armR', 'body', 'legL', 'legR'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff'];
+  ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff'];
 const artReady = Promise.all(ART_N.map(n => new Promise(ok => { const im = new Image(); im.onload = () => { ART[n] = im; ok(); }; im.onerror = () => ok(); im.src = `assets/img/town/${n}.webp?v=__BUILD__`; })));
 // 그림 조각 (캐릭터 스킨용): inkDraw 안에서 테두리 없이 그림을 그림. rot = 돌리기(가운데 기준)
-const imgPart = (n, x, y, w, h, rot) => ({ flat: 1, path: () => {}, after: g => { const im = ART[n]; if (!im) return; if (!rot) return g.drawImage(im, x, y, w, h); g.save(); g.translate(x + w / 2, y + h / 2); g.rotate(rot); g.drawImage(im, -w / 2, -h / 2, w, h); g.restore(); } });
+// 그림 바깥 테두리 (2026-11-18): 그림 모양대로 검게 칠한 판(silOf)을 둘레 16방향으로 O만큼 밀어 그린 뒤 그 위에 그림
+const SIL = new WeakMap(), RING = Array.from({ length: 16 }, (_, i) => [Math.cos(i * Math.PI / 8), Math.sin(i * Math.PI / 8)]);
+function silOf(im, fresh) {
+  let c = SIL.get(im); if (c && !fresh) return c;   // fresh = 매번 바뀌는 그림(드래곤 판)
+  if (!c) { c = document.createElement('canvas'); SIL.set(im, c); }
+  c.width = im.width; c.height = im.height; const q = c.getContext('2d');
+  q.clearRect(0, 0, c.width, c.height); q.drawImage(im, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = INK; q.fillRect(0, 0, c.width, c.height); q.globalCompositeOperation = 'source-over';
+  return c;
+}
+const inkSil = (g, im, x, y, w, h, O = 2.4, fresh) => { const s = silOf(im, fresh); for (const [a, b] of RING) g.drawImage(s, x + a * O, y + b * O, w, h); };
+const inkImage = (g, im, x, y, w, h, O = 2.4) => { inkSil(g, im, x, y, w, h, O); g.drawImage(im, x, y, w, h); };
+const imgPart = (n, x, y, w, h, rot) => {
+  const at2 = (g, f) => { const im = ART[n]; if (!im) return; if (!rot) return f(im, x, y); g.save(); g.translate(x + w / 2, y + h / 2); g.rotate(rot); f(im, -w / 2, -h / 2); g.restore(); };
+  return { flat: 1, path: () => {}, ink: (g, O) => at2(g, (im, a, b) => inkSil(g, im, a, b, w, h, O)), after: g => at2(g, (im, a, b) => g.drawImage(im, a, b, w, h)) };
+};
 const GCOL = { [G]: ['#93cf74', '#8bc96c'], [PATH]: ['#ead6a6', '#e4cf9b'], [WATER]: ['#5db5dc', '#57aed6'], [STONE]: ['#ddd7ca', '#d4cdbf'], [SOIL]: ['#9b6b43', '#916340'], [DOCK]: ['#bb8752', '#b07c49'], [SAND]: ['#f0e2b6', '#eadaa9'], [GRAVEL]: ['#c9bfa9', '#c1b7a0'], [FOREST]: ['#72b05e', '#6aa857'] };
 async function paintGround(step) {
   const cv = document.createElement('canvas'); cv.width = Math.round(MW * T * GK); cv.height = Math.round(MH * T * GK);
@@ -1932,13 +1962,15 @@ const BLD = {
 };
 const LAB = { cafe: 62, gacha: 100, skin: 66, hall: 86, smith: 72, fishshop: 50, lumber: 66, quarry: 50, farmshed: 46 };
 // 그림 건물: 차지하는 칸보다 조금 넓게(비율 그대로), 아래쪽이 칸 아래 + 6px
+const BP = 4;   // 그림 테두리 여백
+const BSC = { farmshed: 1.3, fishshop: 1.35 };   // 2026-11-18 사용자 요청: 작아 보이던 텃밭 창고 · 낚시점만 크게
 function bSprite(b) {
   const Wd = b.w * T, Hh = b.h * T, im = ART['b-' + b.id];
   if (im) {
-    const a = im.height / im.width, w = Math.min(Wd + 56, Math.max(Wd + 24, (Hh + 20) / a)), h = w * a, ox = (w - Wd) / 2, oy = h - Hh - 6;
-    return sprite('bi:' + b.id, w, h, ox, oy, g => g.drawImage(im, -ox, -oy, w, h));
+    const a = im.height / im.width, w = Math.min(Wd + 56, Math.max(Wd + 24, (Hh + 20) / a)) * (BSC[b.id] || 1), h = w * a, ox = (w - Wd) / 2, oy = h - Hh - 6;
+    return sprite('bo:' + b.id, w + BP * 2, h + BP * 2, ox + BP, oy + BP, g => inkImage(g, im, -ox, -oy, w, h));
   }
-  return sprite('b:' + b.id, Wd + 40, Hh + 100, 20, 90, g => flatInk(g, BLD[b.id](Wd, Hh)));
+  return sprite('bk:' + b.id, Wd + 40, Hh + 100, 20, 90, g => inkDraw(g, BLD[b.id](Wd, Hh)));
 }
 function drawBuilding(b, now) {
   const X = b.x * T, Y = b.y * T, Wd = b.w * T, Hh = b.h * T;
@@ -2006,8 +2038,8 @@ const HOUSE_IW = [100, 112, 124, 136, 118, 128, 138, 150];   // 단계별 그림
 function houseImg(roof, lv) {
   const im = ART['house-' + (lv + 1)], rf = ART['house-' + (lv + 1) + '-roof']; if (!im) return null;
   const Wd = HOUSE_W * T, Hh = HOUSE_H * T, w = HOUSE_IW[lv] || 110, h = w * im.height / im.width, ox = (w - Wd) / 2, oy = h - Hh - 4;
-  return sprite(`hi:${roof}:${lv}`, w, h, ox, oy, g => {
-    g.drawImage(im, -ox, -oy, w, h);
+  return sprite(`ho:${roof}:${lv}`, w + BP * 2, h + BP * 2, ox + BP, oy + BP, g => {
+    inkImage(g, im, -ox, -oy, w, h);
     if (!rf) return;
     const c = document.createElement('canvas'); c.width = rf.width; c.height = rf.height; const q = c.getContext('2d');
     q.drawImage(rf, 0, 0); q.globalCompositeOperation = 'multiply'; q.fillStyle = sh(HOUSE.roofs[roof] || HOUSE.roofs[0], .15); q.fillRect(0, 0, c.width, c.height);
@@ -2015,7 +2047,7 @@ function houseImg(roof, lv) {
     g.drawImage(c, -ox, -oy, w, h); c.width = c.height = 0;
   });
 }
-const houseSprite = (roof, lv = 0) => houseImg(roof, lv) || ((l = Math.min(lv, 5)) => sprite(`h3:${roof}:${l}`, HOUSE_W * T + 40, HOUSE_H * T + 50 + HOUSE_EX[l], 20, 40 + HOUSE_EX[l], g => flatInk(g, houseTop(l, HOUSE.roofs[roof] || HOUSE.roofs[0]))))();
+const houseSprite = (roof, lv = 0) => houseImg(roof, lv) || ((l = Math.min(lv, 5)) => sprite(`hk:${roof}:${l}`, HOUSE_W * T + 40, HOUSE_H * T + 50 + HOUSE_EX[l], 20, 40 + HOUSE_EX[l], g => inkDraw(g, houseTop(l, HOUSE.roofs[roof] || HOUSE.roofs[0]))))();
 function drawHouse(h) {
   const X = h.x * T, Y = h.y * T, Wd = HOUSE_W * T;
   ctx.fillStyle = 'rgba(31,42,58,.16)'; ctx.beginPath(); ctx.ellipse(X + Wd / 2 + 3, Y + HOUSE_H * T, Wd / 2 + 4, 5, 0, 0, 7); ctx.fill();
@@ -2051,12 +2083,12 @@ const stumpP = [{ path: R(-8, -7, 16, 8, [0, 0, 3, 3]), c: '#8a5a30' }, { path: 
 const rubbleP = [{ path: E(-6, -2, 5, 3.4), c: '#7e848c' }, { path: E(-6, -3.5, 5, 3), c: '#a3a9b1' }, { path: E(5, -2, 4, 3), c: '#757b83' }, { path: E(5, -3.2, 4, 2.6), c: '#9aa0a8' }, { path: E(0, -5, 3.5, 2.6), c: '#b4bac2' }];
 // 그림 나무: [그림 번호, 너비]. 발(줄기 밑동) = 그림 아래에서 7%
 const TREE_IMG = { maple: [1, 52], pine: [2, 46], round: [3, 60], birch: [4, 48], cherry: [5, 56] };
-const treeImg = k => { const [n, w] = TREE_IMG[k] || [], im = ART['tree-' + n]; if (!im) return null; const h = w * im.height / im.width; return sprite('ti:' + k, w, h, w / 2, h * .93, g => g.drawImage(im, -w / 2, -h * .93, w, h)); };
-const SP_TREE0 = { birch: () => sprite('t:birch4', 40, 70, 20, 64, g => flatInk(g, birchP)), cherry: () => sprite('t:cherry4', 60, 50, 30, 44, g => flatInk(g, cherryP)), maple: () => sprite('t:maple4', 50, 50, 25, 44, g => flatInk(g, mapleP)),
-  round: () => sprite('t:round4', 50, 60, 25, 54, g => flatInk(g, treeP('round'))), pine: () => sprite('t:pine4', 50, 62, 25, 56, g => flatInk(g, treeP('pine'))), stone: () => sprite('t:stone4', 44, 30, 22, 26, g => flatInk(g, rockP('#a39a8c'))) };
+const treeImg = k => { const [n, w] = TREE_IMG[k] || [], im = ART['tree-' + n]; if (!im) return null; const h = w * im.height / im.width; return sprite('to:' + k, w + BP * 2, h + BP * 2, w / 2 + BP, h * .93 + BP, g => inkImage(g, im, -w / 2, -h * .93, w, h)); };
+const SP_TREE0 = { birch: () => sprite('t:birch5', 40, 70, 20, 64, g => inkDraw(g, birchP)), cherry: () => sprite('t:cherry5', 60, 50, 30, 44, g => inkDraw(g, cherryP)), maple: () => sprite('t:maple5', 50, 50, 25, 44, g => inkDraw(g, mapleP)),
+  round: () => sprite('t:round5', 50, 60, 25, 54, g => inkDraw(g, treeP('round'))), pine: () => sprite('t:pine5', 50, 62, 25, 56, g => inkDraw(g, treeP('pine'))), stone: () => sprite('t:stone5', 48, 34, 24, 28, g => inkDraw(g, rockP('#a39a8c'))) };
 const SP_TREE = Object.fromEntries(Object.entries(SP_TREE0).map(([k, f]) => [k, () => treeImg(k) || f()]));
-const SP_NODE = { tree: () => treeImg('round') || sprite('n:tree4', 50, 60, 25, 54, g => flatInk(g, treeP('round', '#58a856'))), rock: () => sprite('n:rock3', 44, 30, 22, 26, g => flatInk(g, rockP('#a3a8b0', true))),
-  stump: () => sprite('n:stump3', 30, 18, 15, 14, g => flatInk(g, stumpP)), rubble: () => sprite('n:rubble3', 30, 16, 15, 12, g => flatInk(g, rubbleP)) };
+const SP_NODE = { tree: () => treeImg('round') || sprite('n:tree5', 50, 60, 25, 54, g => inkDraw(g, treeP('round', '#58a856'))), rock: () => sprite('n:rock5', 48, 34, 24, 28, g => inkDraw(g, rockP('#a3a8b0', true))),
+  stump: () => sprite('n:stump5', 30, 18, 15, 14, g => inkDraw(g, stumpP)), rubble: () => sprite('n:rubble5', 30, 16, 15, 12, g => inkDraw(g, rubbleP)) };
 const nodeReady = n => !((me.life?.nodes?.[n.i] || 0) > Date.now());
 function drawDeco(d) { const x = d.x * T + T / 2, y = d.y * T + T - 3; if (TREE_IMG[d.k] && ART['tree-1']) return blit(SP_TREE[d.k](), x, y, d.s); ctx.fillStyle = 'rgba(31,42,58,.15)'; ctx.beginPath(); ctx.ellipse(x, y, 13 * d.s, 4, 0, 0, 7); ctx.fill(); blit(SP_TREE[d.k](), x, y, d.s); }
 function drawNode(n, now) {
@@ -2136,7 +2168,8 @@ function drawPortal(now) {
 // 내 텃밭 (밭 위에 내 작물만 보임): 두둑마다 작물이 2줄 × 3포기로 심겨서 자람
 const BED_W = 92, BED_H = 40;
 // 텃밭 그림 자리 (월드 픽셀): 밭 칸 가운데 (56, 48)
-const FARM_IMG = () => { const im = ART.farm, w = 333, h = im ? w * im.height / im.width : 157; return { x: 56 * T - w / 2, y: 48 * T - h / 2, w, h }; };
+const FARM_SY = 1.08;   // 2026-11-18 사용자 요청: 텃밭 그림만 세로로 살짝 늘림 (두둑 자리 PLOTS도 같은 비율)
+const FARM_IMG = () => { const im = ART.farm, w = 333, h = (im ? w * im.height / im.width : 157) * FARM_SY; return { x: 56 * T - w / 2, y: 48 * T - h / 2, w, h }; };
 // 2026-11-16: 자라는 중에도 심은 작물 그림 그대로 (작게 → 크게), 선 없는 모양
 function cropPlant(x, y, k, cr, idx, now) {
   const sway = Math.sin(now / 600 + x * .3) * .8;
@@ -2540,27 +2573,57 @@ async function raidCheck() {
   if (!j.open || j.open <= j.now + 1500 || RAIDQ.asked === j.open) return;
   RAIDQ.asked = j.open; raidAsk(j.open, j.joined);
 }
+// 레이드 모집 창 (2026-11-18 새로): 건물 창과 같은 틀. 닫아도 위쪽 칩(#raidChip)으로 모집이 끝날 때까지 다시 열 수 있음
 function raidAsk(start, joined) {
   sfx('alarm');
-  const R = raidReward(me.lv), B = RAID_BOSS.rdragon;
+  const B = RAID_BOSS.rdragon;
   sysMsg(`${B.i} ${B.n} 레이드 모집 중! 2분 안에 참여하세요`);
-  openModal(`<h3>${B.i} ${B.n} 레이드!</h3>
-    <div class="raidask"><b id="raidLeft">${Math.max(0, Math.ceil((start - srvNow()) / 1000))}</b><small>초 남음</small></div>
-    <p>마을 사람들과 다 같이 <b>${B.n}</b>를 잡아요. 약 1~2분이면 끝나요.</p>
-    <ul class="raidinfo"><li>🪙 골드 약 <b>${R.gold.toLocaleString()}</b> · 경험치 약 <b>${R.exp.toLocaleString()}</b></li><li>👥 <b>많이 모일수록 보상 UP</b> · 한 명마다 +3% (최대 +60%)</li><li>🐉 확률로 <b>레드 드래곤 전용 스킨</b> (머리·눈·의상·무기 6종, 효과가 좋아요)</li>
-      <li>⚠️ 참여하면 <b>끝날 때까지 나올 수 없어요.</b> 바닥이 빨개지면 피하세요! 쓰러져도 끝까지 있으면 보상을 받아요</li></ul>
-    <p class="muted" id="raidJoined">${joined ? `지금 ${joined}명 참여 · 인원 보너스 +${Math.round((raidCrowd(joined) - 1) * 100)}%` : ''}</p>
-    <div class="actions"><button class="btn main" data-y="join">⚔️ 참여하기</button><button class="btn" data-y="no">이번엔 안 할래요</button></div>`, el => {
-    el.querySelector('.actions').onclick = e => { const y = e.target.closest('[data-y]')?.dataset.y; if (y === 'join') raidJoin(start); if (y === 'no') closeModal(); };
-    clearInterval(RAIDQ.tick);
-    RAIDQ.tick = setInterval(() => {
-      const l = Math.ceil((start - srvNow()) / 1000), b = document.getElementById('raidLeft');
-      if (!b || RD) return clearInterval(RAIDQ.tick);
-      if (l <= 0) { clearInterval(RAIDQ.tick); closeModal(); toast('레이드 모집이 끝났어요'); return; }
-      b.textContent = l;
-    }, 250);
-  });
+  RAIDQ.open = start; RAIDQ.joined = joined || 0; raidChip(); raidSheet();
 }
+function raidSheet() {
+  const start = RAIDQ.open; if (!start || RD) return;
+  const R = raidReward(me.lv), B = RAID_BOSS.rdragon, n = RAIDQ.joined || 0, bonus = Math.round((raidCrowd(n + 1) - 1) * 100);
+  const left = () => Math.max(0, Math.ceil((start - srvNow()) / 1000)), ring = l => `${(l / (RAID.recruit / 1000)) * 100.5} 100.5`;
+  const ic = ART['d-head'] ? '<img class="rq-ic" src="' + ART['d-head'].src + '" alt="">' : B.i;
+  bsOpen({ id: 'raid', icon: ic, name: `${B.n} 레이드` }, {
+    tag: '마을 사람들과 다 같이 드래곤을 잡아요 · 1~2분',
+    body: `<div class="rq-hero">
+        <div class="rq-time"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="16" class="bg"/><circle cx="18" cy="18" r="16" class="fg" id="rqRing" stroke-dasharray="${ring(left())}"/></svg><b id="raidLeft">${left()}</b><small>초 남음</small></div>
+        <div class="rq-who"><b id="raidJoined">${n}명</b><span>참여 중</span><em id="raidBonus">${n ? `인원 보너스 +${Math.round((raidCrowd(n) - 1) * 100)}%` : '첫 번째로 참여해 보세요!'}</em></div>
+      </div>
+      <div class="rq-rew">
+        <span>🪙<b>${fmtN(R.gold)}</b><small>골드 약</small></span>
+        <span>✨<b>${fmtN(R.exp)}</b><small>경험치 약</small></span>
+        <span class="sk">🐉<b>스킨 1개 확정</b><small>30% 확률로 2개!</small></span>
+      </div>
+      <ul class="rq-tips"><li>👥 많이 모일수록 보상 UP: 함께하는 사람 한 명마다 +3% (최대 +60%)${bonus ? ` · 내가 들어가면 +${bonus}%` : ''}</li><li>🔥 바닥이 빨개지면 피하세요. 쓰러져도 끝까지 있으면 보상을 받아요</li><li>🚪 중간에 나갈 수 있지만 그때는 보상이 없어요</li></ul>`,
+    foot: `<div class="bs-two">${bbtn('no', '나중에', '위쪽 🐉 칩으로 다시 열기')}${bbtn('join', '⚔️ 참여하기', '하던 사냥·낚시는 멈춰요', { main: true })}</div>`,
+    ready: el => {
+      clearInterval(RAIDQ.tick);
+      RAIDQ.tick = setInterval(() => {
+        const l = left(), b = document.getElementById('raidLeft');
+        if (!b || RD) return clearInterval(RAIDQ.tick);
+        if (l <= 0) { clearInterval(RAIDQ.tick); closeModal(); return; }
+        b.textContent = l; document.getElementById('rqRing')?.setAttribute('stroke-dasharray', ring(l));
+      }, 250);
+    },
+  }, x => { if (x === 'join') raidJoin(start); if (x === 'no') closeModal(); });
+}
+// 위쪽 칩: 모집 중이면 남은 시간 + 인원. 누르면 모집 창. 몇 초마다 인원을 새로 읽음
+function raidChip() {
+  const c = $('#raidChip'), start = RAIDQ.open, l = start ? Math.ceil((start - srvNow()) / 1000) : 0;
+  if (!start || l <= 0 || RD) { c.hidden = true; if (start && l <= 0 && !RD) { RAIDQ.open = 0; toast('레이드 모집이 끝났어요'); } return; }
+  const sig = `${l}|${RAIDQ.joined}`; if (c.hidden || c.dataset.sig !== sig) { c.dataset.sig = sig; c.innerHTML = `🐉 레이드 <b>${Math.floor(l / 60)}:${String(l % 60).padStart(2, '0')}</b> · ${RAIDQ.joined || 0}명`; iconize(c); } c.hidden = false;
+}
+$('#raidChip').onclick = () => raidSheet();
+setInterval(raidChip, 1000);
+setInterval(async () => {
+  if (!RAIDQ.open || RD || document.visibilityState !== 'visible') return;
+  try { const j = await api('/api/raid'); if (j.open !== RAIDQ.open) return; RAIDQ.joined = j.joined || 0;
+    const a = document.getElementById('raidJoined'), b = document.getElementById('raidBonus');
+    if (a) a.textContent = RAIDQ.joined + '명'; if (b) b.textContent = RAIDQ.joined ? `인원 보너스 +${Math.round((raidCrowd(RAIDQ.joined) - 1) * 100)}%` : '첫 번째로 참여해 보세요!';
+  } catch {}
+}, 6000);
 async function raidJoin(start) {
   if (RD || RAIDQ.busy) return; RAIDQ.busy = true;
   try {
@@ -2568,7 +2631,7 @@ async function raidJoin(start) {
     if (F.auto) autoFishStop();
     if (me.room) leaveRoom();
     standUp(me);
-    const j = await api('/api/raid/join', { start }); took(j); closeModal(); closePanel();
+    const j = await api('/api/raid/join', { start }); took(j); RAIDQ.open = 0; $('#raidChip').hidden = true; closeModal(); closePanel();
     enterRaid(start);
   } catch (x) { toast(x.message); } finally { RAIDQ.busy = false; }
 }
@@ -2608,6 +2671,21 @@ function raidMsg(m) {
     raidHud();
   }
   if (m.t === 'end') raidEnd();
+}
+// 드래곤 체력 바 (2026-11-18): 화면 위 창 대신 드래곤 발 아래에 바로 그림
+function raidHpBar(x, y, e) {
+  const k = e < 0 || !RD.max ? 1 : Math.max(0, Math.min(1, RD.hp / RD.max)), w = 230, h = 18, l = x - w / 2;   // 깨어나기 전에는 가득
+  RD.hpShow = RD.hpShow == null ? k : RD.hpShow + (k - RD.hpShow) * .12;   // 깎인 만큼 하얗게 남았다가 따라옴
+  ctx.save();
+  ctx.fillStyle = INK; rr(ctx, l - 3, y - 3, w + 6, h + 6, 11); ctx.fill();
+  ctx.fillStyle = '#4a2a26'; rr(ctx, l, y, w, h, 8); ctx.fill();
+  if (RD.hpShow > k) { ctx.fillStyle = 'rgba(255,240,220,.85)'; rr(ctx, l, y, w * RD.hpShow, h, 8); ctx.fill(); }
+  if (k > 0) { const gr = ctx.createLinearGradient(l, 0, l + w, 0); gr.addColorStop(0, '#ff3d23'); gr.addColorStop(1, '#ffb02e'); ctx.fillStyle = gr; rr(ctx, l, y, Math.max(h, w * k), h, 8); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.28)'; rr(ctx, l + 4, y + 2, Math.max(0, w * k - 8), 4, 2); ctx.fill(); }
+  const label = RD.ended ? '처치!' : e < 0 ? `${Math.ceil(-e)}초 뒤 깨어나요` : `레드 드래곤 ${Math.ceil(k * 100)}%`;
+  ctx.font = '800 12.5px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(0,0,0,.75)'; ctx.lineJoin = 'round'; ctx.strokeText(label, x, y + h / 2 + .5);
+  ctx.fillStyle = '#fff'; ctx.fillText(label, x, y + h / 2 + .5);
+  ctx.restore();
 }
 // 화면 위 레이드 현황 (보스 체력 · 남은 시간 · 인원)
 function raidHud() {
@@ -2712,12 +2790,15 @@ async function raidClaim(start) {
   for (let k = 0; k < 3 && !j; k++) { try { j = await api('/api/raid/claim', { start }); } catch (x) { if (x.status >= 400 && x.status < 500) break; await new Promise(r => setTimeout(r, 1200)); } }
   exitRaid(); try { localStorage.removeItem('cbt-raid'); } catch {}
   if (!j) return toast('레이드 보상을 받지 못했어요');
-  took(j); const r = j.raid, sk = r.skin;
-  const skName = sk ? (sk.startsWith('eye:') ? EYE_SKINS.find(e => 'eye:' + e.id === sk) : sk.startsWith('suit:') ? SUITS.find(s => 'suit:' + s.id === sk) : sk.startsWith('wsk:') ? WSKINS.find(w => wskKey(w) === sk) : HATS.find(h => h.id === sk))?.n : '';
-  logAct(`레드 드래곤 레이드 +${r.gold} 골드`); if (sk) { sysMsg(`🐉 레이드 전용 스킨: ${skName} Lv.${r.skinLv || 1} (${r.skinN || 1}개)`); emote(me, '🎉'); }
+  took(j); const r = j.raid, list = r.skins || (r.skin ? [{ skin: r.skin, lv: r.skinLv, n: r.skinN }] : []);
+  const skName = sk => (sk.startsWith('eye:') ? EYE_SKINS.find(e => 'eye:' + e.id === sk) : sk.startsWith('suit:') ? SUITS.find(s => 'suit:' + s.id === sk) : sk.startsWith('wsk:') ? WSKINS.find(w => wskKey(w) === sk) : HATS.find(h => h.id === sk))?.n || '';
+  logAct(`레드 드래곤 레이드 +${r.gold} 골드`);
+  for (const x of list) sysMsg(`🐉 레이드 전용 스킨: ${skName(x.skin)} Lv.${x.lv || 1} (${x.n || 1}개)`);
+  if (list.length) emote(me, '🎉');
+  const skLi = x => `<li class="raidskin">🐉 <b>${(x.lv || 1) > 1 || (x.n || 1) > 1 ? '한 개 더!' : '새 스킨!'}</b> ${skName(x.skin)} <b>Lv.${x.lv || 1}</b>${x.lv > 1 && x.n === 2 ** (x.lv - 1) ? ' ⬆️ 레벨 업!' : ''}<br><small>${rskNeed(x.lv || 1) ? `다음 레벨까지 ${x.n || 1} / ${rskNeed(x.lv || 1)}개` : '최고 레벨'}</small></li>`;
   openModal(`<h3>🎉 레드 드래곤 처치!</h3><p>${r.n}명이 함께 싸웠어요. 내 피해 <b>${(r.dmg || 0).toLocaleString()}</b> (${r.rank}등)${r.dead ? ' · 쓰러졌지만 끝까지 함께했어요' : ''}</p>
     <ul class="raidinfo"><li>🪙 골드 <b>+${r.gold.toLocaleString()}</b>${r.crowd ? ` <small>(👥 ${r.n}명 보너스 +${r.crowd}% 포함)</small>` : ''}</li><li>✨ 경험치 <b>+${r.exp.toLocaleString()}</b>${r.up ? ` · <b>레벨 업!</b>` : ''}</li>
-    ${sk ? `<li class="raidskin">🐉 <b>${r.skinLv > 1 ? '전용 스킨 한 개 더!' : '전용 스킨 획득!'}</b> ${skName} <b>Lv.${r.skinLv || 1}</b>${r.skinLv > 1 && r.skinN === 2 ** (r.skinLv - 1) ? ' ⬆️ 레벨 업!' : ''}<br><small>${rskNeed(r.skinLv || 1) ? `다음 레벨까지 ${r.skinN || 1} / ${rskNeed(r.skinLv || 1)}개 · ` : ''}가지고만 있어도 효과 · 스킨샵에서 레벨 확인</small></li>` : '<li class="muted">전용 스킨은 이번엔 안 나왔어요. 다음 정각에 또 도전!</li>'}</ul>
+    ${list.length ? `<li class="muted" style="list-style:none">🎁 전용 스킨 <b>${list.length}개</b>${list.length > 1 ? ' (행운의 2개!)' : ''} · 가지고만 있어도 효과</li>` + list.map(skLi).join('') : '<li class="muted">전용 스킨이 모두 최고 레벨이라 골드로 받았어요</li>'}</ul>
     <button class="btn main" data-close>마을로</button>`);
 }
 // 레이드 나가기 (2026-11-18): 끝나기 전에 나가면 이번 레이드 보상은 없음. 끝난 뒤에는 보상 받고 바로 마을로
@@ -2842,25 +2923,39 @@ function raidAmbient(now) {
   for (const p of RD.emb) { const a = Math.min(1, p.t * 2, (p.life - p.t) * 1.5); ctx.fillStyle = `rgba(255,${150 + p.h * 90 | 0},60,${a * .9})`; ctx.beginPath(); ctx.arc(p.x + Math.sin(p.t * 3 + p.h * 9) * 6, p.y, p.s, 0, 7); ctx.fill(); }
   ctx.restore();
 }
-// 레드 드래곤 (2026-11-18 사용자 그림, 조각 8개를 맞춰 움직임). 좌표 = 원본 분리 그림 픽셀, 원점 = 두 발 가운데 바닥
-// 조각 그림(d-*.webp)은 원본의 절반 크기라 2배로 그림. 날개는 어깨를 축으로 퍼덕, 머리는 look 쪽으로
-const DRIG = { wingL: [-480, -800], wingR: [88, -800], legL: [-352, -405], legR: [140, -405], body: [-202, -590], armL: [-262, -350], armR: [58, -350], head: [-162, -745] };
+// 레드 드래곤 (2026-11-18 사용자 그림 v2): 사용자가 1182×1024 판에 위치까지 맞춰 그린 조각 5장 (날개·뒷다리·앞발은 왼쪽만 → 오른쪽은 뒤집음)
+// DPART = 판 좌표 [x, y, w, h] (assets/img/town/meta.json 'dragon'). 원점 = 판 가운데(591) · 바닥(985). 조각 그림(d-*.webp)은 절반 크기라 2배로
+// 다 그린 뒤 전체 모양 둘레에 두꺼운 검은 테두리 (따로 판 DGC에 그려서 inkSil)
+const DPART = { wing: [52, 62, 393, 705], leg: [146, 530, 284, 382], body: [363, 312, 457, 589], arm: [245, 415, 257, 570], head: [359, 32, 465, 525] };
+const DCX = 591, DFLOOR = 985, DS = .28, DQ = 1.6;   // DS = 화면 배율, DQ = 따로 판 해상도 배율
+const DG = { W: 1400, H: 1160, ox: 700, oy: 1090 };   // 따로 판 크기 (판 좌표 단위, 퍼덕임·흔들림 여유 포함)
+let DGC = null;
 function drawDragon(x, y, t, open, look, dead) {
   if (!ART['d-body']) return drawDragonOld(x, y, t, open, look, dead);
-  const S = .32, bob = dead ? 0 : Math.sin(t * 2) * 10, fl = dead ? .3 : Math.sin(t * 3) * .08, hx = dead ? 0 : Math.sin(look) * 40;
+  const bob = dead ? 0 : Math.sin(t * 2) * 10, fl = dead ? .3 : Math.sin(t * 3) * .08, hx = dead ? 0 : Math.sin(look) * 40, k = DS * DQ;
+  if (!DGC) { DGC = document.createElement('canvas'); DGC.width = Math.ceil(DG.W * k); DGC.height = Math.ceil(DG.H * k); }
+  const g = DGC.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, DGC.width, DGC.height);
+  g.setTransform(k, 0, 0, k, DG.ox * k, DG.oy * k);
+  const part = (n, dx = 0, dy = 0, flip) => {
+    const im = ART['d-' + n], [px, py, w, h] = DPART[n]; if (!im) return;
+    g.save(); if (flip) g.scale(-1, 1); g.drawImage(im, px - DCX + dx, py - DFLOOR + dy, w, h); g.restore();
+  };
+  const wing = flip => { const s = flip ? -1 : 1, ax = -165, ay = -650 + bob; g.save(); if (flip) g.scale(-1, 1); g.translate(ax, ay); g.rotate(-fl); g.translate(-ax, -ay); part('wing', 0, bob); g.restore(); };
+  wing(false); wing(true);
+  part('leg'); part('leg', 0, 0, true);
+  part('body', 0, bob * .6);
+  part('arm', 0, bob * .3); part('arm', 0, bob * .3, true);
+  part('head', hx, bob + (dead ? 70 : 0));
   ctx.save(); ctx.translate(x, y);
   ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(0, -2, 150, 24, 0, 0, 7); ctx.fill();
   if (dead) { ctx.rotate(.05); ctx.filter = 'grayscale(.7) brightness(.65)'; }
-  ctx.scale(S, S);
-  const part = (n, dx = 0, dy = 0) => { const im = ART['d-' + n], [ox, oy] = DRIG[n]; if (im) ctx.drawImage(im, ox + dx, oy + dy, im.width * 2, im.height * 2); };
-  const wing = (n, px, s) => { ctx.save(); ctx.translate(px, -470 + bob); ctx.rotate(s * fl); ctx.translate(-px, 470 - bob); part(n, 0, bob); ctx.restore(); };
-  wing('wingL', -110, -1); wing('wingR', 110, 1);
-  part('legL'); part('legR'); part('body', 0, bob * .6); part('armL', 0, bob * .3); part('armR', 0, bob * .3);
-  part('head', hx, bob + (dead ? 70 : 0));
+  const dx = -DG.ox * DS, dy = -DG.oy * DS, dw = DGC.width / DQ, dh = DGC.height / DQ;
+  inkSil(ctx, DGC, dx, dy, dw, dh, 3.2, true); ctx.drawImage(DGC, dx, dy, dw, dh);
+  ctx.filter = 'none';
   if (open && !dead) {   // 불 뿜기 전: 입에서 불빛
-    const my = -470 + bob, gr = ctx.createRadialGradient(hx, my, 4, hx, my, 90), k = .6 + .4 * Math.sin(t * 20);
-    gr.addColorStop(0, `rgba(255,240,160,${.95 * k})`); gr.addColorStop(.45, `rgba(255,140,40,${.6 * k})`); gr.addColorStop(1, 'rgba(255,80,20,0)');
-    ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(hx, my, 90, 0, 7); ctx.fill();
+    const mx = hx * DS, my = (-525 + bob) * DS, gr = ctx.createRadialGradient(mx, my, 2, mx, my, 32), kk = .6 + .4 * Math.sin(t * 20);
+    gr.addColorStop(0, `rgba(255,240,160,${.95 * kk})`); gr.addColorStop(.45, `rgba(255,140,40,${.6 * kk})`); gr.addColorStop(1, 'rgba(255,80,20,0)');
+    ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(mx, my, 32, 0, 7); ctx.fill();
   }
   ctx.restore();
 }
@@ -3109,6 +3204,7 @@ function renderRaid(now) {
     if (f.k === 'arrow' || f.k === 'orb') { const x = f.x0 + (f.x - f.x0) * k, y = f.y0 + (f.y - f.y0) * k; ctx.fillStyle = f.k === 'orb' ? '#c9a2ff' : '#ffe2a0'; ctx.beginPath(); ctx.arc(x, y, f.k === 'orb' ? 6 : 3.5, 0, 7); ctx.fill(); }
   }
   for (const p of RD.parts) { ctx.globalAlpha = Math.max(0, 1 - p.t / p.life); ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 7); ctx.fill(); } ctx.globalAlpha = 1;
+  raidHpBar(D0.x, D0.y + 22, e);
   // 이름표 · 숫자
   for (const o of RD.ps.values()) { ctx.save(); if (o.dead) ctx.globalAlpha = .55; nameTag({ ...o, lv: o.lv, name: o.name }, now); ctx.restore(); }
   nameTag(me, now);
@@ -3887,7 +3983,7 @@ function spend(n) { if (me.gold < n) { toast('골드가 부족해요'); return f
 //  · 점진적 공개 · 밀러의 법칙: 긴 설명은 접은 '도움말'에, 화면에는 한 줄 소개 + 숫자 꼬리표만
 //  · 상태 보이기: 진행 막대, 모자란 재료는 빨간 꼬리표에 '얼마 모자란지'까지
 //  · 일관성(제이콥의 법칙): 모든 건물이 같은 순서 — 머리 → 지갑 → 탭 → 내용 → 도움말 → 주 버튼
-const BC = { cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a' };
+const BC = { raid: '#c0392b', cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a' };
 S.btab = {}; S.bhelp = {};
 const WAL = { gold: () => ['🪙', me.gold], wood: () => [RES.wood.i, LIFE().res.wood], stone: () => [RES.stone.i, LIFE().res.stone], fish: () => [COIN.fish[0], LIFE().coins.fish], farm: () => [COIN.farm[0], LIFE().coins.farm] };
 const fmtN = n => Math.floor(n || 0).toLocaleString();
@@ -4706,10 +4802,11 @@ $('#makeDone').onclick = async () => {
 // 자리 비운 동안 (마을에서 화면을 닫았을 때): 서버가 효율 50%로 마을 일을 해 둠
 function awaySheet(a) {
   const L = a.life || {}, n = v => (v || 0).toLocaleString(), hm = s => `${Math.floor(s / 3600)}시간 ${Math.floor(s % 3600 / 60)}분`;
-  const show = () => openModal(`<h3>🌙 자리 비운 동안</h3><p>${hm(a.sec)} 동안 마을 일을 부지런히 했어요!${a.off >= HUNT.offlineMax ? ' (최대 8시간까지만 계산)' : ''}</p>
-    <table class="ruletable"><tbody><tr><td>경험치</td><td>+${n(L.exp)}${L.up ? ` (레벨 +${L.up})` : ''}</td></tr><tr><td>골드</td><td>+${n(L.gold)}</td></tr><tr><td>목재 · 석재</td><td>🪵 +${n(L.wood)} · 🪨 +${n(L.stone)}</td></tr><tr><td>코인</td><td>${COIN.fish[0]} +${n(L.fish)} · ${COIN.farm[0]} +${n(L.farm)}</td></tr></tbody></table>
-    <p class="muted">화면을 닫아 둔 시간은 효율 ${Math.round(HUNT.offlineEff * 100)}%로 계산해요. 사냥터에 두고 나가면 절반은 사냥을 해요.</p><button class="btn main" data-close>확인</button>`);
-  logAct(`자리 비운 동안 ${hm(a.sec)}: 골드 +${n(L.gold)}`);
+  const H = a.hunt || {}, up = (L.up || 0) + (H.up || 0);
+  const show = () => openModal(`<h3>🌙 자리 비운 동안</h3><p>${hm(a.sec)} 동안 <b>사냥</b>과 <b>마을 일</b>을 열심히 했어요!${a.off >= HUNT.offlineMax ? ' (최대 8시간까지만 계산)' : ''}</p>
+    <table class="ruletable"><tbody><tr><td>⚔️ 사냥</td><td>몬스터 ${n(H.kill)}마리 처치</td></tr><tr><td>경험치</td><td>+${n((L.exp || 0) + (H.exp || 0))}${up ? ` (레벨 +${up})` : ''}</td></tr><tr><td>골드</td><td>+${n((L.gold || 0) + (H.gold || 0))} <small class="muted">(사냥 ${n(H.gold)} · 마을 일 ${n(L.gold)})</small></td></tr><tr><td>목재 · 석재</td><td>🪵 +${n(L.wood)} · 🪨 +${n(L.stone)}</td></tr><tr><td>코인</td><td>${COIN.fish[0]} +${n(L.fish)} · ${COIN.farm[0]} +${n(L.farm)}</td></tr></tbody></table>
+    <p class="muted">화면을 닫아 둔 시간은 효율 ${Math.round(HUNT.offlineEff * 100)}%로 계산해요. 그 절반은 사냥, 절반은 마을 일이에요.</p><button class="btn main" data-close>확인</button>`);
+  logAct(`자리 비운 동안 ${hm(a.sec)}: 골드 +${n((L.gold || 0) + (H.gold || 0))}`);
   if (modal.hidden) show(); else { const t = setInterval(() => { if (modal.hidden) { clearInterval(t); show(); } }, 500); }
 }
 // 화면이 켜져 있다는 신호 (2분마다). 화면을 다시 볼 때도 바로 보내서 자리 비운 결과를 받음
@@ -5872,7 +5969,7 @@ const GUIDE = () => [
   ]],
   ['🐉', '레이드', [
     ['언제', '매시 정각! 2분 안에 참여 버튼을 누르면 다 같이 레드 드래곤과 싸워요.'],
-    ['보상', '골드·경험치 + 확률로 레이드 전용 스킨. 같은 스킨을 또 얻으면 스킨 레벨이 올라 효과가 커져요.'],
+    ['보상', '골드·경험치 + 레이드 전용 스킨 1개 확정(30% 확률로 2개). 같은 스킨을 또 얻으면 스킨 레벨이 올라 효과가 커져요.'],
   ]],
   ['📋', '마을 소식판', [
     ['오늘 의뢰', `매일 ${DAILY_N}개. 다 하면 도장 1개, 이번 주 도장 ${STAMP_GOAL}개면 큰 상자!`],

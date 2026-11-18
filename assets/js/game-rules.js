@@ -714,7 +714,7 @@ export const RAID = {
   drain: 120,                        // 아무도 안 때려도 120초면 보스 체력이 0 (무조건 잡힘)
   hpSec: 100,                        // 보스 체력 = 참가자 초당 피해 합 × 100초 → 다 같이 열심히 치면 약 55초
   cap: 60,                           // 한 번에 최대 인원
-  drop: 2 / 3, dropDead: 2 / 3,      // 전용 스킨이 나올 확률 (끝까지 버팀 / 쓰러짐): 3번에 2번
+  drop2: .3,                         // 전용 스킨: 무조건 1개 + 30% 확률로 1개 더 (2026-11-18, 쓰러져도 같음)
   deadMul: .7,                       // 쓰러진 사람 보상 배율
   W: 28, H: 21,                      // 레이드 맵 크기 (칸) — 배경 그림 비율(4:3)에 맞춤
 };
@@ -787,6 +787,15 @@ export function offlineLife(c, sec) {
   for (const k of ['wood', 'stone', 'fish', 'farm']) got[k] = Math.floor(P[k] * h);
   got.gold = Math.round(P.gold * h * (1 + (D.goldB || 0) / 100)); got.exp = Math.round(P.exp * h * (1 + (D.expB || 0) / 100));
   if (L) { L.res.wood += got.wood; L.res.stone += got.stone; L.coins.fish += got.fish; L.coins.farm += got.farm; }
+  c.gold += got.gold; got.up = addExp(c, got.exp);
+  return got;
+}
+// 마을에서 자리 비운 동안의 사냥 몫 (2026-11-18): 사냥터에 없으니 사냥 1시간 어림값(경험치·골드)만 받음
+export const OFFLINE_HUNT = lv => ({ exp: huntIdleExp(lv) / .7, gold: (1500 * lv + 8000) * .55, kill: 60 + lv * 2 });
+export function offlineHuntAway(c, sec) {
+  if (sec < 1) return null;
+  const D = derive(c), P = OFFLINE_HUNT(c.lv), h = sec / 3600;
+  const got = { kill: Math.floor(P.kill * h), gold: Math.round(P.gold * h * (1 + (D.goldB || 0) / 100)), exp: Math.round(P.exp * h * (1 + (D.expB || 0) / 100)) };
   c.gold += got.gold; got.up = addExp(c, got.exp);
   return got;
 }

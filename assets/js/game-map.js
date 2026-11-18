@@ -108,7 +108,7 @@ export const BACK = { x: 73.5 * T, y: 32.5 * T };            // 사냥에서 돌
 export const FISH_AT = { x: (Math.floor(riverX(DOCK_Y)) + .3) * T, y: (DOCK_Y + 1) * T };   // 낚시하는 자리
 // 텃밭 칸 9개 (3줄 × 3칸, 픽셀 가운데)
 // 2026-11-18 텃밭 그림(333×157px, 가운데 (56, 48)칸)의 1·3·5번째 고랑에 3칸씩
-export const PLOTS = Array.from({ length: 9 }, (_, i) => ({ x: (52.9 + (i % 3) * 3.1) * T, y: [46.59, 48.1, 49.54][Math.floor(i / 3)] * T }));
+export const PLOTS = Array.from({ length: 9 }, (_, i) => ({ x: (52.9 + (i % 3) * 3.1) * T, y: [46.48, 48.11, 49.58][Math.floor(i / 3)] * T }));   // 2026-11-18 텃밭 그림 세로 1.08배에 맞춤
 // 벤치 (광장 가장자리)
 export const BENCHES = [{ x: 35, y: 28 }, { x: 45, y: 28 }, { x: 34, y: 33 }, { x: 46, y: 33 }, { x: 36, y: 25 }, { x: 44, y: 25 }];
 for (const b of BENCHES) { set(b.x, b.y, STONE); block(b.x, b.y); }

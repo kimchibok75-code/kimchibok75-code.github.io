@@ -217,54 +217,26 @@ bg = Image.open(os.path.join(SRC, '배경_드래곤.png')).convert('RGB')
 bg.resize((1344, round(1344 * bg.height / bg.width)), Image.LANCZOS).save(os.path.join(OUT, 'raid-bg.webp'), 'WEBP', quality=86, method=6)
 META['raid-bg'] = [bg.width, bg.height]
 
-# 6) 드래곤 조각 (날개 2 · 머리 · 앞발 2 · 몸 · 뒷발 2) + 통 그림(참고용)
-r = cut_bg(load('보스_드래곤_분리'), holes=True)
-parts = components(r, min_area=6000)
-H, W = r.shape[:2]
-def name_of(b):
-    cx, cy = (b[0] + b[2]) / 2 / W, (b[1] + b[3]) / 2 / H
-    if (b[3] - b[1]) / H > .45 and (cx < .3 or cx > .7): return 'wingL' if cx < .5 else 'wingR'
-    if cy < .38: return 'head'
-    if .35 < cx < .65: return 'body'
-    if cy > .62 and (cx < .25 or cx > .75): return 'legL' if cx < .5 else 'legR'
-    return 'armL' if cx < .5 else 'armR'
-PART = {}
-for b in parts:
-    n = name_of(b)
-    t = r[b[1]:b[3], b[0]:b[2]]; bb = bbox(t[:, :, 3]); t = clean(t[bb[1]:bb[3], bb[0]:bb[2]], rel=.3)
-    sc = .5
-    im = save('d-' + n, t, width=round(t.shape[1] * sc))
-    PART[n] = [b[0] + bb[0], b[1] + bb[1], t.shape[1], t.shape[0]]   # 원본 시트 좌표 (x, y, w, h)
-META['dragon'] = PART
-r = cut_bg(load('보스_드래곤')); b = bbox(r[:, :, 3]); save('d-full', r[b[1]:b[3], b[0]:b[2]], width=640)
+# 6) 드래곤 조각 (2026-11-18 새로): 사용자가 1182×1024 판 하나에 위치까지 맞춰 그린 조각 5장 (왼쪽만 → 오른쪽은 좌우로 뒤집음)
+#    meta 'dragon' = { 이름: [x, y, w, h] } 판 좌표 (원점은 화면이 정함: 가운데 x = 591, 바닥 = 가장 아래 칸)
+def load_rgba(name):
+    return np.asarray(Image.open(os.path.join(SRC, name + '.png')).convert('RGBA'))
+PART = {}; FW = 1182; bottom = 0
+for src, n in [('드래곤_날개', 'wing'), ('드래곤_뒷다리', 'leg'), ('드래곤_몸통', 'body'), ('드래곤_앞발', 'arm'), ('드래곤_머리', 'head')]:
+    a = load_rgba(src); b = bbox(a[:, :, 3], pad=1); t = a[b[1]:b[3], b[0]:b[2]]
+    save('d-' + n, t.copy(), width=round(t.shape[1] * .5))
+    PART[n] = [int(b[0]), int(b[1]), int(t.shape[1]), int(t.shape[0])]; bottom = max(bottom, int(b[3]))
+META['dragon'] = {'parts': PART, 'W': FW, 'cx': FW / 2, 'floor': bottom}
 
-# 7) 레이드 스킨: 모자 · 갑옷 · 검 · 활 · 지팡이
-r = cut_bg(load('스킨_드래곤'), holes=True)
-segs = col_segments(r, 2)
-hat = crop(r, (segs[0][0], 0, segs[0][1], r.shape[0])).copy()
-# 모자 가운데(얼굴 들어가는 어두운 곳) 지우기: 어두운 빨강 칸 중 가운데 아래쪽에 이어진 덩어리
-rgb = hat[:, :, :3].astype(int); hh, ww = rgb.shape[:2]
-dark = (rgb[:, :, 0] < 150) & (rgb[:, :, 1] < 80) & (rgb[:, :, 2] < 80) & (hat[:, :, 3] > 8)
-seed = (int(hh * .72), ww // 2)
-if not dark[seed]:
-    ys, xs = np.where(dark[int(hh * .55):, int(ww * .35):int(ww * .65)])
-    seed = (int(hh * .55) + ys[len(ys) // 2], int(ww * .35) + xs[len(xs) // 2])
-hole = np.zeros_like(dark); q = deque([seed]); hole[seed] = True
-while q:
-    cy, cx = q.popleft()
-    for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-        ny, nx = cy + dy, cx + dx
-        if 0 <= ny < hh and 0 <= nx < ww and dark[ny, nx] and not hole[ny, nx]:
-            hole[ny, nx] = True; q.append((ny, nx))
-# 구멍 테두리 1~2칸도 같이 (어두운 가장자리 남지 않게)
-for _ in range(2):
-    hole = hole | ((np.roll(hole, 1, 0) | np.roll(hole, -1, 0) | np.roll(hole, 1, 1) | np.roll(hole, -1, 1)) & (rgb.sum(2) < 330))
-hat[hole, 3] = 0
-save('rd-hat', hat, width=300)
-save('rd-suit', crop(r, (segs[1][0], 0, segs[1][1], r.shape[0])), width=300)
-r = cut_bg(load('스킨_드래곤무기'), holes=True)
-for (x0, x1), n in zip(split_n(r, 3), ['sword', 'bow', 'staff']):
-    save('rd-' + n, clean(crop(r, (x0, 0, x1, r.shape[0])), rel=.2), width=200)
+# 7) 레이드 스킨 (2026-11-18 새로): 텍스쳐 템플릿 틀 그대로 그림 → 잘라서 저장 + 틀 안 위치(meta 'rd')
+#    모자·갑옷 = char 틀 (384×384, 발 (192,336), 4배) · 검·활·지팡이 = weapon 틀 (384×544, 손잡이 (192,368), 8배)
+RD = {}
+for src, n, ox, oy, k in [('스킨_드래곤_모자', 'hat', 192, 336, 4), ('스킨_드래곤_갑옷', 'suit', 192, 336, 4),
+                          ('스킨_드래곤_검', 'sword', 192, 368, 8), ('스킨_드래곤_활', 'bow', 192, 368, 8), ('스킨_드래곤_지팡이', 'staff', 192, 368, 8)]:
+    a = load_rgba(src); b = bbox(a[:, :, 3], pad=1); t = a[b[1]:b[3], b[0]:b[2]]
+    save('rd-' + n, t.copy())
+    RD[n] = [round((b[0] - ox) / k, 3), round((b[1] - oy) / k, 3), round(t.shape[1] / k, 3), round(t.shape[0] / k, 3)]   # 게임 단위 x, y, w, h (기준점에서)
+META['rd'] = RD
 
 json.dump(META, open(os.path.join(OUT, 'meta.json'), 'w'), ensure_ascii=False, indent=1)
 print(json.dumps(META, ensure_ascii=False))
