@@ -5421,7 +5421,7 @@ function awaySheet(a) {
   const L = a.life || {}, n = v => (v || 0).toLocaleString(), hm = s => `${Math.floor(s / 3600)}시간 ${Math.floor(s % 3600 / 60)}분`;
   const H = a.hunt || {}, up = (L.up || 0) + (H.up || 0);
   const show = () => openModal(`<h3>🌙 자리 비운 동안</h3><p>${hm(a.sec)} 동안 <b>사냥</b>과 <b>마을 일</b>을 열심히 했어요!${a.off >= HUNT.offlineMax ? ' (최대 8시간까지만 계산)' : ''}</p>
-    <table class="ruletable"><tbody><tr><td>⚔️ 사냥</td><td>몬스터 ${n(H.kill)}마리 처치</td></tr><tr><td>경험치</td><td>+${n((L.exp || 0) + (H.exp || 0))}${up ? ` (레벨 +${up})` : ''}</td></tr><tr><td>골드</td><td>+${n((L.gold || 0) + (H.gold || 0))} <small class="muted">(사냥 ${n(H.gold)} · 마을 일 ${n(L.gold)})</small></td></tr><tr><td>목재 · 석재</td><td>🪵 +${n(L.wood)} · 🪨 +${n(L.stone)}</td></tr><tr><td>코인</td><td>${COIN.fish[0]} +${n(L.fish)} · ${COIN.farm[0]} +${n(L.farm)}</td></tr></tbody></table>
+    <table class="ruletable"><tbody><tr><td>⚔️ 사냥</td><td>몬스터 ${n(H.kill)}마리 처치</td></tr><tr><td>경험치</td><td>+${n((L.exp || 0) + (H.exp || 0))}${up ? ` (레벨 +${up})` : ''} <small class="muted">(사냥 ${n(H.exp)} · 마을 일 ${n(L.exp)})</small></td></tr><tr><td>골드</td><td>+${n((L.gold || 0) + (H.gold || 0))} <small class="muted">(사냥 ${n(H.gold)} · 마을 일 ${n(L.gold)})</small></td></tr><tr><td>목재 · 석재</td><td>🪵 +${n(L.wood)} · 🪨 +${n(L.stone)}</td></tr><tr><td>코인</td><td>${COIN.fish[0]} +${n(L.fish)} · ${COIN.farm[0]} +${n(L.farm)}</td></tr></tbody></table>
     <p class="muted">화면을 닫아 둔 시간은 효율 ${Math.round(HUNT.offlineEff * 100)}%로 계산해요. 그 절반은 사냥, 절반은 마을 일이에요.</p><button class="btn main" data-close>확인</button>`);
   logAct(`자리 비운 동안 ${hm(a.sec)}: 골드 +${n((L.gold || 0) + (H.gold || 0))}`);
   if (modal.hidden) show(); else { const t = setInterval(() => { if (modal.hidden) { clearInterval(t); show(); } }, 500); }

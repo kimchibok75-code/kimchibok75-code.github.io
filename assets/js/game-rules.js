@@ -822,7 +822,9 @@ export function offlineLife(c, sec) {
   return got;
 }
 // 마을에서 자리 비운 동안의 사냥 몫 (2026-11-18): 사냥터에 없으니 사냥 1시간 어림값(경험치·골드)만 받음
-export const OFFLINE_HUNT = lv => ({ exp: huntIdleExp(lv) / .7, gold: (1500 * lv + 8000) * .55, kill: 60 + lv * 2 });
+// kill: 2026-11-19 경험치에서 거꾸로 셈 (그 레벨 사냥터 몬스터 평균 경험치로 나눔). 예전 60 + 레벨×2는 경험치에 비해 17배쯤 적어서 '4마리에 경험치 2만'처럼 보였음
+const fieldMonExp = lv => { const f = [...FIELDS].reverse().find(f => lv >= f.min) || FIELDS[0]; return f.mons.reduce((a, k) => a + MONS[k].exp * expPenalty(lv, MONS[k].lv), 0) / f.mons.length; };
+export const OFFLINE_HUNT = lv => { const exp = huntIdleExp(lv) / .7; return { exp, gold: (1500 * lv + 8000) * .55, kill: exp / fieldMonExp(lv) }; };
 export function offlineHuntAway(c, sec) {
   if (sec < 1) return null;
   const D = derive(c), P = OFFLINE_HUNT(c.lv), h = sec / 3600;
