@@ -282,7 +282,7 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; lette
 .rules li.bad { color: var(--kimchi); }
 .rules li.bad::before { content: "✕"; color: var(--kimchi); }
 .check { display: flex; align-items: center; gap: 8px; font-size: calc(14px * var(--fs)); }
-.kbd-on { outline: 3px solid #ffb02e !important; outline-offset: 2px; box-shadow: 0 0 0 6px rgba(255, 176, 46, .28) !important; border-radius: 10px; position: relative; z-index: 1; }
+.kbd-on:focus { outline: 3px solid var(--gold); outline-offset: 2px; position: relative; z-index: 1; }   /* 화살표로 고른 것 = 진짜 선택(포커스). 테두리는 :focus-visible과 같은 모양 하나 */
 /* 가입 화면 (2026-11-18 정리): 규칙은 작은 꼬리표, 눈 버튼, 안심 안내는 접기, 안내 동의 */
 .rules.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
 .rules.chips li { padding: 2px 8px 2px 6px; border-radius: 99px; background: var(--paper-2); font-size: calc(12px * var(--fs)); line-height: 1.5; }
@@ -1522,7 +1522,7 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   // 오른팔 (몸 앞) + 무기: 손(팔 끝)이 손잡이를 쥠
   // 근접: 위에서 아래로 내려침 · 원거리(지팡이·활): 팔을 앞으로 뻗고 반동
   // 벌목·채광·낚시 중에는 무기 대신 도구 (c.tool: axe 도끼 · pick 곡괭이 · rod 낚싯대). 도끼·곡괭이는 팔을 들었다 내려찍음
-  const tool = HT ? null : c.tool, tw = tool === 'axe' || tool === 'pick' ? (c.toolBusy ? 1 : Math.sin((c.toolT || 0) * 10 - 1.6) * .5 + .5) : 0;
+  const tool = HT ? null : c.tool, tw = tool === 'axe' || tool === 'pick' ? (c.toolBusy ? 1 : c.toolW ?? Math.sin((c.toolT || 0) * 10 - 1.6) * .5 + .5) : 0;   // toolW: gatherTick이 타격 박자에 맞춰 정함 (1 = 내려찍은 자세)
   const cl = c.cls || 'sword', wk = c.wsk?.[cl], W = c.fz || tool ? null : eq[cl]?.st ? eq[cl] : wk ? { slot: cl, st: 1 } : null, wt = W?.slot, far = wt === 'staff' || wt === 'bow', sw = c.swing > 0 ? c.swing / .18 : 0;
   const arm = tool === 'axe' || tool === 'pick' ? -2.5 + tw * 2.3 : (c.fz || tool === 'rod') && !HT ? -1.25 : sw ? (far ? -1.5 + sw * .35 : -2.6 + (1 - sw) * 2.1) : -.25 - walk * .45, sx = 9, sy = -17 - bob;
   P.push({ path: at(sx, sy, arm, R(-2.5, 0, 5, 10, 2.5)), c: su?.sleeve || c.face });
@@ -2185,7 +2185,7 @@ function glowSp(o, sp, x, y, sc, now, pk = picked(o, now)) { if (pk) blitGlow(sp
 // (ax, ay) = 발 자리 기준으로 살짝 키워서 그림
 function hoverWrap(o, ax, ay, draw) { const up = hvTick(o, HV_UP.big); if (up === 1) return draw(); ctx.save(); ctx.translate(ax, ay); ctx.scale(up, up); ctx.translate(-ax, -ay); draw(); ctx.restore(); }
 function drawNode(n, now) {
-  const x = n.x * T + T / 2, y = n.y * T + T - 3, ok = nodeReady(n), shake = GA?.node === n ? Math.sin(now / 30) * 1.6 : 0;
+  const x = n.x * T + T / 2, y = n.y * T + T - 3, ok = nodeReady(n), hk = n.hitAt ? (now - n.hitAt) / 260 : 1, shake = hk < 1 ? Math.sin(hk * Math.PI * 3) * (1 - hk) * 2.6 * (n.hitDir || 1) : 0;   // 맞을 때만 툭 흔들림
   const up = hvTick(n, HV_UP.node), pick = nodePicked(n, now);   // 마우스 올림 → 부드럽게 살짝 커짐
   ctx.fillStyle = 'rgba(31,42,58,.15)'; ctx.beginPath(); ctx.ellipse(x, y, 12 * up, 4 * up, 0, 0, 7); ctx.fill();
   const sp = ok && n.v ? SP_TREE[n.v]() : SP_NODE[ok ? n.k : n.k === 'tree' ? 'stump' : 'rubble'](), sc = (ok && n.v ? n.s : n.k === 'tree' ? 1.05 : 1) * up;
@@ -2586,7 +2586,7 @@ function render(now) {
   if (me.room) return renderRoom(now);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.fillStyle = '#5fb3d9'; ctx.fillRect(0, 0, W, H);
-  const z = S.zoom, ox = pxR(W / 2 - cam.x * z), oy = pxR(H / 2 - cam.y * z);
+  const z = S.zoom, tk = S.tshake || 0, ox = pxR(W / 2 - cam.x * z + (Math.random() - .5) * tk * 2), oy = pxR(H / 2 - cam.y * z + (Math.random() - .5) * tk * 2);   // tk: 벌목·채광 타격 때 아주 작은 흔들림
   ctx.setTransform(DPR * z, 0, 0, DPR * z, ox * DPR, oy * DPR);
   ctx.imageSmoothingEnabled = true;
   // 화면에 보이는 부분만 바닥 그림
@@ -4077,8 +4077,12 @@ function townAtkTick(dt) {
   }
   for (let i = TATK.length - 1; i >= 0; i--) if (TATK[i].t > TATK[i].life || (TATK[i].end && TATK[i].t - TATK[i].end > .1)) TATK.splice(i, 1);
   for (const j of TJ) j.t += dt; while (TJ.length && TJ[0].t > .45) TJ.shift();
+  for (const p of TP) { p.t += dt; if (p.vx != null) { p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= Math.exp(-2.5 * dt); } }
+  for (let i = TP.length - 1; i >= 0; i--) if (TP[i].t > TP[i].life) TP.splice(i, 1);
+  S.tshake = (S.tshake || 0) * Math.exp(-22 * dt); if (S.tshake < .05) S.tshake = 0;
 }
 function drawTownAtk() {
+  drawTP();
   ctx.save();
   for (const j of TJ) {   // 먼지 고리
     const k = j.t / .45; ctx.globalAlpha = (1 - k) * (j.n === 2 ? .8 : .55); ctx.strokeStyle = j.n === 2 ? '#bfefff' : '#e9dcc0'; ctx.lineWidth = 2.5 * (1 - k) + .5;
@@ -4799,7 +4803,7 @@ const sizeSetHtml = () => isPC() ? `<div class="uiset" id="uiSet"><div><label>�
   <div><label>✏️ 글씨 크기</label><div class="seg">${segHtml(FS_STEPS, SZ.fs, 'fs')}</div></div><p class="muted">지도 그림 크기는 오른쪽 ＋/－ 버튼으로 바꿔요. 이 컴퓨터에만 저장돼요.</p></div>` : '';
 function wireSizeSet(el) { el.querySelector('#uiSet')?.addEventListener('click', e => { const b = e.target.closest('[data-ui], [data-fs]'); if (!b) return; if (b.dataset.ui) SZ.ui = +b.dataset.ui; else SZ.fs = +b.dataset.fs; applySize(true); b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }); }
 
-// PC: 아무것도 안 하고 있을 때 Enter → 채팅 시작. 채팅 칸에서 Enter로 보내도 칸은 그대로(계속 치기), 빈 칸에서 Enter/Esc → 채팅 끝 (다시 화살표로 걷기)
+// PC: 아무것도 안 하고 있을 때 Enter → 채팅 시작. 채팅 칸에서 Enter → 보내고 채팅 끝(빈 칸이면 그냥 끝), Esc → 채팅 끝 (다시 화살표로 걷기)
 const PC_KEYS = matchMedia('(hover: hover) and (pointer: fine)').matches;
 // ───────── 창 키보드 조작 (PC, 2026-11-18): 창이 열려 있으면 화살표 = 다음·이전 선택(가까운 쪽), Enter·스페이스바 = 누르기 ─────────
 // 누를 수 있는 것 = 버튼·링크·입력칸 + 손가락 모양(cursor: pointer)인 칸. 창이 다시 그려져도(1초마다 갱신 등) 같은 것을 다시 찾아 이어서 고름
@@ -4809,7 +4813,7 @@ function uikList() {
   const out = [];
   for (const el of sheet.querySelectorAll('*')) {
     const tag = el.tagName, ctl = tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || tag === 'SUMMARY';
-    if (el.disabled || el.closest('[hidden], .close')) continue;
+    if (el.disabled || el.closest('[hidden], .close, .xclose, [data-close]')) continue;   // ✕ 닫기는 빼기 (Esc로 닫음)
     if (!ctl && getComputedStyle(el).cursor !== 'pointer') continue;
     if (el.parentElement?.closest('button, a, summary') || (!ctl && el.parentElement && el.parentElement !== sheet && getComputedStyle(el.parentElement).cursor === 'pointer')) continue;   // 이미 고를 수 있는 것 안쪽은 빼기
     const r = el.getBoundingClientRect(); if (r.width < 4 || r.height < 4) continue;
@@ -4820,12 +4824,16 @@ function uikList() {
 function uikMark(el) {
   document.querySelectorAll('.kbd-on').forEach(x => x.classList.remove('kbd-on'));
   UIK.el = el; UIK.sig = el ? uikSig(el) : '';
-  if (el) { el.classList.add('kbd-on'); el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+  if (el) {   // 테두리를 따로 그리지 않고 진짜 선택(포커스)을 옮김 → 테두리는 늘 하나
+    if (!el.matches('button, a[href], input, select, textarea, summary, [tabindex]')) el.tabIndex = -1;
+    el.classList.add('kbd-on'); el.focus({ preventScroll: true }); el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
 }
 function uikCur(list) {
+  const a = document.activeElement; if (a && a !== UIK.el && sheet.contains(a) && list.includes(a)) { UIK.el = a; UIK.sig = uikSig(a); return a; }   // 이미 선택된 것(마우스로 누른 것 등)에서 이어서
   if (UIK.el?.isConnected && list.includes(UIK.el)) return UIK.el;
   const el = UIK.sig ? list.find(x => uikSig(x) === UIK.sig) : null;   // 다시 그려진 창에서 같은 것
-  if (el) { el.classList.add('kbd-on'); UIK.el = el; }
+  if (el) uikMark(el);
   return el || null;
 }
 function uikMove(dx, dy) {
@@ -4862,7 +4870,7 @@ addEventListener('keydown', e => {
   if (cur.tagName === 'INPUT' && !['checkbox', 'radio', 'button'].includes(cur.type) || cur.tagName === 'SELECT' || cur.tagName === 'TEXTAREA') return cur.focus();
   cur.click();
 });
-modal.addEventListener('mousemove', () => { if (UIK.el) uikMark(null); });
+modal.addEventListener('mousemove', () => { if (UIK.el) { document.querySelectorAll('.kbd-on').forEach(x => x.classList.remove('kbd-on')); UIK.el = null; UIK.sig = ''; } });
 new MutationObserver(() => { if (!UIK.sig || modal.hidden || UIK.el?.isConnected) return; setTimeout(() => { const l = uikList(); if (!uikCur(l)) UIK.el = null; }); }).observe(sheet, { childList: true, subtree: true });   // 창이 다시 그려지면 고른 표시를 다시 붙임
 modal.addEventListener('pointerdown', () => { UIK.sig = ''; });   // 마우스를 쓰면 키보드 표시는 지움
 if (PC_KEYS) $('#chatIn').placeholder = '마을 전체에 말하기 (Enter)';
@@ -4876,7 +4884,7 @@ $('#chatIn').addEventListener('keydown', e => {
   if (e.key === 'Escape' || (e.key === 'Enter' && !e.target.value.trim())) { e.preventDefault(); e.target.blur(); }
 });
 $('#chatIn').addEventListener('input', e => { const n = [...e.target.value].length; $('#chatCount').textContent = `${n}/60`; $('#chatCount').classList.toggle('full', n >= 60); $('#chatCount').classList.toggle('near', n >= 45); });
-$('#chatForm').addEventListener('submit', e => { e.preventDefault(); const v = $('#chatIn').value; if (!v.trim()) return; if (trySend(v) !== false) { $('#chatIn').value = ''; $('#chatCount').textContent = '0/60'; $('#chatCount').classList.remove('full'); $('#chatIn').focus(); } });   // 보낸 뒤에도 계속 칠 수 있게
+$('#chatForm').addEventListener('submit', e => { e.preventDefault(); const v = $('#chatIn').value; if (!v.trim()) return; if (trySend(v) !== false) { $('#chatIn').value = ''; $('#chatCount').textContent = '0/60'; $('#chatCount').classList.remove('full'); if (PC_KEYS) $('#chatIn').blur(); else $('#chatIn').focus(); } });   // PC: Enter로 보내면 채팅 끝 → 바로 다시 걷기 (2026-11-18 요청). 휴대폰은 계속 칠 수 있게
 $('#emoBtn').onclick = () => { $('#emotes').hidden = !$('#emotes').hidden; if (innerWidth <= 760) $('#chat').classList.add('expanded'); };
 $('#emotes').addEventListener('click', e => { const em = e.target.closest('[data-e]')?.dataset.e; if (em) { emote(me, em); $('#emotes').hidden = true; } });
 $('#chatExp').onclick = () => $('#chat').classList.toggle('expanded');
@@ -5602,14 +5610,47 @@ function startGather(n) {
 }
 function gatherTick(dt) {
   me.tool = GA ? (GA.node.k === 'tree' ? 'axe' : 'pick') : !HT && F.auto ? 'rod' : null; me.toolT = GA?.t || 0; me.toolBusy = !!GA?.busy;
+  me.toolW = GA && !GA.busy ? chopPose(1 - (GA.st ?? CHOP.first) / CHOP.gap) : undefined;
   if (!GA || GA.busy) return;
   if (me.moving || STEER.on || me.room || me.path.length) { GA = null; return; }
-  GA.t += dt; if ((GA.st = (GA.st ?? 0) - dt) <= 0) { GA.st = .5; sfx(GA.node.k === 'rock' ? 'mine' : 'chop'); }
+  GA.t += dt; if ((GA.st = (GA.st ?? CHOP.first) - dt) <= 0) { GA.st += CHOP.gap; chopHit(GA.node); }
   if (GA.t < GA.dur) return;
   GA.busy = true; const n = GA.node;
   api('/api/gather', { node: n.i, x: Math.round(me.x), y: Math.round(me.y) })
     .then(j => { took(j); townFloat((n.x + .5) * T, n.y * T - 6, `+${j.amt} ${RES[j.res].i}`, '#ffe9a8'); logAct(`${RES[j.res].n} +${j.amt}`); })
     .catch(x => toast(x.message)).finally(() => { GA = null; });
+}
+// ───────── 벌목·채광 손맛 (2026-11-18): 소리에 맞춰 팍 팍 내려찍기 ─────────
+const CHOP = { gap: .5, first: .35 };
+// u = 이번 타격까지 진행(0 → 1, 1에서 맞음). 맞은 뒤 잠깐 그대로 → 천천히 들어 올림 → 마지막에 빠르게 내려찍음
+function chopPose(u) {
+  u = Math.max(0, Math.min(1, u));
+  if (u < .14) return 1 - u * .6;                                   // 맞은 자리에서 살짝 튕김
+  if (u < .78) { const k = (u - .14) / .64; return (1 - .084) * (1 - (1 - (1 - k) ** 2)); }   // 천천히 들어 올림 (끝에서 멈칫)
+  const k = (u - .78) / .22; return k ** 2.2;                       // 팍 내려찍기
+}
+const TP = [];   // 마을 작은 조각 (나무 부스러기·잎·돌가루·불꽃)
+function chopHit(n) {
+  const tree = n.k === 'tree', side = me.x < (n.x + .5) * T ? -1 : 1;
+  const x = (n.x + .5) * T + side * (tree ? 5 : 9), y = tree ? (n.y + 1) * T - 15 : (n.y + 1) * T - 12;
+  sfx(tree ? 'chop' : 'mine');
+  S.tshake = Math.max(S.tshake || 0, 1.4);   // 아주 미세하게
+  n.hitAt = performance.now(); n.hitDir = -side;
+  const R = (a, b) => a + Math.random() * (b - a);
+  for (let i = 0; i < (tree ? 7 : 6); i++) TP.push({ x, y, vx: side * R(40, 130) + R(-25, 25), vy: R(-170, -60), g: 520, t: 0, life: R(.35, .6), c: tree ? (Math.random() < .5 ? '#c99a5b' : '#8a5a2e') : (Math.random() < .5 ? '#b7b2aa' : '#8d877e'), s: R(1.8, 3.2), r: R(0, 6), k: 'chip' });
+  if (tree) for (let i = 0; i < 3; i++) TP.push({ x: x + R(-14, 14), y: y - R(24, 44), vx: R(-30, 30), vy: R(-20, 10), g: 70, t: 0, life: R(.7, 1.1), c: Math.random() < .5 ? '#7fcf5a' : '#5aa845', s: R(2.2, 3.2), r: R(0, 6), k: 'leaf' });
+  else for (let i = 0; i < 4; i++) TP.push({ x, y, vx: side * R(60, 190) + R(-40, 40), vy: R(-150, -40), g: 300, t: 0, life: R(.15, .3), c: Math.random() < .5 ? '#fff3b0' : '#ffd166', s: R(1.2, 2), r: 0, k: 'spark' });
+  TP.push({ x, y, t: 0, life: .16, k: 'flash', s: tree ? 9 : 10 });
+}
+function drawTP() {
+  for (const p of TP) {
+    const k = p.t / p.life; ctx.globalAlpha = Math.max(0, 1 - k * k);
+    if (p.k === 'flash') { ctx.fillStyle = '#fffbe6'; ctx.beginPath(); ctx.arc(p.x, p.y, p.s * (.6 + k * .9), 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 1.6 * (1 - k); ctx.beginPath(); ctx.arc(p.x, p.y, p.s * (1 + k * 1.6), 0, 7); ctx.stroke(); continue; }
+    ctx.fillStyle = p.c;
+    if (p.k === 'spark') { ctx.fillRect(p.x - p.s / 2, p.y - p.s / 2, p.s, p.s); continue; }
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r + p.t * (p.k === 'leaf' ? 4 : 12)); ctx.fillRect(-p.s, -p.s * (p.k === 'leaf' ? .45 : .6), p.s * 2, p.s * (p.k === 'leaf' ? .9 : 1.2)); ctx.restore();
+  }
+  ctx.globalAlpha = 1;
 }
 function drawTool() {
   if (!GA) return;   // 도끼·곡괭이는 캐릭터 손에 (drawChar의 c.tool). 여기서는 진행 막대만
@@ -6601,7 +6642,7 @@ function showGuide(keep) {
       <div class="bs-sec">👉 오른쪽 버튼 (눌러서 바로 열기)</div>
       <ul class="bs-list gd">${btn.map(([x, i, n, t]) => `<li><button class="gd-row" data-x="${x}"><span>${i}</span><div><b class="t">${n}</b><small class="d">${t}</small></div><small class="go">›</small></button></li>`).join('')}</ul>`;
   } else {
-    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 빈 칸에서 Enter/Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>C</kbd>', '점프 · 공중에서 한 번 더 누르면 더블 점프(건물도 넘어가요) · 화살표와 같이 누르면 그쪽으로 뛰어요'], ['<kbd>Space</kbd>', '가까이 있는 건물 · 주민 · 나무 · 바위 · 물가 등을 누른 것처럼 이용'], ['<kbd>Z</kbd>', '공격 · 마을에선 바라보는 쪽으로, 사냥터에선 가까운 몬스터에게 (쿨타임 찬 스킬부터)'], ['<kbd>Esc</kbd>', '창 닫기'], ['창에서 <kbd>←↑↓→</kbd>', '버튼 고르기 · <kbd>Enter</kbd>나 <kbd>Space</kbd>로 누르기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
+    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 한 번 더 Enter → 보내고 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>C</kbd>', '점프 · 공중에서 한 번 더 누르면 더블 점프(건물도 넘어가요) · 화살표와 같이 누르면 그쪽으로 뛰어요'], ['<kbd>Space</kbd>', '가까이 있는 건물 · 주민 · 나무 · 바위 · 물가 등을 누른 것처럼 이용'], ['<kbd>Z</kbd>', '공격 · 마을에선 바라보는 쪽으로, 사냥터에선 가까운 몬스터에게 (쿨타임 찬 스킬부터)'], ['<kbd>Esc</kbd>', '창 닫기'], ['창에서 <kbd>←↑↓→</kbd>', '버튼 고르기 · <kbd>Enter</kbd>나 <kbd>Space</kbd>로 누르기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
       : [['끌기', '화면을 끌면 그 방향으로 걸어요'], ['누르기', '바닥 · 건물 · 사람을 누르면 그곳으로'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅 기록 펼치기 · ⚙️로 글씨 크기'], ['⚙️', '설정: 내 정보 · 비밀번호 · 차단 목록']];
     body = `<ul class="bs-list gd">${tips.map(([k, t]) => `<li class="gd-key"><span>${k}</span><span>${t}</span></li>`).join('')}</ul>`;
   }
