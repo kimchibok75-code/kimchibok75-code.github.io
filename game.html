@@ -4907,7 +4907,7 @@ function uikList() {
   const out = [];
   for (const el of sheet.querySelectorAll('*')) {
     const tag = el.tagName, ctl = tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || tag === 'SUMMARY';
-    if (el.disabled || el.closest('[hidden], .close, .xclose, [data-close]')) continue;   // ✕ 닫기는 빼기 (Esc로 닫음)
+    if (el.disabled || el.closest('[hidden], .close, .xclose')) continue;   // ✕ 닫기는 빼기 (Esc로 닫음). '다음에'처럼 data-close인 보통 버튼은 고를 수 있음 (2026-11-19)
     if (!ctl && getComputedStyle(el).cursor !== 'pointer') continue;
     if (el.parentElement?.closest('button, a, summary') || (!ctl && el.parentElement && el.parentElement !== sheet && getComputedStyle(el.parentElement).cursor === 'pointer')) continue;   // 이미 고를 수 있는 것 안쪽은 빼기
     const r = el.getBoundingClientRect(); if (r.width < 4 || r.height < 4) continue;
