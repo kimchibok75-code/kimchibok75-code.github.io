@@ -1,8 +1,21 @@
 {
-  "updatedAt": 1794884006958,
+  "updatedAt": 1794970270317,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 201,
+      "title": "이제 우리 행복할 수 있을까? [ 림월드 500% 상한해제 (7) ]",
+      "board": "⏰ 영상 알림",
+      "head": "풀치복",
+      "author": "김치복",
+      "time": 1794968487723,
+      "comments": 0,
+      "likes": 0,
+      "image": false,
+      "thumb": null,
+      "url": "https://cafe.naver.com/kimchibok/201"
+    },
     {
       "id": 200,
       "title": "쉬는 시간에 이러고 놉니다 [ 림월드 500% 상한해제 (6.5) ]",
@@ -249,19 +262,6 @@
       "image": true,
       "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMTFfMTQ3/MDAxNzk0MzI1OTQ4NzI2.JcD1Z4tTybz7j_C-71u-K8YitAwxvvE5cloxyR_Ct6sg.emnY0Iv6dDZYeE25iT8CDCv5juwbOHbqq622Ca9QieIg.PNG/01_The_Dead_Man%2527s_Switch_-_Synthriada.png",
       "url": "https://cafe.naver.com/kimchibok/182"
-    },
-    {
-      "id": 181,
-      "title": "옆 타일에서 새 출발 [ 림월드 500% 상한해제 (4) ]",
-      "board": "⏰ 영상 알림",
-      "head": "풀치복",
-      "author": "김치복2",
-      "time": 1794276264653,
-      "comments": 0,
-      "likes": 0,
-      "image": false,
-      "thumb": null,
-      "url": "https://cafe.naver.com/kimchibok/181"
     }
   ]
 }
