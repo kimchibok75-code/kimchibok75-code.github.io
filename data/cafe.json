@@ -1,8 +1,21 @@
 {
-  "updatedAt": 1794997016642,
+  "updatedAt": 1795006180270,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 203,
+      "title": "이번 주 방송에서 치복 타운 첫 공개하겠습니다~!",
+      "board": "💬 자유 게시판",
+      "head": null,
+      "author": "김치복",
+      "time": 1795005793127,
+      "comments": 0,
+      "likes": 0,
+      "image": true,
+      "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMThfMjY2/MDAxNzk1MDA1NzYwMzY5.kCeiyfTrMFm2kuLCTQF2RVrQsm716UmHYq5ImJhB_csg.-DCFPmNbim_jdhwjyZq0IcZ4Cb_rlHeEIMptz6n4HBcg.PNG/image.png",
+      "url": "https://cafe.naver.com/kimchibok/203"
+    },
     {
       "id": 202,
       "title": "수능 응원글",
@@ -249,19 +262,6 @@
       "image": true,
       "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMTFfMTA0/MDAxNzk0MzU5MTkzMzAw.ZFvKiEznLi0Fvuk41aktiRV3K-KHnE3M1XlH-uWuJlcg.2ZTYhlr_TlF4nSfuehCO6TmCKfeffPMXz0WRtV0R4g8g.PNG/image.png",
       "url": "https://cafe.naver.com/kimchibok/184"
-    },
-    {
-      "id": 183,
-      "title": "카페 매니저가 바뀌었는데, 둘 다 제 아이디입니다.",
-      "board": "📢 공지사항",
-      "head": "카페",
-      "author": "김치복",
-      "time": 1794358903567,
-      "comments": 0,
-      "likes": 0,
-      "image": false,
-      "thumb": null,
-      "url": "https://cafe.naver.com/kimchibok/183"
     }
   ]
 }
