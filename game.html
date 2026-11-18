@@ -1290,7 +1290,7 @@ const OGS = { hat: [-21.5, -63.5, 43.25, 44], suit: [-13.75, -23.75, 28, 22], ey
 const MGS = { hat: [-23.5, -58, 47, 39], suit: [-13.5, -23.5, 27.5, 20.25], eyes: [-9, -32.75, 18, 7.75], sword: [-12.25, -30, 24.625, 40.5], bow: [-12.375, -20, 23.125, 40.75], staff: [-13.875, -37.125, 28.125, 50.875] };
 // 템플릿 틀 그대로 그린 스킨 세트: 스킨 id → [그림 앞글자, 위치표]. 눈은 drawEyes, 모자는 hatParts, 의상은 suitParts, 무기는 wskParts
 const TSK = { ogre: ['og', OGS], magic: ['mg', MGS] };
-const HAT_NOHAIR = new Set(['magic']);   // 머리카락까지 그려진 모자: 쓰면 헤어를 안 그림
+const HAT_NOHAIR = new Set();   // 늘 헤어를 숨길 모자 (2026-11-18: 비움 — 헤어는 '모자를 써도 헤어 보이기' 체크로만 정함)
 function wskParts(type, id) {
   const ts = TSK[id]; if (ts && ART[ts[0] + '-' + type]) return [imgPart(ts[0] + '-' + type, ...ts[1][type])];
   const P = [], glint = (x, y) => ({ flat: 1, path: E(x, y, 1.3, 1.3), c: 'rgba(255,255,255,.8)' });
