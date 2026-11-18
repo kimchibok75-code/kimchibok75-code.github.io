@@ -1,8 +1,21 @@
 {
-  "updatedAt": 1794970270317,
+  "updatedAt": 1794997016642,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 202,
+      "title": "수능 응원글",
+      "board": "💬 자유 게시판",
+      "head": null,
+      "author": "화이트블록",
+      "time": 1794991693180,
+      "comments": 0,
+      "likes": 0,
+      "image": true,
+      "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMThfMjk3/MDAxNzk0OTkxNTUwMjA1.XB68mVoS1r8GkrH9JvyJAlhY7vtXOhISY7pJcL9BzEEg.WWkGkjyMhSdQWbFPmycrCarKiaekpEOpy71Mmu0yadMg.PNG/IMG_6872.png",
+      "url": "https://cafe.naver.com/kimchibok/202"
+    },
     {
       "id": 201,
       "title": "이제 우리 행복할 수 있을까? [ 림월드 500% 상한해제 (7) ]",
@@ -249,19 +262,6 @@
       "image": false,
       "thumb": null,
       "url": "https://cafe.naver.com/kimchibok/183"
-    },
-    {
-      "id": 182,
-      "title": "주간 인기 모드 TOP 20 (26-11-11)",
-      "board": "💽 모드 추천/제작",
-      "head": "소개",
-      "author": "김치복2",
-      "time": 1794326059970,
-      "comments": 0,
-      "likes": 0,
-      "image": true,
-      "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMTFfMTQ3/MDAxNzk0MzI1OTQ4NzI2.JcD1Z4tTybz7j_C-71u-K8YitAwxvvE5cloxyR_Ct6sg.emnY0Iv6dDZYeE25iT8CDCv5juwbOHbqq622Ca9QieIg.PNG/01_The_Dead_Man%2527s_Switch_-_Synthriada.png",
-      "url": "https://cafe.naver.com/kimchibok/182"
     }
   ]
 }
