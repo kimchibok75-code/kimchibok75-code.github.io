@@ -599,7 +599,10 @@ body.hunting .side { display: none; }
 .skgrid.raid button { position: relative; } .skgrid.raid .rlv { position: absolute; left: 4px; top: 4px; z-index: 1; background: #b8392f; color: #fff; border-radius: 7px; padding: 1px 5px; font-size: 10.5px; line-height: 1.3; pointer-events: none; }
 .iconbtn.adm { background: #efe7ff; border-color: #6c4fc2; }
 .raidbox { position: absolute; top: 62px; left: 50%; transform: translateX(-50%); width: min(440px, calc(100% - 24px)); background: rgba(38,24,24,.94); color: #fff; border: 2px solid var(--ink); border-radius: 14px; padding: 8px 12px; z-index: 6; box-shadow: var(--shadow); }
-.raidbox .rb-top { display: flex; justify-content: space-between; align-items: center; font-size: calc(14px * var(--fs)); }
+.raidbox .rb-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: calc(14px * var(--fs)); }
+.raidbox .rb-top b { margin-right: auto; }
+.raidbox .rb-out { flex: none; min-height: 30px; padding: 3px 10px; border-radius: 9px; border: 1.5px solid #1f1414; background: #f3ead2; color: #3a2420; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.raidbox .rb-out:hover { background: #fff6dc; }
 .raidbox .rb-bar { position: relative; height: 18px; background: #4a3030; border-radius: 9px; overflow: hidden; margin: 6px 0; border: 1.5px solid #1f1414; }
 .raidbox .rb-bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: linear-gradient(90deg, #ff4a2a, #ffb02e); transition: width .4s; }
 .raidbox .rb-bar span { position: relative; display: block; text-align: center; font-size: 12px; font-weight: 800; line-height: 16px; text-shadow: 0 1px 2px #000; }
@@ -616,6 +619,14 @@ body.raiding .huntbox, body.raiding .placebar, body.raiding .roombtn { display: 
 .skgrid em.own { background: var(--leaf); color: #fff; border-color: var(--leaf); }
 .skbig { width: 150px; height: 150px; margin: 0 auto; border-radius: 16px; border: 2px solid var(--ink); background: linear-gradient(#eef7fb, #e3f0e2); position: relative; overflow: hidden; }
 .skbig canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.skpv { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 4px 0 10px; }
+.skpv figure { margin: 0; text-align: center; }
+.skpv canvas { display: block; width: 132px; height: 156px; border-radius: 16px; border: 2px solid var(--ink); background: linear-gradient(#eef7fb, #e3f0e2); }
+.skpv .new canvas { border-color: #e8a33b; box-shadow: 0 0 0 3px rgba(232,163,59,.35); }
+.skpv figcaption { font-size: 13px; font-weight: 700; margin-top: 4px; color: #4a5866; }
+.skpv .new figcaption { color: #c47a12; }
+.skpv-ar { font-size: 22px; font-weight: 800; color: #9aa6b2; }
+@media (max-width: 380px) { .skpv canvas { width: 118px; height: 140px; } }
 .skgrid canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .skgrid small { position: absolute; left: 0; right: 0; bottom: 0; background: rgba(251,252,247,.88); font-size: calc(10.5px * min(var(--fs), 1.15)); font-weight: 700; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
 .hats button { border: 2px solid var(--line); border-radius: 10px; background: #fff; padding: 6px 10px; font-size: calc(14px * var(--fs)); font-weight: 700; }
@@ -1030,7 +1041,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
     <div class="placebar" id="placeBar" hidden><span id="placeMsg"></span><button class="mini main" id="placeOk" type="button">여기에 짓기</button><button class="mini" id="placeNo" type="button">취소</button></div>
     <section class="qbox" id="questBox" hidden aria-label="임무"></section>
     <section class="raidbox" id="raidBox" hidden aria-label="레이드">
-      <div class="rb-top"><b>🐉 레드 드래곤 레이드</b><span id="raidN">1명</span></div>
+      <div class="rb-top"><b>🐉 레드 드래곤 레이드</b><span id="raidN">1명</span><button class="rb-out" id="raidOut" type="button">🚪 나가기</button></div>
       <div class="rb-bar"><i id="raidHp"></i><span id="raidHpT">100%</span></div>
       <p id="raidMsg"></p>
       <div class="hb-sk" id="raidSk" aria-label="스킬 쿨타임"></div>
@@ -2709,6 +2720,16 @@ async function raidClaim(start) {
     ${sk ? `<li class="raidskin">🐉 <b>${r.skinLv > 1 ? '전용 스킨 한 개 더!' : '전용 스킨 획득!'}</b> ${skName} <b>Lv.${r.skinLv || 1}</b>${r.skinLv > 1 && r.skinN === 2 ** (r.skinLv - 1) ? ' ⬆️ 레벨 업!' : ''}<br><small>${rskNeed(r.skinLv || 1) ? `다음 레벨까지 ${r.skinN || 1} / ${rskNeed(r.skinLv || 1)}개 · ` : ''}가지고만 있어도 효과 · 스킨샵에서 레벨 확인</small></li>` : '<li class="muted">전용 스킨은 이번엔 안 나왔어요. 다음 정각에 또 도전!</li>'}</ul>
     <button class="btn main" data-close>마을로</button>`);
 }
+// 레이드 나가기 (2026-11-18): 끝나기 전에 나가면 이번 레이드 보상은 없음. 끝난 뒤에는 보상 받고 바로 마을로
+function leaveRaid() {
+  if (!RD) return;
+  if (RD.ended) return;   // 끝나면 보상 받으며 자동으로 마을로 감
+  if (!confirm('레이드에서 나갈까요?\n지금 나가면 이번 레이드 보상(골드·경험치·전용 스킨)은 받을 수 없어요.')) return;
+  try { RD.ws?.close(); } catch {}
+  exitRaid(); try { localStorage.removeItem('cbt-raid'); } catch {}
+  toast('🚪 레이드에서 나왔어요');
+}
+$('#raidOut').onclick = leaveRaid;
 function exitRaid() {
   if (!RD) return; bgm('town');
   try { RD.ws?.close(); } catch {}
@@ -5196,7 +5217,7 @@ function skinShop(b, keep) {
   }[tab]();
   bsOpen(b, { tag: '꾸미기 · 가지고만 있어도 보유 효과', wal: ['gold'], tabs: [['hat', '🎩 모자'], ['eye', '👀 눈'], ['suit', '👔 의상'], ['wsk', '⚔️ 무기'], ['raid', '🐉 레이드']], tab,
     body: `<p class="skfxsum">✨ 지금 보유 효과: <b>${fxText(skinFx(me)) || '없음'}</b></p>${body}`,
-    help: '<p>스킨은 <b>가지고만 있어도 보유 효과</b>가 붙어요 (안 써도 돼요). 현금 결제는 없어요.</p><p>칸을 누르면 미리보기 · 구매, 가진 스킨은 누르면 바로 쓰기 / 벗기.</p>',
+    help: '<p>스킨은 <b>가지고만 있어도 보유 효과</b>가 붙어요 (안 써도 돼요). 현금 결제는 없어요.</p><p>칸을 누르면 <b>내 캐릭터가 그 스킨을 쓴 모습</b>을 미리 볼 수 있어요. 미리보기 창에서 사기 · 쓰기 · 벗기.</p>',
     ready: el => {
     requestAnimationFrame(() => {
       el.querySelectorAll('#shopHats [data-x]').forEach(t => skinTile(t.querySelector('canvas'), { ...look, hat: t.dataset.x.slice(4) }));
@@ -5208,27 +5229,49 @@ function skinShop(b, keep) {
     } },
     async x => {
       const raid = x.startsWith('raid|'); if (raid) x = x.slice(5);
-      const [a, id, id2] = x.split(':'), isEye = a === 'eye', kind = a === 'eye' ? '눈 모양' : a === 'suit' ? '의상' : a === 'wsk' ? '무기 스킨' : '모자';
+      let [a, id, id2] = x.split(':'); if (id == null) { id = a; a = 'hat'; }   // 레이드 모자는 'hat:' 없이 옴
+      const isEye = a === 'eye', kind = a === 'eye' ? '눈 모양' : a === 'suit' ? '의상' : a === 'wsk' ? '무기 스킨' : '모자';
       const key = a === 'hat' ? id : x, item = a === 'hat' ? HATS.find(k => k.id === id) : rItem(x); if (!item) return;
       const wear = () => { if (isEye) me.eyes = id; else if (a === 'suit') me.suit = id; else if (a === 'wsk') me.wsk = { ...(me.wsk || {}), [id]: id2 }; else me.hat = id; };
-      if (me.hats.includes(key)) {   // 가진 것: 쓰기/벗기
-        if (worn(key)) { if (isEye) me.eyes = 'dot'; else if (a === 'suit') me.suit = ''; else if (a === 'wsk') me.wsk = { ...(me.wsk || {}), [id]: '' }; else me.hat = 'none'; } else wear();
-        syncMe(); saveLook(); return reopen?.();
-      }
-      if (raid || item.raid) return toast('🐉 레드 드래곤 레이드에서만 얻을 수 있어요 (매시 정각)');
-      const big = isEye ? { ...look, eyes: id } : a === 'suit' ? { ...look, suit: id } : a === 'wsk' ? wskLook(look, id, id2) : { ...look, hat: id };
-      // 구매 확인: 큰 미리보기
-      openModal(`<h3>🛍️ ${item.n}</h3><div class="skbig"><canvas id="skBig"></canvas></div>
-        <p style="text-align:center;margin:0">${kind} · <b>${goldTxt(item.price)}</b><br><span class="skfxline">보유 효과: <b>${fxText(item.fx || {})}</b></span><br><small class="muted">가진 골드 ${goldTxt(me.gold)}</small></p>
-        <div class="actions"><button class="btn main" data-y="buy" ${me.gold < item.price ? 'disabled' : ''}>${me.gold < item.price ? '골드가 모자라요' : '구매하고 바로 쓰기'}</button><button class="btn" data-y="back">돌아가기</button></div>`, el2 => {
-        requestAnimationFrame(() => skinTile(el2.querySelector('#skBig'), big, isEye ? 'eye' : a === 'wsk' ? 'weapon' : a === 'suit' ? 'suit' : undefined));
-        el2.querySelector('.actions').onclick = async e => {
-          const y = e.target.closest('[data-y]')?.dataset.y; if (!y) return;
-          if (y === 'buy') { const j = await act('/api/skin', { id: key }); if (!j) return; logAct(`${item.n} 구입 −${item.price}`); toast(`${item.n} 샀어요!`); emote(me, '❤️'); wear(); syncMe(); saveLook(); }
-          skinShop(b);
-        };
-      });
+      skinPreview(b, { a, id, id2, key, item, kind, isEye, raidOnly: raid || item.raid, worn: worn(key), wear });
     }, keep);
+}
+// 스킨 미리보기 창: 지금 내 모습 ↔ 그 스킨을 쓴(벗은) 모습을 나란히, 좌우로 돌아보며 움직임. 여기서 사기 · 쓰기 · 벗기
+function skinPreview(b, o) {
+  const { a, id, id2, key, item, kind, isEye } = o, own = me.hats.includes(key), on = own && o.worn;
+  const cur = { ...me, path: [], moving: false, swing: 0, hurt: 0, sit: -1, emo: null, say: null, fz: null, tool: null, still: true }, next = { ...cur };
+  if (a === 'wsk') for (const c of [cur, next]) { c.cls = id; if (!me.equip?.[id]) c.equip = { ...(me.equip || {}), [id]: { slot: id, st: 1, g: 'normal' } }; }   // 그 무기를 든 모습으로 비교
+  const off = c => { if (isEye) c.eyes = 'dot'; else if (a === 'suit') c.suit = ''; else if (a === 'wsk') c.wsk = { ...(c.wsk || {}), [id]: '' }; else c.hat = 'none'; };
+  if (on) off(next); else if (isEye) next.eyes = id; else if (a === 'suit') next.suit = id; else if (a === 'wsk') next.wsk = { ...(me.wsk || {}), [id]: id2 }; else next.hat = id;
+  const price = item.price || 0, poor = me.gold < price;
+  const btn = own ? `<button class="btn main" data-y="wear">${on ? '벗기' : '쓰기'}</button>`
+    : o.raidOnly ? '<button class="btn main" disabled>🐉 레이드에서만 얻어요</button>'
+    : `<button class="btn main" data-y="buy" ${poor ? 'disabled' : ''}>${poor ? '골드가 모자라요' : `구매하고 바로 쓰기 · ${goldTxt(price)}`}</button>`;
+  openModal(`<h3>👀 ${item.n}</h3>
+    <div class="skpv"><figure><canvas></canvas><figcaption>지금</figcaption></figure><span class="skpv-ar" aria-hidden="true">→</span><figure class="new"><canvas></canvas><figcaption>${on ? '벗으면' : '쓰면'}</figcaption></figure></div>
+    <p style="text-align:center;margin:0">${kind}${o.raidOnly ? ' · 레이드 전용' : own ? ' · <b>가지고 있어요</b>' : ` · <b>${goldTxt(price)}</b>`}<br><span class="skfxline">보유 효과: <b>${fxText(item.fx || {}) || '없음'}</b></span>${!own && !o.raidOnly ? `<br><small class="muted">가진 골드 ${goldTxt(me.gold)}</small>` : ''}</p>
+    <div class="actions">${btn}<button class="btn" data-y="back">돌아가기</button></div>`, el => {
+    const cvs = [...el.querySelectorAll('.skpv canvas')], d = Math.min(devicePixelRatio || 1, 2);
+    for (const cv of cvs) { cv.width = (cv.clientWidth || 132) * d; cv.height = (cv.clientHeight || 156) * d; }
+    const draw = () => {
+      if (!cvs[0].isConnected) return;
+      const t = performance.now() / 1000, dir = Math.floor(t / 1.8) % 2 ? -1 : 1;
+      [cur, next].forEach((c, i) => {
+        const cv = cvs[i], g = cv.getContext('2d'), w = cv.width / d, h = cv.height / d;
+        g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, w, h);
+        const sc = isEye ? w / 30 : a === 'wsk' ? w / 52 : w / 44, fy = isEye ? h * .3 + 32 * sc : h * .86;
+        drawChar(g, w / 2, fy, { ...c, dir }, t, sc);
+      });
+      requestAnimationFrame(draw);
+    };
+    requestAnimationFrame(draw);
+    el.querySelector('.actions').onclick = async e => {
+      const y = e.target.closest('[data-y]')?.dataset.y; if (!y) return;
+      if (y === 'buy') { const j = await act('/api/skin', { id: key }); if (!j) return; logAct(`${item.n} 구입 −${price}`); toast(`${item.n} 샀어요!`); emote(me, '❤️'); o.wear(); syncMe(); saveLook(); }
+      if (y === 'wear') { if (on) off(me); else o.wear(); syncMe(); saveLook(); }
+      skinShop(b);
+    };
+  });
 }
 function hallSheet(b, keep) {
   reopen = () => hallSheet(b, true);
