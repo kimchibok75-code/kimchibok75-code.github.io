@@ -186,6 +186,7 @@
   - 실시간: `{t:'sit', b}` (b = 벤치 번호, -1 = 일어남). 서버(town.js)는 누가 앉아 있으면 거절, `go`·`hunt`가 오면 자동으로 일어난 것으로 침
   - 벤치는 1칸(막힌 칸)이지만 그림·누르는 범위는 양옆으로 10px씩 넓음
 - 헤어: `HAIRS`(민머리 + 6종: 짧은·옆머리 대머리·바가지·삐죽·긴·묶은), `HAIR_COLORS` 8색 (game-rules.js). 무료, 캐릭터 만들기와 캐릭터창 → 스킨에서 고름
+  - **2026-11-18 사용자 그림 8종으로 바뀜** (`h1`~`h8`): 템플릿 `char/hair-front_guide_머리N.png`(흰색) → town-art.py 11번 → `hair-N.webp` + meta `hair`(틀 안 위치) → game.html `HAIR_POS`, `hairTint`(흰 그림에 머리 색을 곱함, 색마다 캐시). 예전 헤어 id는 `HAIR_OLD`/`hairId`로 비슷한 새 헤어로 보임·저장됨
   - DB `characters.hair`, `hair_c` (`migrations/0006_hair.sql`). 그림은 `hairParts` (뒷머리는 얼굴 뒤, 앞머리는 얼굴 위)
 
 ### 3단계 (같이 놀기) — 2026-11-15 배포, 테스트 통과

@@ -274,5 +274,13 @@ META['fountainAt'] = {'water': [round(xs.min() / W, 4), round(ys.min() / H, 4), 
   'spout': [round((765 - b[0]) / W, 4), round((375 - b[1]) / H, 4)], 'spoutR': [round(113 / W, 4), round(76 / H, 4)]}
 print('fountain', META['fountainAt'], t.shape)
 
+# 11) 헤어 8종 (2026-11-18): 템플릿 char/hair-front_guide_머리N.png (384×384, 발 (192,336), 1칸 4px) 흰색 → 게임이 머리 색을 곱해 입힘
+HR = {}
+for i in range(1, 9):
+    a = np.asarray(Image.open(os.path.join('텍스쳐 템플릿', 'char', 'hair-front_guide_머리%d.png' % i)).convert('RGBA')).copy(); a[a[:, :, 3] == 0] = 0
+    b = bbox(a[:, :, 3], pad=1); save('hair-%d' % i, a[b[1]:b[3], b[0]:b[2]], q=92)
+    HR['h%d' % i] = [(b[0] - 192) / 4, (b[1] - 336) / 4, (b[2] - b[0]) / 4, (b[3] - b[1]) / 4]
+META['hair'] = HR
+
 json.dump(META, open(os.path.join(OUT, 'meta.json'), 'w'), ensure_ascii=False, indent=1)
 print(json.dumps(META, ensure_ascii=False))

@@ -8,7 +8,11 @@ export const FACES = ['#ffe0c2', '#f7c9a0', '#d9a77a', '#a8754f', '#ffd4e0', '#c
 export const BODIES = ['#e8553a', '#4f9d5a', '#3d7bd9', '#9a5ad6', '#e9a23b', '#2f3b4f', '#ef7fa6', '#2bb3a6'];
 export const EYES = ['dot', 'happy', 'sleep', 'wow'];
 // 헤어스타일 · 헤어 색 (겉모습만, 언제든 무료로 바꿈). none = 민머리(처음 모습)
-export const HAIRS = [{ id: 'none', n: '민머리' }, { id: 'short', n: '짧은 머리' }, { id: 'side', n: '옆머리 대머리' }, { id: 'bowl', n: '바가지 머리' }, { id: 'spiky', n: '삐죽 머리' }, { id: 'long', n: '긴 머리' }, { id: 'pony', n: '묶은 머리' }];
+// 헤어 (2026-11-18 사용자 그림 8종 h1~h8). 예전 코드 그림 헤어(short…pony)는 HAIR_OLD로 비슷한 새 헤어로 바꿔 보여 줌
+export const HAIRS = [{ id: 'none', n: '민머리' }, { id: 'h1', n: '짧은 머리' }, { id: 'h2', n: '넘긴 앞머리' }, { id: 'h3', n: '가르마 머리' }, { id: 'h4', n: '삐죽 머리' },
+  { id: 'h5', n: '웨이브 단발' }, { id: 'h6', n: '양갈래' }, { id: 'h7', n: '옆 웨이브' }, { id: 'h8', n: '긴 단발' }];
+export const HAIR_OLD = { short: 'h1', side: 'h3', bowl: 'h8', spiky: 'h4', long: 'h7', pony: 'h6' };
+export const hairId = id => HAIR_OLD[id] || id || 'none';
 export const HAIR_COLORS = ['#3a2a20', '#7a4a2a', '#e8c15a', '#d0502f', '#c9ccd4', '#f2a0c2', '#5b86e0', '#5fae5a'];
 export const MAX_LV = 100;
 export const START_GOLD = 500;

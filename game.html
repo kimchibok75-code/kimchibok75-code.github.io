@@ -1151,7 +1151,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, fishHit, FISH_RIVER, FISH_SEA, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
@@ -1388,7 +1388,25 @@ function armorParts(it, bob) {
   return P;
 }
 // 헤어스타일 (머리 위쪽 hy 기준, 얼굴은 x -14~14 · 높이 26)
+// 헤어 8종 (2026-11-18 사용자 그림, 템플릿 hair-front 틀). 흰색 그림에 머리 색을 곱해 입힘 (색마다 한 번만 만들어 둠)
+// HAIR_POS = 틀 안 위치 [x, y, w, h] (머리 꼭대기 hy = -45 기준, town-art.py 11번 meta 'hair')
+const HAIR_POS = { h1: [-19.5, -54.25, 38.5, 27.25], h2: [-21.75, -55, 41, 29.25], h3: [-21.75, -53.25, 43.25, 28.75], h4: [-20.5, -57.75, 40.75, 29], h5: [-19, -50.5, 38.25, 35.5], h6: [-27.5, -53.25, 55, 36.25], h7: [-21.75, -51, 42.75, 39.75], h8: [-21.75, -53, 43.25, 34.25] };
+const HAIR_TINT = new Map();
+function hairTint(id, col) {
+  const k = id + col; let cv = HAIR_TINT.get(k); if (cv) return cv;
+  const im = ART['hair-' + id.slice(1)]; if (!im) return null;
+  cv = document.createElement('canvas'); cv.width = im.width; cv.height = im.height; const g = cv.getContext('2d');
+  g.drawImage(im, 0, 0); g.globalCompositeOperation = 'multiply'; g.fillStyle = col; g.fillRect(0, 0, cv.width, cv.height);
+  g.globalCompositeOperation = 'destination-in'; g.drawImage(im, 0, 0);
+  HAIR_TINT.set(k, cv); return cv;
+}
 function hairParts(id, c, hy) {
+  id = hairId(id);
+  if (HAIR_POS[id]) {
+    const cv = hairTint(id, c), [x, y0, w, h] = HAIR_POS[id], y = y0 + hy + 45;
+    if (cv) return { back: [], front: [{ flat: 1, path: () => {}, ink: (g, O) => inkSil(g, cv, x, y, w, h, O), after: g => g.drawImage(cv, x, y, w, h) }] };
+    return { back: [], front: [] };
+  }
   const cap = { path: R(-15, hy - 2.5, 30, 10.5, [11, 11, 3, 3]), c }, shine = 'rgba(255,255,255,.35)';
   switch (id) {
     case 'short': return { back: [], front: [cap, { path: PG([[-14.6, hy + 4], [14.6, hy + 4], [14.6, hy + 8.5], [10, hy + 7], [6, hy + 10.5], [2, hy + 7.5], [-3, hy + 10.5], [-7, hy + 7.5], [-14.6, hy + 9]]), c }, { flat: 1, path: E(-6, hy + 1.2, 4.5, 1.6, -.2), c: shine }] };
@@ -1599,7 +1617,7 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 // ───── 사용자가 그린 그림 (텍스쳐 템플릿/내 디자인 → scripts/img-export/town-art.py → assets/img/town) ─────
 // 다 불러온 뒤에 마을을 시작함 (artReady). 못 불러온 그림은 예전 코드 그림을 그대로 씀
 const ART = {};
-const ART_N = ['b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water',
+const ART_N = ['b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
   ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
   ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'sword', 'bow', 'staff'].map(n => 'og-' + n), 'ogre-bg'];
@@ -4749,7 +4767,7 @@ function renderSkins() {
 // 화살표로 고르기 (얼굴 색 · 옷 색 · 헤어스타일 · 헤어 색)
 const ARROWS = [];
 function arrowPick(el, label, list, key, show, after) {
-  const draw = () => { const i = Math.max(0, list.indexOf(me[key])); el.innerHTML = `<b>${label}</b><button type="button" data-d="-1" aria-label="${label} 이전">◀</button><span class="aval">${show(list[i])}<small>${i + 1}/${list.length}</small></span><button type="button" data-d="1" aria-label="${label} 다음">▶</button>`; };
+  const draw = () => { if (key === 'hair') me.hair = hairId(me.hair); const i = Math.max(0, list.indexOf(me[key])); el.innerHTML = `<b>${label}</b><button type="button" data-d="-1" aria-label="${label} 이전">◀</button><span class="aval">${show(list[i])}<small>${i + 1}/${list.length}</small></span><button type="button" data-d="1" aria-label="${label} 다음">▶</button>`; };
   el.onclick = e => { const d = +e.target.closest('[data-d]')?.dataset.d; if (!d) return; const i = Math.max(0, list.indexOf(me[key])); me[key] = list[(i + d + list.length) % list.length]; draw(); after(); };
   ARROWS.push(draw); draw();
 }
@@ -4763,7 +4781,7 @@ function swatches(el, list, key, after) {
 }
 // 헤어스타일 버튼 (무료, 누르면 바로 바뀜)
 function hairPicker(el, after) {
-  el.innerHTML = HAIRS.map(h => `<button type="button" data-hr="${h.id}" aria-pressed="${(me.hair || 'none') === h.id}">${h.n}</button>`).join('');
+  el.innerHTML = HAIRS.map(h => `<button type="button" data-hr="${h.id}" aria-pressed="${hairId(me.hair) === h.id}">${h.n}</button>`).join('');
   el.onclick = e => { const id = e.target.closest('[data-hr]')?.dataset.hr; if (!id) return; me.hair = id; el.querySelectorAll('[data-hr]').forEach(b => b.setAttribute('aria-pressed', b.dataset.hr === id)); after(); };
 }
 // 스킬 탭: 직업별 6종 (가진 것은 레벨·다음 레벨까지 장 수, 없는 것은 흐리게)
@@ -4818,7 +4836,7 @@ async function api(path, body, opts = {}) {
 // 서버에서 받은 내 정보로 캐릭터 맞추기
 function applyMe(m, keep) {   // keep: 지금 위치 그대로 (서버 저장 위치는 45초마다라서 예전 자리일 수 있음)
   const c = m.char, keepPos = keep || (HT && c.hunt);
-  Object.assign(me, { name: m.nick, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair || 'none', hairC: c.hairC || HAIR_COLORS[0], suit: c.suit || '', wsk: c.wsk || {}, intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
+  Object.assign(me, { name: m.nick, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: hairId(c.hair), hairC: c.hairC || HAIR_COLORS[0], suit: c.suit || '', wsk: c.wsk || {}, intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
     str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp || derive().maxHp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
     cls: c.cls || 'sword', enh: c.enh || {}, presets: c.presets, preset: c.preset || 0, gacha: c.gacha || { w: 0, a: 0 }, life: c.life || me.life, uid: m.id ?? me.uid, gfx: m.gfx || {}, world: m.world || me.world });
   me.job = c.job; me.jobEnd = c.job ? Date.now() + c.job.left * 1000 : 0;
