@@ -1871,7 +1871,7 @@ const walkToTile = (ch, tx, ty, then) => walkTo(ch, tx * T + T / 2, ty * T + T /
 function stepChar(ch, dt) {
   if (!ch.path?.length) { ch.moving = false; return; }
   const tgt = ch.path[0], dx = tgt.x - ch.x, dy = tgt.y - ch.y, d = Math.hypot(dx, dy), sp = (ch.speed || 165) * dt;
-  ch.moving = true; if (Math.abs(dx) > 1) ch.dir = dx < 0 ? -1 : 1; if (ch === me) me.face = [dx, dy];
+  ch.moving = true; if (Math.abs(dx) > 1) ch.dir = dx < 0 ? -1 : 1; if (ch === me) me.fdir = [dx, dy];
   if (d <= sp) { ch.x = tgt.x; ch.y = tgt.y; ch.path.shift(); if (!ch.path.length) { ch.moving = false; if (ch === me) savePos(); if (ch.then) { const f = ch.then; ch.then = null; f(); } } }
   else { ch.x += dx / d * sp; ch.y += dy / d * sp; }
 }
@@ -3959,7 +3959,7 @@ function steerTick(dt) {
   const d = HT || S.away ? null : steerDir();
   if (d) auHold();
   if (d && BUSY()) { STEER.key.clear(); STEER.drag = null; busyToast(); return; }
-  if (d) me.face = d;   // 바라보는 방향 (Z 공격이 나가는 쪽)
+  if (d) me.fdir = d;   // 바라보는 방향 (Z 공격이 나가는 쪽)
   if (!d) { if (STEER.on) { STEER.on = false; me.moving = false; STEER.t = 0; if (!me.jfly) { netGo(); savePos(); } } return; }
   if (!STEER.on) { STEER.on = true; standUp(me); me.path = []; me.then = null; GA = null; closePanel?.(); STEER.t = 0; }
   ROAM.pause = 15;
@@ -4031,7 +4031,7 @@ function myAttack() {
   if (HT) return huntZ();
   if (BUSY() || me.sit >= 0) return;
   const now = performance.now(); if (now - (me.zAt || 0) < 320) return; me.zAt = now;
-  const f = me.face || [me.dir || 1, 0], l = Math.hypot(f[0], f[1]) || 1, a = Math.atan2(f[1] / l, f[0] / l);
+  const f = me.fdir || [me.dir || 1, 0], l = Math.hypot(f[0], f[1]) || 1, a = Math.atan2(f[1] / l, f[0] / l);
   townAtk(me, a); netSend({ t: 'atk', a: Math.round(a * 100) / 100 });
 }
 function townAtk(ch, a) {
