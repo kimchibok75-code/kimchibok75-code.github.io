@@ -4934,14 +4934,19 @@ function uikMove(dx, dy) {
   const list = uikList(); if (!list.length) return;
   const cur = uikCur(list);
   if (!cur) return uikMark(list[0]);
-  const c = cur.getBoundingClientRect(), cx = c.x + c.width / 2, cy = c.y + c.height / 2;
-  const pick = cone => {   // 누른 방향 쪽에서 가장 가까운 것 (옆으로 벗어난 만큼 더 멀게 침). cone이면 비스듬히 많이 벗어난 것은 빼기
+  const c = cur.getBoundingClientRect();
+  // 2026-11-19: 가운데끼리가 아니라 테두리끼리 잼. 누른 방향으로 떨어진 거리(along) + 옆으로 어긋난 거리(side, 겹치면 0)
+  // 거의 같은 거리면 화면 순서가 앞인 것(왼쪽·위) → 넓은 '도움말'에서 ↓ = 1회 뽑기, 1회에서 → = 10회, ↑ = 도움말
+  const pick = cone => {
     let best = null, bs = 1e9;
     for (const el of list) {
       if (el === cur) continue;
-      const r = el.getBoundingClientRect(), x = r.x + r.width / 2, y = r.y + r.height / 2, along = (x - cx) * dx + (y - cy) * dy, side = Math.abs((x - cx) * dy) + Math.abs((y - cy) * dx);
-      if (along <= 2 || (cone && side > along * 1.2 + 10)) continue;
-      const sc = along + side * 2.5; if (sc < bs) { bs = sc; best = el; }
+      const r = el.getBoundingClientRect();
+      const along = dy > 0 ? r.top - c.bottom : dy < 0 ? c.top - r.bottom : dx > 0 ? r.left - c.right : c.left - r.right;
+      if (along < -4) continue;   // 그쪽 방향에 있지 않음 (살짝 겹친 건 괜찮음)
+      const side = dy ? Math.max(0, r.left - c.right, c.left - r.right) : Math.max(0, r.top - c.bottom, c.top - r.bottom);
+      if (cone && side > Math.max(along, 0) * 1.2 + 10) continue;
+      const sc = Math.max(along, 0) + side * 2.5; if (sc < bs - 4) { bs = sc; best = el; }
     }
     return best;
   };
