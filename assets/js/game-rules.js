@@ -409,8 +409,8 @@ export const HOUSE = { cost: { gold: 10000, wood: 60, stone: 40 }, move: { gold:
   roofs: ['#4f9d5a', '#2bb3a6', '#3d7bd9', '#9a5ad6', '#e8553a', '#e9a23b', '#ef7fa6', '#5d6b7e'] };
 export const costText = o => Object.entries(o).map(([k, v]) => `${k === 'gold' ? '🪙' : RES[k].i} ${v.toLocaleString()}`).join(' · ');
 
-// ───────── 소원 분수: 10분에 한 번, 10골드 ─────────
-export const WISH = { cost: 10, cd: 10 * MIN };
+// ───────── 소원 분수: 5분에 한 번, 10골드 ─────────
+export const WISH = { cost: 10, cd: 5 * MIN };   // 2026-11-18 쿨타임 10분 → 5분
 // 버프 (하나만, 새로 받으면 바뀜)
 export const BUFFS = { gold: { n: '반짝이는 물보라', i: '💰', d: '골드 +15%', fx: { goldP: 15 } }, exp: { n: '맑은 물결', i: '📘', d: '경험치 +15%', fx: { expP: 15 } },
   atk: { n: '용기의 물방울', i: '⚔️', d: '공격력 +10%', fx: { atkP: 10 } }, luck: { n: '무지개 축복', i: '🌈', d: '골드 +20% · 경험치 +20% · 치명타 +5%p', fx: { goldP: 20, expP: 20, crit: 5 } } };
