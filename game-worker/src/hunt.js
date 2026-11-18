@@ -1,6 +1,6 @@
 // 자동 사냥 계산 (기획서 4장). 화면의 전투는 보여 주기용이고, 실제 결과는 여기서 정해짐.
 // 흐른 시간만큼 몬스터를 한 마리씩 잡는 과정을 빠르게 흉내 냄.
-import { FIELDS, MONS, HUNT, POTS, FAR, derive, expPenalty, addExp, pick, biteDmg, cntAdd, gimOf, gimDmg, potPick, offlineLife } from '../../assets/js/game-rules.js';
+import { FIELDS, MONS, HUNT, POTS, FAR, derive, expPenalty, addExp, pick, biteDmg, cntAdd, gimOf, gimDmg, potPick, offlineLife, OFF_XP } from '../../assets/js/game-rules.js';
 
 const MAX_STEPS = 300000;   // 한 번 계산할 때 최대 반복 (안전장치)
 
@@ -78,10 +78,10 @@ export function settle(c, at) {
   const h = c.hunt; if (!h) return null;
   const gap = Math.max(0, (at - h.last) / 1000);
   const online = Math.min(gap, HUNT.onlineGap), offline = Math.min(gap - online, HUNT.offlineMax);
-  // 화면을 닫은 시간은 50% 효율, 최대 8시간. 그중 절반(offlineHunt)은 사냥, 나머지는 마을 일(offlineLife: 생활 경험치·골드·자원)
+  // 화면을 닫은 시간은 50% 효율(경험치만 10%), 최대 4시간. 그중 절반(offlineHunt)은 사냥, 나머지는 마을 일(offlineLife: 생활 경험치·골드·자원)
   // debt: 지난번에 미리 당겨 쓴 시간 (자주 불러도 빨라지지 않게)
   const offEff = offline * HUNT.offlineEff;
-  let sec = online + offEff * HUNT.offlineHunt - (h.debt || 0);
+  let sec = online + offEff * HUNT.offlineHunt - (h.debt || 0), offLeft = offEff * HUNT.offlineHunt;   // offLeft: 화면을 닫은 몫을 먼저 계산 (그동안 경험치는 OFF_XP배)
   h.last = at;
   const f = FIELDS[h.f], out = { sec: gap, offline, kills: 0, exp: 0, gold: 0, drops: [], sold: 0, up: 0, pots: 0, bosses: [], bossSkip: [], died: false };
   let D = derive(c);
@@ -96,13 +96,13 @@ export function settle(c, at) {
       if (r.dead) { out.bossSkip.push(f.boss.n); continue; }
       Object.assign(st, { ...test, used: st.used + test.used }); c.pots = st.pots;
       sec -= r.t; h.t += r.t;
-      reward(c, h, out, f, f.boss, D, true);
+      reward(c, h, out, f, f.boss, D, true, offLeft > 0 ? OFF_XP() : 1); offLeft -= r.t;
       out.bosses.push(f.boss.n);
     } else {
       const mon = MONS[pick(f.mons)], r = fight(st, D, mon, false);
       sec -= r.t; h.t += r.t;
       if (r.dead) { out.died = true; break; }
-      reward(c, h, out, f, mon, D, false);
+      reward(c, h, out, f, mon, D, false, offLeft > 0 ? OFF_XP() : 1); offLeft -= r.t;
     }
     if (c.lv !== lv0) { D = derive(c); st.hp = D.maxHp; }   // 레벨업하면 체력 가득
   }
@@ -118,8 +118,8 @@ export function settle(c, at) {
   }
   return out;
 }
-function reward(c, h, out, f, mon, D, boss) {
-  const e = Math.max(1, Math.round(mon.exp * expPenalty(c.lv, mon.lv) * (1 + D.expB / 100)));
+function reward(c, h, out, f, mon, D, boss, xm = 1) {
+  const e = Math.max(1, Math.round(mon.exp * expPenalty(c.lv, mon.lv) * (1 + D.expB / 100) * xm));
   const g = Math.max(1, Math.round(mon.gold * HUNT.goldMul * (1 + D.goldB / 100) * (.8 + Math.random() * .4)));
   out.up += addExp(c, e);
   c.gold += g; out.kills++; out.exp += e; out.gold += g; h.kills++; h.exp += e; h.gold += g;

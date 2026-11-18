@@ -234,7 +234,7 @@ export const spentPoints = c => c.str + c.dex + c.int + c.luk - 20;
 
 // ───────── 사냥터 (기획서 4장) ─────────
 export const LV_CAP = 55;            // 지금 열린 최고 레벨 (사냥터를 추가하면 올리기)
-export const HUNT = { offlineMax: 8 * 3600, offlineEff: .5, offlineHunt: .5, onlineGap: 90, bossEvery: 300, deathLoss: .1, townRegen: .02, huntRegen: .015, goldMul: .6 };   // huntRegen 2026-11-17 .02 → .015 (몬스터 기믹과 함께: 물약이 필요하게)   // 2026-11-16 1.15 → .6 (사냥 골드가 낚시·알바보다 너무 많아서 절반쯤으로)   // goldMul: 사냥에서 장비가 안 떨어지는 대신 골드 +15%
+export const HUNT = { offlineMax: 4 * 3600, offlineEff: .5, offlineExp: .1, offlineHunt: .5, onlineGap: 90, bossEvery: 300, deathLoss: .1, townRegen: .02, huntRegen: .015, goldMul: .6 };   // huntRegen 2026-11-17 .02 → .015 (몬스터 기믹과 함께: 물약이 필요하게)   // 2026-11-16 1.15 → .6 (사냥 골드가 낚시·알바보다 너무 많아서 절반쯤으로)   // goldMul: 사냥에서 장비가 안 떨어지는 대신 골드 +15%
 // 2026-11-17: 모두 최대 체력 비율로 (작은 20% · 큰 50% · 특대 100%)
 export const POTS = { s: { n: '작은 음료', i: '🥤', d: '최대 체력의 20%', price: 20, heal: max => Math.round(max * .2) }, l: { n: '큰 음료', i: '🧋', d: '최대 체력의 50%', price: 70, heal: max => Math.round(max * .5) }, xl: { n: '특대 음료', i: '🍹', d: '최대 체력의 100%', price: 200, heal: max => Math.round(max) } };
 // 어떤 음료를 마실지 (화면·서버 같은 규칙): 많이 다쳤을수록 큰 것부터, 없으면 있는 것
@@ -784,6 +784,8 @@ export const OGRE_SWING = { r: 9, half: .7 };   // 몽둥이 휘두르기: 반�
 // ───────── 생활 경험치 (2026-11-16): 생활 놀거리로도 레벨이 오름 ─────────
 // 사냥터 방치(화면 닫고 70%) 1시간 경험치 어림값 (사냥 봇 시험으로 맞춤: Lv10 ≈ 6만, Lv30 ≈ 17만, Lv50 ≈ 29만)
 export const huntIdleExp = lv => 5500 * lv + 10000;
+// 화면을 닫은 동안 경험치만 효율 offlineExp(10%), 골드·자원은 offlineEff(50%) 그대로 (2026-11-19 사용자 결정: 자고 일어나 24업은 너무 많음). 최대 시간 8 → 4시간
+export const OFF_XP = () => HUNT.offlineExp / HUNT.offlineEff;
 // 자동 생활 1시간 경험치 = 사냥 방치의 50% (사용자 결정)
 export const LIFE_EXP_RATE = .5;
 export const lifeExpHour = lv => Math.round(huntIdleExp(lv) * LIFE_EXP_RATE);
@@ -816,7 +818,7 @@ export function offlineLife(c, sec) {
   if (sec < 1) return null;
   const D = derive(c), P = OFFLINE_LIFE(c.lv), h = sec / 3600, L = c.life, got = {};
   for (const k of ['wood', 'stone', 'fish', 'farm']) got[k] = Math.floor(P[k] * h);
-  got.gold = Math.round(P.gold * h * (1 + (D.goldB || 0) / 100)); got.exp = Math.round(P.exp * h * (1 + (D.expB || 0) / 100));
+  got.gold = Math.round(P.gold * h * (1 + (D.goldB || 0) / 100)); got.exp = Math.round(P.exp * h * OFF_XP() * (1 + (D.expB || 0) / 100));
   if (L) { L.res.wood += got.wood; L.res.stone += got.stone; L.coins.fish += got.fish; L.coins.farm += got.farm; }
   c.gold += got.gold; got.up = addExp(c, got.exp);
   return got;
@@ -828,7 +830,7 @@ export const OFFLINE_HUNT = lv => { const exp = huntIdleExp(lv) / .7; return { e
 export function offlineHuntAway(c, sec) {
   if (sec < 1) return null;
   const D = derive(c), P = OFFLINE_HUNT(c.lv), h = sec / 3600;
-  const got = { kill: Math.floor(P.kill * h), gold: Math.round(P.gold * h * (1 + (D.goldB || 0) / 100)), exp: Math.round(P.exp * h * (1 + (D.expB || 0) / 100)) };
+  const got = { kill: Math.floor(P.kill * h), gold: Math.round(P.gold * h * (1 + (D.goldB || 0) / 100)), exp: Math.round(P.exp * h * OFF_XP() * (1 + (D.expB || 0) / 100)) };
   c.gold += got.gold; got.up = addExp(c, got.exp);
   return got;
 }

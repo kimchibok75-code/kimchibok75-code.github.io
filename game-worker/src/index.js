@@ -289,7 +289,7 @@ async function play(env, user, fn) {
       const max = derive(c).maxHp;
       c.hp = Math.min(max, Math.round(c.hp + Math.max(0, (at - (c.hpAt || at)) / 1000) * max * HUNT.townRegen)); c.hpAt = at;
     } else out.hunt = settle(c, at);
-    // 2026-11-18 마을에서 화면을 닫아도 자리 비움: 마지막 접속 신호(life.seen) 뒤 5분 넘게 비었으면 효율 50%로 마을 일 + 사냥 반반 (최대 8시간)
+    // 2026-11-18 마을에서 화면을 닫아도 자리 비움: 마지막 접속 신호(life.seen) 뒤 5분 넘게 비었으면 효율 50%(경험치 10%)로 마을 일 + 사냥 반반 (최대 4시간)
     if (!c.hunt && !out.hunt) { const gap = c.life.seen ? (at - c.life.seen) / 1000 : 0;
       if (gap >= AWAY_MIN) { const off = Math.min(gap - HUNT.onlineGap, HUNT.offlineMax), eff = off * HUNT.offlineEff, life = offlineLife(c, eff * (1 - HUNT.offlineHunt)), hunt = offlineHuntAway(c, eff * HUNT.offlineHunt); if (life || hunt) out.away = { sec: Math.round(gap), off: Math.round(off), life, hunt }; } }   // 절반은 마을 일, 절반은 사냥
     c.life.seen = at;
