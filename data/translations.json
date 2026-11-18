@@ -134,10 +134,10 @@
       "at": 1794687920637
     },
     "3837808238": {
-      "src": "Stellaris-style repeatable research for RimWorld. After Starflight basics, a \"Repeatable\" tab appears in the research screen with research you can complete again and again.",
-      "full": "RimWorld를 위한 Stellaris 스타일의 반복 가능한 연구. Starflight 기본 사항을 마친 후에는 계속해서 완료할 수 있는 연구가 포함된 \"반복 가능\" 탭이 연구 화면에 나타납니다.",
-      "ko": "RimWorld를 위한 Stellaris 스타일의 반복 가능한 연구. Starflight 기본 사항을 마친 후에는 계속해서 완료할 수 있는 연구가 포함된 \"반복 가능\" 탭이 연구 화면에 나타납니다.",
-      "at": 1794793275014
+      "src": "Stellaris-style repeatable research for RimWorld. A \"Repeatable\" tab in the research screen holds research you can complete again and again.",
+      "full": "RimWorld를 위한 Stellaris 스타일의 반복 가능한 연구. 연구 화면의 \"반복 가능\" 탭에는 계속해서 완료할 수 있는 연구가 들어 있습니다.",
+      "ko": "RimWorld를 위한 Stellaris 스타일의 반복 가능한 연구. 연구 화면의 \"반복 가능\" 탭에는 계속해서 완료할 수 있는 연구가 들어 있습니다.",
+      "at": 1794960703315
     },
     "3837808326": {
       "src": "Adds two buildings, the supply shelf and the multi-link supply shelf. A workbench linked to a shelf uses the ingredients stored in it directly when working bills.",
@@ -282,6 +282,12 @@
       "full": "UI 재구성 - 관계는 나머지 재구성 모드와 일치하도록 스타일이 지정된 하단 표시줄에 관계 탭을 추가합니다.",
       "ko": "UI 재구성 - 관계는 나머지 재구성 모드와 일치하도록 스타일이 지정된 하단 표시줄에 관계 탭을 추가합니다.",
       "at": 1794901760038
+    },
+    "3840883595": {
+      "src": "Research prerequisite: Standard Mechtech",
+      "full": "연구 전제 조건: 표준 기계 기술",
+      "ko": "연구 전제 조건: 표준 기계 기술",
+      "at": 1794960704416
     },
     "3841078351": {
       "src": "A new spacer-tier warcasket for Vanilla Factions Expanded - Pirates.",
