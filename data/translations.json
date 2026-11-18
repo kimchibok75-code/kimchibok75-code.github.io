@@ -312,6 +312,12 @@
       "full": "Vanilla Factions Expanded - Pirates를 위한 새로운 스페이서 등급 전쟁통입니다.",
       "ko": "Vanilla Factions Expanded - Pirates를 위한 새로운 스페이서 등급 전쟁통입니다.",
       "at": 1794901758368
+    },
+    "3841376089": {
+      "src": "Adds a reloadable glue trap that lures and immobilizes animals with a body size of 0.",
+      "full": "신체 크기가 0인 동물을 유인하고 고정시키는 재장전 가능한 접착제 트랩을 추가합니다.",
+      "ko": "신체 크기가 0인 동물을 유인하고 고정시키는 재장전 가능한 접착제 트랩을 추가합니다.",
+      "at": 1794991167424
     }
   }
 }
