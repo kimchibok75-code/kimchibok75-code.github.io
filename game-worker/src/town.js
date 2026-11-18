@@ -113,6 +113,9 @@ export class Town extends DurableObject {
       const r = Number.isInteger(m.r) && m.r >= 0 && m.r < 1e9 ? m.r : 0; Object.assign(a, { room2: r, sit: -1, x: m.x | 0, y: m.y | 0, tx: m.x | 0, ty: m.y | 0 }); this.save(ws, a); return this.all({ t: 'room', id: a.id, r, x: a.x, y: a.y }, ws);
     }
     if (m.t === 'hunt') { a.hunt = !!m.on; a.sit = -1; this.save(ws, a); return this.all({ t: 'hunt', id: a.id, on: a.hunt }, ws); }
+    // 점프 (n: 1 점프 · 2 더블 점프) · Z 공격 (a = 바라보는 방향 각도). 보여 주기만
+    if (m.t === 'jmp') { if ((m.n !== 1 && m.n !== 2) || t - (a.jmpAt || 0) < 120) return; a.jmpAt = t; a.sit = -1; this.save(ws, a); return this.all({ t: 'jmp', id: a.id, n: m.n }, ws); }
+    if (m.t === 'atk') { if (!Number.isFinite(m.a) || Math.abs(m.a) > 4 || t - (a.atkAt || 0) < 280) return; a.atkAt = t; return this.all({ t: 'atk', id: a.id, a: m.a }, ws); }
     if (m.t === 'emo') { if (!EMOTES.includes(m.e) || t - a.emoAt < 800) return; a.emoAt = t; this.save(ws, a); return this.all({ t: 'emo', id: a.id, e: m.e }, ws); }
     // 낚시 모습 (다른 사람 화면에 낚싯대·찌·자랑 보여 주기). s: 1 던짐(bx,by = 찌 자리, r = 낚싯대 단계) · 2 낚음(g,n,len) · 3 놓침 · 0 낚싯대 넣음
     // 자랑 글은 서버가 확인한 물고기 이름·길이만 (아무 글이나 못 보냄)

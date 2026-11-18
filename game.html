@@ -1485,11 +1485,11 @@ function drawEyes(g, c, ey, t) {
 }
 function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   // (x, y) = 발 위치
-  const sit = c.sit >= 0 && !HT && !c.still;
-  ctx.save(); ctx.translate(x, y - (sit ? 12 : 0)); ctx.scale(scale * (c.dir < 0 ? -1 : 1), scale);
+  const sit = c.sit >= 0 && !HT && !c.still, jz = c.still ? 0 : c.jz || 0;
+  ctx.save(); ctx.translate(x, y - (sit ? 12 : 0) - jz); ctx.scale(scale * (c.dir < 0 ? -1 : 1), scale);
   const walk = c.moving && !sit ? Math.sin(t * 14) : 0;
   const bob = c.moving && !sit ? Math.abs(Math.sin(t * 14)) * 2 : Math.sin(t * 2.2 + (c.seed || 0)) * .6;
-  if (!sit) { ctx.fillStyle = 'rgba(31,42,58,.18)'; ctx.beginPath(); ctx.ellipse(0, 0, 11, 3.5, 0, 0, Math.PI * 2); ctx.fill(); }
+  if (!sit) { const k = Math.max(.45, 1 - jz / 160); ctx.fillStyle = `rgba(31,42,58,${.18 * k})`; ctx.beginPath(); ctx.ellipse(0, jz, 11 * k, 3.5 * k, 0, 0, Math.PI * 2); ctx.fill(); }
   const eq = c.equip || {}, hy = -45 - bob, P = [];
   // 뒷머리(긴 머리·묶은 머리)는 몸·팔보다 먼저 그려서 몸 뒤로
   const hp = hairParts(c.hair, c.hairC || HAIR_COLORS[0], hy);
@@ -1871,7 +1871,7 @@ const walkToTile = (ch, tx, ty, then) => walkTo(ch, tx * T + T / 2, ty * T + T /
 function stepChar(ch, dt) {
   if (!ch.path?.length) { ch.moving = false; return; }
   const tgt = ch.path[0], dx = tgt.x - ch.x, dy = tgt.y - ch.y, d = Math.hypot(dx, dy), sp = (ch.speed || 165) * dt;
-  ch.moving = true; if (Math.abs(dx) > 1) ch.dir = dx < 0 ? -1 : 1;
+  ch.moving = true; if (Math.abs(dx) > 1) ch.dir = dx < 0 ? -1 : 1; if (ch === me) me.face = [dx, dy];
   if (d <= sp) { ch.x = tgt.x; ch.y = tgt.y; ch.path.shift(); if (!ch.path.length) { ch.moving = false; if (ch === me) savePos(); if (ch.then) { const f = ch.then; ch.then = null; f(); } } }
   else { ch.x += dx / d * sp; ch.y += dy / d * sp; }
 }
@@ -2475,9 +2475,10 @@ const TF = [];
 const townFloat = (x, y, text, color = '#fff') => TF.push({ x, y, text, color, t: 0 });
 function update(dt, now) {
   S.barT -= dt; if (S.barT <= 0) { S.barT = .15; syncBars(); }
+  jumpTick(me, dt); for (const p of people) if (p.jn) jumpTick(p, dt);
   if (RD) { updateRaid(dt); follow(dt, RW(), RH()); return; }
   if (HT) { updateHunt(dt, now); follow(dt, HW * T, HH * T); return; }
-  steerTick(dt); if (!STEER.on) stepChar(me, dt); roamTick(dt); gatherTick(dt);
+  steerTick(dt); if (!STEER.on) stepChar(me, dt); roamTick(dt); gatherTick(dt); townAtkTick(dt);
   if (me.room && me.y > (ROOM_H - .55) * T && Math.abs(me.x - (ROOM_DOOR.x + .5) * T) < T * .8) leaveRoom();   // 문으로 걸어 나가기
   const D = derive(); if (me.hp < D.maxHp) me.hp = Math.min(D.maxHp, me.hp + D.maxHp * .02 * dt);
   for (const p of people) stepChar(p, dt);
@@ -2493,7 +2494,8 @@ function update(dt, now) {
 function setPlace(place) { if ($('#placeChip').dataset.p !== place) { $('#placeChip').dataset.p = place; $('#placeChip').textContent = `📍 ${place}`; } }
 // 이름표는 머리 위. 칭호가 있으면 그 위에 작은 글씨로 ("10레벨을 달성한" + "Lv.10 김치복")
 function nameTag(c, now) {
-  if (c.sit >= 0 && !HT) { ctx.save(); ctx.translate(0, -12); nameTagAt(c, now); ctx.restore(); return; }
+  const oy = (c.sit >= 0 && !HT ? 12 : 0) + (c.jz || 0);
+  if (oy) { ctx.save(); ctx.translate(0, -oy); nameTagAt(c, now); ctx.restore(); return; }
   nameTagAt(c, now);
 }
 function nameTagAt(c, now) {
@@ -2607,9 +2609,10 @@ function render(now) {
   for (const b of BENCHES) list.push({ y: b.y * T + 24, f: () => drawBench(b) });
   if (vis(FSIGN.x, FSIGN.y)) list.push({ y: FSIGN.y, f: () => drawFishSpot(now) });
   const chars = [me, ...people.filter(shown)];
-  for (const c of chars) if (vis(c.x, c.y)) list.push({ y: c.y, f: () => drawChar(ctx, c.x, c.y + 6, c, clock + (c.seed || 0)) });
+  for (const c of chars) if (vis(c.x, c.y)) list.push({ y: c.y + (c.jfly ? 600 : 0), f: () => drawChar(ctx, c.x, c.y + 6, c, clock + (c.seed || 0)) });   // 더블 점프로 건물 위를 나는 중이면 건물보다 앞에
   for (const p of NPC.list) if (vis(p.x, p.y)) list.push({ y: p.y, f: () => drawChar(ctx, p.x, p.y + 6, p, clock + p.seed) });
   list.sort((a, b) => a.y - b.y).forEach(o => o.f());
+  drawTownAtk();
   drawTool(); drawRods(chars.filter(c => vis(c.x, c.y)), now);
   for (const p of NPC.list) if (vis(p.x, p.y)) npcTag(p, now);
   for (const c of chars) if (vis(c.x, c.y)) nameTag(c, now);
@@ -2639,6 +2642,7 @@ function renderRoom(now) {
   ctx.font = '600 12px "IBM Plex Sans KR", sans-serif'; ctx.fillStyle = 'rgba(80,50,25,.55)'; fillTextIco(ctx, '가구는 곧 들어와요 🛋️', ROOM_W * T / 2, 2.6 * T);
   const chars = [me, ...people.filter(shown)];
   chars.sort((a, b) => a.y - b.y).forEach(c => drawChar(ctx, c.x, c.y + 6, c, clock + (c.seed || 0)));
+  drawTownAtk();
   for (const c of chars) nameTag(c, now);
   drawTownFloats();
 }
@@ -3955,24 +3959,136 @@ function steerTick(dt) {
   const d = HT || S.away ? null : steerDir();
   if (d) auHold();
   if (d && BUSY()) { STEER.key.clear(); STEER.drag = null; busyToast(); return; }
-  if (!d) { if (STEER.on) { STEER.on = false; me.moving = false; STEER.t = 0; netGo(); savePos(); } return; }
+  if (d) me.face = d;   // 바라보는 방향 (Z 공격이 나가는 쪽)
+  if (!d) { if (STEER.on) { STEER.on = false; me.moving = false; STEER.t = 0; if (!me.jfly) { netGo(); savePos(); } } return; }
   if (!STEER.on) { STEER.on = true; standUp(me); me.path = []; me.then = null; GA = null; closePanel?.(); STEER.t = 0; }
   ROAM.pause = 15;
-  const l = Math.hypot(d[0], d[1]) || 1, sp = (me.speed || 165) * dt, vx = d[0] / l * sp, vy = d[1] / l * sp, Sc = sceneOf(me);
+  const l = Math.hypot(d[0], d[1]) || 1, sp = (me.speed || 165) * dt * (me.jn ? JUMP.air : 1), vx = d[0] / l * sp, vy = d[1] / l * sp, Sc = sceneOf(me);
+  const ok = (x, y) => me.jfly ? inScene(Sc, x, y) : freeAt(Sc, x, y);
   let moved = false;
-  if (vx && freeAt(Sc, me.x + vx, me.y)) { me.x += vx; moved = true; }
-  if (vy && freeAt(Sc, me.x, me.y + vy)) { me.y += vy; moved = true; }
+  if (vx && ok(me.x + vx, me.y)) { me.x += vx; moved = true; }
+  if (vy && ok(me.x, me.y + vy)) { me.y += vy; moved = true; }
   me.moving = moved; if (Math.abs(d[0]) > .15) me.dir = d[0] < 0 ? -1 : 1;
   if ((STEER.t -= dt) <= 0) {
-    STEER.t = .5; const ah = (me.speed || 165) * .55, tx = me.x + d[0] / l * ah, ty = me.y + d[1] / l * ah, ok = moved && freeAt(Sc, tx, ty) && clear(Sc, me.x, me.y, tx, ty);
-    netSend({ t: 'go', x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(ok ? tx : me.x), ty: Math.round(ok ? ty : me.y) });
+    STEER.t = me.jfly ? .25 : .5; const ah = (me.speed || 165) * (me.jfly ? .3 : .55), tx = me.x + d[0] / l * ah, ty = me.y + d[1] / l * ah, go = moved && (me.jfly ? inScene(Sc, tx, ty) : freeAt(Sc, tx, ty) && clear(Sc, me.x, me.y, tx, ty));
+    netSend({ t: 'go', x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(go ? tx : me.x), ty: Math.round(go ? ty : me.y) });
   }
 }
 addEventListener('keydown', e => {
-  if (!KEYDIR[e.code] || e.ctrlKey || e.altKey || e.metaKey || $('#app').hidden || !modal.hidden) return;
+  const act = e.code === 'KeyC' || e.code === 'KeyZ';
+  if (!KEYDIR[e.code] && !act || e.ctrlKey || e.altKey || e.metaKey || $('#app').hidden || !modal.hidden) return;
   const el = document.activeElement; if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return;
-  e.preventDefault(); STEER.key.add(e.code);
+  e.preventDefault();
+  if (e.code === 'KeyC') { if (!e.repeat) myJump(); return; }
+  if (e.code === 'KeyZ') { if (!e.repeat || HT) myAttack(); return; }   // 사냥터에서는 꾹 누르고 있으면 계속 공격
+  STEER.key.add(e.code);
 });
+// ───────── 점프 (C) · 더블 점프 (공중에서 C 한 번 더) — 2026-11-18 ─────────
+// 화살표를 누른 채 C = 그 방향으로 뛰며 점프. 더블 점프 중에는 건물·나무·물도 넘어감 (땅에 닿을 때 막힌 곳이면 가장 가까운 빈 곳으로)
+// 보여 주기·이동용. 서버 계산(사냥·레이드)과는 상관없음
+const JUMP = { v1: 300, v2: 430, g: 1000, air: 1.3 };
+const inScene = (Sc, x, y) => x > T * .6 && y > T * .6 && x < (Sc.w - .6) * T && y < (Sc.h - .6) * T;
+function jumpGo(ch, n) {
+  if (n === 1) { ch.jn = 1; ch.jz = ch.jz || 0; ch.jv = JUMP.v1; ch.jfly = false; }
+  else { ch.jn = 2; ch.jv = JUMP.v2; ch.jfly = !HT && !RD; }
+}
+function myJump() {
+  if (S.away || (me.jn || 0) >= 2) return;
+  if (!HT && !RD && me.sit >= 0) { standUp(me); netSend({ t: 'sit', b: -1 }); }
+  const n = (me.jn || 0) + 1; jumpGo(me, n); sfx(n === 1 ? 'pop' : 'warp');
+  const x = me.x, y = me.y + 4; if (HT) { fxBurst(x, y, n === 1 ? '#d8c9ac' : '#bfefff', n === 1 ? 6 : 12, 90, 2.4, 0); if (n === 2) fxRing(x, me.y - me.jz, '#bfefff', 24, .3); }
+  else TJ.push({ x, y: n === 1 ? y : me.y - me.jz + 6, n, t: 0 });
+  if (!HT && !RD) netSend({ t: 'jmp', n });
+}
+function jumpTick(ch, dt) {
+  if (!ch.jn) return;
+  ch.jz += ch.jv * dt; ch.jv -= JUMP.g * dt;
+  if (ch.jz > 0) return;
+  ch.jz = 0; ch.jv = 0; ch.jn = 0;
+  const fly = ch.jfly; ch.jfly = false;
+  if (ch !== me) return;
+  if (!HT && !RD) TJ.push({ x: me.x, y: me.y + 4, n: 0, t: 0 });
+  if (fly && !HT && !RD) {   // 막힌 곳에 내리면 가장 가까운 빈 곳으로
+    const Sc = sceneOf(me);
+    if (!freeAt(Sc, me.x, me.y)) {
+      let best = null;
+      for (let r = 6; r <= 10 * T && !best; r += 6) for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2, x = me.x + Math.cos(a) * r, y = me.y + Math.sin(a) * r; if (inScene(Sc, x, y) && freeAt(Sc, x, y)) { best = [x, y]; break; } }
+      if (best) [me.x, me.y] = best; else { me.x = START.x; me.y = START.y; }
+      me.path = [];
+    }
+    netSend({ t: 'go', x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(me.x), ty: Math.round(me.y) }); savePos();
+  }
+}
+// 점프 먼지 (마을)
+const TJ = [];
+// ───────── Z 공격 (2026-11-18) ─────────
+// 마을: 바라보는 방향으로 검 휘두르기 · 화살 · 마법 구슬 (보여 주기만, 다른 사람에게도 보임)
+// 사냥터: 가장 가까운 몬스터를 노림. 쿨타임이 찬 스킬이 있으면 스킬을 순서대로, 없으면 바로 기본 공격
+const TATK = [];
+function myAttack() {
+  if (S.away) return;
+  if (RD) return;
+  if (HT) return huntZ();
+  if (BUSY() || me.sit >= 0) return;
+  const now = performance.now(); if (now - (me.zAt || 0) < 320) return; me.zAt = now;
+  const f = me.face || [me.dir || 1, 0], l = Math.hypot(f[0], f[1]) || 1, a = Math.atan2(f[1] / l, f[0] / l);
+  townAtk(me, a); netSend({ t: 'atk', a: Math.round(a * 100) / 100 });
+}
+function townAtk(ch, a) {
+  const D = ch === me ? derive() : null, cls = ch === me ? (D.magic ? 'staff' : D.far ? 'bow' : 'sword') : ch.cls || 'sword';
+  ch.swing = .18; if (Math.abs(Math.cos(a)) > .2) ch.dir = Math.cos(a) < 0 ? -1 : 1;
+  const x = ch.x + Math.cos(a) * 14, y = ch.y - 22 - (ch.jz || 0) + Math.sin(a) * 8;
+  if (cls === 'sword') TATK.push({ k: 'slash', x: ch.x + Math.cos(a) * 22, y: ch.y - 20 - (ch.jz || 0) + Math.sin(a) * 14, a, t: 0, life: .22 });
+  else TATK.push({ k: cls === 'staff' ? 'magic' : 'arrow', x, y, a, sp: cls === 'staff' ? 330 : 560, t: 0, life: cls === 'staff' ? .75 : .5, room: ch.room || 0 });
+  if (ch === me || Math.hypot(ch.x - me.x, ch.y - me.y) < 12 * T) sfx(cls === 'staff' ? 'magic' : cls === 'bow' ? 'arrow' : 'hit');
+}
+function townAtkTick(dt) {
+  for (const o of TATK) {
+    o.t += dt;
+    if (o.k === 'slash') continue;
+    o.x += Math.cos(o.a) * o.sp * dt; o.y += Math.sin(o.a) * o.sp * dt;
+    if (!o.end && !inScene(sceneOf({ room: o.room }), o.x, o.y + 22)) o.end = o.t;
+    if (o.k === 'magic' && !o.end) (o.tr ||= []).push({ x: o.x, y: o.y, t: o.t });
+  }
+  for (let i = TATK.length - 1; i >= 0; i--) if (TATK[i].t > TATK[i].life || (TATK[i].end && TATK[i].t - TATK[i].end > .1)) TATK.splice(i, 1);
+  for (const j of TJ) j.t += dt; while (TJ.length && TJ[0].t > .45) TJ.shift();
+}
+function drawTownAtk() {
+  ctx.save();
+  for (const j of TJ) {   // 먼지 고리
+    const k = j.t / .45; ctx.globalAlpha = (1 - k) * (j.n === 2 ? .8 : .55); ctx.strokeStyle = j.n === 2 ? '#bfefff' : '#e9dcc0'; ctx.lineWidth = 2.5 * (1 - k) + .5;
+    ctx.beginPath(); ctx.ellipse(j.x, j.y, 8 + k * (j.n === 2 ? 22 : 14), (8 + k * (j.n === 2 ? 22 : 14)) * (j.n === 2 ? .55 : .35), 0, 0, 7); ctx.stroke();
+  }
+  for (const o of TATK) {
+    const k = o.t / o.life; ctx.globalAlpha = o.end ? Math.max(0, 1 - (o.t - o.end) / .1) : Math.min(1, (1 - k) * 3);
+    if (o.k === 'slash') {   // 초승달 베기 자국
+      ctx.save(); ctx.translate(o.x, o.y); ctx.rotate(o.a); ctx.globalAlpha = 1 - k;
+      ctx.fillStyle = '#fff6d8'; ctx.beginPath(); ctx.arc(-6, 0, 20 + k * 6, -1.15, 1.15); ctx.arc(-14, 0, 16 + k * 6, 1.05, -1.05, true); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    } else if (o.k === 'arrow') {
+      ctx.save(); ctx.translate(o.x, o.y); ctx.rotate(o.a); ctx.strokeStyle = '#5a3a1e'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-14, 0); ctx.lineTo(6, 0); ctx.stroke();
+      ctx.fillStyle = '#cfd6de'; ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(4, -3.5); ctx.lineTo(4, 3.5); ctx.fill(); ctx.fillStyle = '#e8553a'; ctx.fillRect(-15, -3, 4, 6); ctx.restore();
+    } else {
+      for (const p of o.tr || []) { const q = (o.t - p.t) / .25; if (q > 1) continue; ctx.globalAlpha = (1 - q) * .5; ctx.fillStyle = '#c9a2ff'; ctx.beginPath(); ctx.arc(p.x, p.y, 5 * (1 - q), 0, 7); ctx.fill(); }
+      ctx.globalAlpha = o.end ? Math.max(0, 1 - (o.t - o.end) / .1) : 1;
+      ctx.fillStyle = 'rgba(185,140,255,.45)'; ctx.beginPath(); ctx.arc(o.x, o.y, 9, 0, 7); ctx.fill(); ctx.fillStyle = '#efe4ff'; ctx.beginPath(); ctx.arc(o.x, o.y, 4.5, 0, 7); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+function huntZ() {
+  if (HT.dying || me.hp <= 0) return;
+  const D = derive(), alive = HT.mons.filter(m => !m.dead); if (!alive.length) return;
+  const tg = alive.reduce((a, m) => (Math.hypot(m.x - me.x, m.y - me.y) < Math.hypot(a.x - me.x, a.y - me.y) ? m : a));
+  HT.target = tg; tg.aggro = true;
+  const d = Math.hypot(tg.x - me.x, tg.y - me.y), ok = D.far ? 4.8 * T : 22 + tg.d.s * 10 + 16;
+  if (Math.abs(tg.x - me.x) > 6) me.dir = tg.x < me.x ? -1 : 1;
+  // 쿨타임이 찬 스킬이 있으면 순서대로 (스킬 칸 왼쪽부터)
+  if (!HT.dash && d < 6 * T) { const k = D.skills.find(k => HT.cd[k.s.id] <= 0 && (d <= ok || k.p.dash)); if (k) return castSkill(k, tg, D); }
+  if (d > ok) { HT.chase = true; return; }   // 멀면 다가감 (닿으면 자동으로 공격)
+  if (HT.atkT > D.gap * .45) return;   // 너무 빠른 연타는 막음 (서버 계산과 크게 다르지 않게)
+  HT.atkT = D.gap; if (D.far) shoot(tg, D); else hitMon(tg, D);
+}
 addEventListener('keyup', e => STEER.key.delete(e.code));
 addEventListener('blur', () => { STEER.key.clear(); STEER.drag = null; });
 // 끄는 중이면 손가락 자리에 작은 방향 표시
@@ -5868,6 +5984,7 @@ function netGo() { if (HT) return; const d = me.path[me.path.length - 1] || me; 
 // 다른 사람이 걷기 시작: 거리가 많이 벌어졌으면 순간 이동, 아니면 같은 길로 걸어감
 function netMove(p, m) {
   const tp = m.tx === m.x && m.ty === m.y;
+  if (p.jfly) { if (Math.hypot(p.x - m.x, p.y - m.y) > 2 * T) { p.x = m.x; p.y = m.y; } p.path = tp ? [] : [{ x: m.tx, y: m.ty }]; return; }   // 더블 점프로 건물 위를 나는 중: 일직선으로
   if (tp || Math.hypot(p.x - m.x, p.y - m.y) > 1.5 * T) { p.x = m.x; p.y = m.y; p.path = []; }
   if (!tp && !walkTo(p, m.tx, m.ty)) { p.x = m.tx; p.y = m.ty; p.path = []; }
 }
@@ -5891,6 +6008,8 @@ function onNet(m) {
   else if (m.t === 'hunt') { const p = personOf(m.id); if (p) { p.hunt = m.on; p.path = []; p.sit = -1; } }
   else if (m.t === 'fish') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) { if (m.s === 1) rodOut(p, m.bx, m.by, m.r); else if (m.s === 2) { rodEnd(p, { i: m.i, n: m.n, grade: m.g, len: m.len }, m.big); if (m.sh) SH_GONE.add(m.sh); } else if (m.s === 3) rodEnd(p, null); else p.fz = null; } }
   else if (m.t === 'emo') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) emote(p, m.e); }
+  else if (m.t === 'jmp') { const p = personOf(m.id); if (p && shown(p)) { standUp(p); jumpGo(p, m.n === 2 && p.jn ? 2 : 1); if (m.n === 2) p.jfly = true; } }
+  else if (m.t === 'atk') { const p = personOf(m.id); if (p && shown(p) && Number.isFinite(m.a)) townAtk(p, m.a); }
   else if (m.t === 'look') { const p = personOf(m.p.id), d = m.p; if (p) Object.assign(p, { lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, hatHair: d.hatHair !== false, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {} }); }
   else if (m.t === 'say') {
     if (S.blocked.has(m.id)) return;
@@ -6208,6 +6327,7 @@ const liveOn = () => S.live || !!me.world?.live;
 const GUIDE = () => [
   ['🚶', '처음 시작', [
     ['걷기', isPC() ? '바닥을 누르거나 화살표·WASD로 걸어요.' : '바닥을 누르거나, 화면을 끌면 그 방향으로 계속 걸어요.'],
+    ...(isPC() ? [['점프 · 공격', 'C = 점프, 공중에서 C 한 번 더 = 더블 점프(건물·나무도 넘어가요). 화살표를 누른 채 C면 그쪽으로 뛰어요. Z = 공격(마을에선 바라보는 쪽, 사냥터에선 가까운 몬스터에게 · 쿨타임 찬 스킬부터 순서대로).']] : []),
     ['건물 이용', '건물을 누르면 그 앞까지 걸어가서 바로 창이 열려요.'],
     ['🏘️ 바로가기', '오른쪽 버튼. 가고 싶은 곳을 누르면 그 자리로 바로 이동하고 시설 창도 열려요.'],
     ['채팅·이모트', '아래 채팅 칸은 같은 채널의 모두에게 보여요. 😊 버튼으로 이모트. 귓속말·친구·거래는 없어요.'],
@@ -6342,7 +6462,7 @@ function showGuide(keep) {
       <div class="bs-sec">👉 오른쪽 버튼 (눌러서 바로 열기)</div>
       <ul class="bs-list gd">${btn.map(([x, i, n, t]) => `<li><button class="gd-row" data-x="${x}"><span>${i}</span><div><b class="t">${n}</b><small class="d">${t}</small></div><small class="go">›</small></button></li>`).join('')}</ul>`;
   } else {
-    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 빈 칸에서 Enter/Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>Esc</kbd>', '창 닫기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
+    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 빈 칸에서 Enter/Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>C</kbd>', '점프 · 공중에서 한 번 더 누르면 더블 점프(건물도 넘어가요) · 화살표와 같이 누르면 그쪽으로 뛰어요'], ['<kbd>Z</kbd>', '공격 · 마을에선 바라보는 쪽으로, 사냥터에선 가까운 몬스터에게 (쿨타임 찬 스킬부터)'], ['<kbd>Esc</kbd>', '창 닫기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
       : [['끌기', '화면을 끌면 그 방향으로 걸어요'], ['누르기', '바닥 · 건물 · 사람을 누르면 그곳으로'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅 기록 펼치기 · ⚙️로 글씨 크기'], ['⚙️', '설정: 내 정보 · 비밀번호 · 차단 목록']];
     body = `<ul class="bs-list gd">${tips.map(([k, t]) => `<li class="gd-key"><span>${k}</span><span>${t}</span></li>`).join('')}</ul>`;
   }
