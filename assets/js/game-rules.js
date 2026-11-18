@@ -716,7 +716,7 @@ export const RAID = {
   cap: 60,                           // 한 번에 최대 인원
   drop: 2 / 3, dropDead: 2 / 3,      // 전용 스킨이 나올 확률 (끝까지 버팀 / 쓰러짐): 3번에 2번
   deadMul: .7,                       // 쓰러진 사람 보상 배율
-  W: 30, H: 20,                      // 레이드 맵 크기 (칸)
+  W: 28, H: 21,                      // 레이드 맵 크기 (칸) — 배경 그림 비율(4:3)에 맞춤
 };
 export const RAID_BOSS = { rdragon: { n: '레드 드래곤', i: '🐉', set: 'rdragon' } };
 export const raidSlotStart = t => Math.floor(t / RAID.every) * RAID.every + RAID.recruit;   // 이번 시간 레이드 시작 시각
@@ -791,15 +791,17 @@ export function offlineLife(c, sec) {
   return got;
 }
 
-// ───────── 집 업그레이드 (마을회관): 일반 집 → 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩 ─────────
+// ───────── 집 업그레이드 (마을회관, 2026-11-18 8단계): 일반 집 → 다락방 집 → 2층 집 → 저택 → 빌라 → 3층 빌라 → 4층 빌라 → 궁전 ─────────
 // inc = 1시간 임대 수입(골드, 빌라부터). 수입은 최대 HOUSE_INC_CAP 시간까지만 쌓임 → 마을회관에서 받기
 export const HOUSE_TIERS = [
   { n: '일반 집' },
-  { n: '2층 집', cost: { gold: 20000, wood: 150, stone: 100 } },
-  { n: '큰 집', cost: { gold: 60000, wood: 300, stone: 220 } },
-  { n: '빌라', cost: { gold: 180000, wood: 500, stone: 400 }, inc: 5000 },
-  { n: '4층 건물', cost: { gold: 500000, wood: 800, stone: 650 }, inc: 12000 },
-  { n: '빌딩', cost: { gold: 1500000, wood: 1200, stone: 1000 }, inc: 30000 },
+  { n: '다락방 집', cost: { gold: 20000, wood: 150, stone: 100 } },
+  { n: '2층 집', cost: { gold: 60000, wood: 300, stone: 220 } },
+  { n: '저택', cost: { gold: 150000, wood: 450, stone: 350 }, inc: 5000 },
+  { n: '빌라', cost: { gold: 300000, wood: 600, stone: 480 }, inc: 9000 },
+  { n: '3층 빌라', cost: { gold: 600000, wood: 800, stone: 650 }, inc: 15000 },
+  { n: '4층 빌라', cost: { gold: 1200000, wood: 1000, stone: 850 }, inc: 25000 },
+  { n: '궁전', cost: { gold: 2500000, wood: 1400, stone: 1200 }, inc: 45000 },
 ];
 export const HOUSE_INC_CAP = 12;
 // 임대 수입 정산 (h = life.house). 돌려줌: { have(받을 수 있는 골드), cap, rate }

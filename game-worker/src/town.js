@@ -120,7 +120,7 @@ export class Town extends DurableObject {
       if (t - (a.fishAt || 0) < 400) return; a.fishAt = t; this.save(ws, a);
       const o = { t: 'fish', id: a.id, s: [0, 1, 2, 3].includes(m.s) ? m.s : 0 };
       if (o.s === 1) { if (!num(m.bx, MW * T) || !num(m.by, MH * T)) return; Object.assign(o, { bx: Math.round(m.bx), by: Math.round(m.by), r: Number.isInteger(m.r) && m.r >= 0 && m.r <= 5 ? m.r : 0 }); }
-      if (o.s === 2) { const d = FISH[m.g]?.find(x => x[1] === m.n); if (!d || !num(m.len, d[3] + 1)) return; Object.assign(o, { g: m.g, n: d[1], i: d[0], len: Math.round(m.len * 10) / 10, big: !!m.big }); }
+      if (o.s === 2) { const d = FISH[m.g]?.find(x => x[1] === m.n); if (!d || !num(m.len, d[3] + 1)) return; Object.assign(o, { g: m.g, n: d[1], i: d[0], len: Math.round(m.len * 10) / 10, big: !!m.big, sh: Number.isInteger(m.sh) && m.sh > 0 ? m.sh : 0 }); }
       return this.all(o, ws);
     }
     if (m.t === 'look') {   // 겉모습·레벨이 바뀜 → 저장된 값을 다시 읽어서 알림

@@ -107,7 +107,8 @@ export const PORTAL = { x: 76 * T, y: 32.6 * T };            // 사냥터 포탈
 export const BACK = { x: 73.5 * T, y: 32.5 * T };            // 사냥에서 돌아오면 서는 곳
 export const FISH_AT = { x: (Math.floor(riverX(DOCK_Y)) + .3) * T, y: (DOCK_Y + 1) * T };   // 낚시하는 자리
 // 텃밭 칸 9개 (3줄 × 3칸, 픽셀 가운데)
-export const PLOTS = Array.from({ length: 9 }, (_, i) => ({ x: (53.2 + (i % 3) * 2.8) * T, y: (46.15 + Math.floor(i / 3) * 1.85) * T }));
+// 2026-11-18 텃밭 그림(333×157px, 가운데 (56, 48)칸)의 1·3·5번째 고랑에 3칸씩
+export const PLOTS = Array.from({ length: 9 }, (_, i) => ({ x: (52.9 + (i % 3) * 3.1) * T, y: [46.59, 48.1, 49.54][Math.floor(i / 3)] * T }));
 // 벤치 (광장 가장자리)
 export const BENCHES = [{ x: 35, y: 28 }, { x: 45, y: 28 }, { x: 34, y: 33 }, { x: 46, y: 33 }, { x: 36, y: 25 }, { x: 44, y: 25 }];
 for (const b of BENCHES) { set(b.x, b.y, STONE); block(b.x, b.y); }
@@ -239,6 +240,8 @@ export const SEA = new Uint8Array(MW * MH);   // 1 = 바다 (강·연못과 다�
   road([[33, 46.4], [35.5, 46], [37.2, 44.2]], .95, 29);     // 마을회관 문 → 남쪽 길
   for (let k = DECO.length - 1; k >= 0; k--) { const d = DECO[k]; if (d.x >= 22 && d.x <= 38 && d.y >= 36 && d.y <= 48 && tileAt(d.x, d.y) === PATH) { solid[d.y * MW + d.x] = 0; DECO.splice(k, 1); } }   // 새 길 위 나무 빼기
 }
+// 10) 2026-11-18 텃밭 그림이 가로로 길어서 밭 칸을 4줄(46~49)로 줄임. 맨 위·아래 줄은 풀밭
+for (let x = 51; x <= 60; x++) { set(x, 45, G); set(x, 50, G); }
 // 바다인지 (칸). 강·연못 물은 0
 export const seaAt = (tx, ty) => tx >= 0 && ty >= 0 && tx < MW && ty < MH && SEA[ty * MW + tx] === 1;
 // 바다 낚시하기 좋은 자리 (만 안쪽 모래사장, 발 위치 픽셀)
@@ -288,3 +291,39 @@ export function shoreNear(px, py, r = 9) {
 }
 // 걸을 수 있는 곳인지 (픽셀 좌표)
 export const walkablePx = (px, py) => !isSolid(Math.floor(px / T), Math.floor(py / T));
+
+// ───────── 물고기 그림자 (2026-11-18): 좋은 물고기가 나오는 명당. 시간으로 정해져서 화면·서버가 같은 자리를 계산 ─────────
+// slot마다 n마리가 새로 나타나 life 동안 헤엄침. 찌가 그림자에서 range칸 안에 떨어지면 좋은 물고기(미끼 +bait단계, 두 번 굴려 비싼 것)
+// 한 번 낚으면 그 사람에게는 사라짐 (life.fsh에 번호 저장), 같은 채널 사람들 화면에서도 지움
+export const FSHADOW = { slot: 45e3, n: 2, life: 150e3, range: 1.7, bait: 3, hit: .12, swim: .7 };
+let SH_SPOTS = null;
+function shSpots() {   // 사방이 물이고, 3칸 안에 걸어갈 수 있는 땅이 있는 칸 (물가에서 던져 닿는 곳)
+  if (SH_SPOTS) return SH_SPOTS; SH_SPOTS = [];
+  for (let y = 2; y < MH - 2; y++) for (let x = 2; x < MW - 2; x++) {
+    let ok = true; for (let b = -1; b <= 1 && ok; b++) for (let a = -1; a <= 1; a++) if (tileAt(x + a, y + b) !== WATER) { ok = false; break; }
+    if (!ok) continue;
+    let land = false; for (let b = -3; b <= 3 && !land; b++) for (let a = -3; a <= 3; a++) if (a * a + b * b <= 9 && tileAt(x + a, y + b) !== WATER && !isSolid(x + a, y + b)) { land = true; break; }
+    if (land) SH_SPOTS.push([x, y]);
+  }
+  return SH_SPOTS;
+}
+const shRand = (k, j, s) => { const h = Math.sin(k * 127.1 + j * 311.7 + s * 74.7) * 43758.5453; return h - Math.floor(h); };
+// 지금 보이는 그림자들: { id, x, y (칸 단위, 소수), a (0~1 나타남/사라짐), sea }
+export function fishShadows(now) {
+  const S = FSHADOW, sp = shSpots(), out = []; if (!sp.length) return out;
+  const k1 = Math.floor(now / S.slot), back = Math.ceil(S.life / S.slot);
+  for (let k = k1 - back; k <= k1; k++) for (let j = 0; j < S.n; j++) {
+    const born = k * S.slot + shRand(k, j, 1) * S.slot * .5, age = now - born; if (age < 0 || age > S.life) continue;
+    const [ax, ay] = sp[Math.floor(shRand(k, j, 2) * sp.length)], ph = shRand(k, j, 3) * 6.28, t = age / 1000, w = .35 + shRand(k, j, 4) * .25;
+    const x = ax + .5 + Math.cos(t * w + ph) * S.swim, y = ay + .5 + Math.sin(t * w * 1.4 + ph) * S.swim * .6;
+    const a = Math.min(1, age / 4000, (S.life - age) / 4000);
+    out.push({ id: k * 10 + j, x, y, a, dir: -Math.sin(t * w + ph) >= 0 ? 1 : -1, sea: seaAt(ax, ay) });
+  }
+  return out;
+}
+// 찌 자리(픽셀)에서 가까운 그림자 (없으면 null). gone = 이미 낚은 번호들
+export function shadowAt(now, px, py, gone = []) {
+  let best = null, bd = FSHADOW.range;
+  for (const s of fishShadows(now)) { if (s.a < .3 || gone.includes(s.id)) continue; const d = Math.hypot(px / T - s.x, py / T - s.y); if (d < bd) { bd = d; best = s; } }
+  return best;
+}
