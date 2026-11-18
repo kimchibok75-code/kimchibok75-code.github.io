@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1795013832902,
+  "updatedAt": 1795013902158,
   "source": "https://steamcommunity.com/workshop/browse/?appid=294100&section=readytouseitems&days=7",
   "items": [
     {
@@ -8,10 +8,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839642536",
       "title": "SQUISHY Melee",
       "preview": "https://images.steamusercontent.com/ugc/10794798281109748820/43C158FAE832AC939AE5CE8EB9B385380D32363E/",
-      "subs": 13267,
-      "current": 12282,
+      "subs": 13268,
+      "current": 12283,
       "favorited": 1480,
-      "views": 30540,
+      "views": 30546,
       "tags": [
         "Mod",
         "1.7"
@@ -30,10 +30,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839580086",
       "title": "PAWN DEPTH ORDER",
       "preview": "https://images.steamusercontent.com/ugc/13391398177189960626/E5C8828C7E874F3A82BE1B555BFBD77FC6D4B13B/",
-      "subs": 8417,
-      "current": 7870,
+      "subs": 8420,
+      "current": 7873,
       "favorited": 660,
-      "views": 14687,
+      "views": 14691,
       "tags": [
         "Mod",
         "1.7"
@@ -55,7 +55,7 @@
       "subs": 535,
       "current": 494,
       "favorited": 197,
-      "views": 12974,
+      "views": 12976,
       "tags": [
         "Mod",
         "1.7",
@@ -75,10 +75,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3840883595",
       "title": "Huge Mech Charger",
       "preview": "https://images.steamusercontent.com/ugc/10839112034135946865/F951E205F6933CFDD983F0FC0FC5A6CB59A706B2/",
-      "subs": 1204,
-      "current": 1164,
+      "subs": 1209,
+      "current": 1169,
       "favorited": 160,
-      "views": 2416,
+      "views": 2419,
       "tags": [
         "Mod",
         "1.7"
@@ -97,10 +97,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3839399827",
       "title": "The Dead Man's Switch - Compatibility Fixes",
       "preview": "https://images.steamusercontent.com/ugc/17482907610690873833/B7F4669CF8A39D4D744719928527FA59C9FA62B4/",
-      "subs": 4215,
-      "current": 3975,
+      "subs": 4217,
+      "current": 3977,
       "favorited": 469,
-      "views": 10456,
+      "views": 10460,
       "tags": [
         "Mod",
         "1.7",
@@ -120,10 +120,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3841078351",
       "title": "Overlord Warcasket",
       "preview": "https://images.steamusercontent.com/ugc/17758813517567494639/8FA525346C5E0EEEC2A674DB6DEBF9AB7B895A9E/",
-      "subs": 4886,
-      "current": 4735,
+      "subs": 4891,
+      "current": 4740,
       "favorited": 382,
-      "views": 10099,
+      "views": 10108,
       "tags": [
         "Mod",
         "1.7",
@@ -191,7 +191,7 @@
       "subs": 1829,
       "current": 1756,
       "favorited": 445,
-      "views": 12954,
+      "views": 12959,
       "tags": [
         "Mod",
         "1.7"
@@ -235,7 +235,7 @@
       "subs": 1692,
       "current": 1595,
       "favorited": 438,
-      "views": 8248,
+      "views": 8250,
       "tags": [
         "Mod",
         "1.6",
@@ -246,7 +246,7 @@
       "size": 1464462,
       "collection": false,
       "summary": "Divine Hand Inspired by the divine hand from the Black & White (Lionhead, 2001), this mod lets you interact directly with your colonists using two very different hands: an angelic hand and a demonic hand. Angelic Hand ge",
-      "prevRank": 14,
+      "prevRank": 11,
       "ko": "Black & White(Lionhead, 2001)의 신성한 손에서 영감을 받은 이 모드를 사용하면 매우 다른 두 손, 즉 천사의 손과 악마의 손을 사용하여 식민지 주민과 직접 상호 작용할 수 있습니다."
     },
     {
@@ -255,10 +255,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3840876824",
       "title": "[LFS] UI Rethemed - Relationships",
       "preview": "https://images.steamusercontent.com/ugc/10855512398588012313/8E58EC052E17FBB1D71CE3763134D33E3EAC8FF8/",
-      "subs": 4007,
+      "subs": 4008,
       "current": 3768,
       "favorited": 140,
-      "views": 4639,
+      "views": 4640,
       "tags": [
         "Mod",
         "1.7",
@@ -269,7 +269,7 @@
       "size": 1220800,
       "collection": false,
       "summary": "UI Rethemed - Relationships adds a Relationships tab to the bottom bar, styled to match the rest of the Rethemed mods. Pick a colonist and everyone they're connected to gets laid out around them, from cousins and in-laws",
-      "prevRank": 11,
+      "prevRank": 12,
       "ko": "UI 재구성 - 관계는 나머지 재구성 모드와 일치하도록 스타일이 지정된 하단 표시줄에 관계 탭을 추가합니다."
     },
     {
@@ -278,10 +278,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3840130852",
       "title": "Sling Framework",
       "preview": "https://images.steamusercontent.com/ugc/18443836919433890235/0461D88382D5754AF3BB26D8D8C9A7BB8CC8C22C/",
-      "subs": 2919,
-      "current": 2798,
+      "subs": 2920,
+      "current": 2799,
       "favorited": 66,
-      "views": 2611,
+      "views": 2614,
       "tags": [
         "Mod",
         "1.7",
@@ -292,7 +292,7 @@
       "size": 2123413,
       "collection": false,
       "summary": "The Sling Framework allows mod authors to add an external sling to aircraft for transporting vehicles and structures between maps. A helicopter can deliver a loaded container to an outpost, move a car, or even transport ",
-      "prevRank": 12,
+      "prevRank": 13,
       "ko": "Sling Framework를 사용하면 모드 작성자가 맵 간에 차량과 구조물을 운반하기 위해 항공기에 외부 슬링을 추가할 수 있습니다."
     },
     {
@@ -301,10 +301,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3837981505",
       "title": "[KCB] Liftoff Effects (이륙 이펙트)",
       "preview": "https://images.steamusercontent.com/ugc/9889155727940097281/3595704D9EF4C97D316B91FABD4EFDD21AC23DA1/",
-      "subs": 4280,
-      "current": 3940,
+      "subs": 4281,
+      "current": 3941,
       "favorited": 327,
-      "views": 6631,
+      "views": 6632,
       "tags": [
         "Mod",
         "1.7",
@@ -315,7 +315,7 @@
       "size": 1699966,
       "collection": false,
       "summary": "Liftoff Effects Transport pods and shuttles lift off like rockets: engine flames from each nozzle, launch smoke and a smoke trail, a slow rise, then acceleration away from the map. Save-safe, and it can be added to or re",
-      "prevRank": 15,
+      "prevRank": 14,
       "ko": "수송 포드와 왕복선이 로켓처럼 이륙합니다. 분사구마다 엔진 불꽃이 나오고, 발사 연기와 연기 꼬리를 남기며 천천히 떠올랐다가 점점 빨라지며 날아갑니다."
     },
     {
@@ -327,7 +327,7 @@
       "subs": 5076,
       "current": 4515,
       "favorited": 705,
-      "views": 13073,
+      "views": 13074,
       "tags": [
         "Mod",
         "1.7"
@@ -337,7 +337,7 @@
       "size": 3289558,
       "collection": false,
       "summary": "A visual overhaul for fire, snow, weather and shadows in RimWorld 1.7. Rain, snow, blizzards, fog, auroras and lightning all get a new look. You can turn each feature on or off individually in the mod settings. I tested ",
-      "prevRank": 16,
+      "prevRank": 15,
       "ko": "RimWorld 1.7의 불, 눈, 날씨 및 그림자에 대한 시각적 점검."
     },
     {
@@ -349,7 +349,7 @@
       "subs": 536,
       "current": 474,
       "favorited": 71,
-      "views": 2699,
+      "views": 2700,
       "tags": [
         "Mod",
         "1.7"
@@ -359,7 +359,7 @@
       "size": 9051683,
       "collection": false,
       "summary": "Update of Hey my team rules!s mod The release of RimWorld 1.7 added a system where assets like textures and sounds can be cached to improve performance . To avoid doubling the size of the mod, it was re-released with onl",
-      "prevRank": 17,
+      "prevRank": 16,
       "ko": "소스를 디컴파일해야 했고 일부 트랜스파일 하모니 코드를 알아낼 수 없었기 때문에 일부 기능이 작동하지 않을 수도 있습니다."
     },
     {
@@ -382,7 +382,7 @@
       "size": 12823890,
       "collection": false,
       "summary": "RimArrow: Search & Rescue Across the storm-swept ice sheets and broken coastlines of the far north, ground teams often struggle to move at all. When an expedition is stranded in a blizzard or a remote outpost needs winte",
-      "prevRank": 18,
+      "prevRank": 17,
       "ko": "이 모드는 5가지 수색 및 구조 및 승객/화물 구성에 걸쳐 두 개의 비무장 헬리콥터 계열 Ka-27PS/PSD 및 Mi-38/T/PS를 추가하여 식민지에 장거리 운송 및 물류를 제공합니다."
     },
     {
@@ -406,7 +406,7 @@
       "size": 21294540,
       "collection": false,
       "summary": "This mod adds a wide variety of clothing and equipment for Aliaile Race It includes new color variations of military uniforms, workwear that provides bonuses to various tasks, combat equipment with special functions, new",
-      "prevRank": 13,
+      "prevRank": 18,
       "ko": "여기에는 군복의 새로운 색상 변형, 다양한 임무에 보너스를 제공하는 작업복, 특수 기능을 갖춘 전투 장비, 새로운 위장 전투 장비 세트, 속옷 및 세레가 포함됩니다."
     },
     {
@@ -438,10 +438,10 @@
       "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3841676471",
       "title": "Progression: Waste",
       "preview": "https://images.steamusercontent.com/ugc/11103284217949545035/835C76282CF63F1D6B407AB1B7469CEAF7589B2D/",
-      "subs": 1407,
-      "current": 1363,
+      "subs": 1410,
+      "current": 1366,
       "favorited": 40,
-      "views": 2147,
+      "views": 2149,
       "tags": [
         "Mod",
         "1.7"
