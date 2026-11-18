@@ -30,6 +30,8 @@
   - `liveApi`가 설정돼 있으면 update.mjs는 푸시를 보내지 않음(중복 방지).
   - 배포 방법: `worker` 폴더에서 `npx --yes wrangler@4 deploy`. 끝에 종료 코드 -1073740791이 떠도 배포는 성공한 것.
 - 네이버 카페 새 글: 로그인 없이 쓰는 공개 API. 카페 id는 31260801.
+- 유튜브 커뮤니티 글 (2026-11-18): `update.mjs youtube`의 `channelPosts`가 채널 `/posts` 페이지 안의 `ytInitialData`를 읽어 `youtube.json` 채널마다 `posts`에 넣음 (최근 12개). 날짜는 "3주 전"뿐이라 처음 본 때 대략 시각으로 바꿔 저장. 홈 영상 밑 `#posts` 섹션(`renderPosts`), 글이 있는 채널만 탭으로 보임
+  - 공식 API가 아니라 유튜브가 페이지를 바꾸면 끊길 수 있음 (그럴 땐 예전 글을 그대로 둠)
 - 모드 추천 데이터: **`data/mods.json` 자체가 원본** (2026-11-16 구글 시트 연동 끊음. 원본 시트는 찾지 말 것)
   - 추가·수정·삭제는 `add-mod.mjs`로 (아래). 소분류 옮기기 같은 건 mods.json의 `section`을 직접 고침
   - 자동 갱신(`update.mjs mods`)은 스팀 정보(썸네일·구독자·태그)만 새로 붙임
