@@ -2616,6 +2616,7 @@ function render(now) {
   drawTool(); drawRods(chars.filter(c => vis(c.x, c.y)), now);
   for (const p of NPC.list) if (vis(p.x, p.y)) npcTag(p, now);
   for (const c of chars) if (vis(c.x, c.y)) nameTag(c, now);
+  drawSpaceHint(now);   // 이름표·말풍선보다 위에
   drawTownFloats();
 }
 
@@ -2644,6 +2645,7 @@ function renderRoom(now) {
   chars.sort((a, b) => a.y - b.y).forEach(c => drawChar(ctx, c.x, c.y + 6, c, clock + (c.seed || 0)));
   drawTownAtk();
   for (const c of chars) nameTag(c, now);
+  drawSpaceHint(now);
   drawTownFloats();
 }
 // 집에 들어가기 / 나오기. owner = {id, nick}
@@ -4018,31 +4020,62 @@ function jumpTick(ch, dt) {
 // ───────── 스페이스바 = 가까이 있는 것 누르기 (PC, 2026-11-18) ─────────
 // 주민 · 건물 · 집 · 나무 · 바위 · 물가 · 분수 · 포탈 · 벤치 · 텃밭 · 표지판 · 전광판 중 가장 가까운 것을 누른 것처럼 (tap에 월드 좌표를 넘김)
 const SPACE_R = 1.7 * T;   // 이만큼 안에 있어야 함 (건물·집은 테두리까지 거리)
-function spaceAct() {
-  if (HT || RD || S.away) return;
+// 고르는 규칙 (2026-11-18 다듬음): 거리(건물·집은 테두리까지) → 바라보는 쪽이면 조금 더 가깝게, 등 뒤면 멀게 침
+// 고른 대상을 그대로 실행 (예전엔 누를 자리를 클릭 판정에 다시 넘겨서, 앞에 선 주민이 대신 걸리기도 했음)
+// 무엇이 실행될지 그 위에 작은 'Space' 표시 (drawSpaceHint)
+function spaceTarget() {
+  if (HT || RD || S.away || !modal.hidden) return null;
   const d = (x, y) => Math.hypot(x - me.x, y - me.y), rect = (x, y, w, h) => Math.hypot(Math.max(x - me.x, 0, me.x - (x + w)), Math.max(y - me.y, 0, me.y - (y + h)));
-  const C = [];   // [거리, 누를 자리, 우선(주민 먼저)]
+  const f = me.fdir || [me.dir || 1, 0], fl = Math.hypot(f[0], f[1]) || 1;
+  const C = [];   // { d: 거리, x, y: 방향을 잴 자리, lx, ly: 표시 자리, go: 실행 }
+  const add = (dist, x, y, lx, ly, go, kind) => C.push({ d: dist, x, y, lx, ly, go, kind });
   if (me.room) {
-    const dx = (ROOM_DOOR.x + .5) * T, dy = ROOM_H * T - 10; if (d(dx, dy) < 2 * T) C.push([0, { x: dx, y: dy }]);
+    const dx = (ROOM_DOOR.x + .5) * T, dy = ROOM_H * T - 10; add(d(dx, dy), dx, dy, dx, dy - 30, () => leaveRoom());
   } else {
-    for (const p of NPC.list) C.push([d(p.x, p.y) - 12, { x: p.x, y: p.y - 30 }]);
-    for (const b of BUILDINGS) C.push([rect(b.x * T, b.y * T, b.w * T, b.h * T), { x: (b.x + b.w / 2) * T, y: (b.y + b.h - .5) * T }]);
-    for (const h of HOUSES) C.push([rect(h.x * T, h.y * T, HOUSE_W * T, HOUSE_H * T), { x: (h.x + HOUSE_W / 2) * T, y: (h.y + HOUSE_H - .5) * T }]);
-    for (const n of NODES) if (!n.off) C.push([d((n.x + .5) * T, (n.y + .5) * T) - 8, { x: (n.x + .5) * T, y: n.y * T + 20 }]);
-    const fo = SPOTS.find(s => s.id === 'fountain'); C.push([d((fo.x + 1) * T, (fo.y + 1) * T) - 40, { x: (fo.x + 1) * T, y: (fo.y + 1) * T }]);
-    const sc = SPOTS.find(s => s.id === 'screen'); if (sc) C.push([rect(sc.x * T, sc.y * T, sc.w * T, sc.h * T), { x: (sc.x + sc.w / 2) * T, y: (sc.y + sc.h) * T - 6 }]);
-    C.push([d(PORTAL.x, PORTAL.y) - 20, { x: PORTAL.x, y: PORTAL.y - 10 }]);
-    C.push([d(FSIGN.x, FSIGN.y), { x: FSIGN.x, y: FSIGN.y - 24 }]);
-    BENCHES.forEach(b => C.push([d(b.x * T + T / 2, b.y * T + T / 2), { x: b.x * T + T / 2, y: b.y * T + T / 2 }]));
-    if (me.life?.farm) for (const P of PLOTS) C.push([d(P.x, P.y) - 12, { x: P.x, y: P.y }]);
-    // 물: 가까운 물 칸 (낚시)
-    const tx = Math.floor(me.x / T), ty = Math.floor(me.y / T); let wb = null;
-    for (let y = ty - 2; y <= ty + 2; y++) for (let x = tx - 2; x <= tx + 2; x++) if (tileAt(x, y) === WATER) { const k = d((x + .5) * T, (y + .5) * T) - T / 2; if (!wb || k < wb[0]) wb = [k, { x: (x + .5) * T, y: (y + .5) * T }]; }
-    if (wb) C.push(wb);
+    for (const p of NPC.list) add(d(p.x, p.y) - 6, p.x, p.y, p.x, p.y + 18, () => openNpc(p), 'npc');
+    for (const b of BUILDINGS) add(rect(b.x * T, b.y * T, b.w * T, b.h * T), (b.x + b.w / 2) * T, (b.y + b.h) * T, (b.x + b.w / 2) * T, (b.y + b.h) * T + 4, () => { S.pick = { o: b, t: performance.now() }; openBuilding(b); });
+    for (const h of HOUSES) add(rect(h.x * T, h.y * T, HOUSE_W * T, HOUSE_H * T), (h.x + HOUSE_W / 2) * T, (h.y + HOUSE_H) * T, (h.x + HOUSE_W / 2) * T, (h.y + HOUSE_H) * T + 4, () => { S.pick = { o: h, t: performance.now() }; openHouse(h); });
+    for (const n of NODES) if (!n.off) { const cx = (n.x + .5) * T, cy = (n.y + .5) * T; add(d(cx, cy) - 8, cx, cy, cx, n.k === 'tree' ? n.y * T - 46 * (n.s || 1) : n.y * T - 2, () => { S.pick = { o: n, t: performance.now() }; startGather(n); }); }
+    const fo = SPOTS.find(s => s.id === 'fountain'), fx = (fo.x + 1) * T, fy = (fo.y + 1) * T; add(d(fx, fy) - 40, fx, fy, fx, fy + 34, () => { S.pick = { o: fo, t: performance.now() }; openWish(); });
+    const sc = SPOTS.find(s => s.id === 'screen'); if (sc) add(rect(sc.x * T, sc.y * T, sc.w * T, sc.h * T), (sc.x + sc.w / 2) * T, (sc.y + sc.h) * T, (sc.x + sc.w / 2) * T, (sc.y + sc.h) * T + 4, () => openSpot(sc));
+    add(d(PORTAL.x, PORTAL.y) - 20, PORTAL.x, PORTAL.y, PORTAL.x, PORTAL.y + 10, () => { S.pick = { o: PORTAL, t: performance.now() }; openHuntSelect(); });
+    add(d(FSIGN.x, FSIGN.y), FSIGN.x, FSIGN.y, FSIGN.x, FSIGN.y + 8, () => openFishing());
+    BENCHES.forEach((b, bi) => { const bx = b.x * T + T / 2, by = b.y * T + T / 2; add(d(bx, by), bx, by, bx, by + 20, () => {
+      if (me.sit === bi) return; if (benchTaken(bi)) return toast('다른 사람이 앉아 있어요');
+      const [qx, qy] = benchFront(BENCHES[bi]); walkToTile(me, qx, qy, () => { if (benchTaken(bi)) return toast('다른 사람이 먼저 앉았어요'); sitDown(me, bi); });
+    }); });
+    if (me.life?.farm) PLOTS.forEach((P, pi) => add(d(P.x, P.y) - 12, P.x, P.y, P.x, P.y + 16, () => farmTap(pi)));
+    const tx = Math.floor(me.x / T), ty = Math.floor(me.y / T); let wb = null;   // 물: 가까운 물 칸 (낚시)
+    for (let y = ty - 2; y <= ty + 2; y++) for (let x = tx - 2; x <= tx + 2; x++) if (tileAt(x, y) === WATER) { const k = d((x + .5) * T, (y + .5) * T) - T / 2; if (!wb || k < wb[0]) wb = [k, (x + .5) * T, (y + .5) * T]; }
+    if (wb) add(wb[0], wb[1], wb[2], wb[1], wb[2], () => fishAtWater(wb[1], wb[2]));
   }
-  const best = C.filter(c => c[0] <= SPACE_R).sort((a, b) => a[0] - b[0])[0];
-  if (!best) return toast('가까이에 이용할 수 있는 게 없어요');
-  tap(0, 0, best[1]);
+  let best = null, bs = 1e9;
+  for (const c of C) {
+    if (c.d > SPACE_R) continue;
+    const vx = c.x - me.x, vy = c.y - me.y, vl = Math.hypot(vx, vy), dot = vl > 4 ? (vx * f[0] + vy * f[1]) / (vl * fl) : 0;
+    const sc = c.d - dot * 14;   // 바라보는 쪽 +14px 가깝게, 등 뒤 14px 멀게
+    if (sc < bs) { bs = sc; best = c; }
+  }
+  return best;
+}
+function spaceAct() {
+  const c = spaceTarget(); if (!c) return toast('가까이에 이용할 수 있는 게 없어요');
+  closePanel(); ROAM.pause = 15; GA = null;
+  if (c.kind !== 'npc') { auHold(); if (BUSY()) return tap(0, 0, { x: c.x, y: c.y - 4 }); }   // 알바·자동 중에는 클릭과 같은 규칙
+  c.go();
+}
+let SPH = { t: 0, c: null };
+function drawSpaceHint(now) {   // PC: 스페이스바를 누르면 실행될 것 위에 작은 'Space' 표시
+  if (!PC_KEYS || BUSY() || GA) return;
+  if (now - SPH.t > 150) { SPH.t = now; SPH.c = spaceTarget(); }
+  const c = SPH.c; if (!c) return;
+  const y = c.ly + Math.sin(now / 260) * 1.5;
+  ctx.save(); ctx.globalAlpha = .9; ctx.font = '800 9px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const w = ctx.measureText('Space').width + 10;
+  ctx.fillStyle = 'rgba(31,42,58,.82)'; rr(ctx, c.lx - w / 2, y - 7, w, 14, 4); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.35)'; rr(ctx, c.lx - w / 2 + 2, y + 4, w - 4, 1.5, 1); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.fillText('Space', c.lx, y);
+  ctx.restore();
 }
 // 점프 먼지 (마을)
 const TJ = [];
