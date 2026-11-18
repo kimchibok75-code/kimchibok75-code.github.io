@@ -288,6 +288,8 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; lette
 .rules.chips li { padding: 2px 8px 2px 6px; border-radius: 99px; background: var(--paper-2); font-size: calc(12px * var(--fs)); line-height: 1.5; }
 .rules.chips li::before { width: auto; margin-right: 3px; }
 .rules.chips li.ok { background: #e3f3df; } .rules.chips li.bad { background: #fde6e1; }
+.nk-wait { margin: 4px 0 0; padding: 12px; border-radius: 12px; background: #fff3d6; line-height: 1.6; }
+.nk-note { margin: 2px 0 0; padding-left: 18px; display: grid; gap: 3px; font-size: calc(13.5px * var(--fs)); color: #4b3d22; }
 .pwbox { position: relative; } .pwbox input { padding-right: 46px; }
 .pwbox .eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border: 0; background: none; border-radius: 9px; font-size: 18px; opacity: .45; cursor: pointer; }
 .pwbox .eye { display: grid; place-items: center; color: var(--ink); opacity: .55; } .pwbox .eye svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
@@ -459,6 +461,17 @@ body.hunting .side { display: none; }
 .rs-warn { background: #ffece7; border: 2px solid #b3261e; border-radius: 12px; padding: 10px 12px; color: #7a1a12; margin-bottom: 10px; } .rs-warn p { margin: 4px 0 0; line-height: 1.5; }
 .rs-lab { display: block; margin: 6px 0; } #rsIn { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 2px solid var(--ink); border-radius: 10px; font: inherit; font-size: 16px; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+/* 게임 안 확인 창 (브라우저 기본 확인 창 대신) */
+.askbox { position: fixed; inset: 0; z-index: 90; background: rgba(31, 42, 58, .42); display: grid; place-items: center; padding: 16px; animation: askIn .12s ease-out; }
+@keyframes askIn { from { opacity: 0; } }
+.ask-card { width: min(360px, 100%); background: var(--paper, #fffaf0); border: 2.5px solid var(--ink); border-radius: 18px; box-shadow: 0 6px 0 var(--ink); padding: 18px 18px 16px; display: grid; gap: 14px; animation: askPop .16s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes askPop { from { transform: scale(.9); } }
+.ask-card h4 { margin: 0; font-size: calc(16px * var(--fs)); }
+.ask-card p { margin: 0; white-space: pre-line; line-height: 1.5; font-size: calc(14.5px * var(--fs)); color: #3a4250; }
+.ask-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .ask-btns .btn { padding: 10px 12px; }
+/* 닉네임 연필 버튼 */
+.nkbtn { margin-left: 4px; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; opacity: .55; vertical-align: middle; font-size: 15px; line-height: 1; padding: 0; }
+.nkbtn:hover { opacity: 1; background: var(--paper-2); }
 .btn.danger-main { background: #d4382c; color: #fff; } .btn.danger-main:disabled { opacity: .45; cursor: not-allowed; }
 .close { display: none; }
 .xclose { position: sticky; top: 0; z-index: 3; justify-self: end; margin: -6px -6px -58px 0; width: 46px; height: 46px; border-radius: 50%; border: 2px solid var(--ink); background: #fff; box-shadow: 0 3px 0 var(--ink); display: grid; place-items: center; padding: 0; cursor: pointer; color: var(--ink); }
@@ -1016,7 +1029,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
     <div class="panel-body">
       <div class="me">
         <canvas id="meCanvas" aria-label="내 캐릭터"></canvas>
-        <h2><span class="lv" id="meLv">Lv.1</span><span id="meName">김복단</span></h2>
+        <h2><span class="lv" id="meLv">Lv.1</span><span id="meName">김복단</span><button type="button" class="nkbtn" id="nickBtn" aria-label="닉네임 바꾸기" title="닉네임 바꾸기">✏️</button></h2>
         <div class="row"><button type="button" class="badge tbtn" id="meTitle" title="칭호 보기">🏷️ 새로 온 ›</button></div>
         <p class="intro" id="meIntro">림월드 좋아하는 김복단이에요</p>
       </div>
@@ -3029,10 +3042,10 @@ async function raidClaim(start) {
     <button class="btn main" data-close>마을로</button>`);
 }
 // 레이드 나가기 (2026-11-18): 끝나기 전에 나가면 이번 레이드 보상은 없음. 끝난 뒤에는 보상 받고 바로 마을로
-function leaveRaid() {
+async function leaveRaid() {
   if (!RD) return;
   if (RD.ended) return;   // 끝나면 보상 받으며 자동으로 마을로 감
-  if (!confirm('레이드에서 나갈까요?\n지금 나가면 이번 레이드 보상(골드·경험치·전용 스킨)은 받을 수 없어요.')) return;
+  if (!(await ask('지금 나가면 이번 레이드 보상(골드·경험치·전용 스킨)은 받을 수 없어요.', { title: '🚪 레이드에서 나갈까요?', ok: '나가기', danger: true }))) return;
   try { RD.ws?.close(); } catch {}
   exitRaid(); try { localStorage.removeItem('cbt-raid'); } catch {}
   toast('🚪 레이드에서 나왔어요');
@@ -4383,7 +4396,7 @@ function npcSheet(p, said) {
         closeModal(); renderQuests(); return;
       }
       if (x === 'drop') {
-        if (!confirm('이 임무를 포기할까요? 지금까지 한 것은 사라져요.')) return;
+        if (!(await ask('지금까지 한 것은 사라져요.', { title: '임무를 포기할까요?', ok: '포기하기', danger: true }))) return;
         const j = await act('/api/npc/drop', { i: p.i }); if (!j) return;
         say(p, '아쉽지만 괜찮아요…', 2500); closeModal(); renderQuests();
       }
@@ -4434,6 +4447,54 @@ let reopen = null;   // 지금 열린 가게 화면 (사고 나서 다시 그리
 let modalAt = 0;
 const XBTN = '<button class="xclose" type="button" data-close aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
 function openModal(html, onReady, keep) { if (!keep) { modalAt = performance.now(); if (modal.hidden) sfx('open'); } const st = keep ? sheet.scrollTop : 0; sheet.onclick = null; sheet.innerHTML = XBTN + html; modal.hidden = false; onReady?.(sheet); if (keep) sheet.scrollTop = st; else sheet.querySelector('button:not(.xclose), input')?.focus({ preventScroll: true }); }
+// ───────── 닉네임 바꾸기 (2026-11-18): 이름 옆 ✏️. 일주일에 한 번, 바꾸기 전에 한 번 더 물어봄 ─────────
+const NICK_GAP = 7 * 864e5;
+function openNick() {
+  const left = me.nickAt ? me.nickAt + NICK_GAP - Date.now() : 0, wait = left > 0;
+  openModal(`<h3>✏️ 닉네임 바꾸기</h3>
+    <p class="sub">지금 닉네임: <b>${esc(me.name)}</b></p>
+    ${wait ? `<p class="nk-wait">⏳ 닉네임은 <b>일주일에 한 번</b>만 바꿀 수 있어요.<br>다음에 바꿀 수 있는 날: <b>${new Date(me.nickAt + NICK_GAP).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</b> (${Math.ceil(left / 864e5)}일 남음)</p>`
+    : `<div class="field"><label for="nkIn">새 닉네임</label><input id="nkIn" maxlength="10" placeholder="2~10글자" autocomplete="off"><ul class="rules chips" id="nkRules"><li data-r="len">2~10글자</li><li data-r="chars">한글·영문·숫자만</li><li data-r="name">김치복·관리자 같은 이름 X</li></ul></div>
+      <ul class="nk-note"><li>바꾸면 <b>일주일 동안 다시 못 바꿔요.</b></li><li><b>로그인할 때도 새 닉네임</b>을 써야 해요. (비밀번호는 그대로)</li></ul>
+      <p class="err" id="nkErr" role="alert"></p>`}
+    <div class="actions">${wait ? '' : '<button class="btn main" data-x="go" id="nkGo" disabled>바꾸기</button>'}</div>`, el => {
+    const inp = el.querySelector('#nkIn'); if (!inp) return;
+    const check = () => { const n = inp.value.trim(), r = nickChecks(n); paintRules(el.querySelector('#nkRules'), r, n.length > 0); el.querySelector('#nkGo').disabled = !(Object.values(r).every(Boolean) && n !== me.name); };
+    inp.addEventListener('input', check); setTimeout(() => inp.focus(), 50);
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing && !el.querySelector('#nkGo').disabled) { e.preventDefault(); e.stopPropagation(); el.querySelector('#nkGo').click(); } });
+    wire(el, async x => {
+      if (x !== 'go') return;
+      const n = inp.value.trim(), err = el.querySelector('#nkErr'); err.textContent = '';
+      if (!(await ask(`'${me.name}' → '${n}'\n\n바꾸면 일주일 동안 다시 바꿀 수 없어요.\n로그인할 때도 새 닉네임을 써야 해요.`, { title: '정말 바꿀 거예요?', ok: '바꾸기' }))) return;
+      try {
+        const j = await api('/api/nick', { nick: n });
+        me.name = j.nick; me.nickAt = j.nickAt; syncMe(); closeModal(); sfx('levelup'); toast(`✏️ 이제 '${j.nick}'(으)로 불려요! 다음 로그인부터 새 닉네임으로 들어와요`);
+      } catch (x) { err.textContent = x.message; }
+    });
+  });
+}
+$('#nickBtn').addEventListener('click', e => { e.stopPropagation(); openNick(); });
+// ───────── 게임 안 확인 창 (2026-11-18): 브라우저 기본 confirm 대신. await ask('내용') → true / false ─────────
+// ← → 로 고르기, Enter·스페이스바 = 고른 버튼, Esc = 취소
+function ask(msg, { title = '', ok = '확인', no = '취소', danger = false } = {}) {
+  return new Promise(res => {
+    const el = document.createElement('div'); el.className = 'askbox';
+    el.innerHTML = `<div class="ask-card" role="alertdialog" aria-modal="true">${title ? '<h4></h4>' : ''}<p></p><div class="ask-btns"><button type="button" class="btn" data-a="0"></button><button type="button" class="btn ${danger ? 'danger-main' : 'main'}" data-a="1"></button></div></div>`;
+    if (title) el.querySelector('h4').textContent = title;
+    el.querySelector('p').textContent = msg; const [bn, by] = el.querySelectorAll('[data-a]'); bn.textContent = no; by.textContent = ok;
+    iconize(el);
+    const done = v => { removeEventListener('keydown', key, true); el.remove(); sfx(v ? 'click' : 'close'); res(v); };
+    const key = e => {
+      e.stopImmediatePropagation();
+      if (e.key === 'Escape') { e.preventDefault(); return done(false); }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Tab') { e.preventDefault(); (document.activeElement === by ? bn : by).focus(); return; }
+      if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) { e.preventDefault(); done(document.activeElement !== bn); }
+    };
+    el.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (b) done(b.dataset.a === '1'); else if (e.target === el) done(false); });
+    addEventListener('keydown', key, true);
+    document.body.append(el); by.focus();
+  });
+}
 function closeModal() { if (!modal.hidden) sfx('close'); modal.hidden = true; sheet.innerHTML = ''; reopen = null; }
 modal.addEventListener('click', e => { if (performance.now() - modalAt < 400) { e.stopPropagation(); e.preventDefault(); } }, true);
 modal.addEventListener('click', e => { if (e.target === modal || e.target.closest('[data-close]')) closeModal(); });
@@ -5092,7 +5153,7 @@ async function api(path, body, opts = {}) {
 // 서버에서 받은 내 정보로 캐릭터 맞추기
 function applyMe(m, keep) {   // keep: 지금 위치 그대로 (서버 저장 위치는 45초마다라서 예전 자리일 수 있음)
   const c = m.char, keepPos = keep || (HT && c.hunt);
-  Object.assign(me, { name: m.nick, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: hairId(c.hair), hairC: c.hairC || HAIR_COLORS[0], hatHair: c.hatHair !== false, suit: c.suit || '', wsk: c.wsk || {}, intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
+  Object.assign(me, { name: m.nick, nickAt: m.nickAt || 0, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: hairId(c.hair), hairC: c.hairC || HAIR_COLORS[0], hatHair: c.hatHair !== false, suit: c.suit || '', wsk: c.wsk || {}, intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
     str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp || derive().maxHp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
     cls: c.cls || 'sword', enh: c.enh || {}, presets: c.presets, preset: c.preset || 0, gacha: c.gacha || { w: 0, a: 0 }, life: c.life || me.life, uid: m.id ?? me.uid, gfx: m.gfx || {}, world: m.world || me.world });
   me.job = c.job; me.jobEnd = c.job ? Date.now() + c.job.left * 1000 : 0;
@@ -5990,7 +6051,7 @@ function hallSheet(b, keep) {
       if (a === 'roof') { S.roof = +v; return reopen?.(); }
       if (a === 'reroof') { const j = await act('/api/house/roof', { roof: +v }); if (j) { await loadHouses(); toast('🎨 지붕 색을 바꿨어요'); reopen?.(); } return; }
       if (a === 'visit') { const t = HOUSES.find(k => k.id === +v); if (t) visitHouse(t); return; }
-      if (a === 'up') { const nx = HOUSE_TIERS[(h.lv || 0) + 1]; if (!confirm(`집을 ${nx.n}(으)로 올릴까요? (${costText(nx.cost)})`)) return; const j = await act('/api/house/up', {}); if (j) { await loadHouses(); toast(`🏗️ ${nx.n}(으)로 올렸어요!`); emote(me, '🎉'); reopen?.(); } return; }
+      if (a === 'up') { const nx = HOUSE_TIERS[(h.lv || 0) + 1]; if (!(await ask(`필요한 것: ${costText(nx.cost)}`, { title: `🏗️ 집을 ${nx.n}(으)로 올릴까요?`, ok: '올리기' }))) return; const j = await act('/api/house/up', {}); if (j) { await loadHouses(); toast(`🏗️ ${nx.n}(으)로 올렸어요!`); emote(me, '🎉'); reopen?.(); } return; }
       if (a === 'collect') { const j = await act('/api/house/collect', {}); if (j) { toast(`💰 임대 수입 +${j.got.toLocaleString()} 골드`); logAct(`임대 수입 +${j.got}`); reopen?.(); } return; }
       if (a === 'place') startPlace(h ? h.roof : S.roof);
     }, keep);
@@ -6221,6 +6282,7 @@ function onNet(m) {
   else if (m.t === 'hunt') { const p = personOf(m.id); if (p) { p.hunt = m.on; p.path = []; p.sit = -1; p.buf = null; } }
   else if (m.t === 'fish') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) { if (m.s === 1) rodOut(p, m.bx, m.by, m.r); else if (m.s === 2) { rodEnd(p, { i: m.i, n: m.n, grade: m.g, len: m.len }, m.big); if (m.sh) SH_GONE.add(m.sh); } else if (m.s === 3) rodEnd(p, null); else p.fz = null; } }
   else if (m.t === 'emo') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) emote(p, m.e); }
+  else if (m.t === 'nick') { const p = personOf(m.id); if (p) p.name = m.n; if (m.id === me.uid) { me.name = m.n; syncMe(); } }
   else if (m.t === 'mv') { const p = personOf(m.id); if (p && Array.isArray(m.p)) netRecv(p, m.p); }
   else if (m.t === 'atk') { const p = personOf(m.id); if (p && shown(p) && Number.isFinite(m.a)) townAtk(p, m.a); }
   else if (m.t === 'look') { const p = personOf(m.p.id), d = m.p; if (p) Object.assign(p, { lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, hatHair: d.hatHair !== false, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {} }); }
@@ -6271,7 +6333,7 @@ async function openAdmin(tab = ADM.tab) {
       async x => {
         if (x === 'toggle') { ADM.done = !ADM.done; return openAdmin('reports'); }
         const [a, rid, uid] = x.split(':');
-        if (a === 'ban' && !confirm('정말 영구 차단할까요? (나중에 사람 찾기에서 풀 수 있어요)')) return;
+        if (a === 'ban' && !(await ask('나중에 사람 찾기에서 풀 수 있어요.', { title: '정말 영구 차단할까요?', ok: '차단', danger: true }))) return;
         if (a === 'mute') await api('/api/admin/mute', { id: +uid, min: 60 });
         if (a === 'kick') await api('/api/admin/kick', { id: +uid });
         if (a === 'ban') await api('/api/admin/ban', { id: +uid, on: true });
@@ -6296,13 +6358,13 @@ async function openAdmin(tab = ADM.tab) {
         if (x === 'find') { ADM.q.who = el.querySelector('#aWho').value.trim(); if (!ADM.q.who) return; ADM.user = (await api(`/api/admin/user?nick=${encodeURIComponent(ADM.q.who)}`)).user; return openAdmin('user'); }
         const [a, v] = x.split(':');
         if (a === 'temp') {
-          if (!confirm(`${u.nick}님에게 임시 비밀번호를 만들까요? 지금 비밀번호는 못 쓰게 되고, 모든 기기에서 로그아웃돼요.`)) return;
+          if (!(await ask('지금 비밀번호는 못 쓰게 되고, 모든 기기에서 로그아웃돼요.', { title: `${u.nick}님에게 임시 비밀번호를 만들까요?`, ok: '만들기' }))) return;
           const j = await api('/api/admin/temp-pw', { id: u.id });
           return openModal(`<h3>🔑 ${esc(j.nick)}님 임시 비밀번호</h3><p class="muted">지금 한 번만 보여 줘요. 본인에게만 전해 주세요.</p><div class="code-box">${esc(j.pw)}</div><button class="btn main" data-close>전했어요</button>`);
         }
         if (a === 'mute') await api('/api/admin/mute', { id: u.id, min: +v });
         if (a === 'kick') await api('/api/admin/kick', { id: u.id });
-        if (a === 'ban') { if (!u.banned && !confirm(`${u.nick}님을 영구 차단할까요?`)) return; await api('/api/admin/ban', { id: u.id, on: !u.banned }); }
+        if (a === 'ban') { if (!u.banned && !(await ask('나중에 풀 수 있어요.', { title: `${u.nick}님을 영구 차단할까요?`, ok: '차단', danger: true }))) return; await api('/api/admin/ban', { id: u.id, on: !u.banned }); }
         toast('처리했어요'); ADM.user = (await api(`/api/admin/user?nick=${encodeURIComponent(u.nick)}`)).user; openAdmin('user');
       });
   }
@@ -6321,7 +6383,7 @@ async function openAdmin(tab = ADM.tab) {
         let [k, n] = x.split(':');
         if (k === 'raid') { const og = n === '1', j = await api('/api/admin/raid', { boss: og ? 'ogre' : 'rdragon' }); closeModal(); toast(`${og ? '👹 오우거' : '🐉 드래곤'} 레이드 모집을 열었어요 (2분, 모두에게 창이 떠요)`); RAIDQ.asked = 0; setTimeout(raidCheck, 300); return; }
         if (k === 'custom') { k = el.querySelector('#cK').value; n = el.querySelector('#cN').value; }
-        if (k === 'lv' && !confirm(`${n}레벨로 바꿀까요? 능력치가 다시 계산돼요.`)) return;
+        if (k === 'lv' && !(await ask('능력치가 다시 계산돼요.', { title: `${n}레벨로 바꿀까요?` }))) return;
         const j = await act('/api/admin/cheat', { k, n: Number(n) }); if (!j) return;
         toast('🧪 ' + j.msg); sysMsg('🧪 치트: ' + j.msg); if (k === 'god' || k === 'skins' || k === 'rskmax') openAdmin('cheat');
       });

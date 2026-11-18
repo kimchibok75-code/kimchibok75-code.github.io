@@ -1,6 +1,6 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
+import { OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, AUTO_FISH, FISH_SHOP, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
@@ -83,6 +83,7 @@ async function route(req, env, url) {
   const g = GAME[p];
   if (m === 'POST' && g) { const b = await readBody(req); return play(env, s.user, (c, at, out) => g(c, b, at, out, env, s.user)); }
   if (m === 'POST' && p === '/api/password') return changePw(req, env, s);
+  if (m === 'POST' && p === '/api/nick') return changeNick(req, env, s);
   if (m === 'POST' && p === '/api/recovery-code') return newRecovery(req, env, s.user);
   if (m === 'POST' && p === '/api/reset') return resetAccount(req, env, s.user);
   fail(404, '없는 주소예요');
@@ -244,7 +245,7 @@ function oldGear(c) {
 function meOut(user, c) {
   const h = c.hunt;
   return {
-    id: user.id, nick: user.nick, admin: !!user.is_admin, gfx: c.gfx || {}, world: c._w ? { lv: c._w.lv, live: c._w.live } : null,
+    id: user.id, nick: user.nick, nickAt: user.nick_at || 0, admin: !!user.is_admin, gfx: c.gfx || {}, world: c._w ? { lv: c._w.lv, live: c._w.live } : null,
     char: { face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair, hairC: c.hairC, hatHair: c.hatHair, suit: c.suit, wsk: c.wsk, intro: c.intro, title: c.title, x: c.x, y: c.y, lv: c.lv, exp: c.exp, gold: c.gold,
       str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
       cls: c.cls, enh: c.enh, gacha: c.gacha, preset: c.preset, life: c.life, presets: c.presets.map((p, i) => (i === c.preset ? { ...p, s: [c.str, c.dex, c.int, c.luk] } : p)),
@@ -782,6 +783,24 @@ async function saveMove(req, env, user) {
   await env.DB.prepare("UPDATE characters SET x = ?, y = ?, ver = ver + 1, updated_at = ? WHERE user_id = ? AND hunt = ''").bind(cx, cy, now(), user.id).run();
   return json({ ok: true });
 }
+// 닉네임 바꾸기 (2026-11-18): 일주일에 한 번. 로그인 아이디도 새 닉네임으로 바뀜
+const NICK_GAP = 7 * 864e5;
+async function changeNick(req, env, s) {
+  const b = await readBody(req), user = s.user, nick = String(b.nick || '').trim(), t = now();
+  if (user.nick_at && t - user.nick_at < NICK_GAP) { const d = Math.ceil((user.nick_at + NICK_GAP - t) / 864e5); fail(429, `닉네임은 일주일에 한 번만 바꿀 수 있어요 (${d}일 남음)`); }
+  if (nick === user.nick) fail(400, '지금 닉네임과 같아요');
+  if (!allOk(nickChecks(nick))) fail(400, '닉네임 규칙을 확인해 주세요 (2~10글자, 한글·영문·숫자)');
+  if (nick === OWNER_NICK && !user.is_admin) fail(400, '쓸 수 없는 닉네임이에요');
+  if (scanBad(nick).hit) fail(400, '닉네임에 쓸 수 없는 말이 들어 있어요');
+  const same = await findUser(env, nick); if (same && same.id !== user.id) fail(409, '이미 있는 닉네임이에요');
+  await env.DB.batch([
+    env.DB.prepare('UPDATE users SET nick = ?, nick_key = ?, nick_at = ? WHERE id = ?').bind(nick, nick.toLowerCase(), t, user.id),
+    env.DB.prepare('INSERT INTO activity (user_id, kind, detail, at) VALUES (?, ?, ?, ?)').bind(user.id, 'nick', `${user.nick} → ${nick}`, t),
+  ]);
+  RANK_MEM_CLEAR();
+  await toRooms(env, { act: 'nick', id: user.id, n: nick });   // 마을에 있는 사람들 화면의 이름표도 바로
+  return json({ ok: true, nick, nickAt: t });
+}
 async function changePw(req, env, s) {
   const b = await readBody(req), user = s.user;
   const locked = lockedMsg(user); if (locked) fail(429, locked);
@@ -854,6 +873,7 @@ const RANK = {
 const RANK_MEM = {};
 const rankFish = s => { try { return s ? JSON.parse(s) : null; } catch { return null; } };
 // 랭킹에 안 나오는 계정 (2026-11-17 사용자 요청: 김치복 · 테스트, 그리고 시험용 zz 계정)
+const RANK_MEM_CLEAR = () => { for (const k in RANK_MEM) delete RANK_MEM[k]; };
 const RANK_HIDE = "u.nick NOT IN ('김치복', '테스트') AND u.nick NOT LIKE 'zz%'";
 async function rankList(env, user, k) {
   if (!own(RANK, k)) fail(400, '잘못된 요청이에요');

@@ -249,6 +249,7 @@ export class Town extends DurableObject {
       if (b.act === 'kick') { a.gone = true; this.save(w, a); this.send(w, { t: 'kick', why: b.why || '관리자가 마을에서 내보냈어요' }); try { w.close(4003, 'kick'); } catch {} this.all({ t: 'leave', id: a.id }, w); }
       if (b.act === 'mute') { a.mute = b.until; this.save(w, a); this.send(w, { t: 'sys', text: b.until > now() ? `관리자가 채팅을 막았어요 (남은 시간 ${left(b.until - now())})` : '채팅 금지가 풀렸어요' }); }
       if (b.act === 'limit') { a.limited = !!b.on; this.save(w, a); }
+      if (b.act === 'nick') { a.n = b.n; this.save(w, a); this.all({ t: 'nick', id: a.id, n: b.n }); }   // 닉네임 바꿈
     }
     return new Response('ok');
   }
