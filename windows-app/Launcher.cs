@@ -8,7 +8,7 @@ using System.IO;
 using System.Windows.Forms;
 
 static class Launcher {
-  const string URL = "https://kimchibok75-code.github.io/game.html";
+  const string URL = "https://kimchibok75-code.github.io/game.html?app=exe";   // ?app=exe → 게임이 Alt+Enter 전체화면을 켬
 
   [STAThread]
   static void Main() {

@@ -357,6 +357,7 @@
 - `windows-app/치복 타운.exe`: 크롬(없으면 엣지)을 (2026-11-18 엣지 안내 창이 자꾸 떠서 크롬 먼저) **앱 창 모드**(`--app`, 주소창·탭 없음)로 열어 게임 주소를 띄움. 화면의 85% 크기(최대 1600×960)로 가운데에
 - 프로필은 따로 `%LOCALAPPDATA%\ChibokTown` → 브라우저와 안 섞이고, 로그인은 이 창에서 한 번 하면 유지
 - 소스 `Launcher.cs`, 아이콘 `icon.ico`(game-512.png로 만듦), 다시 만들기 `build.bat`(윈도우에 들어 있는 .NET csc로 컴파일, CRLF 줄끝 필요). 배포 때는 지움(update.yml)
+- **실행 파일에서만 Alt+Enter = 전체화면**: 실행 파일이 `game.html?app=exe`로 엶 → game.html `IS_EXE`가 localStorage `cbt-exe`에 기억하고 주소에서 지움 → Alt+Enter가 `#fsBtn`과 같은 동작 (일반 브라우저에서는 안 켜짐)
 - 게임 주소를 바꾸면 `Launcher.cs`의 `URL`도 바꾸고 다시 만들기. 서명이 없어서 남에게 주면 Windows SmartScreen 경고가 뜰 수 있음
 
 ### 휴대폰 앱 (크롬 앱 설치) — 2026-11-16

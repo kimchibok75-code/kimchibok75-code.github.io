@@ -5135,6 +5135,10 @@ $('#fsBtn').onclick = () => {
   if (!p) return toast('이 브라우저는 전체화면을 지원하지 않아요');
   p.catch(() => toast('이 미리보기 창에서는 전체화면이 막혀 있어요. 실제 사이트에서는 돼요'));
 };
+// 윈도우 실행 파일(치복 타운.exe)에서만 Alt+Enter = 전체화면 켜기/끄기 (2026-11-18)
+// 실행 파일이 game.html?app=exe 로 열어 줌 → 그 창(따로 쓰는 프로필)에 기억하고 주소에서는 지움
+const IS_EXE = (() => { try { const u = new URL(location.href); if (u.searchParams.get('app') === 'exe') { localStorage.setItem('cbt-exe', '1'); u.searchParams.delete('app'); history.replaceState(null, '', u); } return localStorage.getItem('cbt-exe') === '1'; } catch { return false; } })();
+if (IS_EXE) addEventListener('keydown', e => { if (e.altKey && e.key === 'Enter' && !e.repeat) { e.preventDefault(); e.stopImmediatePropagation(); $('#fsBtn').onclick(); } }, true);
 document.addEventListener('fullscreenchange', () => { const on = !!document.fullscreenElement; $('#fsBtn').textContent = on ? '🗗' : '⛶'; $('#fsBtn').setAttribute('aria-label', on ? '전체화면 끄기' : '전체화면'); });
 
 // ───────── 서버와 이야기하기 ─────────
