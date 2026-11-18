@@ -5,7 +5,7 @@ import { OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive,
   fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, AUTO_FISH, FISH_SHOP, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
   offlineLife, offlineHuntAway, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait } from '../../assets/js/game-rules.js';
-import { canHouse, isSolid, NODES, BACK, tileAt, WATER, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
+import { canHouse, HOUSE_W, HOUSE_H, isSolid, NODES, BACK, tileAt, WATER, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
 import { Town, MAX_CH, toRooms, lookRow } from './town.js';
@@ -649,9 +649,10 @@ const GAME = {
     c.life.coins.farm -= FARM.plotCost[k]; f.plots.push(null);
   },
   // 채집: 마을의 나무·바위 (사람마다 따로 자람)
-  '/api/gather'(c, b, at) {
+  async '/api/gather'(c, b, at, out, env) {
     townOnly(c); notWorking(c);
     const n = NODES[Number(b.node)]; if (!n || n.off) fail(400, '없는 자원이에요');
+    if (await env.DB.prepare('SELECT 1 FROM houses WHERE x <= ? AND x + ? > ? AND y <= ? AND y + ? > ? LIMIT 1').bind(n.x, HOUSE_W, n.x, n.y, HOUSE_H, n.y).first()) fail(400, '집이 지어져서 없어진 자원이에요');
     const L = c.life, G = GATHER[n.k];
     if (at - L.gatherAt < GATHER.gap) fail(429, '너무 빨라요');
     if ((L.nodes[n.i] || 0) > at) fail(400, `아직 자라는 중이에요 (${Math.ceil((L.nodes[n.i] - at) / 60e3)}분)`);

@@ -1175,7 +1175,7 @@ import { jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SL
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
 import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico, icoImgFlat } from './assets/js/game-icons.js?v=__BUILD__';
 import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSolid, noise2, inCore, BUILDINGS as MAP_BUILDINGS, SPOTS, PORTAL, BACK, FISH_AT, PLOTS, BENCHES, NODES, DECO,
-  HOUSE_W, HOUSE_H, canHouse, ROOM_W, ROOM_H, ROOM_DOOR, soft, PLAZA_C, PLAZA_R, nearWater, shoreNear, seaAt, coastY, SEA_AT, fishShadows, FSHADOW } from './assets/js/game-map.js?v=__BUILD__';
+  HOUSE_W, HOUSE_H, canHouse, underHouse, ROOM_W, ROOM_H, ROOM_DOOR, soft, PLAZA_C, PLAZA_R, nearWater, shoreNear, seaAt, coastY, SEA_AT, fishShadows, FSHADOW } from './assets/js/game-map.js?v=__BUILD__';
 const API = (location.hostname === 'localhost' && new URLSearchParams(location.search).get('api')) || 'https://kimchibok-game.kimchibok.workers.dev';   // 시험용: localhost에서만 ?api=http://localhost:8787 로 바꿀 수 있음
 const LIVE_API = 'https://kimchibok-live.kimchibok.workers.dev/live';
 const $ = s => document.querySelector(s);
@@ -1607,6 +1607,7 @@ const sceneOf = ch => (ch.room ? ROOM : TOWN);
 function setHouses(list) {
   HOUSES = list; HB.fill(0);
   for (const h of list) for (let y = h.y; y < h.y + HOUSE_H; y++) for (let x = h.x; x < h.x + HOUSE_W; x++) HB[y * MW + x] = 1;
+  for (const n of NODES) { n.off0 ??= !!n.off; n.off = n.off0 || underHouse(n, list); }   // 집 밑에 깔린 나무·바위는 없어짐 (집을 옮기면 다시 나옴)
 }
 async function loadHouses() { try { const j = await api('/api/houses'); setHouses(j.houses); } catch {} }
 const myHouse = () => HOUSES.find(h => h.id === me.uid) || null;
@@ -4017,7 +4018,7 @@ function steerTick(dt) {
   if (!d) { if (STEER.on) { STEER.on = false; me.moving = false; STEER.t = 0; STEER.sp = 0; if (!me.jfly) savePos(); } return; }
   if (!STEER.on) { STEER.on = true; standUp(me); me.path = []; me.then = null; GA = null; closePanel?.(); }
   ROAM.pause = 15;
-  const l = Math.hypot(d[0], d[1]) || 1, sp = (me.speed || 165) * dt * (me.jn ? JUMP.air : 1), vx = d[0] / l * sp, vy = d[1] / l * sp, Sc = sceneOf(me);   // 다른 화면에는 netTrack이 실제 자리를 보냄
+  const l = Math.hypot(d[0], d[1]) || 1, sp = (me.speed || 165) * dt * (me.jn === 2 ? JUMP.air2 : me.jn ? JUMP.air : 1), vx = d[0] / l * sp, vy = d[1] / l * sp, Sc = sceneOf(me);   // 다른 화면에는 netTrack이 실제 자리를 보냄
   const ok = (x, y) => me.jfly ? inScene(Sc, x, y) : freeAt(Sc, x, y);
   let moved = false;
   if (vx && ok(me.x + vx, me.y)) { me.x += vx; moved = true; }
@@ -4037,7 +4038,7 @@ addEventListener('keydown', e => {
 // ───────── 점프 (C) · 더블 점프 (공중에서 C 한 번 더) — 2026-11-18 ─────────
 // 화살표를 누른 채 C = 그 방향으로 뛰며 점프. 더블 점프 중에는 건물·나무·물도 넘어감 (땅에 닿을 때 막힌 곳이면 가장 가까운 빈 곳으로)
 // 보여 주기·이동용. 서버 계산(사냥·레이드)과는 상관없음
-const JUMP = { v1: 300, v2: 430, g: 1000, air: 1.3 };
+const JUMP = { v1: 300, v2: 390, g: 1000, air: 1.3, air2: 1.65 };   // 2026-11-19 더블 점프: 높이 살짝 낮게(430 → 390), 공중 속도 1.3 → 1.65배라 약 15% 더 멀리
 const inScene = (Sc, x, y) => x > T * .6 && y > T * .6 && x < (Sc.w - .6) * T && y < (Sc.h - .6) * T;
 function jumpGo(ch, n) {
   if (n === 1) { ch.jn = 1; ch.jz = ch.jz || 0; ch.jv = JUMP.v1; ch.jfly = false; }
