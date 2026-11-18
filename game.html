@@ -2767,7 +2767,7 @@ function enterRaid(start, boss) {
     dead: false, ended: false, goal: null, ctl: 0, shake: 0, flash: 0, ws: null, tries: 0,
     cd: {}, q: [], skT: 1.2, sh: 0, bt: 0, batk: 0, bcrit: 0, emb: [] };   // cd·q·skT = 스킬, sh = 보호막, bt = 버프, emb = 불티
   me.x = RW() / 2 + (Math.random() - .5) * 6 * T; me.y = RH() - 3 * T; me.path = []; me.moving = false; me.sit = -1; me.hp = derive().maxHp; cam = { x: me.x, y: me.y - 4 * T };
-  S.zoom = Math.max(S.zoom, H / RH() * 1.02, W / RW() * 1.02);   // 맵 밖(검은 곳)이 안 보이게
+  S.zoom = raidFit();   // 처음엔 맵 전체가 보이게 (2026-11-18). 휠·버튼으로 확대 가능
   document.body.classList.add('hunting', 'raiding'); $('#raidBox').hidden = false; setPlace(`${RAID_BOSS[boss].n} 레이드`); $('#raidTitle').textContent = `${RAID_BOSS[boss].i} ${RAID_BOSS[boss].n} 레이드`; iconize($('#raidTitle'));
   netSend({ t: 'hunt', on: true });
   raidConnect(); raidHud();
@@ -3071,6 +3071,7 @@ function raidAmbient(now) {
 // 오우거 (2026-11-18 사용자 그림): 2078×1199 판 하나에 위치까지 맞춰 그린 조각 5장 (meta 'ogre'). 조각 그림(og-*.webp)은 절반 크기라 2배로
 // 숨 쉬듯 들썩임 · 고개 · 몽둥이 팔(오른팔)은 공격 예고 동안 치켜들고(windK 0→1) 내려칠 때(club) 휘두름. 다 그린 뒤 전체 둘레 검은 테두리
 const OPART = { leg: [715, 772, 255, 335], body: [611, 202, 921, 782], rarm: [95, 160, 739, 762], larm: [1267, 372, 357, 676], head: [774, 90, 529, 433] };
+const OMID = 1071.5;   // 몸통 그림 가운데 (다리 뒤집는 축)
 const OCX = 1060, OFLOOR = 1107, OSC = .26, OQ = 1.6, OGB = { W: 1900, H: 1300, ox: 1150, oy: 1240 }, OSHOULDER = [690, 330];
 let OGC = null;
 function drawOgre(x, y, t, windK, club, look, dead) {
@@ -3082,6 +3083,7 @@ function drawOgre(x, y, t, windK, club, look, dead) {
   const part = (n, dx = 0, dy = 0) => { const im = ART['og-' + n], [px, py, w, h] = OPART[n]; if (im) g.drawImage(im, px - OCX + dx, py - OFLOOR + dy, w, h); };
   const lift = dead ? -.15 : .55 * Math.sin(Math.min(1, windK * 1.4) * Math.PI / 2), hit = club > 0 ? -.45 * Math.sin(Math.min(1, club / .45) * Math.PI / 2) : 0, sway = dead ? 0 : Math.sin(t * 1.6) * .04;
   part('leg');
+  g.save(); g.translate(2 * (OMID - OCX), 0); g.scale(-1, 1); part('leg'); g.restore();   // 다리 그림은 왼쪽만 → 몸 가운데 기준으로 뒤집어 오른쪽 다리
   part('body', 0, bob * .6);
   part('larm', 0, bob * .5);
   g.save(); const px = OSHOULDER[0] - OCX, py = OSHOULDER[1] - OFLOOR + bob * .5; g.translate(px, py); g.rotate(lift + hit + sway); g.translate(-px, -py); part('rarm', 0, bob * .5); g.restore();
@@ -3844,7 +3846,8 @@ cv.addEventListener('wheel', e => { e.preventDefault(); setZoom(S.zoom * (e.delt
 // 확대 값: PC·휴대폰 따로, 마을·사냥터 따로 저장
 const zoomKey = () => (innerWidth <= 760 ? 'cbt-zoom-m' : 'cbt-zoom-pc') + (HT ? '-hunt' : '');
 let zoomT = null;
-function setZoom(z) { S.zoom = Math.max(.7, Math.min(2.6, z)); clearTimeout(zoomT); zoomT = setTimeout(() => { try { localStorage.setItem(zoomKey(), S.zoom.toFixed(2)); } catch {} }, 300); }
+const raidFit = () => Math.min(W / RW(), H / RH());   // 레이드 맵 전체가 화면에 들어오는 배율
+function setZoom(z) { S.zoom = Math.max(RD ? Math.min(.7, raidFit()) : .7, Math.min(2.6, z)); clearTimeout(zoomT); if (RD) return; zoomT = setTimeout(() => { try { localStorage.setItem(zoomKey(), S.zoom.toFixed(2)); } catch {} }, 300); }
 function loadZoom() { clearTimeout(zoomT); let z = 0; try { z = +localStorage.getItem(zoomKey()); } catch {} S.zoom = z ? Math.max(.7, Math.min(2.6, z)) : HT && innerWidth <= 760 ? 1.15 : 1.6; }
 loadZoom();
 $('#zIn').onclick = () => setZoom(S.zoom * 1.2); $('#zOut').onclick = () => setZoom(S.zoom / 1.2);
