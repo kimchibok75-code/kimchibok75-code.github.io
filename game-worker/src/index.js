@@ -17,6 +17,7 @@ export { Raid };
 const raidDO = env => env.RAID.get(env.RAID.idFromName('main'));   // 레이드 방은 하나
 
 const ORIGINS = ['https://kimchibok75-code.github.io', 'http://localhost:5173', 'http://127.0.0.1:5173'];
+const TERMS_VER = '2026-11-18';   // 가입 안내(개인 팬 게임·수익 없음·언제든 바뀜·운영 미흡) 판. 화면 game.html의 TERMS_VER와 같게
 const PBKDF2_ITER = 30000;            // 비밀번호 해시 반복 횟수 (무료 요금제 CPU 한도 안에서)
 const DAY = 864e5;
 const LOCK_FAILS = 5, LOCK_MS = 10 * 60e3;
@@ -150,6 +151,7 @@ async function signup(req, env) {
   if (!allOk(nickChecks(nick))) fail(400, '닉네임 규칙을 확인해 주세요 (2~10글자, 한글·영문·숫자)');
   if (scanBad(nick).hit) fail(400, '닉네임에 쓸 수 없는 말이 들어 있어요');
   if (!allOk(pwChecks(pw, nick))) fail(400, '비밀번호 규칙을 확인해 주세요');
+  if (b.agree !== TERMS_VER) fail(400, '가입 안내를 읽고 동의해 주세요');   // 2026-11-18 개인 팬 게임 안내 동의 (가입 화면 체크)
   const ipHash = await sha256('signup:' + (req.headers.get('CF-Connecting-IP') || 'local'));
   const recent = await env.DB.prepare('SELECT COUNT(*) AS n FROM signups WHERE ip_hash = ? AND at > ?').bind(ipHash, now() - 3600e3).first();
   if (recent.n >= SIGNUP_PER_HOUR) fail(429, '같은 곳에서 가입을 너무 많이 했어요. 1시간 뒤에 다시 해 주세요');
@@ -164,7 +166,7 @@ async function signup(req, env) {
   await env.DB.batch([
     charInsert(env, id, t),
     env.DB.prepare('INSERT INTO signups (ip_hash, at) VALUES (?, ?)').bind(ipHash, t),
-    env.DB.prepare('INSERT INTO activity (user_id, kind, detail, at) VALUES (?, ?, ?, ?)').bind(id, 'signup', nick, t),
+    env.DB.prepare('INSERT INTO activity (user_id, kind, detail, at) VALUES (?, ?, ?, ?)').bind(id, 'signup', `${nick} · 안내 동의 ${TERMS_VER}`, t),
   ]);
   const user = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(id).first();
   return json({ token: await newSession(env, id, true), code, me: await loadMe(env, user) });

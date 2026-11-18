@@ -282,6 +282,25 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; lette
 .rules li.bad { color: var(--kimchi); }
 .rules li.bad::before { content: "✕"; color: var(--kimchi); }
 .check { display: flex; align-items: center; gap: 8px; font-size: calc(14px * var(--fs)); }
+/* 가입 화면 (2026-11-18 정리): 규칙은 작은 꼬리표, 눈 버튼, 안심 안내는 접기, 안내 동의 */
+.rules.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.rules.chips li { padding: 2px 8px 2px 6px; border-radius: 99px; background: var(--paper-2); font-size: calc(12px * var(--fs)); line-height: 1.5; }
+.rules.chips li::before { width: auto; margin-right: 3px; }
+.rules.chips li.ok { background: #e3f3df; } .rules.chips li.bad { background: #fde6e1; }
+.pwbox { position: relative; } .pwbox input { padding-right: 46px; }
+.pwbox .eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border: 0; background: none; border-radius: 9px; font-size: 18px; opacity: .45; cursor: pointer; }
+.pwbox .eye { display: grid; place-items: center; color: var(--ink); opacity: .55; } .pwbox .eye svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.pwbox .eye .sl { display: none; } .pwbox .eye.on .sl { display: inline; } .pwbox .eye.on { opacity: 1; color: var(--leaf); } .pwbox .eye:hover { background: var(--paper-2); }
+#authCard .err:empty { display: none; }
+.field .same { font-style: normal; font-size: calc(12.5px * var(--fs)); margin-left: 6px; } .same.ok { color: var(--leaf); } .same.bad { color: var(--kimchi); }
+.terms { padding: 11px 12px; border-radius: 12px; background: #fff7e6; border: 1.5px solid #f0c77a; display: grid; gap: 7px; }
+.terms-h { margin: 0; font-weight: 800; font-size: calc(14px * var(--fs)); }
+.terms ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; font-size: calc(13px * var(--fs)); line-height: 1.45; color: #4b3d22; }
+.terms .agree { padding: 9px 10px; border-radius: 10px; background: #fff; border: 1.5px solid #f0c77a; font-weight: 700; cursor: pointer; }
+.terms .agree:has(input:checked) { border-color: var(--leaf); background: #eef8ea; }
+.terms .req { color: var(--kimchi); font-weight: 700; font-size: calc(12px * var(--fs)); }
+.terms.shake { animation: tshake .4s; } @keyframes tshake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+#authBtn.wait { opacity: .55; }
 .check input { width: 18px; height: 18px; accent-color: var(--leaf); }
 .btn { border: 2px solid var(--ink); border-radius: 12px; padding: 12px 16px; font-weight: 700; background: #fff; box-shadow: 0 3px 0 var(--ink); transition: transform .08s, box-shadow .08s; }
 .btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
@@ -625,8 +644,8 @@ body.raiding .huntbox, body.raiding .placebar, body.raiding .roombtn { display: 
 .chip.raidc { background: #7a1f1a; color: #fff3e0; border-color: #1f1414; animation: rqpulse 1.4s ease-in-out infinite; cursor: pointer; } .chip.raidc b { color: #ffd84a; }
 @keyframes rqpulse { 50% { box-shadow: 0 0 0 4px rgba(232,85,58,.35); } }
 @media (max-width: 420px) { .rq-time { width: 78px; height: 78px; } .rq-time b { font-size: 28px; } .rq-rew span { font-size: 17px; } }
-.pwsafe { margin: 2px 0 10px; padding: 10px 12px; border-radius: 12px; background: #eef7ee; border: 1.5px solid #9fcf9f; font-size: 13px; line-height: 1.45; color: #2f4a34; }
-.pwsafe > b { display: block; margin-bottom: 4px; font-size: 14px; } .pwsafe ul { margin: 0; padding-left: 18px; display: grid; gap: 2px; } .pwsafe small { display: block; margin-top: 4px; color: #5c6f60; }
+.pwsafe { padding: 8px 12px; border-radius: 12px; background: #eef7ee; border: 1.5px solid #9fcf9f; font-size: calc(13px * var(--fs)); line-height: 1.45; color: #2f4a34; }
+.pwsafe summary { cursor: pointer; font-size: calc(13.5px * var(--fs)); } .pwsafe ul { margin: 6px 0 2px; padding-left: 18px; display: grid; gap: 2px; }
 .raidask { display: flex; align-items: baseline; justify-content: center; gap: 4px; margin: 4px 0 8px; } .raidask b { font-size: 44px; color: #e8553a; line-height: 1; } .raidask small { font-weight: 700; }
 .raidinfo { margin: 8px 0; padding-left: 18px; display: grid; gap: 4px; font-size: calc(14px * var(--fs)); } .raidinfo .raidskin { color: #b8392f; }
 .skgrid.raid button { background: linear-gradient(#ffe9d6, #f6c9a8); border-color: #d9734e; }
@@ -895,42 +914,51 @@ a.iconbtn { color: inherit; text-decoration: none; }
       <div class="field">
         <label for="nick">닉네임</label>
         <input id="nick" autocomplete="username" placeholder="2~10글자" maxlength="10">
+        <ul class="rules chips" id="nickRules" hidden>
+          <li data-r="len">2~10글자</li>
+          <li data-r="chars">한글·영문·숫자만</li>
+          <li data-r="name">김치복·관리자 같은 이름 X</li>
+        </ul>
       </div>
-      <ul class="rules" id="nickRules" hidden>
-        <li data-r="len">2~10글자</li>
-        <li data-r="chars">한글·영문·숫자만 (띄어쓰기·특수문자 X)</li>
-        <li data-r="name">'김치복·관리자' 같은 이름 사용 불가</li>
-      </ul>
       <div class="field">
         <label for="pw">비밀번호</label>
-        <input id="pw" type="password" autocomplete="current-password" placeholder="영문 + 숫자 8글자 이상" maxlength="64">
+        <div class="pwbox"><input id="pw" type="password" autocomplete="current-password" placeholder="영문 + 숫자 8글자 이상" maxlength="64"><button type="button" class="eye" data-eye="pw" aria-label="비밀번호 보기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="3.2"/><path class="sl" d="M4 4l16 16"/></svg></button></div>
+        <ul class="rules chips" id="pwRules" hidden>
+          <li data-r="len">8~64글자</li>
+          <li data-r="mix">영문+숫자</li>
+          <li data-r="nick">닉네임 X</li>
+          <li data-r="common">흔한 비밀번호 X</li>
+          <li data-r="repeat">같은 글자 반복 X</li>
+        </ul>
       </div>
-      <ul class="rules" id="pwRules" hidden>
-        <li data-r="len">8~64글자</li>
-        <li data-r="mix">영문과 숫자 둘 다</li>
-        <li data-r="nick">닉네임이 들어가면 안 됨</li>
-        <li data-r="common">너무 흔한 비밀번호 X (qwer1234 등)</li>
-        <li data-r="repeat">같은 글자만 반복 X (aaaa1111 등)</li>
-      </ul>
       <div class="field" id="pw2Wrap" hidden>
-        <label for="pw2">비밀번호 한 번 더</label>
-        <input id="pw2" type="password" autocomplete="new-password" maxlength="64">
+        <label for="pw2">비밀번호 한 번 더 <em id="pwSame" class="same"></em></label>
+        <div class="pwbox"><input id="pw2" type="password" autocomplete="new-password" maxlength="64"><button type="button" class="eye" data-eye="pw2" aria-label="비밀번호 보기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="3.2"/><path class="sl" d="M4 4l16 16"/></svg></button></div>
       </div>
-      <div class="pwsafe" id="pwSafe" hidden>
-        <b>🔒 비밀번호는 아무도 볼 수 없어요. 김치복님(운영자)도요.</b>
+      <details class="pwsafe" id="pwSafe" hidden>
+        <summary>🔒 비밀번호는 <b>운영자(김치복님)도 볼 수 없어요</b></summary>
         <ul>
-          <li>비밀번호를 글자 그대로 저장하지 않아요. <b>되돌릴 수 없는 암호(해시)</b>로 바꿔서 저장해요.</li>
-          <li>로그인할 때도 입력한 비밀번호를 같은 방식으로 바꿔서 맞는지만 비교해요.</li>
+          <li>글자 그대로 저장하지 않고, <b>되돌릴 수 없는 암호(해시)</b>로 바꿔서 저장해요.</li>
+          <li>로그인할 때도 같은 방식으로 바꿔서 맞는지만 비교해요.</li>
           <li>오가는 내용은 모두 암호화된 연결(https)로 보내요.</li>
           <li>그래서 잊어버리면 누구도 알려 줄 수 없어요. 복구 코드로 새로 정해요.</li>
+          <li>다른 사이트에서 쓰는 비밀번호는 쓰지 마세요.</li>
         </ul>
-        <small>다른 사이트에서 쓰는 비밀번호는 쓰지 마세요.</small>
+      </details>
+      <div class="terms" id="termsWrap" hidden>
+        <p class="terms-h">📢 가입 전에 알아 두세요</p>
+        <ul>
+          <li><b>수익이 전혀 없는 개인 팬 게임</b>이에요. 광고도, 결제도 없어요.</li>
+          <li>패치로 <b>내용·규칙·밸런스가 언제든 바뀔 수 있고</b>, 진행 상황이 초기화될 수도 있어요.</li>
+          <li>혼자 만들고 운영해서 <b>문의 답변이나 오류 수정이 늦거나 미흡할 수 있어요.</b></li>
+        </ul>
+        <label class="check agree"><input type="checkbox" id="agree"> 위 내용을 읽었고 동의해요 <span class="req">(필수)</span></label>
       </div>
       <label class="check" id="keepWrap"><input type="checkbox" id="keep" checked> 로그인 유지 (30일)</label>
       <p class="err" id="authErr" role="alert"></p>
       <button class="btn main" id="authBtn" type="submit">마을로 들어가기</button>
       <button class="linkish" type="button" id="forgotBtn">비밀번호를 잊었어요</button>
-      <p class="mock-note">아직 시험 중인 게임이에요. 내용이 초기화될 수 있어요.</p>
+      <p class="mock-note" id="mockNote">아직 시험 중인 게임이에요. 내용이 초기화될 수 있어요.</p>
     </form>
 
     <!-- 비밀번호 찾기 -->
@@ -4744,12 +4772,13 @@ function formSheet(title, fields, btn, onOk) {
 // ───────── 로그인 · 가입 ─────────
 let mode = 'login';
 const nickChecks = nickRule;
+const TERMS_VER = '2026-11-18';   // 가입 안내 판 (서버 index.js의 TERMS_VER와 같게)
 function paintRules(el, res, touched) { el.querySelectorAll('li').forEach(li => { li.classList.toggle('ok', touched && res[li.dataset.r]); li.classList.toggle('bad', touched && !res[li.dataset.r]); }); }
 function showAuth(m) {
   mode = m; $('#authCard').hidden = false; $('#findCard').hidden = true; $('#codeCard').hidden = true; $('#makeCard').hidden = true;
   $('#tabLogin').setAttribute('aria-selected', m === 'login'); $('#tabJoin').setAttribute('aria-selected', m === 'join');
   const join = m === 'join';
-  $('#nickRules').hidden = !join; $('#pwRules').hidden = !join; $('#pw2Wrap').hidden = !join; $('#pwSafe').hidden = !join; $('#forgotBtn').hidden = join; $('#keepWrap').hidden = join;
+  $('#nickRules').hidden = !join; $('#pwRules').hidden = !join; $('#pw2Wrap').hidden = !join; $('#pwSafe').hidden = !join; $('#termsWrap').hidden = !join; $('#mockNote').hidden = join; $('#agree').checked = false; $('#forgotBtn').hidden = join; $('#keepWrap').hidden = join;
   $('#authBtn').textContent = join ? '가입하기' : '마을로 들어가기';
   $('#pw').autocomplete = join ? 'new-password' : 'current-password';
   $('#pw').value = ''; $('#pw2').value = '';
@@ -4759,8 +4788,13 @@ function checkJoin() {
   if (mode !== 'join') return;
   const n = $('#nick').value.trim(), p = $('#pw').value;
   paintRules($('#nickRules'), nickChecks(n), n.length > 0); paintRules($('#pwRules'), pwChecks(p, n), p.length > 0);
+  const p2 = $('#pw2').value, same = $('#pwSame');
+  same.textContent = p2 ? (p2 === p ? '✓ 같아요' : '✕ 달라요') : ''; same.className = 'same' + (p2 ? (p2 === p ? ' ok' : ' bad') : '');
+  const ready = Object.values(nickChecks(n)).every(Boolean) && Object.values(pwChecks(p, n)).every(Boolean) && p2 === p && $('#agree').checked;
+  $('#authBtn').classList.toggle('wait', !ready);   // 다 채우기 전엔 흐리게 (누르면 무엇이 빠졌는지 알려 줌)
 }
-['nick', 'pw'].forEach(id => $('#' + id).addEventListener('input', checkJoin));
+['nick', 'pw', 'pw2'].forEach(id => $('#' + id).addEventListener('input', checkJoin)); $('#agree').addEventListener('change', () => { $('#authErr').textContent = ''; checkJoin(); });
+document.querySelectorAll('#authCard .eye').forEach(b => b.onclick = () => { const i = $('#' + b.dataset.eye), show = i.type === 'password'; i.type = show ? 'text' : 'password'; b.classList.toggle('on', show); b.setAttribute('aria-label', show ? '비밀번호 숨기기' : '비밀번호 보기'); });
 $('#tabLogin').onclick = () => showAuth('login'); $('#tabJoin').onclick = () => showAuth('join');
 $('#forgotBtn').onclick = () => { $('#authCard').hidden = true; $('#findCard').hidden = false; $('#fNick').value = $('#nick').value; $('#findErr').textContent = ''; $('#fCode').focus(); };
 $('#backLogin').onclick = () => showAuth('login');
@@ -4780,9 +4814,10 @@ $('#authCard').addEventListener('submit', async e => {
   if (!Object.values(nickChecks(n)).every(Boolean)) { err.textContent = '닉네임 규칙을 확인해 주세요'; return; }
   if (!Object.values(pwChecks(p, n)).every(Boolean)) { err.textContent = '비밀번호 규칙을 확인해 주세요'; return; }
   if (p !== $('#pw2').value) { err.textContent = '비밀번호가 서로 달라요'; return; }
+  if (!$('#agree').checked) { err.textContent = '가입 안내를 읽고 동의에 체크해 주세요'; $('#termsWrap').classList.add('shake'); setTimeout(() => $('#termsWrap').classList.remove('shake'), 500); return; }
   busy(btn, true, '가입하는 중…');
   try {
-    const j = await api('/api/signup', { nick: n, pw: p }); token = j.token; store.set('cbt-token', token, true); applyMe(j.me);
+    const j = await api('/api/signup', { nick: n, pw: p, agree: TERMS_VER }); token = j.token; store.set('cbt-token', token, true); applyMe(j.me);
     $('#authCard').hidden = true; $('#codeCard').hidden = false; $('#codeBox').textContent = j.code; $('#savedCode').checked = false; $('#codeNext').disabled = true;
   } catch (x) { err.textContent = x.message; }
   finally { busy(btn, false, '가입하기'); }
