@@ -459,7 +459,7 @@ const GAME = {
     const res = await raidDO(env).fetch('https://raid/join', { method: 'POST', body: JSON.stringify({ start: Number(b.start), uid: user.id, nick: user.nick, lv: c.lv, dps, maxHp: D.maxHp, look }) });
     const j = await res.json(); if (!res.ok) fail(400, j.error || '참여하지 못했어요');
     c.hp = D.maxHp;
-    return { raid: { start: j.start, n: j.n, dps } };
+    return { raid: { start: j.start, n: j.n, dps, boss: j.boss } };
   },
   // 레이드 보상: 레이드 방에서 기록을 읽고 → 골드·경험치 + 확률로 전용 스킨. life.raidGot 으로 한 번만
   async '/api/raid/claim'(c, b, at, out, env, user) {
@@ -481,7 +481,7 @@ const GAME = {
     }
     if (skins[0]) ({ skin, lv: skinLv, n: skinN } = skins[0]);
     c.gold += gold; const up = addExp(c, exp); c.life.raidGot = start; c.hp = D.maxHp; c.hpAt = at;
-    return { raid: { gold, exp, up, skin, skinLv, skinN, skins, crowd: Math.round((raidCrowd(j.n) - 1) * 100), dead: j.dead, rank: j.rank, n: j.n, dmg: j.dmg }, log: ['raid', `${gold} ${exp} ${skins.map(x => x.skin).join(' ')}`.trim()],
+    return { raid: { boss: j.boss, gold, exp, up, skin, skinLv, skinN, skins, crowd: Math.round((raidCrowd(j.n) - 1) * 100), dead: j.dead, rank: j.rank, n: j.n, dmg: j.dmg }, log: ['raid', `${gold} ${exp} ${skins.map(x => x.skin).join(' ')}`.trim()],
       chron: skin ? ['raid', `${RAID_BOSS[j.boss]?.n || '레이드'} 레이드에서 전용 스킨을 얻었어요!`] : null };
   },
   // 스킨샵 (겉모습만, 현금 결제 없음)
@@ -919,6 +919,11 @@ function cheat(c, k, b, at, env, user) {
   if (k === 'pots') { for (const p of ['s', 'l', 'xl']) c.pots[p] = (c.pots[p] || 0) + 50; c.hp = derive(c).maxHp; return { msg: '물약 50개씩 + 체력 가득' }; }
   if (k === 'titles') { L.titles = TITLES.map(x => x.id); return { msg: `칭호 ${TITLES.length}개 모두 받음` }; }
   if (k === 'skins') { c.hats = [...new Set([...c.hats, ...HATS.map(h => h.id), ...EYE_SKINS.filter(e => e.id !== 'dot').map(e => 'eye:' + e.id), ...SUITS.map(s => 'suit:' + s.id), ...WSKINS.map(wskKey)])]; return { msg: '스킨 모두 받음' }; }
+  if (k === 'rskmax') {   // 레이드 스킨 모두 + 최고 레벨 (2026-11-18)
+    const keys = Object.values(RAID_BOSS).flatMap(b => raidSet(b.set)), need = 2 ** (RSK.max - 1);
+    c.hats = [...new Set([...c.hats, ...keys])]; L.rsk = L.rsk || {}; for (const key of keys) L.rsk[key] = Math.max(L.rsk[key] || 0, need);
+    return { msg: `레이드 스킨 ${keys.length}개 모두 Lv.${RSK.max}` };
+  }
   if (k === 'gear') {   // 모든 칸에 최고 단계·최고 등급 + 최고 강화
     const g = Object.keys(GRADES).at(-1);
     for (const slot of Object.keys(SLOTS)) { c.equip[slot] = makeItem(slot, STAGES, g, null, rollOpts(slot, STAGES, g)); c.enh[slot] = ENH_MAX; }
@@ -982,7 +987,7 @@ async function admin(p, m, req, env, user, url) {
     return json({ ok: true, until: min ? t + min * 60e3 : 0 });
   }
   if (m === 'POST' && p === '/api/admin/raid') {   // 지금부터 30초 모집하는 레이드를 엶 (시험용)
-    const res = await raidDO(env).fetch('https://raid/force', { method: 'POST' }), j = await res.json(); if (!res.ok) fail(400, j.error);
+    const res = await raidDO(env).fetch('https://raid/force', { method: 'POST', body: JSON.stringify({ boss: body?.boss }) }), j = await res.json(); if (!res.ok) fail(400, j.error);
     await toRooms(env, { act: 'raid', start: j.start }); await done('raid', String(j.start));
     return json({ ok: true, start: j.start });
   }

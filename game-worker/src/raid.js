@@ -1,9 +1,9 @@
 // 치복 타운 레이드 방 (Cloudflare Durable Object, 하나만 씀)
-// - 매시 정각 30초 모집 → 신청한 사람만 웹소켓으로 들어옴 → 1초마다 보스 체력·모두의 위치를 알려 줌
+// - 30분마다 2분 모집 (정각 = 레드 드래곤, 30분 = 오우거) → 신청한 사람만 웹소켓으로 들어옴 → 1초마다 보스 체력·모두의 위치를 알려 줌
 // - 보스는 무조건 잡힘: 1초마다 최대 체력의 1/RAID.drain 만큼 저절로 깎임 + 참가자가 보낸 피해 (초당 피해로 막음)
 // - 보상은 끝난 뒤 각자 /api/raid/claim 으로 받음 (여기서는 누가 얼마나 때렸는지만 기억)
 import { DurableObject } from 'cloudflare:workers';
-import { RAID, isHourlyRaid } from '../../assets/js/game-rules.js';
+import { RAID, RAID_BOSS, isHourlyRaid, raidBossOf } from '../../assets/js/game-rules.js';
 
 const now = () => Date.now();
 const J = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json' } });
@@ -26,25 +26,27 @@ export class Raid extends DurableObject {
 
   async fetch(req) {
     const url = new URL(req.url), p = url.pathname, t = now(), r = await this.load();
-    if (p === '/force') {   // 관리자: 지금부터 30초 모집
+    if (p === '/force') {   // 관리자: 지금부터 모집 (보스를 고를 수 있음)
       if (r && !r.done && r.start > t - RAID.max) return J({ error: '이미 레이드가 진행 중이에요' }, 400);
-      this.r = { start: t + RAID.recruit, boss: 'rdragon', forced: true, players: {}, hp: 0, max: 0, done: false, endAt: 0, last: 0 };
+      let fb = 'rdragon'; try { const q = await req.json(); if (RAID_BOSS[q?.boss]) fb = q.boss; } catch {}
+      this.r = { start: t + RAID.recruit, boss: fb, forced: true, players: {}, hp: 0, max: 0, done: false, endAt: 0, last: 0 };
       await this.keep(); await this.ctx.storage.setAlarm(this.r.start);
-      return J({ start: this.r.start });
+      return J({ start: this.r.start, boss: fb });
     }
     if (p === '/join') {
       const b = await req.json(), st = this.open(r, t);
       if (!st || b.start !== st) return J({ error: '레이드 모집 시간이 아니에요' }, 400);
-      if (!r || r.start !== st) this.r = { start: st, boss: 'rdragon', forced: !isHourlyRaid(st), players: {}, hp: 0, max: 0, done: false, endAt: 0, last: 0 };
+      if (!r || r.start !== st) this.r = { start: st, boss: raidBossOf(st), forced: !isHourlyRaid(st), players: {}, hp: 0, max: 0, done: false, endAt: 0, last: 0 };
       const R = this.r;
       if (!R.players[b.uid] && Object.keys(R.players).length >= RAID.cap) return J({ error: '이번 레이드는 자리가 꽉 찼어요' }, 400);
       R.players[b.uid] = { n: b.nick, look: b.look, dps: b.dps, maxHp: b.maxHp, lv: b.lv, dmg: 0, dead: false, x: (RAID.W / 2 + (Math.random() - .5) * 8) * 32, y: (RAID.H - 3) * 32, at: 0, claimed: false };
       await this.keep(); await this.ctx.storage.setAlarm(st);
-      return J({ start: st, n: Object.keys(R.players).length });
+      return J({ start: st, n: Object.keys(R.players).length, boss: R.boss });
     }
     if (p === '/state') {   // 지금 모집 중인 레이드 (화면이 정각 창을 띄울 때 확인)
       const st = this.open(r, t);
-      return J({ open: st, joined: st && r?.start === st ? Object.keys(r.players).length : 0, run: r && !r.done ? r.start : 0, last: r?.done ? r.start : 0 });   // run = 진행 중인 레이드 (새로고침하면 다시 들어감)
+      const ob = st ? (r?.start === st ? r.boss : raidBossOf(st)) : '';   // 모집 중인 레이드의 보스
+      return J({ open: st, boss: ob, joined: st && r?.start === st ? Object.keys(r.players).length : 0, run: r && !r.done ? r.start : 0, rboss: r?.boss || 'rdragon', last: r?.done ? r.start : 0 });   // run = 진행 중인 레이드 (새로고침하면 다시 들어감)
     }
     if (p === '/result') {   // 보상 받기 전 확인 (한 번만)
       const st = Number(url.searchParams.get('start')), uid = Number(url.searchParams.get('uid'));

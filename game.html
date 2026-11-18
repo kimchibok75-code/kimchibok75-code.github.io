@@ -1098,7 +1098,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
     <div class="placebar" id="placeBar" hidden><span id="placeMsg"></span><button class="mini main" id="placeOk" type="button">여기에 짓기</button><button class="mini" id="placeNo" type="button">취소</button></div>
     <section class="qbox" id="questBox" hidden aria-label="임무"></section>
     <section class="raidbox" id="raidBox" hidden aria-label="레이드">
-      <div class="rb-top"><b>🐉 레드 드래곤 레이드</b><span id="raidN">1명</span><button class="rb-out" id="raidOut" type="button">🚪 나가기</button></div>
+      <div class="rb-top"><b id="raidTitle">🐉 레드 드래곤 레이드</b><span id="raidN">1명</span><button class="rb-out" id="raidOut" type="button">🚪 나가기</button></div>
       <div class="rb-bar"><i id="raidHp"></i><span id="raidHpT">100%</span></div>
       <p id="raidMsg"></p>
       <div class="hb-sk" id="raidSk" aria-label="스킬 쿨타임"></div>
@@ -1151,7 +1151,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, fishHit, FISH_RIVER, FISH_SEA, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
@@ -1284,7 +1284,10 @@ function bowArc(ro, th, col, cx = 4 - ro) {
   return { arc: { path: PG([...out, ...inn]), c: col }, str: { path: R(sx - .55, -half, 1.1, half * 2, 0), c: '#f3ead2' }, tx: cx + ro * Math.cos(1.1), ty: ro * Math.sin(1.1), cx };
 }
 const swirl = (cx, cy, r, c) => g => { g.save(); g.strokeStyle = c; g.lineWidth = 1.8; g.beginPath(); for (let a = 0; a < 12.6; a += .25) g.lineTo(cx + Math.cos(a) * a * r / 12.6, cy + Math.sin(a) * a * r / 12.6); g.stroke(); g.restore(); };
+// 오우거 스킨 (2026-11-18): 템플릿 틀 그대로 (town-art.py 9번 meta 'og')
+const OGS = { hat: [-21.5, -63.5, 43.25, 44], suit: [-13.75, -23.75, 28, 22], sword: [-9.75, -34.375, 19.625, 44.625], bow: [-14.375, -18.875, 19.375, 39], staff: [-11.125, -38.125, 22.375, 52.5] };
 function wskParts(type, id) {
+  if (id === 'ogre' && ART['og-' + type]) return [imgPart('og-' + type, ...OGS[type])];
   const P = [], glint = (x, y) => ({ flat: 1, path: E(x, y, 1.3, 1.3), c: 'rgba(255,255,255,.8)' });
   if (type === 'bow' && id === 'rdragon' && ART['rd-bow']) return [imgPart('rd-bow', -11.625, -20.375, 18.625, 41.75)];   // 2026-11-18 템플릿 틀 그대로 (손잡이 = 기준점)
   if (type === 'staff' && id === 'rdragon' && ART['rd-staff']) return [imgPart('rd-staff', -14.875, -39.125, 28.375, 53.25)];
@@ -1360,6 +1363,9 @@ function suitParts(id, bob, hy) {
         { path: E(-8.6, y + 2, 3.8, 3), c: '#9aa5b1' }, { path: E(8.6, y + 2, 3.8, 3), c: '#9aa5b1' }); break;
     case 'cabbage': sl = '#bfe39a'; F.push(body('#bfe39a'), { flat: 1, path: R(-.5, y + 2, 1, 11, .5), c: 'rgba(255,255,255,.6)' }, { flat: 1, path: PG([[0, y + 7], [-5, y + 4], [-5, y + 5.2], [0, y + 8.5]]), c: 'rgba(255,255,255,.45)' },
       ...[-8, -3, 3, 8].map(x => ({ path: E(x, y + 1, 3.8, 2.6, x * .06), c: '#7fcf6a' }))); break;
+    case 'ogre': sl = '#7d9a3c';
+      if (ART['og-suit']) { F.push(imgPart('og-suit', OGS.suit[0], y + OGS.suit[1] + 20, OGS.suit[2], OGS.suit[3])); break; }
+      F.push(body('#7d9a3c')); break;
     case 'rdragon': sl = '#a8322a';
       if (ART['rd-suit']) { F.push(imgPart('rd-suit', -14.5, y - 3.25, 29, 21)); break; }   // 템플릿 틀 그대로 (몸 위치 y = -20 기준)
       for (const s of [-1, 1]) B.push({ path: PG([[s * 5, y + 3], [s * 21, y - 9], [s * 18, y + 1], [s * 23, y + 3], [s * 15, y + 8], [s * 7, y + 10]]), c: '#7a1f1a' }, { flat: 1, path: PG([[s * 8, y + 4], [s * 19, y - 6], [s * 14, y + 6]]), c: '#a8322a' });
@@ -1413,6 +1419,7 @@ function helmParts(it, hy) {
 }
 // 모자 스킨
 function hatParts(kind, hy, face) {
+  if (kind === 'ogre') return ART['og-hat'] ? [imgPart('og-hat', OGS.hat[0], hy + OGS.hat[1] + 45, OGS.hat[2], OGS.hat[3])] : [];
   if (kind === 'rdragon' && ART['rd-hat']) return [imgPart('rd-hat', -25.25, hy - 21.5, 50.5, 50.75)];   // 템플릿 틀 그대로 (머리 꼭대기 hy = -45 기준), 얼굴 자리는 뚫려 있음
   if (kind === 'rdragon') return [...[-1, 1].flatMap(s => [{ path: PG([[s * 5, hy + 3], [s * 9, hy - 5], [s * 17, hy - 13], [s * 13, hy - 3], [s * 11.5, hy + 4]]), c: '#4a2a20' }, { flat: 1, path: PG([[s * 13.5, hy - 8], [s * 17, hy - 13], [s * 14.5, hy - 6]]), c: '#f3e6cf' }]),
     { path: PG([[-3.5, hy + 1], [0, hy - 8], [3.5, hy + 1]]), c: '#d4473b' }, { flat: 1, path: E(0, hy - 1, 1.3, 1.3), c: '#ffd45a' }];
@@ -1594,7 +1601,8 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 const ART = {};
 const ART_N = ['b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg',
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
-  ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole'];
+  ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
+  ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'sword', 'bow', 'staff'].map(n => 'og-' + n), 'ogre-bg'];
 const artReady = Promise.all(ART_N.map(n => new Promise(ok => { const im = new Image(); im.onload = () => { ART[n] = im; ok(); }; im.onerror = () => ok(); im.src = `assets/img/town/${n}.webp?v=__BUILD__`; })));
 // 그림 조각 (캐릭터 스킨용): inkDraw 안에서 테두리 없이 그림을 그림. rot = 돌리기(가운데 기준)
 // 그림 바깥 테두리 (2026-11-18): 그림 모양대로 검게 칠한 판(silOf)을 둘레 16방향으로 O만큼 밀어 그린 뒤 그 위에 그림
@@ -2661,8 +2669,8 @@ function openHuntSelect() {
 }
 let huntBusy = false, syncT = null;
 // 서버의 사냥 상태(h)로 사냥 화면 열기. 화면의 전투는 보여 주기용이고, 실제 결과는 서버가 30초마다 계산
-// ───────── 레이드 (매시 정각 · 레드 드래곤) ─────────
-// 정각에 모두에게 참여 창 → 2분 안에 누른 사람만 레이드 맵으로. 끝날 때까지 못 나감. 쓰러지면 끝까지 구경
+// ───────── 레이드 (30분마다: 정각 레드 드래곤 · 30분 오우거, 2026-11-18) ─────────
+// 정각·30분에 모두에게 참여 창 → 2분 안에 누른 사람만 레이드 맵으로. 끝날 때까지 못 나감. 쓰러지면 끝까지 구경
 // 보스 공격 순서는 시작 시각으로 정해져서 모두의 화면이 같음 (raidPattern). 보스 체력은 레이드 방(서버)이 1초마다 알려 줌
 let RD = null;                   // 지금 레이드 중인 상태
 const RAIDQ = { asked: 0, skew: 0, t: null, tick: null };   // asked = 이미 물어본 레이드, skew = 서버 시계 - 내 시계
@@ -2670,7 +2678,9 @@ const RW = () => RAID.W * T, RH = () => RAID.H * T;
 const srvNow = () => Date.now() + RAIDQ.skew;
 const DRAGON = () => ({ x: RW() / 2, y: 9 * T });   // 드래곤 발 (가운데 위)
 const DMOUTH = 4.6 * T;   // 발에서 입까지 높이 (불 뿜는 곳)
-// 정각마다 확인 (내 시계 기준 다음 정각 + 0.6초). 관리자가 열면 마을 방이 {t:'raid'}로 알려 줌
+const RB = () => RAID_BOSS[RD?.boss || RAIDQ.boss] || RAID_BOSS.rdragon;   // 지금 레이드(또는 모집 중) 보스
+const bossHeadImg = b => ART[b === 'ogre' ? 'og-head' : 'd-head'];
+// 30분마다 확인 (내 시계 기준 다음 정각·30분 + 0.6초). 관리자가 열면 마을 방이 {t:'raid'}로 알려 줌
 function raidWatch() {
   clearTimeout(RAIDQ.t);
   const t = srvNow(), next = Math.ceil(t / RAID.every) * RAID.every;
@@ -2681,26 +2691,26 @@ async function raidCheck() {
   let j; try { j = await api('/api/raid'); } catch { return; }
   RAIDQ.skew = j.now - Date.now();
   let mine = 0; try { mine = +localStorage.getItem('cbt-raid') || 0; } catch {}
-  if (mine && j.run === mine) return enterRaid(mine);   // 레이드 중에 새로고침 → 다시 들어감
+  if (mine && j.run === mine) return enterRaid(mine, j.rboss);   // 레이드 중에 새로고침 → 다시 들어감
   if (mine && j.last === mine) { RD = null; return raidClaim(mine); }   // 끝났는데 보상을 못 받았음
   if (mine && mine < j.now - RAID.every) try { localStorage.removeItem('cbt-raid'); } catch {}
   if (!j.open || j.open <= j.now + 1500 || RAIDQ.asked === j.open) return;
-  RAIDQ.asked = j.open; raidAsk(j.open, j.joined);
+  RAIDQ.asked = j.open; raidAsk(j.open, j.joined, j.boss);
 }
 // 레이드 모집 창 (2026-11-18 새로): 건물 창과 같은 틀. 닫아도 위쪽 칩(#raidChip)으로 모집이 끝날 때까지 다시 열 수 있음
-function raidAsk(start, joined) {
+function raidAsk(start, joined, boss) {
   sfx('alarm');
-  const B = RAID_BOSS.rdragon;
+  RAIDQ.boss = RAID_BOSS[boss] ? boss : raidBossOf(start); const B = RB();
   sysMsg(`${B.i} ${B.n} 레이드 모집 중! 2분 안에 참여하세요`);
   RAIDQ.open = start; RAIDQ.joined = joined || 0; raidChip(); raidSheet();
 }
 function raidSheet() {
   const start = RAIDQ.open; if (!start || RD) return;
-  const R = raidReward(me.lv), B = RAID_BOSS.rdragon, n = RAIDQ.joined || 0, bonus = Math.round((raidCrowd(n + 1) - 1) * 100);
+  const R = raidReward(me.lv), B = RB(), n = RAIDQ.joined || 0, bonus = Math.round((raidCrowd(n + 1) - 1) * 100);
   const left = () => Math.max(0, Math.ceil((start - srvNow()) / 1000)), ring = l => `${(l / (RAID.recruit / 1000)) * 100.5} 100.5`;
-  const ic = ART['d-head'] ? '<img class="rq-ic" src="' + ART['d-head'].src + '" alt="">' : B.i;
+  const hi = bossHeadImg(RAIDQ.boss), ic = hi ? '<img class="rq-ic" src="' + hi.src + '" alt="">' : B.i;
   bsOpen({ id: 'raid', icon: ic, name: `${B.n} 레이드` }, {
-    tag: '마을 사람들과 다 같이 드래곤을 잡아요 · 1~2분',
+    tag: `마을 사람들과 다 같이 ${B.obj} 잡아요 · 1~2분`,
     body: `<div class="rq-hero">
         <div class="rq-time"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="16" class="bg"/><circle cx="18" cy="18" r="16" class="fg" id="rqRing" stroke-dasharray="${ring(left())}"/></svg><b id="raidLeft">${left()}</b><small>초 남음</small></div>
         <div class="rq-who"><b id="raidJoined">${n}명</b><span>참여 중</span><em id="raidBonus">${n ? `인원 보너스 +${Math.round((raidCrowd(n) - 1) * 100)}%` : '첫 번째로 참여해 보세요!'}</em></div>
@@ -2708,10 +2718,10 @@ function raidSheet() {
       <div class="rq-rew">
         <span>🪙<b>${fmtN(R.gold)}</b><small>골드 약</small></span>
         <span>✨<b>${fmtN(R.exp)}</b><small>경험치 약</small></span>
-        <span class="sk">🐉<b>스킨 1개 확정</b><small>30% 확률로 2개!</small></span>
+        <span class="sk">${B.i}<b>스킨 1개 확정</b><small>30% 확률로 2개!</small></span>
       </div>
       <ul class="rq-tips"><li>👥 많이 모일수록 보상 UP: 함께하는 사람 한 명마다 +3% (최대 +60%)${bonus ? ` · 내가 들어가면 +${bonus}%` : ''}</li><li>🔥 바닥이 빨개지면 피하세요. 쓰러져도 끝까지 있으면 보상을 받아요</li><li>🚪 중간에 나갈 수 있지만 그때는 보상이 없어요</li></ul>`,
-    foot: `<div class="bs-two">${bbtn('no', '나중에', '위쪽 🐉 칩으로 다시 열기')}${bbtn('join', '⚔️ 참여하기', '하던 사냥·낚시는 멈춰요', { main: true })}</div>`,
+    foot: `<div class="bs-two">${bbtn('no', '나중에', `위쪽 ${B.i} 칩으로 다시 열기`)}${bbtn('join', '⚔️ 참여하기', '하던 사냥·낚시는 멈춰요', { main: true })}</div>`,
     ready: el => {
       clearInterval(RAIDQ.tick);
       RAIDQ.tick = setInterval(() => {
@@ -2727,7 +2737,7 @@ function raidSheet() {
 function raidChip() {
   const c = $('#raidChip'), start = RAIDQ.open, l = start ? Math.ceil((start - srvNow()) / 1000) : 0;
   if (!start || l <= 0 || RD) { c.hidden = true; if (start && l <= 0 && !RD) { RAIDQ.open = 0; toast('레이드 모집이 끝났어요'); } return; }
-  const sig = `${l}|${RAIDQ.joined}`; if (c.hidden || c.dataset.sig !== sig) { c.dataset.sig = sig; c.innerHTML = `🐉 레이드 <b>${Math.floor(l / 60)}:${String(l % 60).padStart(2, '0')}</b> · ${RAIDQ.joined || 0}명`; iconize(c); } c.hidden = false;
+  const sig = `${l}|${RAIDQ.joined}`; if (c.hidden || c.dataset.sig !== sig) { c.dataset.sig = sig; c.innerHTML = `${RB().i} 레이드 <b>${Math.floor(l / 60)}:${String(l % 60).padStart(2, '0')}</b> · ${RAIDQ.joined || 0}명`; iconize(c); } c.hidden = false;
 }
 $('#raidChip').onclick = () => raidSheet();
 setInterval(raidChip, 1000);
@@ -2746,18 +2756,19 @@ async function raidJoin(start) {
     if (me.room) leaveRoom();
     standUp(me);
     const j = await api('/api/raid/join', { start }); took(j); RAIDQ.open = 0; $('#raidChip').hidden = true; closeModal(); closePanel();
-    enterRaid(start);
+    enterRaid(start, j.raid?.boss || RAIDQ.boss);
   } catch (x) { toast(x.message); } finally { RAIDQ.busy = false; }
 }
-function enterRaid(start) {
+function enterRaid(start, boss) {
   bgm('raid'); sfx('roar');
+  boss = RAID_BOSS[boss] ? boss : raidBossOf(start);
   try { localStorage.setItem('cbt-raid', String(start)); } catch {}
-  RD = { start, back: { x: me.x, y: me.y }, ps: new Map(), hp: 1, max: 1, pat: raidPattern(start), hits: new Set(), fx: [], floats: [], parts: [], atkT: 1, sendT: 0, acc: 0,
+  RD = { start, boss, club: 0, back: { x: me.x, y: me.y }, ps: new Map(), hp: 1, max: 1, pat: raidPattern(start, boss), hits: new Set(), fx: [], floats: [], parts: [], atkT: 1, sendT: 0, acc: 0,
     dead: false, ended: false, goal: null, ctl: 0, shake: 0, flash: 0, ws: null, tries: 0,
     cd: {}, q: [], skT: 1.2, sh: 0, bt: 0, batk: 0, bcrit: 0, emb: [] };   // cd·q·skT = 스킬, sh = 보호막, bt = 버프, emb = 불티
   me.x = RW() / 2 + (Math.random() - .5) * 6 * T; me.y = RH() - 3 * T; me.path = []; me.moving = false; me.sit = -1; me.hp = derive().maxHp; cam = { x: me.x, y: me.y - 4 * T };
   S.zoom = Math.max(S.zoom, H / RH() * 1.02, W / RW() * 1.02);   // 맵 밖(검은 곳)이 안 보이게
-  document.body.classList.add('hunting', 'raiding'); $('#raidBox').hidden = false; setPlace(`${RAID_BOSS.rdragon.n} 레이드`);
+  document.body.classList.add('hunting', 'raiding'); $('#raidBox').hidden = false; setPlace(`${RAID_BOSS[boss].n} 레이드`); $('#raidTitle').textContent = `${RAID_BOSS[boss].i} ${RAID_BOSS[boss].n} 레이드`; iconize($('#raidTitle'));
   netSend({ t: 'hunt', on: true });
   raidConnect(); raidHud();
 }
@@ -2773,6 +2784,7 @@ function raidMsg(m) {
   if (!RD) return;
   if (m.now) RAIDQ.skew = m.now - Date.now();
   if (m.t === 'gone') { toast('이 레이드에 들어갈 수 없어요'); return exitRaid(); }
+  if (m.t === 'hi' && RAID_BOSS[m.boss] && m.boss !== RD.boss) { RD.boss = m.boss; RD.pat = raidPattern(RD.start, m.boss); RD.hits = new Set(); setPlace(`${RB().n} 레이드`); $('#raidTitle').textContent = `${RB().i} ${RB().n} 레이드`; iconize($('#raidTitle')); }
   if (m.t === 'hi' || m.t === 's' || m.t === 'end') {
     RD.hp = m.hp; RD.max = m.max || RD.max;
     for (const p of m.ps) {
@@ -2794,8 +2806,8 @@ function raidHpBar(x, y, e) {
   ctx.fillStyle = INK; rr(ctx, l - 3, y - 3, w + 6, h + 6, 11); ctx.fill();
   ctx.fillStyle = '#4a2a26'; rr(ctx, l, y, w, h, 8); ctx.fill();
   if (RD.hpShow > k) { ctx.fillStyle = 'rgba(255,240,220,.85)'; rr(ctx, l, y, w * RD.hpShow, h, 8); ctx.fill(); }
-  if (k > 0) { const gr = ctx.createLinearGradient(l, 0, l + w, 0); gr.addColorStop(0, '#ff3d23'); gr.addColorStop(1, '#ffb02e'); ctx.fillStyle = gr; rr(ctx, l, y, Math.max(h, w * k), h, 8); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.28)'; rr(ctx, l + 4, y + 2, Math.max(0, w * k - 8), 4, 2); ctx.fill(); }
-  const label = RD.ended ? '처치!' : e < 0 ? `${Math.ceil(-e)}초 뒤 깨어나요` : `레드 드래곤 ${Math.ceil(k * 100)}%`;
+  if (k > 0) { const og = RD.boss === 'ogre', gr = ctx.createLinearGradient(l, 0, l + w, 0); gr.addColorStop(0, og ? '#5f9a2e' : '#ff3d23'); gr.addColorStop(1, og ? '#c7e05a' : '#ffb02e'); ctx.fillStyle = gr; rr(ctx, l, y, Math.max(h, w * k), h, 8); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.28)'; rr(ctx, l + 4, y + 2, Math.max(0, w * k - 8), 4, 2); ctx.fill(); }
+  const label = RD.ended ? '처치!' : e < 0 ? `${Math.ceil(-e)}초 뒤 깨어나요` : `${RB().n} ${Math.ceil(k * 100)}%`;
   ctx.font = '800 12.5px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(0,0,0,.75)'; ctx.lineJoin = 'round'; ctx.strokeText(label, x, y + h / 2 + .5);
   ctx.fillStyle = '#fff'; ctx.fillText(label, x, y + h / 2 + .5);
@@ -2808,13 +2820,14 @@ function raidHud() {
   $('#raidHp').style.width = `${(k * 100).toFixed(1)}%`;
   $('#raidHpT').textContent = RD.ended ? '처치!' : e < 0 ? `${Math.ceil(-e)}초 뒤 시작` : `${Math.ceil(k * 100)}%`;
   $('#raidN').textContent = `${RD.ps.size + 1}명`;
-  $('#raidMsg').textContent = RD.ended ? '🎉 레드 드래곤을 쓰러뜨렸어요!' : RD.dead ? '💤 쓰러졌어요… 끝날 때까지 응원해 주세요 (보상은 받아요)' : e < 0 ? '곧 드래곤이 깨어나요! 바닥이 빨개지면 피하세요' : '바닥이 빨개지면 피하세요! 공격·스킬은 자동이에요';
+  $('#raidMsg').textContent = RD.ended ? `🎉 ${RB().obj} 쓰러뜨렸어요!` : RD.dead ? '💤 쓰러졌어요… 끝날 때까지 응원해 주세요 (보상은 받아요)' : e < 0 ? `곧 ${RB().n} 보스가 깨어나요! 바닥이 빨개지면 피하세요` : '바닥이 빨개지면 피하세요! 공격·스킬은 자동이에요';
 }
 // 보스 공격이 닿는 곳인지 (x, y = 픽셀)
 function raidIn(p, x, y) {
   const D0 = DRAGON();
   if (p.k === 'breath') { const ox = D0.x, oy = D0.y - DMOUTH, dx = x - ox, dy = y - oy, a = Math.atan2(dy, dx) - (Math.PI / 2 + p.a); return Math.hypot(dx, dy) < 17 * T && Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) < .32; }
-  if (p.k === 'meteor') return Math.hypot(x - p.x * T, y - p.y * T) < p.r * T;
+  if (p.k === 'meteor' || p.k === 'slam' || p.k === 'rock') return Math.hypot(x - p.x * T, y - p.y * T) < p.r * T;
+  if (p.k === 'swing') { const ox = D0.x, oy = D0.y - .5 * T, dx = x - ox, dy = y - oy, a = Math.atan2(dy, dx) - (Math.PI / 2 + p.a); return Math.hypot(dx, dy) < OGRE_SWING.r * T && Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) < OGRE_SWING.half; }
   if (p.k === 'tail') return Math.abs(y - p.y * T) < 1.25 * T;
   return true;   // roar: 모두
 }
@@ -2822,7 +2835,7 @@ function raidFloat(x, y, text, color, size = 15) { RD.floats.push({ x, y, text, 
 function raidBurst(x, y, c, n, sp = 160, s = 3.5) { if (RD.parts.length > 300) return; for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = sp * (.3 + Math.random() * .7); RD.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 60, c, s: s * (.6 + Math.random() * .7), t: 0, life: .4 + Math.random() * .4 }); } }
 function updateRaid(dt) {
   const D = derive(), e = (srvNow() - RD.start) / 1000, D0 = DRAGON(), live = e >= 0 && !RD.ended;
-  RD.shake *= Math.exp(-10 * dt); RD.flash = Math.max(0, RD.flash - dt); me.swing = Math.max(0, (me.swing || 0) - dt); me.hurt = Math.max(0, (me.hurt || 0) - dt);
+  RD.shake *= Math.exp(-10 * dt); RD.club = Math.max(0, (RD.club || 0) - dt); RD.flash = Math.max(0, RD.flash - dt); me.swing = Math.max(0, (me.swing || 0) - dt); me.hurt = Math.max(0, (me.hurt || 0) - dt);
   for (const p of RD.parts) { p.t += dt; p.vy += 300 * dt; p.x += p.vx * dt; p.y += p.vy * dt; } RD.parts = RD.parts.filter(p => p.t < p.life);
   for (const f of RD.floats) { f.t += dt; f.x += f.vx * dt; } RD.floats = RD.floats.filter(f => f.t < 1);
   for (const f of RD.fx) f.t += dt; RD.fx = RD.fx.filter(f => f.t < f.life);
@@ -2874,7 +2887,8 @@ function updateRaid(dt) {
   if (!RD.dead) raidSkillTick(dt, D, D0, live, Math.hypot(me.x - D0.x, (me.y - D0.y) * 1.3) < (D.far ? 10 : 3.6) * T); else RD.q = [];
   renderHbSk(D, $('#raidSk'), RD.cd);
   // 불티: 용암 호수와 바닥 틈에서 올라옴
-  if (RD.emb.length < (PHONE ? 40 : 80) && Math.random() < dt * 22) RD.emb.push({ x: Math.random() * RW(), y: Math.random() < .6 ? (3.6 + Math.random() * 2) * T : (7 + Math.random() * 13) * T, t: 0, life: 2 + Math.random() * 2.5, s: 1 + Math.random() * 1.8, h: Math.random(), vy: 20 + Math.random() * 40 });
+  if (RD.boss === 'ogre') { if (RD.emb.length < (PHONE ? 30 : 60) && Math.random() < dt * 14) { const f = Math.random() < .6 ? OG_FIRE[Math.random() < .5 ? 0 : 1] : null; RD.emb.push(f ? { x: f[0] * RW() + (Math.random() - .5) * 20, y: f[1] * RH() - 6, t: 0, life: 1.2 + Math.random() * 1.4, s: 1 + Math.random() * 1.4, h: Math.random(), vy: 30 + Math.random() * 40 } : { dust: 1, x: Math.random() * RW(), y: (9 + Math.random() * 12) * T, t: 0, life: 3 + Math.random() * 3, s: 2 + Math.random() * 3, h: Math.random(), vy: 4 + Math.random() * 8 }); } }
+  else if (RD.emb.length < (PHONE ? 40 : 80) && Math.random() < dt * 22) RD.emb.push({ x: Math.random() * RW(), y: Math.random() < .6 ? (3.6 + Math.random() * 2) * T : (7 + Math.random() * 13) * T, t: 0, life: 2 + Math.random() * 2.5, s: 1 + Math.random() * 1.8, h: Math.random(), vy: 20 + Math.random() * 40 });
   for (const p of RD.emb) { p.t += dt; p.y -= p.vy * dt; } RD.emb = RD.emb.filter(p => p.t < p.life);
   if (live && (RD.sendT -= dt) <= 0) raidSend();
   if ((RD.hudT = (RD.hudT || 0) - dt) <= 0) { RD.hudT = .5; raidHud(); syncBars(); }
@@ -2886,11 +2900,14 @@ function raidSend() {
 // 보스 공격이 터지는 순간의 그림
 function raidStrike(p) {
   const D0 = DRAGON();
-  sfx({ breath: 'fire', meteor: 'boom', tail: 'crit', roar: 'roar' }[p.k]);
+  sfx({ breath: 'fire', meteor: 'boom', tail: 'crit', roar: 'roar', slam: 'boom', rock: 'boom', swing: 'crit' }[p.k]);
+  if (p.k === 'slam') { RD.club = .45; RD.fx.push({ k: 'quake', x: p.x * T, y: p.y * T, r: p.r * T, t: 0, life: .6 }); raidBurst(p.x * T, p.y * T, '#a07850', 18, 230, 4.5); raidBurst(p.x * T, p.y * T, '#d8c4a0', 10, 150, 3); RD.shake = Math.max(RD.shake, 9); }
+  if (p.k === 'rock') { RD.fx.push({ k: 'boom', x: p.x * T, y: p.y * T, r: p.r * T, t: 0, life: .45, rock: 1 }); raidBurst(p.x * T, p.y * T, '#8e8a86', 12, 200, 4); RD.shake = Math.max(RD.shake, 3); }
+  if (p.k === 'swing') { RD.club = .45; RD.fx.push({ k: 'swing', a: p.a, t: 0, life: .5 }); RD.shake = Math.max(RD.shake, 6); }
   if (p.k === 'breath') { RD.fx.push({ k: 'fire', a: p.a, t: 0, life: .8 }); RD.shake = Math.max(RD.shake, 5); }
   if (p.k === 'meteor') { RD.fx.push({ k: 'boom', x: p.x * T, y: p.y * T, r: p.r * T, t: 0, life: .5 }); raidBurst(p.x * T, p.y * T, '#ff8a3d', 10, 200, 4); RD.shake = Math.max(RD.shake, 3); }
   if (p.k === 'tail') { RD.fx.push({ k: 'sweep', y: p.y * T, t: 0, life: .5 }); RD.shake = Math.max(RD.shake, 6); }
-  if (p.k === 'roar') { RD.fx.push({ k: 'roar', x: D0.x, y: D0.y - 3 * T, t: 0, life: .9 }); RD.shake = Math.max(RD.shake, 9); }
+  if (p.k === 'roar') { RD.fx.push({ k: 'roar', x: D0.x, y: D0.y - (RD.boss === 'ogre' ? 2.2 : 3) * T, t: 0, life: .9 }); RD.shake = Math.max(RD.shake, 9); }
 }
 async function raidEnd() {
   if (!RD || RD.ended) return; RD.ended = true; raidHud(); RD.shake = 12; sfx('boom'); setTimeout(() => sfx('win'), 500);
@@ -2906,11 +2923,12 @@ async function raidClaim(start) {
   if (!j) return toast('레이드 보상을 받지 못했어요');
   took(j); const r = j.raid, list = r.skins || (r.skin ? [{ skin: r.skin, lv: r.skinLv, n: r.skinN }] : []);
   const skName = sk => (sk.startsWith('eye:') ? EYE_SKINS.find(e => 'eye:' + e.id === sk) : sk.startsWith('suit:') ? SUITS.find(s => 'suit:' + s.id === sk) : sk.startsWith('wsk:') ? WSKINS.find(w => wskKey(w) === sk) : HATS.find(h => h.id === sk))?.n || '';
-  logAct(`레드 드래곤 레이드 +${r.gold} 골드`);
-  for (const x of list) sysMsg(`🐉 레이드 전용 스킨: ${skName(x.skin)} Lv.${x.lv || 1} (${x.n || 1}개)`);
+  const B = RAID_BOSS[r.boss] || RAID_BOSS.rdragon;
+  logAct(`${B.n} 레이드 +${r.gold} 골드`);
+  for (const x of list) sysMsg(`${B.i} 레이드 전용 스킨: ${skName(x.skin)} Lv.${x.lv || 1} (${x.n || 1}개)`);
   if (list.length) emote(me, '🎉');
-  const skLi = x => `<li class="raidskin">🐉 <b>${(x.lv || 1) > 1 || (x.n || 1) > 1 ? '한 개 더!' : '새 스킨!'}</b> ${skName(x.skin)} <b>Lv.${x.lv || 1}</b>${x.lv > 1 && x.n === 2 ** (x.lv - 1) ? ' ⬆️ 레벨 업!' : ''}<br><small>${rskNeed(x.lv || 1) ? `다음 레벨까지 ${x.n || 1} / ${rskNeed(x.lv || 1)}개` : '최고 레벨'}</small></li>`;
-  openModal(`<h3>🎉 레드 드래곤 처치!</h3><p>${r.n}명이 함께 싸웠어요. 내 피해 <b>${(r.dmg || 0).toLocaleString()}</b> (${r.rank}등)${r.dead ? ' · 쓰러졌지만 끝까지 함께했어요' : ''}</p>
+  const skLi = x => `<li class="raidskin">${B.i} <b>${(x.lv || 1) > 1 || (x.n || 1) > 1 ? '한 개 더!' : '새 스킨!'}</b> ${skName(x.skin)} <b>Lv.${x.lv || 1}</b>${x.lv > 1 && x.n === 2 ** (x.lv - 1) ? ' ⬆️ 레벨 업!' : ''}<br><small>${rskNeed(x.lv || 1) ? `다음 레벨까지 ${x.n || 1} / ${rskNeed(x.lv || 1)}개` : '최고 레벨'}</small></li>`;
+  openModal(`<h3>🎉 ${B.n} 처치!</h3><p>${r.n}명이 함께 싸웠어요. 내 피해 <b>${(r.dmg || 0).toLocaleString()}</b> (${r.rank}등)${r.dead ? ' · 쓰러졌지만 끝까지 함께했어요' : ''}</p>
     <ul class="raidinfo"><li>🪙 골드 <b>+${r.gold.toLocaleString()}</b>${r.crowd ? ` <small>(👥 ${r.n}명 보너스 +${r.crowd}% 포함)</small>` : ''}</li><li>✨ 경험치 <b>+${r.exp.toLocaleString()}</b>${r.up ? ` · <b>레벨 업!</b>` : ''}</li>
     ${list.length ? `<li class="muted" style="list-style:none">🎁 전용 스킨 <b>${list.length}개</b>${list.length > 1 ? ' (행운의 2개!)' : ''} · 가지고만 있어도 효과</li>` + list.map(skLi).join('') : '<li class="muted">전용 스킨이 모두 최고 레벨이라 골드로 받았어요</li>'}</ul>
     <button class="btn main" data-close>마을로</button>`);
@@ -2936,6 +2954,7 @@ function exitRaid() {
 // 뒤쪽 = 바위벽 + 용암 폭포 + 용암 호수, 드래곤 뒤 = 보물 더미, 가운데 = 판석 바닥 + 빛나는 소환진, 가장자리 = 돌기둥·뼈
 let raidGround = null;
 function paintRaid() {
+  if (RD?.boss === 'ogre' && ART['ogre-bg']) return ART['ogre-bg'];   // 오우거 소굴 (사용자 그림, 4:3)
   if (raidGround) return raidGround;
   if (ART['raid-bg']) return (raidGround = ART['raid-bg']);   // 사용자 그림 (맵 28×21칸 = 그림 비율 4:3)
   const K = PHONE ? SPR_K : 2, WP = RW(), HP = RH(), c = document.createElement('canvas'); c.width = WP * K; c.height = HP * K; const g = c.getContext('2d', PHONE ? { willReadFrequently: true } : undefined); g.scale(K, K);
@@ -3025,7 +3044,19 @@ function paintRaid() {
   return (raidGround = c);
 }
 // 레이드 바닥 위 움직이는 것: 용암 빛 깜빡임 · 거품 · 날리는 불티
+// 오우거 소굴: 화로 두 개(그림 속 위치)의 불빛 깜빡임 + 불티, 바닥 먼지
+const OG_FIRE = [[228 / 800, 78 / 600], [575 / 800, 78 / 600]];
+function ogreAmbient(now) {
+  const tt = now / 1000; ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const [fx, fy] of OG_FIRE) {
+    const x = fx * RW(), y = fy * RH(), r = 70 + Math.sin(tt * 9 + fx * 20) * 6 + Math.sin(tt * 23) * 3, g = ctx.createRadialGradient(x, y, 4, x, y, r);
+    g.addColorStop(0, 'rgba(255,190,90,.45)'); g.addColorStop(1, 'rgba(255,120,40,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+  }
+  for (const p of RD.emb) { const a = Math.min(1, p.t * 2, (p.life - p.t) * 1.5); ctx.fillStyle = p.dust ? `rgba(230,200,160,${a * .25})` : `rgba(255,${150 + p.h * 90 | 0},60,${a * .9})`; ctx.beginPath(); ctx.arc(p.x + Math.sin(p.t * 3 + p.h * 9) * 6, p.y, p.s, 0, 7); ctx.fill(); }
+  ctx.restore();
+}
 function raidAmbient(now) {
+  if (RD.boss === 'ogre') return ogreAmbient(now);
   const WP = RW(), LAKE = 3.5 * T, LAKE2 = 5.7 * T, tt = now / 1000;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   ctx.globalAlpha = .1 + .05 * Math.sin(tt * 1.7); ctx.fillStyle = '#ff7a2a'; ctx.fillRect(0, LAKE - 4, WP, LAKE2 - LAKE + 10);
@@ -3035,6 +3066,36 @@ function raidAmbient(now) {
     ctx.fillStyle = `rgba(255,220,120,${.5 * (1 - ph)})`; ctx.beginPath(); ctx.arc(x, y, 2 + ph * 7, 0, 7); ctx.fill();
   }
   for (const p of RD.emb) { const a = Math.min(1, p.t * 2, (p.life - p.t) * 1.5); ctx.fillStyle = `rgba(255,${150 + p.h * 90 | 0},60,${a * .9})`; ctx.beginPath(); ctx.arc(p.x + Math.sin(p.t * 3 + p.h * 9) * 6, p.y, p.s, 0, 7); ctx.fill(); }
+  ctx.restore();
+}
+// 오우거 (2026-11-18 사용자 그림): 2078×1199 판 하나에 위치까지 맞춰 그린 조각 5장 (meta 'ogre'). 조각 그림(og-*.webp)은 절반 크기라 2배로
+// 숨 쉬듯 들썩임 · 고개 · 몽둥이 팔(오른팔)은 공격 예고 동안 치켜들고(windK 0→1) 내려칠 때(club) 휘두름. 다 그린 뒤 전체 둘레 검은 테두리
+const OPART = { leg: [715, 772, 255, 335], body: [611, 202, 921, 782], rarm: [95, 160, 739, 762], larm: [1267, 372, 357, 676], head: [774, 90, 529, 433] };
+const OCX = 1060, OFLOOR = 1107, OSC = .26, OQ = 1.6, OGB = { W: 1900, H: 1300, ox: 1150, oy: 1240 }, OSHOULDER = [690, 330];
+let OGC = null;
+function drawOgre(x, y, t, windK, club, look, dead) {
+  if (!ART['og-body']) return drawDragon(x, y, t, false, look, dead);
+  const bob = dead ? 0 : Math.sin(t * 2.2) * 8, k = OSC * OQ, hx = dead ? 0 : Math.sin(look) * 28;
+  if (!OGC) { OGC = document.createElement('canvas'); OGC.width = Math.ceil(OGB.W * k); OGC.height = Math.ceil(OGB.H * k); }
+  const g = OGC.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, OGC.width, OGC.height);
+  g.setTransform(k, 0, 0, k, OGB.ox * k, OGB.oy * k);
+  const part = (n, dx = 0, dy = 0) => { const im = ART['og-' + n], [px, py, w, h] = OPART[n]; if (im) g.drawImage(im, px - OCX + dx, py - OFLOOR + dy, w, h); };
+  const lift = dead ? -.15 : .55 * Math.sin(Math.min(1, windK * 1.4) * Math.PI / 2), hit = club > 0 ? -.45 * Math.sin(Math.min(1, club / .45) * Math.PI / 2) : 0, sway = dead ? 0 : Math.sin(t * 1.6) * .04;
+  part('leg');
+  part('body', 0, bob * .6);
+  part('larm', 0, bob * .5);
+  g.save(); const px = OSHOULDER[0] - OCX, py = OSHOULDER[1] - OFLOOR + bob * .5; g.translate(px, py); g.rotate(lift + hit + sway); g.translate(-px, -py); part('rarm', 0, bob * .5); g.restore();
+  part('head', hx, bob + (dead ? 60 : 0));
+  ctx.save(); ctx.translate(x, y);
+  ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(-20, -2, 140, 22, 0, 0, 7); ctx.fill();
+  if (dead) { ctx.rotate(.05); ctx.filter = 'grayscale(.7) brightness(.65)'; }
+  const dx = -OGB.ox * OSC, dy = -OGB.oy * OSC, dw = OGC.width / OQ, dh = OGC.height / OQ;
+  inkSil(ctx, OGC, dx, dy, dw, dh, 3.2, true); ctx.drawImage(OGC, dx, dy, dw, dh);
+  ctx.filter = 'none';
+  if (windK > 0 && !dead) {   // 공격 전: 눈이 붉게 번쩍
+    const ex = (1040 - OCX + hx) * OSC, ey = (300 - OFLOOR + bob) * OSC, kk = .5 + .5 * Math.sin(t * 18), gr = ctx.createRadialGradient(ex, ey, 2, ex, ey, 40);
+    gr.addColorStop(0, `rgba(255,90,60,${.55 * kk})`); gr.addColorStop(1, 'rgba(255,60,40,0)'); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(ex, ey, 40, 0, 7); ctx.fill();
+  }
   ctx.restore();
 }
 // 레드 드래곤 (2026-11-18 사용자 그림 v2): 사용자가 1182×1024 판에 위치까지 맞춰 그린 조각 5장 (날개·뒷다리·앞발은 왼쪽만 → 오른쪽은 뒤집음)
@@ -3288,7 +3349,8 @@ function renderRaid(now) {
     const k = 1 - left / p.warn, al = .18 + .22 * k + Math.sin(now / (90 - 50 * k)) * .06;
     ctx.fillStyle = `rgba(255,50,40,${al})`; ctx.strokeStyle = `rgba(255,90,70,${.5 + .4 * k})`; ctx.lineWidth = 2.5; ctx.beginPath();
     if (p.k === 'breath') { const oy = D0.y - DMOUTH, a0 = Math.PI / 2 + p.a; ctx.moveTo(D0.x, oy); ctx.arc(D0.x, oy, 17 * T, a0 - .32, a0 + .32); ctx.closePath(); }
-    else if (p.k === 'meteor') { ctx.arc(p.x * T, p.y * T, p.r * T, 0, 7); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(p.x * T, p.y * T, p.r * T * k, 0, 7); }
+    else if (p.k === 'meteor' || p.k === 'slam' || p.k === 'rock') { ctx.arc(p.x * T, p.y * T, p.r * T, 0, 7); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(p.x * T, p.y * T, p.r * T * k, 0, 7); }
+    else if (p.k === 'swing') { const oy = D0.y - .5 * T, a0 = Math.PI / 2 + p.a; ctx.moveTo(D0.x, oy); ctx.arc(D0.x, oy, OGRE_SWING.r * T, a0 - OGRE_SWING.half, a0 + OGRE_SWING.half); ctx.closePath(); }
     else if (p.k === 'tail') ctx.rect(0, p.y * T - 1.25 * T, RW(), 2.5 * T);
     else { ctx.rect(0, D0.y, RW(), RH() - D0.y); ctx.fillStyle = `rgba(255,50,40,${al * .45})`; }
     ctx.fill(); ctx.stroke();
@@ -3297,16 +3359,24 @@ function renderRaid(now) {
   for (const f of RD.fx) {
     const k = f.t / f.life;
     if (f.k === 'fire') { const oy = D0.y - DMOUTH, a0 = Math.PI / 2 + f.a, gr = ctx.createRadialGradient(D0.x, oy, 10, D0.x, oy, 17 * T); gr.addColorStop(0, `rgba(255,240,160,${1 - k})`); gr.addColorStop(.5, `rgba(255,130,40,${.85 * (1 - k)})`); gr.addColorStop(1, 'rgba(200,40,20,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(D0.x, oy); ctx.arc(D0.x, oy, 15 * T * Math.min(1, k * 3), a0 - .34, a0 + .34); ctx.closePath(); ctx.fill(); }
+    if (f.k === 'quake') { ctx.fillStyle = `rgba(120,85,50,${.55 * (1 - k)})`; ctx.beginPath(); ctx.ellipse(f.x, f.y, f.r * (.7 + k * .5), f.r * (.5 + k * .35), 0, 0, 7); ctx.fill(); ctx.strokeStyle = `rgba(240,220,180,${1 - k})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(f.x, f.y, f.r * (.4 + k * 1.1), f.r * (.3 + k * .8), 0, 0, 7); ctx.stroke();
+      ctx.strokeStyle = `rgba(60,40,25,${.8 * (1 - k)})`; ctx.lineWidth = 2.5; for (let i = 0; i < 6; i++) { const a = i * 1.05 + .3; ctx.beginPath(); ctx.moveTo(f.x + Math.cos(a) * 8, f.y + Math.sin(a) * 6); ctx.lineTo(f.x + Math.cos(a) * f.r * .9, f.y + Math.sin(a) * f.r * .65); ctx.stroke(); } }
+    if (f.k === 'swing') { const oy = D0.y - .5 * T, a0 = Math.PI / 2 + f.a, sw = a0 - OGRE_SWING.half + OGRE_SWING.half * 2 * Math.min(1, k * 2.2); ctx.fillStyle = `rgba(230,200,150,${.5 * (1 - k)})`; ctx.beginPath(); ctx.moveTo(D0.x, oy); ctx.arc(D0.x, oy, OGRE_SWING.r * T, a0 - OGRE_SWING.half, sw); ctx.closePath(); ctx.fill(); ctx.strokeStyle = `rgba(255,245,220,${1 - k})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(D0.x, oy); ctx.lineTo(D0.x + Math.cos(sw) * OGRE_SWING.r * T, oy + Math.sin(sw) * OGRE_SWING.r * T); ctx.stroke(); }
+    if (f.k === 'boom' && f.rock) { ctx.fillStyle = `rgba(150,140,130,${.7 * (1 - k)})`; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (.6 + k * .6), 0, 7); ctx.fill(); continue; }
     if (f.k === 'boom') { ctx.fillStyle = `rgba(255,140,50,${.8 * (1 - k)})`; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (.6 + k * .6), 0, 7); ctx.fill(); ctx.fillStyle = `rgba(255,230,150,${1 - k})`; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * .45 * (1 - k), 0, 7); ctx.fill(); }
     if (f.k === 'sweep') { ctx.fillStyle = `rgba(255,120,60,${.55 * (1 - k)})`; ctx.fillRect(RW() * (k * 1.4 - .4), f.y - 1.25 * T, RW() * .5, 2.5 * T); }
     if (f.k === 'roar') { ctx.strokeStyle = `rgba(255,200,120,${1 - k})`; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(f.x, f.y, 40 + k * 500, 20 + k * 250, 0, 0, 7); ctx.stroke(); }
   }
   // 떨어지는 운석 (경고 중)
   if (!RD.ended) for (const p of RD.pat) { if (p.k !== 'meteor') continue; const left = p.at - e; if (left < 0 || left > .6) continue; const k = 1 - left / .6, mx = p.x * T + 120 * (1 - k), my = p.y * T - 400 * (1 - k); inkDraw(ctx, [{ path: E(mx, my, 10, 10), c: '#5c4a44' }], 2); ctx.fillStyle = 'rgba(255,140,50,.6)'; ctx.beginPath(); ctx.ellipse(mx + 14, my - 18, 6, 14, -.5, 0, 7); ctx.fill(); }
-  // 드래곤 · 사람 (아래에 있을수록 앞)
+  // 날아오는 바위 (오우거가 던짐: 손에서 포물선)
+  if (!RD.ended) for (const p of RD.pat) { if (p.k !== 'rock') continue; const left = p.at - e; if (left < 0 || left > .7) continue; const k = 1 - left / .7, sx = D0.x - 2.6 * T, sy = D0.y - 6 * T, mx = sx + (p.x * T - sx) * k, my = sy + (p.y * T - sy) * k - Math.sin(k * Math.PI) * 3 * T;
+    inkDraw(ctx, [{ path: PG([[mx - 11, my + 2], [mx - 7, my - 9], [mx + 4, my - 11], [mx + 11, my - 3], [mx + 8, my + 8], [mx - 4, my + 10]]), c: '#8e8a86' }, { flat: 1, path: E(mx - 3, my - 4, 4, 2.5), c: '#b5b0aa' }], 2); }
+  // 보스 · 사람 (아래에 있을수록 앞)
   const nb = RD.pat.find(p => p.k === 'breath' && p.at - e > 0 && p.at - e < p.warn + .2), fire = RD.fx.find(f => f.k === 'fire');
   const look = nb ? nb.a : fire ? fire.a : Math.sin(clock * .7) * .25;
-  const list = [{ y: D0.y, f: () => drawDragon(D0.x, D0.y, clock, !!(nb || fire), look, RD.ended) }];
+  const og = RD.boss === 'ogre', wind = og && !RD.ended ? RD.pat.find(p => (p.k === 'slam' || p.k === 'swing' || p.k === 'rock') && p.at - e > 0 && p.at - e < p.warn) : null, windK = wind ? 1 - (wind.at - e) / wind.warn : 0;
+  const list = [{ y: D0.y, f: () => og ? drawOgre(D0.x, D0.y, clock, windK, RD.club, wind?.k === 'swing' ? wind.a : Math.sin(clock * .7) * .25, RD.ended) : drawDragon(D0.x, D0.y, clock, !!(nb || fire), look, RD.ended) }];
   for (const o of RD.ps.values()) list.push({ y: o.y, f: () => { ctx.save(); if (o.dead) ctx.globalAlpha = .45; drawChar(ctx, o.x, o.y + 6, o, clock + o.seed); ctx.restore(); } });
   list.push({ y: me.y, f: () => { ctx.save(); if (RD.dead) ctx.globalAlpha = .5; if (me.hurt > 0) ctx.filter = 'brightness(1.6)'; drawChar(ctx, me.x, me.y + 6, me, clock); ctx.restore(); raidAura(); } });
   list.sort((a, b) => a.y - b.y).forEach(o => o.f());
@@ -4955,7 +5025,7 @@ setInterval(sendSeen, 120e3); document.addEventListener('visibilitychange', () =
 let liveT = null;
 function enterTown(first) {
   bgm('town');   // first: 방금 받은 /api/me 결과 (자리 비운 동안 결과가 들어 있을 수 있음)
-  setTimeout(() => { raidWatch(); raidCheck(); }, 1500);   // 매시 정각 레이드
+  setTimeout(() => { raidWatch(); raidCheck(); }, 1500);   // 30분마다 레이드
   $('#gate').hidden = true; $('#app').hidden = false; lastSaved = `${Math.round(me.x)},${Math.round(me.y)}`;
   setTimeout(() => {
     resize(); me.hp = Math.min(me.hp, derive().maxHp); syncMe();
@@ -5445,7 +5515,7 @@ function skinShop(b, keep) {
   const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
   const tile = (key, name, own, on, price, fx) => `<button type="button" data-x="${key}" aria-pressed="${on}" title="${name} · 보유 효과: ${fxText(fx || {})}" aria-label="${name} · 보유 효과 ${fxText(fx || {})}${own ? '' : ` · ${price.toLocaleString()} 골드`}"><canvas></canvas>${own ? `<em class="own">${on ? '착용' : '보유'}</em>` : price ? `<em>🪙 ${price.toLocaleString()}</em>` : ''}<small>${name.replace(/^\S+\s/, '')}<i class="skfx">${fxText(fx || {})}</i></small></button>`;
   const hats = HATS.filter(h => h.id !== 'none' && !h.raid), eyes = EYE_SKINS.filter(e => e.price), suits = SUITS.filter(s => !s.raid);
-  const WT = [['sword', '검'], ['bow', '활'], ['staff', '지팡이']], rset = raidSet('rdragon');
+  const WT = [['sword', '검'], ['bow', '활'], ['staff', '지팡이']], rsets = [['rdragon', '🐉 레드 드래곤 · 매시 정각'], ['ogre', '👹 오우거 · 매시 30분']];
   const rItem = k => k.startsWith('eye:') ? EYE_SKINS.find(e => 'eye:' + e.id === k) : k.startsWith('suit:') ? SUITS.find(s => 'suit:' + s.id === k) : k.startsWith('wsk:') ? WSKINS.find(w => wskKey(w) === k) : HATS.find(h => h.id === k);
   const worn = k => { const [a, b, c2] = k.split(':'); return a === 'eye' ? me.eyes === b : a === 'suit' ? me.suit === b : a === 'wsk' ? me.wsk?.[b] === c2 : me.hat === k; };
   const tab = btab('skin', 'hat', ['hat', 'eye', 'suit', 'wsk', 'raid']);
@@ -5455,8 +5525,8 @@ function skinShop(b, keep) {
     eye: () => grid('shopEyes', '', eyes.map(e => tile('eye:' + e.id, e.n, me.hats.includes('eye:' + e.id), me.eyes === e.id, e.price, e.fx)).join('')),
     suit: () => grid('shopSuits', '', suits.map(x => tile('suit:' + x.id, x.n, me.hats.includes('suit:' + x.id), me.suit === x.id, x.price, x.fx)).join('')),
     wsk: () => WT.map(([t, tn]) => `<div class="bs-sec">${tn}</div>${grid('', ' shopW', WSKINS.filter(w => w.t === t && !w.raid).map(w => tile(wskKey(w), w.n, me.hats.includes(wskKey(w)), me.wsk?.[t] === w.id, w.price, w.fx)).join(''))}`).join(''),
-    raid: () => `<p class="muted">매시 정각 레드 드래곤 레이드에서만 얻어요. 같은 스킨을 또 얻으면 <b>레벨이 올라 효과가 세져요</b> (레벨마다 +${RSK.step * 100}%).</p>` + grid('shopRaid', ' raid', rset.map(k => { const it = rItem(k), n = rskCount(me, k), lv = rskLv(n), need = rskNeed(lv);
-      return tile('raid|' + k, it.n, !!n, worn(k), 0, rskFx(it.fx, Math.max(1, lv))).replace(/<\/button>$/, `<b class="rlv">${n ? `Lv.${lv}${need ? ` · ${n}/${need}` : ' · 최고'}` : '🔒 미보유'}</b></button>`); }).join('')),
+    raid: () => `<p class="muted">레이드에서만 얻어요. 같은 스킨을 또 얻으면 <b>레벨이 올라 효과가 세져요</b> (레벨마다 +${RSK.step * 100}%).</p>` + rsets.map(([set, title]) => `<div class="bs-sec">${title}</div>` + grid('shopRaid', ' raid', raidSet(set).map(k => { const it = rItem(k), n = rskCount(me, k), lv = rskLv(n), need = rskNeed(lv);
+      return tile('raid|' + k, it.n, !!n, worn(k), 0, rskFx(it.fx, Math.max(1, lv))).replace(/<\/button>$/, `<b class="rlv">${n ? `Lv.${lv}${need ? ` · ${n}/${need}` : ' · 최고'}` : '🔒 미보유'}</b></button>`); }).join(''))).join(''),
   }[tab]();
   bsOpen(b, { tag: '꾸미기 · 가지고만 있어도 보유 효과', wal: ['gold'], tabs: [['hat', '🎩 모자'], ['eye', '👀 눈'], ['suit', '👔 의상'], ['wsk', '⚔️ 무기'], ['raid', '🐉 레이드']], tab,
     body: `<p class="skfxsum">✨ 지금 보유 효과: <b>${fxText(skinFx(me)) || '없음'}</b></p>${body}`,
@@ -5813,21 +5883,21 @@ async function openAdmin(tab = ADM.tab) {
   if (tab === 'cheat') {   // 관리자 시험용 치트 (내 캐릭터만 바뀜, 서버 기록에 남음)
     const god = !!me.life?.god, B = (k, n, label) => `<button class="mini" data-x="${k}:${n}">${label}</button>`;
     return show(`<p class="muted">시험용이에요. <b>내 캐릭터만</b> 바뀌고, 쓴 기록은 서버에 남아요.</p>
-      <div class="btns cheat">${B('raid', 0, '🐉 레이드 지금 열기 (2분 모집, 모두에게 창이 떠요)')}</div>
+      <div class="btns cheat">${B('raid', 0, '🐉 드래곤 레이드 지금 열기')}${B('raid', 1, '👹 오우거 레이드 지금 열기')}</div>
       <div class="btns cheat">${B('god', 0, god ? '😇 갓모드 끄기' : '😇 갓모드 켜기 (안 맞음 · 공격력 10배)')}</div>
       <div class="btns cheat">${B('gold', 1e6, '🪙 골드 +100만')}${B('gold', 1e8, '🪙 골드 +1억')}${B('lv', 55, '🌟 55레벨')}${B('lv', 1, '🌱 1레벨로')}</div>
-      <div class="btns cheat">${B('gear', 0, '🗡️ 최고 장비 + 최고 강화')}${B('titles', 0, '🏷️ 칭호 모두')}${B('skins', 0, '👕 스킨 모두')}${B('pots', 0, '🥤 물약·체력 가득')}</div>
+      <div class="btns cheat">${B('gear', 0, '🗡️ 최고 장비 + 최고 강화')}${B('titles', 0, '🏷️ 칭호 모두')}${B('skins', 0, '👕 모든 스킨 받기')}${B('rskmax', 0, '⭐ 레이드 스킨 최고 레벨')}${B('pots', 0, '🥤 물약·체력 가득')}</div>
       <div class="btns cheat">${B('wood', 1000, '🪵 목재 +1000')}${B('stone', 1000, '🪨 석재 +1000')}${B('fishCoin', 1000, '🐚 낚시 코인 +1000')}${B('farmCoin', 1000, '🌻 텃밭 코인 +1000')}</div>
       <div class="btns cheat">${B('farm', 0, '🌾 텃밭 다 자람')}${B('work', 0, '🪓 알바 창고 가득')}${B('cool', 0, '⏱️ 기다리는 시간 없애기')}</div>
       <p class="muted" style="margin-bottom:4px">직접 숫자 넣기 (빼려면 -를 붙여요)</p>
       <div class="admform"><input id="cN" type="number" placeholder="숫자" value="1000"><select id="cK"><option value="gold">골드 더하기</option><option value="exp">경험치 더하기</option><option value="lv">레벨 정하기</option><option value="wood">목재 더하기</option><option value="stone">석재 더하기</option><option value="fishCoin">낚시 코인 더하기</option><option value="farmCoin">텃밭 코인 더하기</option></select><button class="mini main" data-x="custom">적용</button></div>`,
       async (x, el) => {
         let [k, n] = x.split(':');
-        if (k === 'raid') { const j = await api('/api/admin/raid', {}); closeModal(); toast('🐉 레이드 모집을 열었어요 (2분)'); RAIDQ.asked = 0; setTimeout(raidCheck, 300); return; }
+        if (k === 'raid') { const og = n === '1', j = await api('/api/admin/raid', { boss: og ? 'ogre' : 'rdragon' }); closeModal(); toast(`${og ? '👹 오우거' : '🐉 드래곤'} 레이드 모집을 열었어요 (2분, 모두에게 창이 떠요)`); RAIDQ.asked = 0; setTimeout(raidCheck, 300); return; }
         if (k === 'custom') { k = el.querySelector('#cK').value; n = el.querySelector('#cN').value; }
         if (k === 'lv' && !confirm(`${n}레벨로 바꿀까요? 능력치가 다시 계산돼요.`)) return;
         const j = await act('/api/admin/cheat', { k, n: Number(n) }); if (!j) return;
-        toast('🧪 ' + j.msg); sysMsg('🧪 치트: ' + j.msg); if (k === 'god' || k === 'skins') openAdmin('cheat');
+        toast('🧪 ' + j.msg); sysMsg('🧪 치트: ' + j.msg); if (k === 'god' || k === 'skins' || k === 'rskmax') openAdmin('cheat');
       });
   }
   if (tab === 'notice') {
@@ -6102,7 +6172,8 @@ const GUIDE = () => [
     ['헤어', '헤어와 색은 무료. 캐릭터창 → 스킨에서 바꿔요.'],
   ]],
   ['🐉', '레이드', [
-    ['언제', '매시 정각! 2분 안에 참여 버튼을 누르면 다 같이 레드 드래곤과 싸워요.'],
+    ['언제', '매시 정각엔 🐉 레드 드래곤, 매시 30분엔 👹 오우거! 2분 안에 참여 버튼을 누르면 다 같이 싸워요.'],
+    ['오우거', '몽둥이로 바닥 내려찍기(빨간 원) · 바위 던지기(작은 원 여러 개) · 앞쪽 크게 휘두르기(부채꼴). 빨간 곳에서 벗어나요.'],
     ['보상', '골드·경험치 + 레이드 전용 스킨 1개 확정(30% 확률로 2개). 같은 스킨을 또 얻으면 스킨 레벨이 올라 효과가 커져요.'],
   ]],
   ['📋', '마을 소식판', [
@@ -6171,7 +6242,7 @@ function showGuide(keep) {
       + `<div class="bs-sec">🗓️ 길게 보는 목표</div><ul class="bs-list gd">${row('🥬', '이번 주 도장 (다 모으면 큰 상자)', s.n / STAMP_GOAL, `${s.n} / ${STAMP_GOAL}`)}${lvGoal ? row('⭐', `레벨 ${lvGoal} 달성 (새 칭호)`, (me.lv % 10) / 10, `지금 ${me.lv}`) : row('🏗️', '공동 건설에 기부해서 마을 키우기', 0, '📋')}</ul>`
       + bbtn('news', '📋 의뢰 · 마을 소식 자세히', '', { wide: true });
   } else if (tab === 'play') {
-    const fun = [['🏛️', '마을회관', '집 짓고 올리기 · 빌라부터 임대 수입'], ['🐉', '매시 정각 레이드', '2분 안에 참여 · 전용 스킨'], ['🎣', '낚시', '아무 물이나 누르면 바로 던져요'], ['🎁', '가챠센터', '장비 · 스킬 뽑기']];
+    const fun = [['🏛️', '마을회관', '집 짓고 올리기 · 빌라부터 임대 수입'], ['🐉', '30분마다 레이드', '정각 드래곤 · 30분 오우거 · 전용 스킨'], ['🎣', '낚시', '아무 물이나 누르면 바로 던져요'], ['🎁', '가챠센터', '장비 · 스킬 뽑기']];
     const btn = [['town', '🏘️', '바로가기', '가고 싶은 곳으로 바로 이동'], ['auto', '🧺', '자동', '텃밭 · 벌목 · 채광 · 낚시를 알아서'], ['book', '📖', '가이드', '모든 놀거리 설명'], ['rank', '🏆', '랭킹', '레벨 · 번 돈 · 물고기 · 강화 · 기여도']];
     body = `<div class="gd-grid">${fun.map(([i, n, t]) => `<div class="gd-card"><b>${i} ${n}</b><small>${t}</small></div>`).join('')}</div>
       <div class="bs-sec">👉 오른쪽 버튼 (눌러서 바로 열기)</div>

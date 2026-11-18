@@ -80,7 +80,8 @@ export const enhRate = (enh, D) => Math.min(100, ENH_RATE[enh] + (D?.enhB || 0))
 export const ENH_COST = [700, 1400, 2400, 3600, 5600, 8400, 12000, 17000, 22000, 30000];
 // fx = 보유 효과 (가지고만 있어도 붙음. 쓰고 있지 않아도 됨)
 export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'ribbon', n: '🎀 리본', price: 300, fx: { expP: 2 } }, { id: 'sprout', n: '🌱 새싹', price: 500, fx: { farmP: 5 } }, { id: 'cat', n: '🐱 고양이 귀', price: 800, fx: { crit: 1 } }, { id: 'straw', n: '👒 밀짚모자', price: 1200, fx: { fishP: 4 } }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 2000, fx: { atkP: 2, goldP: 2 } },
-  { id: 'rdragon', n: '🐉 용의 뿔', price: 0, raid: 'rdragon', fx: { atkP: 5, crit: 2 } }];   // raid = 레이드에서만 얻음 (상점에 안 팖)
+  { id: 'rdragon', n: '🐉 용의 뿔', price: 0, raid: 'rdragon', fx: { atkP: 5, crit: 2 } },
+  { id: 'ogre', n: '👹 오우거 투구', price: 0, raid: 'ogre', fx: { hpP: 5, defP: 4 } }];   // raid = 레이드에서만 얻음 (상점에 안 팖)
 // 눈 모양 스킨 (가진 것은 hats 목록에 'eye:별' 처럼 저장). dot은 기본
 export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 400, fx: { defP: 3 } }, { id: 'star', n: '⭐ 별 눈', price: 700, fx: { expP: 3 } }, { id: 'wink', n: '😉 윙크', price: 800, fx: { crit: 1 } }, { id: 'heart', n: '💗 하트 눈', price: 1000, fx: { hpP: 3 } }, { id: 'cat', n: '🐱 고양이 눈', price: 1200, fx: { fishC: 5 } }, { id: 'big', n: '✨ 반짝 큰 눈', price: 1500, fx: { goldP: 3 } },
   { id: 'rdragon', n: '🐉 용의 눈', price: 0, raid: 'rdragon', fx: { crit: 3, expP: 5 } }];
@@ -93,6 +94,7 @@ export const SUITS = [
   { id: 'knight', n: '🛡️ 기사 망토', price: 14000, fx: { defP: 5 } },
   { id: 'cabbage', n: '🥬 배추 옷', price: 22000, fx: { hpP: 4, expP: 3 } },
   { id: 'rdragon', n: '🐉 레드 드래곤 갑옷', price: 0, raid: 'rdragon', fx: { hpP: 8, defP: 6 } },
+  { id: 'ogre', n: '👹 오우거 가죽 갑옷', price: 0, raid: 'ogre', fx: { hpP: 6, atkP: 3 } },
 ];
 // 무기 스킨 (그 무기의 겉모습만). 가진 것은 'wsk:무기:id', 쓰는 것은 c.wsk = { sword, bow, staff }
 export const WSKINS = [
@@ -117,6 +119,9 @@ export const WSKINS = [
   { t: 'sword', id: 'rdragon', n: '🐉 레드 드래곤 검', price: 0, raid: 'rdragon', fx: { atkP: 5, bossP: 5 } },
   { t: 'bow', id: 'rdragon', n: '🐉 레드 드래곤 활', price: 0, raid: 'rdragon', fx: { atkP: 5, bossP: 5 } },
   { t: 'staff', id: 'rdragon', n: '🐉 레드 드래곤 지팡이', price: 0, raid: 'rdragon', fx: { atkP: 5, bossP: 5 } },
+  { t: 'sword', id: 'ogre', n: '👹 오우거 돌칼', price: 0, raid: 'ogre', fx: { atkP: 4, hpP: 3 } },
+  { t: 'bow', id: 'ogre', n: '👹 오우거 뼈활', price: 0, raid: 'ogre', fx: { atkP: 4, hpP: 3 } },
+  { t: 'staff', id: 'ogre', n: '👹 오우거 돌 지팡이', price: 0, raid: 'ogre', fx: { atkP: 4, hpP: 3 } },
 ];
 export const wskKey = w => `wsk:${w.t}:${w.id}`;
 // 레이드 전용 스킨 한 벌 (가진 것 키 목록): 머리·눈·의상·검·활·지팡이
@@ -705,11 +710,11 @@ export function rollSkill(lv = 1) {
   return pick(SKILLS.filter(s => s.r === rare));
 }
 
-// ───────── 레이드 (매시 정각, 기획서 4-9) ─────────
+// ───────── 레이드 (기획서 4-9): 매시 정각 = 레드 드래곤, 매시 30분 = 오우거 (2026-11-18) ─────────
 // 정각에 30초 모집 → 신청한 사람만 레이드 맵으로. 보스는 무조건 잡힘(시간이 지나면 저절로 체력이 깎임), 1~2분.
 // 끝날 때까지 나갈 수 없음. 쓰러져도 끝까지 기다리면 보상(조금 적게)
 export const RAID = {
-  every: 3600e3, recruit: 120e3,     // 매시 정각부터 2분 모집 → 2분에 시작 (2026-11-17 30초 → 2분)
+  every: 1800e3, recruit: 120e3,     // 30분마다 (정각 드래곤 · 30분 오우거), 2분 모집 → 2분에 시작
   max: 150e3,                        // 아무리 늦어도 2분 30초면 끝
   drain: 120,                        // 아무도 안 때려도 120초면 보스 체력이 0 (무조건 잡힘)
   hpSec: 100,                        // 보스 체력 = 참가자 초당 피해 합 × 100초 → 다 같이 열심히 치면 약 55초
@@ -718,7 +723,9 @@ export const RAID = {
   deadMul: .7,                       // 쓰러진 사람 보상 배율
   W: 28, H: 21,                      // 레이드 맵 크기 (칸) — 배경 그림 비율(4:3)에 맞춤
 };
-export const RAID_BOSS = { rdragon: { n: '레드 드래곤', i: '🐉', set: 'rdragon' } };
+export const RAID_BOSS = { rdragon: { n: '레드 드래곤', obj: '레드 드래곤을', i: '🐉', set: 'rdragon', at: '정각' }, ogre: { n: '오우거', obj: '오우거를', i: '👹', set: 'ogre', at: '30분' } };
+// 이 시각에 시작하는 정기 레이드의 보스: 정각 칸 = 레드 드래곤, 30분 칸 = 오우거 (한국 시간도 정각이 같음)
+export const raidBossOf = start => (Math.round((start - RAID.recruit) / RAID.every) % 2 ? 'ogre' : 'rdragon');
 export const raidSlotStart = t => Math.floor(t / RAID.every) * RAID.every + RAID.recruit;   // 이번 시간 레이드 시작 시각
 export const isHourlyRaid = start => (start - RAID.recruit) % RAID.every === 0;
 // 보상: 사냥 약 25분어치 골드 + 지금 레벨의 30% 경험치
@@ -734,9 +741,20 @@ export const raidDps = D => {
   return Math.max(1, Math.round((D.hit / D.gap * (1 + (D.sp || 0) / 100 * ((D.spMul || 2) - 1)) * bm + sk) * cm));
 };
 // 보스 공격 순서 (시작 시각으로 정해짐 → 모두의 화면이 같음). at = 시작 뒤 초, k = 종류, x·y = 칸 좌표, warn = 미리 보여 주는 초
-export function raidPattern(start) {
+export function raidPattern(start, boss) {
   let sd = (start / 1000) % 2147483647 | 0; const rnd = () => ((sd = (sd * 16807) % 2147483647) - 1) / 2147483646;
   const out = []; let t = 4;
+  if (boss === 'ogre') {   // 오우거: 몽둥이 내려찍기(원) · 바위 던지기 · 몽둥이 휘두르기(앞쪽 부채꼴) · 포효
+    while (t < RAID.max / 1000) {
+      const k = ['slam', 'rock', 'swing', 'slam', 'rock', 'roar'][Math.floor(rnd() * 6)];
+      if (k === 'slam') { const n = 1 + Math.floor(rnd() * 2); for (let i = 0; i < n; i++) out.push({ at: t + i * .9, k, x: 3 + rnd() * (RAID.W - 6), y: 11 + rnd() * (RAID.H - 14), r: 2.6, warn: 1.4 }); }
+      if (k === 'rock') { const n = 3 + Math.floor(rnd() * 3); for (let i = 0; i < n; i++) out.push({ at: t + i * .35, k, x: 2 + rnd() * (RAID.W - 4), y: 10 + rnd() * (RAID.H - 12), r: 1.5, warn: 1.3 }); }
+      if (k === 'swing') out.push({ at: t, k, a: (rnd() - .5) * 1.2, warn: 1.5 });   // a = 방향 (아래쪽 기준)
+      if (k === 'roar') out.push({ at: t, k, warn: 1.2 });
+      t += 3 + rnd() * 2;
+    }
+    return out;
+  }
   while (t < RAID.max / 1000) {
     const k = ['breath', 'meteor', 'tail', 'breath', 'meteor', 'roar'][Math.floor(rnd() * 6)];
     if (k === 'breath') out.push({ at: t, k, a: (rnd() - .5) * 1.6, warn: 1.6 });                     // 입에서 부채꼴 불길 (a = 방향)
@@ -748,7 +766,8 @@ export function raidPattern(start) {
   return out;
 }
 // 보스 공격 피해 (최대 체력 비율): 3번 맞으면 쓰러짐
-export const RAID_HIT = { breath: .36, meteor: .3, tail: .4, roar: .12 };
+export const RAID_HIT = { breath: .36, meteor: .3, tail: .4, roar: .12, slam: .4, rock: .28, swing: .36 };
+export const OGRE_SWING = { r: 9, half: .7 };   // 몽둥이 휘두르기: 반지름(칸) · 반쪽 각도
 
 // ───────── 생활 경험치 (2026-11-16): 생활 놀거리로도 레벨이 오름 ─────────
 // 사냥터 방치(화면 닫고 70%) 1시간 경험치 어림값 (사냥 봇 시험으로 맞춤: Lv10 ≈ 6만, Lv30 ≈ 17만, Lv50 ≈ 29만)

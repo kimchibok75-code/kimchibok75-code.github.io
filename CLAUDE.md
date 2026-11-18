@@ -326,7 +326,7 @@
   - 그림(2026-11-16 다듬음): `paintRaid` = 바위벽·용암 폭포·용암 호수·보물 더미·제각각 판석·빛나는 소환진·돌기둥·뼈. 움직이는 것 `raidAmbient`(용암 빛·거품·불티 `RD.emb`). 드래곤 `drawDragon` = 막 3겹 날개·뿔·이빨·발톱·꼬리 가시, 불 뿜기 전 목이 달아오름, 콧김
   - 시험: 임시로 `window.__raid = () => { enterRaid(srvNow() + 1500); RD.tries = 99; RD.ws.onmessage = null; RD.ws.close(); RD.max = RD.hp = 1e9; }` (DEBUG-REMOVE)
 - 화면 `raidAsk/enterRaid/updateRaid/raidClaim`. 새로고침하면 localStorage `cbt-raid`로 다시 들어감. 보상은 `/api/raid/claim` (`life.raidGot`으로 한 번만)
-- **관리자 버튼**: 오른쪽 세로 버튼 맨 위 🛡️ (`#admBtn`, 관리자만 보임) → 치트 탭 맨 위 '레이드 지금 열기' (`/api/admin/raid`)
+- **관리자 버튼**: 오른쪽 세로 버튼 맨 위 🛡️ (`#admBtn`, 관리자만 보임) → 치트 탭 맨 위 '드래곤/오우거 레이드 지금 열기' (`/api/admin/raid {boss}`)
 - ~~자동 생활 🧺: `life.auto`, `autoSettle`(시간으로 계산)~~ → 2026-11-17 새 자동 생활로 바뀜 (아래 "자동 생활 새로 만듦"). 예전 설명: 사냥·알바를 시작하면 꺼짐. 화면 `autoPace`는 보여 주기용
 - **집 단계** (마을회관): `HOUSE_TIERS` 일반 집 → 2층 집 → 큰 집 → 빌라 → 4층 건물 → 빌딩. 빌라부터 임대 수입(1시간 5천/1.2만/3만, 최대 `HOUSE_INC_CAP` 12시간)
   - `life.house.{lv, at, acc}`, `houseSettle`, `/api/house/up`, `/api/house/collect`, DB `houses.lv` (`0012_house_lv.sql`). 그림 `towerParts(lv)`
@@ -544,6 +544,14 @@
 
 - **가입 안내 동의** (2026-11-18): 가입 탭에 '가입 전에 알아 두세요'(수익 없는 개인 팬 게임 · 패치로 언제든 바뀌거나 초기화 · 혼자 운영해서 미흡할 수 있음) + 필수 체크 `#agree`. 서버 `/api/signup`도 `agree === TERMS_VER`가 아니면 거절, `activity`에 '안내 동의 날짜'로 남김. 안내 내용을 바꾸면 game.html과 index.js의 `TERMS_VER`를 같이 올리기
   - 가입 화면 정리: 규칙은 작은 꼬리표(`.rules.chips`), 비밀번호 보기 눈 버튼(`.eye`), '한 번 더'는 같아요/달라요 표시, 비밀번호 안심 안내는 접기(`details#pwSafe`), 다 채우기 전엔 가입 버튼 흐리게(`.wait`)
+
+### 오우거 레이드 (30분마다) — 2026-11-18
+- 레이드가 **30분마다**: 정각 = 레드 드래곤, 30분 = 👹 오우거 (`RAID.every` 1800초, `raidBossOf(start)`, `RAID_BOSS[id]` = {n, obj, i, set, at}). 관리자가 연 레이드는 `{boss}`로 고른 보스
+  - 서버 raid.js가 레이드마다 `boss`를 저장, `/state`는 `boss`(모집 중)·`rboss`(진행 중), `/api/raid/join`·`claim`도 `boss`를 줌. 보상 스킨은 그 보스 세트에서
+- 오우거 공격 (`raidPattern(start, 'ogre')`): 💥 내려찍기 slam(큰 원 1~2개) · 🪨 바위 던지기 rock(작은 원 3~5개, 손에서 포물선으로 날아옴) · 몽둥이 휘두르기 swing(앞쪽 부채꼴 `OGRE_SWING`) · 포효. 피해 `RAID_HIT`
+- 그림: `내 디자인/오우거_다리·몸통·오른팔·왼팔·머리.png` + `배경_오우거.png` → town-art.py 9번 → `og-leg/body/rarm/larm/head.webp`(절반 크기), `ogre-bg.webp`, meta `ogre`(판 좌표). game.html `drawOgre` (`OPART`, 오른팔은 어깨 `OSHOULDER` 기준으로 공격 예고 동안 치켜들고 칠 때 내려침, 예고 중 눈이 붉게). 배경 화로 불빛·불티는 `ogreAmbient`
+- 오우거 스킨 (템플릿 `char/hat_guide_오우거.png`, `char/suit-front_guide_오우거.png`, `weapon/*_guide_오우거.png`) → `og-hat/suit/sword/bow/staff.webp`, meta `og` → game.html `OGS`. id는 모두 `ogre` (HATS·SUITS·WSKINS, `raid: 'ogre'`)
+- 스킨샵 레이드 탭은 보스별로 나눠 보임. 치트 탭: '👕 모든 스킨 받기' + '⭐ 레이드 스킨 최고 레벨'(`rskmax`: 모든 레이드 스킨 Lv10)
 
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감

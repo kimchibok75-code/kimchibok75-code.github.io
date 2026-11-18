@@ -232,5 +232,35 @@ H, W = t.shape[:2]
 META['portal'] = {'hole': [round(hb[0] / W, 4), round(hb[1] / H, 4), round((hb[2] - hb[0]) / W, 4), round((hb[3] - hb[1]) / H, 4)]}
 print('portal hole', hb, t.shape)
 
+# 9) 오우거 레이드 (2026-11-18): 2078×1199 판 하나에 위치까지 맞춰 그린 조각 5장 + 배경 + 스킨 5개(템플릿 틀 그대로)
+OG = {}; obottom = 0
+for src, n in [('오우거_다리', 'leg'), ('오우거_몸통', 'body'), ('오우거_오른팔', 'rarm'), ('오우거_왼팔', 'larm'), ('오우거_머리', 'head')]:
+    a = keep_rgba(src); b = bbox(a[:, :, 3], pad=1); t = a[b[1]:b[3], b[0]:b[2]]
+    save('og-' + n, t.copy(), width=round(t.shape[1] * .5))
+    OG[n] = [int(b[0]), int(b[1]), int(t.shape[1]), int(t.shape[0])]; obottom = max(obottom, int(b[3]))
+META['ogre'] = {'parts': OG, 'floor': obottom}
+bg = Image.open(os.path.join(SRC, '배경_오우거.png')).convert('RGB')
+bg.resize((1344, round(1344 * bg.height / bg.width)), Image.LANCZOS).save(os.path.join(OUT, 'ogre-bg.webp'), 'WEBP', quality=86, method=6)
+META['ogre-bg'] = [bg.width, bg.height]
+TPL = os.path.join('텍스쳐 템플릿')
+OS = {}
+for src, n, ox, oy, k in [('char/hat_guide_오우거', 'hat', 192, 336, 4), ('char/suit-front_guide_오우거', 'suit', 192, 336, 4),
+                          ('weapon/sword_guide_오우거', 'sword', 192, 368, 8), ('weapon/bow_guide_오우거', 'bow', 192, 368, 8), ('weapon/staff_guide_오우거', 'staff', 192, 368, 8)]:
+    a = np.asarray(Image.open(os.path.join(TPL, src + '.png')).convert('RGBA')).copy(); a[a[:, :, 3] == 0] = 0
+    full = clean(a, rel=.03)   # 떨어진 점 지우기 (잘린 그림)
+    # 잘린 위치를 다시 찾기: 원본에서 큰 덩어리의 bbox
+    m = np.zeros(a.shape[:2], bool); al = a[:, :, 3] > 8
+    b0 = bbox(a[:, :, 3], pad=1)
+    # clean 은 잘라서 돌려주므로, 원본에서 같은 크기 창을 찾음
+    H0, W0 = full.shape[:2]; best = None
+    for y in range(b0[1], b0[3] - H0 + 2):
+        for x in range(b0[0], b0[2] - W0 + 2):
+            if np.array_equal(a[y:y + H0, x:x + W0, 3] > 8, full[:, :, 3] > 8) or best is None and False: best = (x, y); break
+        if best: break
+    if not best: best = (b0[0], b0[1])
+    save('og-' + n, full.copy())
+    OS[n] = [round((best[0] - ox) / k, 3), round((best[1] - oy) / k, 3), round(W0 / k, 3), round(H0 / k, 3)]
+META['og'] = OS
+
 json.dump(META, open(os.path.join(OUT, 'meta.json'), 'w'), ensure_ascii=False, indent=1)
 print(json.dumps(META, ensure_ascii=False))
