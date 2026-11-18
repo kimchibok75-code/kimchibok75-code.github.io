@@ -353,6 +353,12 @@
 - 능력치 +10 버튼 (포인트가 모자라면 남은 만큼)
 - 사냥 골드 `HUNT.goldMul` 1.15 → 0.6 (낚시·알바가 의미 있게). 30레벨 시간당 약 2.8만 골드
 
+### PC 실행 파일 (윈도우) — 2026-11-18
+- `windows-app/치복 타운.exe`: 엣지(없으면 크롬)를 **앱 창 모드**(`--app`, 주소창·탭 없음)로 열어 게임 주소를 띄움. 화면의 85% 크기(최대 1600×960)로 가운데에
+- 프로필은 따로 `%LOCALAPPDATA%\ChibokTown` → 브라우저와 안 섞이고, 로그인은 이 창에서 한 번 하면 유지
+- 소스 `Launcher.cs`, 아이콘 `icon.ico`(game-512.png로 만듦), 다시 만들기 `build.bat`(윈도우에 들어 있는 .NET csc로 컴파일, CRLF 줄끝 필요). 배포 때는 지움(update.yml)
+- 게임 주소를 바꾸면 `Launcher.cs`의 `URL`도 바꾸고 다시 만들기. 서명이 없어서 남에게 주면 Windows SmartScreen 경고가 뜰 수 있음
+
 ### 휴대폰 앱 (크롬 앱 설치) — 2026-11-16
 - `game.webmanifest`(이름 치복 타운, 시작 `game.html`, 범위 `./game.html`이라 홈페이지 앱과 따로, 전체 화면). game.html `<head>`에서 연결
 - 아이콘 `assets/img/game-192.png`, `game-512.png`: 김치복 얼굴 + 마을 배경. 임시 HTML을 크롬 headless `--screenshot`으로 찍어서 만듦
