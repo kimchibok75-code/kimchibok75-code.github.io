@@ -1,8 +1,21 @@
 {
-  "updatedAt": 1795006180270,
+  "updatedAt": 1795007898531,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 204,
+      "title": "변경계능력평가 - Biotech 기본",
+      "board": "🗺️ 림월드 자유 게시판",
+      "head": null,
+      "author": "뿔베리",
+      "time": 1795007201780,
+      "comments": 0,
+      "likes": 0,
+      "image": true,
+      "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMThfMTc2/MDAxNzk1MDA1MTEwMTQw.iSxRaj-rnpZjBDlJbZO7LOVRAXs7SqXxU9XzlQlSzT0g.ztGVp1CESIB1zUj6aCuY5ukTE6IcVQQflP2S3Qzl3_Ag.PNG/%25EB%25B3%2580%25EA%25B2%25BD%25EA%25B3%2584%25EB%258A%25A5%25EB%25A0%25A5%25ED%258F%2589%25EA%25B0%2580_Biotech_%25EA%25B8%25B0%25EB%25B3%25B8_202611001.png",
+      "url": "https://cafe.naver.com/kimchibok/204"
+    },
     {
       "id": 203,
       "title": "이번 주 방송에서 치복 타운 첫 공개하겠습니다~!",
@@ -249,19 +262,6 @@
       "image": false,
       "thumb": null,
       "url": "https://cafe.naver.com/kimchibok/185"
-    },
-    {
-      "id": 184,
-      "title": "림월드 키우기 업데이트했습니다!",
-      "board": "🗺️ 림월드 자유 게시판",
-      "head": null,
-      "author": "김치복",
-      "time": 1794359282377,
-      "comments": 0,
-      "likes": 0,
-      "image": true,
-      "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMTFfMTA0/MDAxNzk0MzU5MTkzMzAw.ZFvKiEznLi0Fvuk41aktiRV3K-KHnE3M1XlH-uWuJlcg.2ZTYhlr_TlF4nSfuehCO6TmCKfeffPMXz0WRtV0R4g8g.PNG/image.png",
-      "url": "https://cafe.naver.com/kimchibok/184"
     }
   ]
 }
