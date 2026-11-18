@@ -114,6 +114,14 @@ export class Town extends DurableObject {
       const r = Number.isInteger(m.r) && m.r >= 0 && m.r < 1e9 ? m.r : 0; Object.assign(a, { room2: r, sit: -1, x: m.x | 0, y: m.y | 0, tx: m.x | 0, ty: m.y | 0 }); this.save(ws, a); return this.all({ t: 'room', id: a.id, r, x: a.x, y: a.y }, ws);
     }
     if (m.t === 'hunt') { a.hunt = !!m.on; a.sit = -1; this.save(ws, a); return this.all({ t: 'hunt', id: a.id, on: a.hunt }, ws); }
+    // 움직임 기록 (2026-11-18): p = [[보낸 쪽 시각 ms, x, y, 점프 높이, 건물 위 1/0], …] 최대 8개. 마지막 자리를 기억 (새로 들어온 사람용)
+    if (m.t === 'mv') {
+      if (!Array.isArray(m.p) || !m.p.length || m.p.length > 8) return;
+      const p = [];
+      for (const s of m.p) { if (!Array.isArray(s) || s.length !== 5 || !Number.isFinite(s[0]) || !num(s[1], MW * T) || !num(s[2], MH * T) || !num(s[3], 400)) return; p.push([Math.round(s[0]), Math.round(s[1]), Math.round(s[2]), Math.round(s[3]), s[4] ? 1 : 0]); }
+      const z = p[p.length - 1]; Object.assign(a, { x: z[1], y: z[2], tx: z[1], ty: z[2], sit: -1 }); this.save(ws, a);
+      return this.all({ t: 'mv', id: a.id, p }, ws);
+    }
     // 점프 (n: 1 점프 · 2 더블 점프) · Z 공격 (a = 바라보는 방향 각도). 보여 주기만
     if (m.t === 'jmp') { if ((m.n !== 1 && m.n !== 2) || t - (a.jmpAt || 0) < 120) return; a.jmpAt = t; a.sit = -1; this.save(ws, a); return this.all({ t: 'jmp', id: a.id, n: m.n }, ws); }
     if (m.t === 'atk') { if (!Number.isFinite(m.a) || Math.abs(m.a) > 4 || t - (a.atkAt || 0) < 280) return; a.atkAt = t; return this.all({ t: 'atk', id: a.id, a: m.a }, ws); }

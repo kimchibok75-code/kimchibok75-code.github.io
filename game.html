@@ -282,6 +282,7 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; lette
 .rules li.bad { color: var(--kimchi); }
 .rules li.bad::before { content: "✕"; color: var(--kimchi); }
 .check { display: flex; align-items: center; gap: 8px; font-size: calc(14px * var(--fs)); }
+.kbd-on { outline: 3px solid #ffb02e !important; outline-offset: 2px; box-shadow: 0 0 0 6px rgba(255, 176, 46, .28) !important; border-radius: 10px; position: relative; z-index: 1; }
 /* 가입 화면 (2026-11-18 정리): 규칙은 작은 꼬리표, 눈 버튼, 안심 안내는 접기, 안내 동의 */
 .rules.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
 .rules.chips li { padding: 2px 8px 2px 6px; border-radius: 99px; background: var(--paper-2); font-size: calc(12px * var(--fs)); line-height: 1.5; }
@@ -1863,8 +1864,7 @@ function walkTo(ch, wx, wy, then) {
   }
   pts.push({ x: wx, y: wy });
   ch.path = pts; ch.then = then || null;
-  if (ch === me && !HT) netSend({ t: 'go', x: Math.round(ch.x), y: Math.round(ch.y), tx: Math.round(wx), ty: Math.round(wy) });
-  return true;
+  return true;   // 다른 화면에는 실제로 지나간 자리를 기록해서 보냄 (netTrack)
 }
 // 칸으로 걸어가기 (칸 가운데)
 const walkToTile = (ch, tx, ty, then) => walkTo(ch, tx * T + T / 2, ty * T + T / 2, then);
@@ -2475,13 +2475,13 @@ const TF = [];
 const townFloat = (x, y, text, color = '#fff') => TF.push({ x, y, text, color, t: 0 });
 function update(dt, now) {
   S.barT -= dt; if (S.barT <= 0) { S.barT = .15; syncBars(); }
-  jumpTick(me, dt); for (const p of people) if (p.jn) jumpTick(p, dt);
+  jumpTick(me, dt);
   if (RD) { updateRaid(dt); follow(dt, RW(), RH()); return; }
   if (HT) { updateHunt(dt, now); follow(dt, HW * T, HH * T); return; }
-  steerTick(dt); if (!STEER.on) stepChar(me, dt); roamTick(dt); gatherTick(dt); townAtkTick(dt);
+  steerTick(dt); if (!STEER.on) stepChar(me, dt); roamTick(dt); gatherTick(dt); townAtkTick(dt); netTrack();
   if (me.room && me.y > (ROOM_H - .55) * T && Math.abs(me.x - (ROOM_DOOR.x + .5) * T) < T * .8) leaveRoom();   // 문으로 걸어 나가기
   const D = derive(); if (me.hp < D.maxHp) me.hp = Math.min(D.maxHp, me.hp + D.maxHp * .02 * dt);
-  for (const p of people) if (p.net) netStep(p, dt); else stepChar(p, dt);
+  for (const p of people) if (p.buf?.length) netPlay(p, dt); else if (p.net) netStep(p, dt); else stepChar(p, dt);
   rodTick(now);
   for (const f of TF) f.t += dt; while (TF.length && TF[0].t > 1.4) TF.shift();
   if (me.room) { follow(dt, ROOM_W * T, ROOM_H * T); setPlace(`${S.roomNick || ''}님의 집`); return; }
@@ -3960,30 +3960,16 @@ function steerTick(dt) {
   if (d) auHold();
   if (d && BUSY()) { STEER.key.clear(); STEER.drag = null; busyToast(); return; }
   if (d) me.fdir = d;   // 바라보는 방향 (Z 공격이 나가는 쪽)
-  if (!d) { if (STEER.on) { STEER.on = false; me.moving = false; STEER.t = 0; STEER.sp = 0; if (!me.jfly) { netStop(); savePos(); } } return; }
-  if (!STEER.on) { STEER.on = true; standUp(me); me.path = []; me.then = null; GA = null; closePanel?.(); STEER.t = 0; STEER.gap = 0; STEER.sp = -1; }
-  const px0 = me.x, py0 = me.y;
+  if (!d) { if (STEER.on) { STEER.on = false; me.moving = false; STEER.t = 0; STEER.sp = 0; if (!me.jfly) savePos(); } return; }
+  if (!STEER.on) { STEER.on = true; standUp(me); me.path = []; me.then = null; GA = null; closePanel?.(); }
   ROAM.pause = 15;
-  const l = Math.hypot(d[0], d[1]) || 1, sp = (me.speed || 165) * dt * (me.jn ? JUMP.air : 1), vx = d[0] / l * sp, vy = d[1] / l * sp, Sc = sceneOf(me);
+  const l = Math.hypot(d[0], d[1]) || 1, sp = (me.speed || 165) * dt * (me.jn ? JUMP.air : 1), vx = d[0] / l * sp, vy = d[1] / l * sp, Sc = sceneOf(me);   // 다른 화면에는 netTrack이 실제 자리를 보냄
   const ok = (x, y) => me.jfly ? inScene(Sc, x, y) : freeAt(Sc, x, y);
   let moved = false;
   if (vx && ok(me.x + vx, me.y)) { me.x += vx; moved = true; }
   if (vy && ok(me.x, me.y + vy)) { me.y += vy; moved = true; }
   me.moving = moved; if (Math.abs(d[0]) > .15) me.dir = d[0] < 0 ? -1 : 1;
-  netSteer((me.x - px0) / dt, (me.y - py0) / dt, dt, Sc);
 }
-// 실시간에 가깝게 (2026-11-18): 움직이는 방향·속도가 바뀌면 바로(0.16초 간격까지), 아니면 0.4초마다 지금 자리 + 속도(v)를 보냄
-// 다른 화면은 그 속도로 미리 움직이면서 부드럽게 맞춤 (netStep). st: 1 = 이 방식
-function netSteer(vx, vy, dt, Sc) {
-  const N = STEER; N.t -= dt; N.gap -= dt;
-  const sp = Math.hypot(vx, vy), a = Math.atan2(vy, vx), da = Math.abs(Math.atan2(Math.sin(a - (N.a || 0)), Math.cos(a - (N.a || 0))));
-  const changed = (sp > 5) !== (N.sp > 5) || (sp > 5 && (Math.abs(sp - N.sp) > N.sp * .15 || da > .2));
-  if (N.gap > 0 || (!changed && N.t > 0)) return;
-  N.t = .4; N.gap = .16; N.sp = sp; N.a = a;
-  const k = sp > 5 ? 1 : 0, cl = (v, m) => Math.max(0, Math.min(m, v));
-  netSend({ t: 'go', st: 1, v: Math.round(sp), x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(cl(me.x + vx * k, Sc.w * T)), ty: Math.round(cl(me.y + vy * k, Sc.h * T)) });
-}
-function netStop() { netSend({ t: 'go', st: 1, v: 0, x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(me.x), ty: Math.round(me.y) }); }
 addEventListener('keydown', e => {
   const act = e.code === 'KeyC' || e.code === 'KeyZ' || e.code === 'Space';
   if (!KEYDIR[e.code] && !act || e.ctrlKey || e.altKey || e.metaKey || $('#app').hidden || !modal.hidden) return;
@@ -4009,7 +3995,6 @@ function myJump() {
   const n = (me.jn || 0) + 1; jumpGo(me, n); sfx(n === 1 ? 'pop' : 'warp');
   const x = me.x, y = me.y + 4; if (HT) { fxBurst(x, y, n === 1 ? '#d8c9ac' : '#bfefff', n === 1 ? 6 : 12, 90, 2.4, 0); if (n === 2) fxRing(x, me.y - me.jz, '#bfefff', 24, .3); }
   else TJ.push({ x, y: n === 1 ? y : me.y - me.jz + 6, n, t: 0 });
-  if (!HT && !RD) netSend({ t: 'jmp', n });
 }
 function jumpTick(ch, dt) {
   if (!ch.jn) return;
@@ -4027,7 +4012,7 @@ function jumpTick(ch, dt) {
       if (best) [me.x, me.y] = best; else { me.x = START.x; me.y = START.y; }
       me.path = [];
     }
-    if (STEER.on) { STEER.t = 0; STEER.gap = 0; STEER.sp = -1; } else netStop(); savePos();
+    savePos();
   }
 }
 // ───────── 스페이스바 = 가까이 있는 것 누르기 (PC, 2026-11-18) ─────────
@@ -4816,6 +4801,70 @@ function wireSizeSet(el) { el.querySelector('#uiSet')?.addEventListener('click',
 
 // PC: 아무것도 안 하고 있을 때 Enter → 채팅 시작. 채팅 칸에서 Enter로 보내도 칸은 그대로(계속 치기), 빈 칸에서 Enter/Esc → 채팅 끝 (다시 화살표로 걷기)
 const PC_KEYS = matchMedia('(hover: hover) and (pointer: fine)').matches;
+// ───────── 창 키보드 조작 (PC, 2026-11-18): 창이 열려 있으면 화살표 = 다음·이전 선택(가까운 쪽), Enter·스페이스바 = 누르기 ─────────
+// 누를 수 있는 것 = 버튼·링크·입력칸 + 손가락 모양(cursor: pointer)인 칸. 창이 다시 그려져도(1초마다 갱신 등) 같은 것을 다시 찾아 이어서 고름
+const UIK = { el: null, sig: '' };
+const uikSig = el => el.tagName + JSON.stringify(el.dataset) + (el.id || '') + el.textContent.trim().slice(0, 24);
+function uikList() {
+  const out = [];
+  for (const el of sheet.querySelectorAll('*')) {
+    const tag = el.tagName, ctl = tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || tag === 'SUMMARY';
+    if (el.disabled || el.closest('[hidden], .close')) continue;
+    if (!ctl && getComputedStyle(el).cursor !== 'pointer') continue;
+    if (el.parentElement?.closest('button, a, summary') || (!ctl && el.parentElement && el.parentElement !== sheet && getComputedStyle(el.parentElement).cursor === 'pointer')) continue;   // 이미 고를 수 있는 것 안쪽은 빼기
+    const r = el.getBoundingClientRect(); if (r.width < 4 || r.height < 4) continue;
+    out.push(el);
+  }
+  return out;
+}
+function uikMark(el) {
+  document.querySelectorAll('.kbd-on').forEach(x => x.classList.remove('kbd-on'));
+  UIK.el = el; UIK.sig = el ? uikSig(el) : '';
+  if (el) { el.classList.add('kbd-on'); el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+}
+function uikCur(list) {
+  if (UIK.el?.isConnected && list.includes(UIK.el)) return UIK.el;
+  const el = UIK.sig ? list.find(x => uikSig(x) === UIK.sig) : null;   // 다시 그려진 창에서 같은 것
+  if (el) { el.classList.add('kbd-on'); UIK.el = el; }
+  return el || null;
+}
+function uikMove(dx, dy) {
+  const list = uikList(); if (!list.length) return;
+  const cur = uikCur(list);
+  if (!cur) return uikMark(list[0]);
+  const c = cur.getBoundingClientRect(), cx = c.x + c.width / 2, cy = c.y + c.height / 2;
+  const pick = cone => {   // 누른 방향 쪽에서 가장 가까운 것 (옆으로 벗어난 만큼 더 멀게 침). cone이면 비스듬히 많이 벗어난 것은 빼기
+    let best = null, bs = 1e9;
+    for (const el of list) {
+      if (el === cur) continue;
+      const r = el.getBoundingClientRect(), x = r.x + r.width / 2, y = r.y + r.height / 2, along = (x - cx) * dx + (y - cy) * dy, side = Math.abs((x - cx) * dy) + Math.abs((y - cy) * dx);
+      if (along <= 2 || (cone && side > along * 1.2 + 10)) continue;
+      const sc = along + side * 2.5; if (sc < bs) { bs = sc; best = el; }
+    }
+    return best;
+  };
+  let best = pick(true) || (dy ? pick(false) : null);   // 위·아래는 곧장 아래에 없으면 그다음 줄 아무거나 (아래 버튼 등)
+  if (!best) { const i = list.indexOf(cur), n = dx + dy > 0 ? 1 : -1; best = list[(i + n + list.length) % list.length]; }   // 그쪽에 없으면 순서대로 (끝에서는 처음으로)
+  uikMark(best);
+}
+addEventListener('keydown', e => {
+  if (modal.hidden || e.isComposing || e.ctrlKey || e.altKey || e.metaKey) return;
+  const dir = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
+  const ok = e.key === 'Enter' || e.key === ' ';
+  if (!dir && !ok) return;
+  const a = document.activeElement, typing = a && (a.tagName === 'TEXTAREA' || a.isContentEditable || (a.tagName === 'INPUT' && !['checkbox', 'radio', 'button', 'range'].includes(a.type)) || a.tagName === 'SELECT');
+  if (typing) { if (dir && (e.key === 'ArrowUp' || e.key === 'ArrowDown') && a.tagName !== 'SELECT' && a.tagName !== 'TEXTAREA') { e.preventDefault(); a.blur(); uikMove(...dir); } return; }   // 글자 칸에서는 위·아래로만 빠져나옴
+  e.preventDefault();
+  if (dir) return uikMove(...dir);
+  if (e.repeat) return;
+  const cur = uikCur(uikList());
+  if (!cur) return uikMove(0, 1);
+  if (cur.tagName === 'INPUT' && !['checkbox', 'radio', 'button'].includes(cur.type) || cur.tagName === 'SELECT' || cur.tagName === 'TEXTAREA') return cur.focus();
+  cur.click();
+});
+modal.addEventListener('mousemove', () => { if (UIK.el) uikMark(null); });
+new MutationObserver(() => { if (!UIK.sig || modal.hidden || UIK.el?.isConnected) return; setTimeout(() => { const l = uikList(); if (!uikCur(l)) UIK.el = null; }); }).observe(sheet, { childList: true, subtree: true });   // 창이 다시 그려지면 고른 표시를 다시 붙임
+modal.addEventListener('pointerdown', () => { UIK.sig = ''; });   // 마우스를 쓰면 키보드 표시는 지움
 if (PC_KEYS) $('#chatIn').placeholder = '마을 전체에 말하기 (Enter)';
 addEventListener('keydown', e => {
   if (e.key !== 'Enter' || e.isComposing || e.ctrlKey || e.altKey || e.metaKey || $('#app').hidden || !modal.hidden || S.away) return;
@@ -6022,6 +6071,39 @@ function netSend(o) { if (!NET.ready || NET.ws?.readyState !== 1) return false; 
 function netClose() { NET.want = false; NET.ready = false; try { NET.ws?.close(); } catch {} NET.ws = null; people = []; }
 function netGo() { if (HT) return; const d = me.path[me.path.length - 1] || me; netSend({ t: 'go', x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(d.x), ty: Math.round(d.y) }); }
 // 다른 사람이 걷기 시작: 거리가 많이 벌어졌으면 순간 이동, 아니면 같은 길로 걸어감
+// ───────── 움직임 기록 · 재생 (2026-11-18) ─────────
+// 예측하지 않음: 내가 실제로 있던 자리(+ 점프 높이)를 0.1초마다 적어 0.25초마다 묶어 보냄 → 다른 화면은 NET_DELAY만큼 늦게 그 기록을 그대로 이어 그림
+// 조금 늦게 보이는 대신, 간 길 그대로 · 멈춤 없이 · 순간 이동 없이. 메시지가 늦게 와도 기다렸다가 이어서 움직임
+const NET_DELAY = 450, TRK = { at: 0, sent: 0, buf: [], last: null, idle: true };
+function netTrack() {
+  if (HT || RD || S.away) return;
+  const t = performance.now(); if (t - TRK.at < 100) return; TRK.at = t;
+  const s = [Math.round(t), Math.round(me.x), Math.round(me.y), Math.round(me.jz || 0), me.jfly ? 1 : 0], L = TRK.last;
+  const same = L && L[1] === s[1] && L[2] === s[2] && L[3] === s[3];
+  if (same) { if (!TRK.idle) { TRK.idle = true; TRK.buf.push(s); } if (TRK.buf.length) netFlush(t); return; }   // 멈춤: 마지막 자리까지 보내기
+  if (L && Math.hypot(s[1] - L[1], s[2] - L[2]) > 4 * T) TRK.idle = false;   // 순간 이동: 출발 자리 없이 새 자리부터
+  else if (TRK.idle && L) TRK.buf.push([s[0] - 100, L[1], L[2], L[3], L[4]]);   // 다시 움직이기 시작: 출발 자리를 바로 앞 시각으로
+  TRK.idle = false; TRK.last = s; TRK.buf.push(s);
+  if (t - TRK.sent >= 250 || TRK.buf.length >= 4) netFlush(t);
+}
+function netFlush(t) { if (!TRK.buf.length) return; netSend({ t: 'mv', p: TRK.buf }); TRK.buf = []; TRK.sent = t; }
+function netRecv(p, list) {
+  const now = performance.now();
+  for (const s of list) { const o = now - s[0]; if (p.off == null || o < p.off) p.off = o; }   // 상대 시계 → 내 시계 (가장 빨리 온 것 기준)
+  if (!p.buf?.length) { p.buf = []; p.path = []; p.then = null; p.net = null; const f = list[0]; if (f && Math.hypot(p.x - f[1], p.y - f[2]) > 8 * T) { p.x = f[1]; p.y = f[2]; } }
+  for (const s of list) { const lt = s[0] + p.off, b = p.buf, z = b[b.length - 1]; if (!z || lt > z[0]) b.push([lt, s[1], s[2], s[3], s[4]]); }
+  if (p.buf.length > 60) p.buf.splice(0, p.buf.length - 60);
+}
+function netPlay(p, dt) {
+  const rt = performance.now() - NET_DELAY, b = p.buf;
+  while (b.length > 2 && b[1][0] <= rt) b.shift();
+  if (rt < b[0][0]) { p.moving = false; return; }   // 아직 첫 기록 시각 전: 그 자리에서 기다림
+  let x, y, z, f;
+  if (b.length > 1 && rt < b[1][0]) { const a = b[0], c = b[1], k = (rt - a[0]) / (c[0] - a[0]); x = a[1] + (c[1] - a[1]) * k; y = a[2] + (c[2] - a[2]) * k; z = a[3] + (c[3] - a[3]) * k; f = a[4] || c[4]; }
+  else { const c = b[b.length - 1]; [, x, y, z, f] = c; if (b.length > 1) b.splice(0, b.length - 1); }
+  const ox = p.x, oy = p.y; p.x = x; p.y = y; p.jz = Math.max(0, z); p.jfly = !!f;
+  p.moving = Math.hypot(x - ox, y - oy) > 20 * dt; if (Math.abs(x - ox) > .15) p.dir = x < ox ? -1 : 1;
+}
 // 받은 자리에서 받은 속도로 지금쯤 있을 곳(예측)을 계산하고, 그쪽으로 부드럽게 다가감
 function netStep(p, dt) {
   const n = p.net, dx = n.tx - n.x, dy = n.ty - n.y, L = Math.hypot(dx, dy), e = (performance.now() - n.t) / 1000;
@@ -6033,6 +6115,7 @@ function netStep(p, dt) {
   if (p.moving) { const fx = n.v > 5 && go < L ? dx : gx - ox; if (Math.abs(fx) > 1) p.dir = fx < 0 ? -1 : 1; }
 }
 function netMove(p, m) {
+  p.buf = null;   // 순간 이동 · 바닥 누르기(예전 화면)는 기록 재생을 멈춤
   if (m.st) {
     p.path = []; p.then = null;
     if (Math.hypot(p.x - m.x, p.y - m.y) > 8 * T) { p.x = m.x; p.y = m.y; }   // 너무 멀면(다시 들어옴 등) 바로
@@ -6058,13 +6141,13 @@ function onNet(m) {
   else if (m.t === 'join') { people = people.filter(p => p.id !== m.p.id); if (m.p.id !== NET.me) { const p = mkPerson(m.p); people.push(p); if (m.p.sit >= 0) sitDown(p, m.p.sit); } }
   else if (m.t === 'sit') { const p = personOf(m.id); if (p) { if (m.b >= 0) sitDown(p, m.b); else standUp(p); } }
   else if (m.t === 'leave') people = people.filter(p => p.id !== m.id);
-  else if (m.t === 'room') { const p = personOf(m.id); if (p) Object.assign(p, { room: m.r || 0, x: m.x, y: m.y, path: [], sit: -1 }); }
+  else if (m.t === 'room') { const p = personOf(m.id); if (p) Object.assign(p, { room: m.r || 0, x: m.x, y: m.y, path: [], sit: -1, buf: null }); }
   else if (m.t === 'house' && m.h && Number.isInteger(m.h.id)) setHouses([...HOUSES.filter(h => h.id !== m.h.id), m.h]);
   else if (m.t === 'go') { const p = personOf(m.id); if (p) { standUp(p); netMove(p, m); } }
-  else if (m.t === 'hunt') { const p = personOf(m.id); if (p) { p.hunt = m.on; p.path = []; p.sit = -1; } }
+  else if (m.t === 'hunt') { const p = personOf(m.id); if (p) { p.hunt = m.on; p.path = []; p.sit = -1; p.buf = null; } }
   else if (m.t === 'fish') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) { if (m.s === 1) rodOut(p, m.bx, m.by, m.r); else if (m.s === 2) { rodEnd(p, { i: m.i, n: m.n, grade: m.g, len: m.len }, m.big); if (m.sh) SH_GONE.add(m.sh); } else if (m.s === 3) rodEnd(p, null); else p.fz = null; } }
   else if (m.t === 'emo') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) emote(p, m.e); }
-  else if (m.t === 'jmp') { const p = personOf(m.id); if (p && shown(p)) { standUp(p); jumpGo(p, m.n === 2 && p.jn ? 2 : 1); if (m.n === 2) p.jfly = true; } }
+  else if (m.t === 'mv') { const p = personOf(m.id); if (p && Array.isArray(m.p)) netRecv(p, m.p); }
   else if (m.t === 'atk') { const p = personOf(m.id); if (p && shown(p) && Number.isFinite(m.a)) townAtk(p, m.a); }
   else if (m.t === 'look') { const p = personOf(m.p.id), d = m.p; if (p) Object.assign(p, { lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, hatHair: d.hatHair !== false, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {} }); }
   else if (m.t === 'say') {
@@ -6518,7 +6601,7 @@ function showGuide(keep) {
       <div class="bs-sec">👉 오른쪽 버튼 (눌러서 바로 열기)</div>
       <ul class="bs-list gd">${btn.map(([x, i, n, t]) => `<li><button class="gd-row" data-x="${x}"><span>${i}</span><div><b class="t">${n}</b><small class="d">${t}</small></div><small class="go">›</small></button></li>`).join('')}</ul>`;
   } else {
-    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 빈 칸에서 Enter/Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>C</kbd>', '점프 · 공중에서 한 번 더 누르면 더블 점프(건물도 넘어가요) · 화살표와 같이 누르면 그쪽으로 뛰어요'], ['<kbd>Space</kbd>', '가까이 있는 건물 · 주민 · 나무 · 바위 · 물가 등을 누른 것처럼 이용'], ['<kbd>Z</kbd>', '공격 · 마을에선 바라보는 쪽으로, 사냥터에선 가까운 몬스터에게 (쿨타임 찬 스킬부터)'], ['<kbd>Esc</kbd>', '창 닫기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
+    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 빈 칸에서 Enter/Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>C</kbd>', '점프 · 공중에서 한 번 더 누르면 더블 점프(건물도 넘어가요) · 화살표와 같이 누르면 그쪽으로 뛰어요'], ['<kbd>Space</kbd>', '가까이 있는 건물 · 주민 · 나무 · 바위 · 물가 등을 누른 것처럼 이용'], ['<kbd>Z</kbd>', '공격 · 마을에선 바라보는 쪽으로, 사냥터에선 가까운 몬스터에게 (쿨타임 찬 스킬부터)'], ['<kbd>Esc</kbd>', '창 닫기'], ['창에서 <kbd>←↑↓→</kbd>', '버튼 고르기 · <kbd>Enter</kbd>나 <kbd>Space</kbd>로 누르기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
       : [['끌기', '화면을 끌면 그 방향으로 걸어요'], ['누르기', '바닥 · 건물 · 사람을 누르면 그곳으로'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅 기록 펼치기 · ⚙️로 글씨 크기'], ['⚙️', '설정: 내 정보 · 비밀번호 · 차단 목록']];
     body = `<ul class="bs-list gd">${tips.map(([k, t]) => `<li class="gd-key"><span>${k}</span><span>${t}</span></li>`).join('')}</ul>`;
   }
