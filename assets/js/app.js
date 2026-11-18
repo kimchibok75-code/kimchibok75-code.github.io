@@ -66,8 +66,8 @@ function renderHero() {
     { url: cfg.chzzk.url, cls: 'ico-chzzk', icon: 'chzzk', name: '치지직', sub: live?.open ? '🔴 지금 방송 중' : '금·토·일 밤 9시', ext },
     { url: cfg.cafe.url, cls: 'ico-cafe', icon: 'cafe', name: '팬 카페', sub: '네이버 카페', ext },
     { url: cfg.discord.url, cls: 'ico-discord', icon: 'discord', name: '디스코드', sub: '채팅으로 소통', ext },
-    { url: 'mods.html', cls: 'ico-mods', icon: 'puzzle', name: '모드 추천', sub: '김치복 추천 모드' },
-    { url: 'weekly.html', cls: 'ico-weekly', icon: 'trophy', name: '주간 모드 순위', sub: '이번 주 TOP 20' },
+    { url: 'mods.html', cls: 'ico-mods', icon: 'puzzle-f', name: '모드 추천', sub: '김치복 추천 모드' },
+    { url: 'weekly.html', cls: 'ico-weekly', icon: 'trophy-f', name: '주간 모드 순위', sub: '이번 주 TOP 20' },
   ];
   $('#channels').innerHTML = chs.map(c => `
     <a class="ch-card glass" href="${esc(c.url)}"${c.ext || ''}>
@@ -200,8 +200,40 @@ document.addEventListener('click', e => {
 });
 $('#player')?.addEventListener('close', () => { $('#playerFrame').innerHTML = ''; });
 
+// ───────── 홈: 유튜브 커뮤니티 글 ─────────
+const P = { ch: 0, all: false };
+function renderPosts() {
+  const chs = (S.yt?.channels || []).filter(c => c.posts?.length);
+  if (!chs.length) return;
+  $('#posts').hidden = false;
+  if (P.ch >= chs.length) P.ch = 0;
+  const ch = chs[P.ch];
+  const cfg = S.cfg.youtube.find(c => c.key === ch.key);
+  $('#postsMore').href = `${cfg?.url || ch.url}/posts`;
+  $('#postTabs').hidden = chs.length < 2;
+  $('#postTabs').innerHTML = chs.map((c, i) => `<button data-i="${i}" class="${i === P.ch ? 'on' : ''}">${esc(c.name)}</button>`).join('');
+  $('#postTabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; P.ch = +b.dataset.i; P.all = false; renderPosts(); };
+  const list = P.all ? ch.posts : ch.posts.slice(0, 6);
+  $('#postList').innerHTML = list.map(p => {
+    const img = p.images?.[0] || (p.video ? ytImg(p.video.id, 'mqdefault') : null);
+    return `
+    <a class="post glass" href="${esc(p.url)}" target="_blank" rel="noopener">
+      <span class="post-head">
+        ${ch.avatar ? `<img class="post-ava" src="${esc(ch.avatar)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}
+        <span><strong>${esc(ch.title || ch.name)}</strong><small class="muted">${ago(p.time)}${p.members ? ' · 멤버십 전용' : ''}</small></span>
+      </span>
+      ${p.text ? `<span class="post-text">${esc(p.text)}</span>` : ''}
+      ${p.poll ? `<span class="post-poll">${p.poll.slice(0, 4).map(c => `<span>${esc(c)}</span>`).join('')}</span>` : ''}
+      ${img ? `<span class="post-img${p.video ? ' is-vid' : ''}"><img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()">${p.images?.length > 1 ? `<em>+${p.images.length - 1}</em>` : ''}${p.video ? '<i><svg><use href="#i-yt"/></svg></i>' : ''}</span>` : ''}
+      <span class="post-foot muted">👍 ${num(p.likes)}<span>자세히 보기 →</span></span>
+    </a>`;
+  }).join('');
+  $('#postsAll').hidden = P.all || ch.posts.length <= 6;
+  $('#postsAll').onclick = () => { P.all = true; renderPosts(); };
+}
+
 // ───────── 방송 일정 ─────────
-const C = { y: 0, m: 0, sel: null };
+const C ={ y: 0, m: 0, sel: null };
 function plannedOn(y, m, d) {
   const sch = S.sched || { weekly: [], events: [], off: [] };
   const key = dkey(y, m, d);
@@ -597,6 +629,8 @@ function injectShell() {
     <symbol id="i-chev" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></symbol>
     <symbol id="i-puzzle" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M10 4a2 2 0 1 1 4 0v2h4v4h-2a2 2 0 1 0 0 4h2v4h-4v-2a2 2 0 1 0-4 0v2H6v-4H4a2 2 0 1 1 0-4h2V6h4z"/></symbol>
     <symbol id="i-trophy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 21h8"/></symbol>
+    <symbol id="i-puzzle-f" viewBox="0 0 24 24"><path fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M10 4a2 2 0 1 1 4 0v2h4v4h-2a2 2 0 1 0 0 4h2v4h-4v-2a2 2 0 1 0-4 0v2H6v-4H4a2 2 0 1 1 0-4h2V6h4z"/></symbol>
+    <symbol id="i-trophy-f" viewBox="0 0 24 24"><g stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path fill="currentColor" d="M7 4h10v5a5 5 0 0 1-10 0zM10 20.5l1-6.5h2l1 6.5z"/><path fill="none" d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M8 21h8"/></g></symbol>
     <symbol id="i-chat" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 5h16v11H9l-5 4z"/></symbol>
     <symbol id="i-game" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a4 4 0 0 1 4 4v1.5a3.5 3.5 0 0 1-6.3 2.1L13.5 14h-3l-1.2 1.6A3.5 3.5 0 0 1 3 13.5V12a4 4 0 0 1 4-4z"/><path d="M8 11v3M6.5 12.5h3"/><circle cx="16" cy="11.5" r=".6" fill="currentColor"/><circle cx="17.5" cy="13" r=".6" fill="currentColor"/></g></symbol>
   </svg>`);
@@ -657,7 +691,7 @@ async function main() {
   if (!S.cfg) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:20px">설정 파일을 불러오지 못했어요. 로컬에서는 <code>npm run dev</code>로 열어 주세요.</p>'); return; }
   if (PAGE === 'home') {
     renderHero(); renderLive();
-    renderVideoTabs(); renderVideos();
+    renderVideoTabs(); renderVideos(); renderPosts();
     renderWeek(); initNav();
     setInterval(tickBoard, 1000);
     refreshLive(); setInterval(refreshLive, 60e3);

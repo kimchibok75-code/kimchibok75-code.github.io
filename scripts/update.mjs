@@ -40,6 +40,45 @@ async function channelMeta(ch) {
   } catch { return {}; }
 }
 
+// 유튜브 커뮤니티(게시물) 탭 — 공식 API가 없어서 채널 페이지 안의 데이터(ytInitialData)를 읽음
+// 날짜는 "3주 전"처럼만 와서, 처음 본 때 대략 시각으로 바꾸고 그 뒤로는 처음 값을 그대로 씀
+const AGO = { 초: 1e3, 분: 6e4, 시간: 36e5, 일: 864e5, 주: 6048e5, 개월: 2592e6, 년: 31536e6 };
+function agoToTime(text) {
+  const m = String(text || '').match(/(\d+)\s*(초|분|시간|일|주|개월|년)/);
+  return m ? Date.now() - Number(m[1]) * AGO[m[2]] : Date.now();
+}
+async function channelPosts(ch, oldPosts = []) {
+  const html = await get(`https://www.youtube.com/channel/${ch.channelId}/posts`, { headers: { 'accept-language': 'ko-KR,ko;q=0.9' } });
+  const m = html.match(/var ytInitialData = (\{.*?\});<\/script>/s);
+  if (!m) throw new Error('ytInitialData 없음');
+  const raw = [];
+  JSON.stringify(JSON.parse(m[1]), (k, v) => { if (k === 'backstagePostRenderer') raw.push(v); return v; });
+  const text = r => (r?.runs || []).map(x => x.text).join('') || r?.simpleText || '';
+  const big = t => { const l = t?.thumbnails || []; return (l.find(x => x.width >= 600) || l[l.length - 1])?.url || null; };
+  const seen = new Set();
+  return raw.filter(p => p.postId && !seen.has(p.postId) && seen.add(p.postId)).slice(0, 12).map(p => {
+    const a = p.backstageAttachment || {};
+    const images = [
+      ...(a.postMultiImageRenderer?.images || []).map(i => big(i.backstageImageRenderer?.image)),
+      big(a.backstageImageRenderer?.image),
+    ].filter(Boolean).map(u => (u.startsWith('//') ? 'https:' + u : u));
+    const vid = a.videoRenderer?.videoId || null;
+    const poll = a.pollRenderer ? (a.pollRenderer.choices || []).map(c => text(c.text)).filter(Boolean) : null;
+    const old = oldPosts.find(o => o.id === p.postId);
+    return {
+      id: p.postId,
+      text: text(p.contentText).trim(),
+      images: images.slice(0, 4),
+      video: vid ? { id: vid, title: text(a.videoRenderer.title) } : null,
+      poll,
+      likes: Number(String(p.voteCount?.simpleText || '0').replace(/[^\d.]/g, '')) * (/만/.test(p.voteCount?.simpleText) ? 1e4 : /천/.test(p.voteCount?.simpleText) ? 1e3 : 1) || 0,
+      time: old?.time || agoToTime(text(p.publishedTimeText)),
+      members: !!p.sponsorsOnlyBadge,
+      url: `https://www.youtube.com/post/${p.postId}`,
+    };
+  });
+}
+
 async function updateYoutube() {
   const prev = readJson('youtube.json', { channels: [] });
   const channels = [];
@@ -50,6 +89,11 @@ async function updateYoutube() {
     const [videos, shorts, popular, lives] = await Promise.all([safe('UULF'), safe('UUSH'), safe('UULP'), safe('UULV')]);
     const old = prev.channels.find(c => c.key === ch.key) || {};
     const meta = await channelMeta(ch);
+    let posts = old.posts || [];
+    try {
+      const got = await channelPosts(ch, posts);
+      if (got.length) posts = got;
+    } catch (e) { console.warn(`[youtube] ${ch.name} 커뮤니티 글 실패: ${e.message}`); }
     // 유튜브 목록이 가끔 몇 시간씩 비어서(또는 404로) 옴 → 빈 목록이면 기존 영상 유지
     const keep = (list, prevList) => (list?.length ? list : prevList?.length ? prevList : list || []);
     if (old.videos?.length && !videos?.length) console.warn(`[youtube] ${ch.name} 영상 목록이 비어서 와서 기존 목록 유지`);
@@ -59,6 +103,7 @@ async function updateYoutube() {
       videos: keep(videos, old.videos), shorts: keep(shorts, old.shorts),
       popular: [...keep(popular, old.popular)].sort((a, b) => b.views - a.views),
       lives: keep(lives, old.lives),
+      posts,
     };
     channels.push(c);
     for (const v of [...c.videos, ...c.shorts]) {
@@ -67,7 +112,7 @@ async function updateYoutube() {
         if (!firstRun && Date.now() - new Date(v.published) < NEW_VIDEO_WINDOW) fresh.push({ ...v, channel: c.name });
       }
     }
-    console.log(`[youtube] ${c.name}: 영상 ${c.videos.length} / 쇼츠 ${c.shorts.length} / 인기 ${c.popular.length} / 라이브 ${c.lives.length} / ${c.subs || '-'}`);
+    console.log(`[youtube] ${c.name}: 영상 ${c.videos.length} / 쇼츠 ${c.shorts.length} / 인기 ${c.popular.length} / 라이브 ${c.lives.length} / 글 ${c.posts.length} / ${c.subs || '-'}`);
   }
   state.seenVideos = state.seenVideos.slice(-600);
   writeJson('youtube.json', { updatedAt: Date.now(), channels });
