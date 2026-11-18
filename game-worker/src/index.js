@@ -816,7 +816,9 @@ async function fishOnce(c, b, at, env, user) {
   const w = Array.isArray(b.w) && b.w.length === 2 && b.w.every(Number.isInteger) ? b.w : null, sea = !!w && tileAt(w[0], w[1]) === WATER && seaAt(w[0], w[1]);
   // 물고기 그림자 근처에 던지면 좋은 물고기 (미끼 +3단계로 두 번 굴려 비싼 것, 낚을 확률 +12%p)
   const gone = Array.isArray(c.life.fsh) ? c.life.fsh : (c.life.fsh = []), p = Array.isArray(b.p) && b.p.length === 2 && b.p.every(Number.isFinite) ? b.p : null;
-  const sh = p && (shadowAt(at, p[0], p[1], gone) || shadowAt(at - 3000, p[0], p[1], gone));
+  // 그림자 판정 (2026-11-18 후하게): 찌 자리 또는 누른 자리(찌에서 5칸 안) · 지금/3초 전/6초 전 그림자 위치
+  const q = Array.isArray(b?.q) && p && Number.isFinite(+b.q[0]) && Number.isFinite(+b.q[1]) && Math.hypot(b.q[0] - p[0], b.q[1] - p[1]) < 5 * T ? [+b.q[0], +b.q[1]] : null;
+  let sh = null; if (p) for (const dt of [0, 3000, 6000]) { sh = shadowAt(at - dt, p[0], p[1], gone) || (q && shadowAt(at - dt, q[0], q[1], gone)); if (sh) break; }
   const D = derive(c), F = c.life.fish, wait = fishWait();
   let fish = rollFish(D.luk, F.rod, F.bait, sea);
   if (sh) { const f2 = rollFish(D.luk, F.rod, F.bait + FSHADOW.bait, sea), f3 = rollFish(D.luk, F.rod, F.bait + FSHADOW.bait, sea); fish = f2.price >= f3.price ? f2 : f3; }

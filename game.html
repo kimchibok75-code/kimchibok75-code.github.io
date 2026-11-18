@@ -1599,7 +1599,7 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 // ───── 사용자가 그린 그림 (텍스쳐 템플릿/내 디자인 → scripts/img-export/town-art.py → assets/img/town) ─────
 // 다 불러온 뒤에 마을을 시작함 (artReady). 못 불러온 그림은 예전 코드 그림을 그대로 씀
 const ART = {};
-const ART_N = ['b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg',
+const ART_N = ['b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water',
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
   ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
   ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'sword', 'bow', 'staff'].map(n => 'og-' + n), 'ogre-bg'];
@@ -2171,11 +2171,74 @@ function drawNode(n, now) {
 // 분수 · 벤치 · 전광판 · 포탈 (위에서 본 모습, 테두리 없음)
 const SP_FOUNT = () => sprite('fount3', 90, 80, 45, 50, g => flatInk(g, [{ path: E(0, 9, 38, 24), c: '#a99f8c' }, { path: E(0, 4, 38, 24), c: '#d8d0bf' }, { path: E(0, 4, 31, 18), c: '#5fb3d6' }, { path: E(0, 6, 31, 15), c: '#7cc6e6' }, { path: E(-12, 0, 10, 3.5), c: 'rgba(255,255,255,.45)' },
   { path: R(-6, -18, 12, 22, 2), c: '#bfb5a2' }, { path: R(-6, -18, 6, 22, 0), c: '#d0c7b5' }, { path: E(0, -18, 16, 10), c: '#a99f8c' }, { path: E(0, -21, 16, 10), c: '#d8d0bf' }, { path: E(0, -21, 12, 7), c: '#8fd3ef' }, { path: E(0, -25, 4.5, 4), c: '#d8d0bf' }]));
-function drawFountain(s, now) { hoverWrap(s, (s.x + 1) * T, (s.y + 1) * T + 4, () => drawFountain0(s, now)); }
+function drawFountain(s, now) {
+  const x = (s.x + 1) * T, y = (s.y + 1) * T + 4; hoverWrap(s, x, y, () => drawFountain0(s, now));
+  if (me.life && (me.life.wishAt || 0) + WISH.cd < Date.now()) wishBubble(x, y - 76 + Math.sin(now / 260) * 2.5);   // 빌 수 있으면 머리 위 말풍선 ❗🪙
+}
+// 소원 분수 (2026-11-18 사용자 그림 건물_분수.png → fountain.webp + 물 칸 fountain-water.webp, town-art.py 10번)
+// 그림 둘레 검은 테두리(inkImage) + 물 안에만 퍼지는 물결·반짝임(물 칸 모양으로 오림) + 가운데 물기둥·물줄기·물방울·튀는 물
+const FOUNT_W = 108, FOUNT_WATER = [.1058, .1378, .8922, .7857], FOUNT_SPOUT = [.5015, .307];
+let FWC = null; const FDROP = [];
 function drawFountain0(s, now) {
+  const x = (s.x + 1) * T, y = (s.y + 1) * T + 4, im = ART.fountain;
+  if (!im) return drawFountainOld(s, now);
+  const FW = FOUNT_W, FH = FW * im.height / im.width, L = x - FW / 2, Tp = y - FH * .5, t = now / 1000;
+  const fs = sprite('fount-img', FW + BP * 2, FH + BP * 2, FW / 2 + BP, FH * .5 + BP, g => inkImage(g, im, -FW / 2, -FH * .5, FW, FH));
+  glowSp(s, fs, x, y, 1, now); blit(fs, x, y);
+  const [wx0, wy0, wx1, wy1] = FOUNT_WATER, cx = L + (wx0 + wx1) / 2 * FW, cy = Tp + (wy0 + wy1) / 2 * FH, rx = (wx1 - wx0) / 2 * FW, ry = (wy1 - wy0) / 2 * FH;
+  const sx = L + FOUNT_SPOUT[0] * FW, sy = Tp + FOUNT_SPOUT[1] * FH, top = sy - 24 - Math.sin(t * 5) * 1.5;
+  const NS = 6, land = i => { const a = i / NS * Math.PI * 2 + .3; return [cx + Math.cos(a) * rx * .5, cy + Math.sin(a) * ry * .5 + 2, a]; };
+  // 1) 물 위: 물결 고리 · 물줄기가 떨어지는 곳의 작은 고리 · 반짝임 (물 칸 밖으로는 안 나감)
+  const wim = ART['fountain-water'];
+  if (wim) {
+    const k = 2; if (!FWC) { FWC = document.createElement('canvas'); FWC.width = Math.ceil(FW * k); FWC.height = Math.ceil(FH * k); }
+    const g = FWC.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, FWC.width, FWC.height); g.setTransform(k, 0, 0, k, -L * k, -Tp * k);
+    g.strokeStyle = '#fff';
+    for (let i = 0; i < 3; i++) { const p = (t * .32 + i / 3) % 1; g.globalAlpha = (1 - p) * .55; g.lineWidth = 1.7; g.beginPath(); g.ellipse(cx, cy + 3, rx * (.32 + p * .72), ry * (.32 + p * .72), 0, 0, 7); g.stroke(); }
+    for (let i = 0; i < NS; i++) { const [lx, ly] = land(i), p = (t * 1.6 + i * .37) % 1; g.globalAlpha = (1 - p) * .7; g.lineWidth = 1.2; g.beginPath(); g.ellipse(lx, ly, 2 + p * 7, 1.2 + p * 4, 0, 0, 7); g.stroke(); }
+    g.lineCap = 'round'; g.lineWidth = 2;
+    for (let i = 0; i < 5; i++) { const a = t * (.25 + i * .04) + i * 1.3, r = .62 + (i % 3) * .1, w = .35 + .15 * Math.sin(t * 1.3 + i); g.globalAlpha = .28 + .18 * Math.sin(t * 2 + i * 2); g.beginPath(); g.ellipse(cx, cy, rx * r, ry * r, 0, a, a + w); g.stroke(); }
+    for (let i = 0; i < 7; i++) { const a = i * 2.39 + t * .15, r = .4 + ((i * .37) % .5), tw = Math.sin(t * 4 + i * 1.7); if (tw < .55) continue; g.globalAlpha = (tw - .55) * 2; g.fillStyle = '#fff'; starPath(g, cx + Math.cos(a) * rx * r, cy + Math.sin(a) * ry * r, 2.2); g.fill(); }
+    g.globalAlpha = 1; g.globalCompositeOperation = 'destination-in'; g.drawImage(wim, L, Tp, FW, FH);
+    ctx.drawImage(FWC, L, Tp, FW, FH);
+  }
+  // 2) 물줄기: 뒤쪽 줄기 → 가운데 물기둥 → 앞쪽 줄기 (앞뒤가 겹쳐 보이게)
+  const stream = i => {
+    const [lx, ly, a] = land(i), mx = sx + Math.cos(a) * rx * .32, my = top - 9;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(190,232,255,.55)'; ctx.lineWidth = 3.2; ctx.beginPath(); ctx.moveTo(sx, top); ctx.quadraticCurveTo(mx, my, lx, ly); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 1.6; ctx.setLineDash([5, 6]); ctx.lineDashOffset = -t * 46 - i * 3; ctx.beginPath(); ctx.moveTo(sx, top); ctx.quadraticCurveTo(mx, my, lx, ly); ctx.stroke(); ctx.setLineDash([]);
+  };
+  ctx.save();
+  for (let i = 0; i < NS; i++) if (Math.sin(land(i)[2]) < 0) stream(i);
+  const gr = ctx.createLinearGradient(0, top, 0, sy); gr.addColorStop(0, 'rgba(255,255,255,.95)'); gr.addColorStop(1, 'rgba(160,220,250,.75)');
+  ctx.fillStyle = gr; ctx.beginPath(); const wb = Math.sin(t * 9) * .6;
+  ctx.moveTo(sx - 4, sy); ctx.quadraticCurveTo(sx - 2.6 + wb, (sy + top) / 2, sx - 1.4, top + 1); ctx.quadraticCurveTo(sx, top - 3, sx + 1.4, top + 1); ctx.quadraticCurveTo(sx + 2.6 - wb, (sy + top) / 2, sx + 4, sy); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 1; ctx.setLineDash([3, 5]); ctx.lineDashOffset = t * 40; ctx.beginPath(); ctx.moveTo(sx - .8, sy - 1); ctx.lineTo(sx - .8, top + 2); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.beginPath(); ctx.ellipse(sx, top, 3.4 + Math.sin(t * 11) * .6, 2.4, 0, 0, 7); ctx.fill();   // 물기둥 꼭대기 물보라
+  ctx.fillStyle = 'rgba(210,240,255,.7)'; ctx.beginPath(); ctx.ellipse(sx, sy + 1, 6, 2.6, 0, 0, 7); ctx.fill();   // 물이 솟는 곳
+  for (let i = 0; i < NS; i++) if (Math.sin(land(i)[2]) >= 0) stream(i);
+  // 3) 물방울: 꼭대기에서 튀어 올랐다 떨어짐 (화면이 보일 때만 조금씩)
+  if (FDROP.length < 14 && Math.random() < .5) { const a = Math.random() * 7; FDROP.push({ x: sx, y: top, vx: Math.cos(a) * (8 + Math.random() * 16), vy: -18 - Math.random() * 22, z: 0, t0: t, gy: cy + Math.sin(a) * ry * .45 }); }
+  ctx.fillStyle = 'rgba(235,248,255,.95)';
+  for (let i = FDROP.length - 1; i >= 0; i--) { const d = FDROP[i], e = t - d.t0, px = d.x + d.vx * e, py = d.y + d.vy * e + 60 * e * e; if (py > d.gy + 4 || e > 2 || e < 0) { FDROP.splice(i, 1); continue; } ctx.beginPath(); ctx.arc(px, py, 1.2, 0, 7); ctx.fill(); }
+  ctx.restore();
+}
+function drawFountainOld(s, now) {
   const x = (s.x + 1) * T, y = (s.y + 1) * T + 4, tt = now / 300, fs = SP_FOUNT(); glowSp(s, fs, x, y, 1, now); blit(fs, x, y);
   ctx.fillStyle = 'rgba(255,255,255,.85)'; for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2 + tt * .4, p = (tt * .5 + k / 6) % 1; ctx.beginPath(); ctx.arc(x + Math.cos(a) * (4 + p * 14), y - 36 + p * p * 34, 2, 0, 7); ctx.fill(); }
-  if (me.life && (me.life.wishAt || 0) + WISH.cd < Date.now() && Math.sin(now / 300) > .6) { ctx.fillStyle = '#ffe28a'; starPath(ctx, x + 22, y - 40, 4); ctx.fill(); }
+}
+// 소원 분수 말풍선 (주민 ❗ 말풍선과 같은 모양): 노란 느낌표 + 동전
+function wishBubble(x, y) {
+  const w = 44, h = 26;
+  ctx.save(); ctx.fillStyle = '#fff'; ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 2;
+  rr(ctx, x - w / 2, y - h / 2, w, h, 9); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x - 5, y + h / 2 - .5); ctx.lineTo(x, y + h / 2 + 6); ctx.lineTo(x + 5, y + h / 2 - .5); ctx.fill(); ctx.stroke();
+  ctx.fillRect(x - 4, y + h / 2 - 2.5, 8, 3);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '900 19px "IBM Plex Sans KR", sans-serif'; ctx.lineWidth = 3.5; ctx.lineJoin = 'round'; ctx.strokeStyle = '#7a4a00'; ctx.strokeText('!', x - 9, y + 1); ctx.fillStyle = '#ffc21a'; ctx.fillText('!', x - 9, y + 1);
+  ctx.font = '17px sans-serif'; fillTextIco(ctx, '🪙', x + 7, y + 1);
+  ctx.restore();
 }
 const SP_BENCH = () => sprite('bench3', 64, 36, 32, 30, g => flatInk(g, [{ path: R(-24, -3, 4, 5, 1), c: '#4a2f1a' }, { path: R(20, -3, 4, 5, 1), c: '#4a2f1a' }, { path: R(-26, -27, 52, 6, 2), c: '#a86f3f' }, { path: R(-26, -21, 52, 3, 0), c: '#7a4f2c' }, { path: R(-26, -16, 52, 13, 2), c: '#c08550' }, { path: R(-26, -11.5, 52, 1.4, 0), c: 'rgba(90,50,20,.3)' }, { path: R(-26, -7, 52, 1.4, 0), c: 'rgba(90,50,20,.3)' }, { path: R(-26, -3, 52, 4, [0, 0, 2, 2]), c: '#8a5a33' }, { path: R(-26, -16, 52, 2, 0), c: 'rgba(255,255,255,.25)' }]));
 function drawBench(b) { blit(SP_BENCH(), b.x * T + T / 2, b.y * T + 28); }
@@ -3826,7 +3889,7 @@ const nodeAtW = w => NODES.find(n => !n.off && Math.abs(w.x - (n.x + .5) * T) < 
 const houseAtW = w => HOUSES.find(h => w.x > h.x * T - 4 && w.x < (h.x + HOUSE_W) * T + 4 && w.y > (h.y - .5) * T && w.y < (h.y + HOUSE_H) * T);
 const bldAtW = w => BUILDINGS.find(b => w.x > b.x * T && w.x < (b.x + b.w) * T && w.y > (b.y - 1) * T && w.y < (b.y + b.h) * T);
 const onPortal = w => Math.abs(w.x - PORTAL.x) < (ART.portal ? PORTAL_W * .45 : 24) && w.y > (ART.portal ? portalBox().y + 6 : PORTAL.y - 74) && w.y < PORTAL.y + 6;
-const onFountain = w => { const fo = SPOTS.find(s => s.id === 'fountain'); return Math.hypot((w.x - (fo.x + 1) * T) / 38, (w.y - (fo.y + .8) * T) / 36) < 1 ? fo : null; };
+const onFountain = w => { const fo = SPOTS.find(s => s.id === 'fountain'); return Math.hypot((w.x - (fo.x + 1) * T) / 50, (w.y - (fo.y + 1) * T - 4) / 42) < 1 ? fo : null; };
 // 마우스가 가리키는 것 (누르기와 같은 순서): 포탈 · 분수 · 나무/바위 · 집 · 건물
 const hoverAt = w => (onPortal(w) ? PORTAL : onFountain(w) || nodeAtW(w) || houseAtW(w) || bldAtW(w) || null);
 cv.addEventListener('pointermove', e => {
@@ -5967,7 +6030,7 @@ async function handFish(px, py) {
   F.busy = true; if (me.sit >= 0) standUp(me); me.path = []; me.moving = false;
   const [bx, by] = bobberAt(px, py), r = me.life.fish.rod || 0;
   rodOut(me, bx, by, r); const mine = me.fz; netSend({ t: 'fish', s: 1, bx: Math.round(bx), by: Math.round(by), r }); sfx('cast');
-  let j; try { j = await api('/api/fish/hand', { w: [Math.floor(bx / T), Math.floor(by / T)], p: [Math.round(bx), Math.round(by)] }); took(j); }
+  let j; try { j = await api('/api/fish/hand', { w: [Math.floor(bx / T), Math.floor(by / T)], p: [Math.round(bx), Math.round(by)], q: [Math.round(px), Math.round(py)] }); took(j); }
   catch (x) { F.busy = false; if (me.fz === mine) { me.fz = null; netSend({ t: 'fish', s: 0 }); } toast(x.message); return; }
   F.nextAt = Date.now() + j.cooldown;
   await sleep(j.wait);

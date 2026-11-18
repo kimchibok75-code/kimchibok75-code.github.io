@@ -262,5 +262,17 @@ for src, n, ox, oy, k in [('char/hat_guide_오우거', 'hat', 192, 336, 4), ('ch
     OS[n] = [round((best[0] - ox) / k, 3), round((best[1] - oy) / k, 3), round(W0 / k, 3), round(H0 / k, 3)]
 META['og'] = OS
 
+# 10) 소원 분수 (2026-11-18 새 그림, 흰 배경): 그림 + 물 칸만 뗀 그림(물결·반짝임을 물 안에만 그리려고) + 위치(비율)
+r = cut_bg(load('건물_분수')); b = bbox(r[:, :, 3]); t = r[b[1]:b[3], b[0]:b[2]]
+save('fountain', t, width=420)
+c = t[:, :, :3].astype(int); wm = (t[:, :, 3] > 200) & (c[:, :, 2] > c[:, :, 0] + 60) & (c[:, :, 2] > 150)
+wm = np.asarray(Image.fromarray(wm.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.MinFilter(7))) > 0
+w = t.copy(); w[:, :, 3] = np.where(wm, 255, 0); w[~wm] = 0
+save('fountain-water', w, width=420)
+H, W = t.shape[:2]; ys, xs = np.where(wm)
+META['fountainAt'] = {'water': [round(xs.min() / W, 4), round(ys.min() / H, 4), round((xs.max() + 1) / W, 4), round((ys.max() + 1) / H, 4)],
+  'spout': [round((765 - b[0]) / W, 4), round((375 - b[1]) / H, 4)], 'spoutR': [round(113 / W, 4), round(76 / H, 4)]}
+print('fountain', META['fountainAt'], t.shape)
+
 json.dump(META, open(os.path.join(OUT, 'meta.json'), 'w'), ensure_ascii=False, indent=1)
 print(json.dumps(META, ensure_ascii=False))

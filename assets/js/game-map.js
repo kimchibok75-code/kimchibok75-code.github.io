@@ -295,7 +295,7 @@ export const walkablePx = (px, py) => !isSolid(Math.floor(px / T), Math.floor(py
 // ───────── 물고기 그림자 (2026-11-18): 좋은 물고기가 나오는 명당. 시간으로 정해져서 화면·서버가 같은 자리를 계산 ─────────
 // slot마다 n마리가 새로 나타나 life 동안 헤엄침. 찌가 그림자에서 range칸 안에 떨어지면 좋은 물고기(미끼 +bait단계, 두 번 굴려 비싼 것)
 // 한 번 낚으면 그 사람에게는 사라짐 (life.fsh에 번호 저장), 같은 채널 사람들 화면에서도 지움
-export const FSHADOW = { slot: 45e3, n: 2, life: 150e3, range: 1.7, bait: 3, hit: .12, swim: .7 };
+export const FSHADOW = { slot: 45e3, n: 2, life: 150e3, range: 2.8,   /* 2026-11-18 판정 넓힘 1.7 → 2.8칸 */ bait: 3, hit: .12, swim: .7 };
 let SH_SPOTS = null;
 function shSpots() {   // 사방이 물이고, 3칸 안에 걸어갈 수 있는 땅이 있는 칸 (물가에서 던져 닿는 곳)
   if (SH_SPOTS) return SH_SPOTS; SH_SPOTS = [];

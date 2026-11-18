@@ -538,6 +538,9 @@
   - **사냥터 포탈** `건물_사냥터 포탈.png` → `portal.webp` + 파란 소용돌이 칸만 뗀 `portal-hole.webp` (town-art.py 8번, 칸 위치 `PORTAL_HOLE`). game.html `drawPortal` → `portalSwirl`: 가운데 원판을 돌리고(가장자리는 흐리게 섞음) 나선 빛 줄기 3개 · 빨려 드는 빛 알갱이 · 맥박 빛을 얹은 뒤 소용돌이 모양대로 자름. 문 밖으로 새는 빛 + 떠오르는 알갱이. 크기 `PORTAL_W` 92px, 누르는 범위 `portalBox()`
   - 그림 바깥 라인 정리 도구: `python scripts/img-export/clean-edge.py "원본.png" "저장.png"` (떨어진 점·회색 번짐 지우기, 가장자리 다듬기. 원본은 그대로)
 - 소원 분수 쿨타임 10분 → **5분** (`WISH.cd`, 2026-11-18)
+- **분수 새 그림** (2026-11-18): `내 디자인/건물_분수.png` → town-art.py 10번 → `fountain.webp` + 물 칸만 뗀 `fountain-water.webp`. game.html `drawFountain0`: 검은 테두리(inkImage) + 물 안에만 물결·반짝임(`FWC`에 그린 뒤 물 칸 모양으로 오림) + 물기둥·물줄기 6개·물방울(`FDROP`). 크기 `FOUNT_W`, 옛 코드 그림은 `drawFountainOld`
+- 분수를 빌 수 있으면 머리 위 말풍선 ❗🪙 (`wishBubble`)
+- 물고기 그림자 판정 후하게: 거리 1.7 → 2.8칸(`FSHADOW.range`), 찌 자리 + 누른 자리(`q`, 찌에서 5칸 안), 지금·3초 전·6초 전 위치 모두 확인
 - **소원 분수 창** (2026-11-18): 건물 창 틀(`bsOpen`, id `fountain`, 색 `BC.fountain`)로 바꿈. 결과 → 분수 상태(남은 시간 막대·지금까지 빈 횟수) → 지금 버프 → 나올 확률 막대(`WISH_TABLE`에서 계산) → 도움말 → 아래 고정 버튼. 쿨타임·버프가 있으면 1초마다 다시 그림
 - **나무·바위 고르기 표시** (2026-11-18): 마우스를 올리면 살짝 커지고(`n.hv`, 최대 +9%) 옅은 하늘색 빛, 누르면(그리고 캐는 동안) 둘레에 하늘색 테두리 (`S.hover`, `S.pick`, `nodePicked`, `blitGlow`). 찾기는 `nodeAtW` 하나로 누르기·마우스 같이
   - 건물·집·포탈·분수도 같음 (`hoverAt`, `hoverWrap`, `glowSp`, `picked`): 누른 것은 1.5초 + 그 창이 열려 있는 동안 테두리. 커지는 비율 `HV_UP` (나무·바위 4.5%, 큰 것 2%)
