@@ -2481,7 +2481,7 @@ function update(dt, now) {
   steerTick(dt); if (!STEER.on) stepChar(me, dt); roamTick(dt); gatherTick(dt); townAtkTick(dt);
   if (me.room && me.y > (ROOM_H - .55) * T && Math.abs(me.x - (ROOM_DOOR.x + .5) * T) < T * .8) leaveRoom();   // 문으로 걸어 나가기
   const D = derive(); if (me.hp < D.maxHp) me.hp = Math.min(D.maxHp, me.hp + D.maxHp * .02 * dt);
-  for (const p of people) stepChar(p, dt);
+  for (const p of people) if (p.net) netStep(p, dt); else stepChar(p, dt);
   rodTick(now);
   for (const f of TF) f.t += dt; while (TF.length && TF[0].t > 1.4) TF.shift();
   if (me.room) { follow(dt, ROOM_W * T, ROOM_H * T); setPlace(`${S.roomNick || ''}님의 집`); return; }
@@ -3960,8 +3960,9 @@ function steerTick(dt) {
   if (d) auHold();
   if (d && BUSY()) { STEER.key.clear(); STEER.drag = null; busyToast(); return; }
   if (d) me.fdir = d;   // 바라보는 방향 (Z 공격이 나가는 쪽)
-  if (!d) { if (STEER.on) { STEER.on = false; me.moving = false; STEER.t = 0; if (!me.jfly) { netGo(); savePos(); } } return; }
-  if (!STEER.on) { STEER.on = true; standUp(me); me.path = []; me.then = null; GA = null; closePanel?.(); STEER.t = 0; }
+  if (!d) { if (STEER.on) { STEER.on = false; me.moving = false; STEER.t = 0; STEER.sp = 0; if (!me.jfly) { netStop(); savePos(); } } return; }
+  if (!STEER.on) { STEER.on = true; standUp(me); me.path = []; me.then = null; GA = null; closePanel?.(); STEER.t = 0; STEER.gap = 0; STEER.sp = -1; }
+  const px0 = me.x, py0 = me.y;
   ROAM.pause = 15;
   const l = Math.hypot(d[0], d[1]) || 1, sp = (me.speed || 165) * dt * (me.jn ? JUMP.air : 1), vx = d[0] / l * sp, vy = d[1] / l * sp, Sc = sceneOf(me);
   const ok = (x, y) => me.jfly ? inScene(Sc, x, y) : freeAt(Sc, x, y);
@@ -3969,18 +3970,28 @@ function steerTick(dt) {
   if (vx && ok(me.x + vx, me.y)) { me.x += vx; moved = true; }
   if (vy && ok(me.x, me.y + vy)) { me.y += vy; moved = true; }
   me.moving = moved; if (Math.abs(d[0]) > .15) me.dir = d[0] < 0 ? -1 : 1;
-  if ((STEER.t -= dt) <= 0) {
-    STEER.t = me.jfly ? .25 : .5; const ah = (me.speed || 165) * (me.jfly ? .3 : .55), tx = me.x + d[0] / l * ah, ty = me.y + d[1] / l * ah, go = moved && (me.jfly ? inScene(Sc, tx, ty) : freeAt(Sc, tx, ty) && clear(Sc, me.x, me.y, tx, ty));
-    netSend({ t: 'go', x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(go ? tx : me.x), ty: Math.round(go ? ty : me.y) });
-  }
+  netSteer((me.x - px0) / dt, (me.y - py0) / dt, dt, Sc);
 }
+// 실시간에 가깝게 (2026-11-18): 움직이는 방향·속도가 바뀌면 바로(0.16초 간격까지), 아니면 0.4초마다 지금 자리 + 속도(v)를 보냄
+// 다른 화면은 그 속도로 미리 움직이면서 부드럽게 맞춤 (netStep). st: 1 = 이 방식
+function netSteer(vx, vy, dt, Sc) {
+  const N = STEER; N.t -= dt; N.gap -= dt;
+  const sp = Math.hypot(vx, vy), a = Math.atan2(vy, vx), da = Math.abs(Math.atan2(Math.sin(a - (N.a || 0)), Math.cos(a - (N.a || 0))));
+  const changed = (sp > 5) !== (N.sp > 5) || (sp > 5 && (Math.abs(sp - N.sp) > N.sp * .15 || da > .2));
+  if (N.gap > 0 || (!changed && N.t > 0)) return;
+  N.t = .4; N.gap = .16; N.sp = sp; N.a = a;
+  const k = sp > 5 ? 1 : 0, cl = (v, m) => Math.max(0, Math.min(m, v));
+  netSend({ t: 'go', st: 1, v: Math.round(sp), x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(cl(me.x + vx * k, Sc.w * T)), ty: Math.round(cl(me.y + vy * k, Sc.h * T)) });
+}
+function netStop() { netSend({ t: 'go', st: 1, v: 0, x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(me.x), ty: Math.round(me.y) }); }
 addEventListener('keydown', e => {
-  const act = e.code === 'KeyC' || e.code === 'KeyZ';
+  const act = e.code === 'KeyC' || e.code === 'KeyZ' || e.code === 'Space';
   if (!KEYDIR[e.code] && !act || e.ctrlKey || e.altKey || e.metaKey || $('#app').hidden || !modal.hidden) return;
   const el = document.activeElement; if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return;
   e.preventDefault();
   if (e.code === 'KeyC') { if (!e.repeat) myJump(); return; }
   if (e.code === 'KeyZ') { if (!e.repeat || HT) myAttack(); return; }   // 사냥터에서는 꾹 누르고 있으면 계속 공격
+  if (e.code === 'Space') { if (!e.repeat) spaceAct(); return; }   // 가까이 있는 것 누르기
   STEER.key.add(e.code);
 });
 // ───────── 점프 (C) · 더블 점프 (공중에서 C 한 번 더) — 2026-11-18 ─────────
@@ -4016,8 +4027,37 @@ function jumpTick(ch, dt) {
       if (best) [me.x, me.y] = best; else { me.x = START.x; me.y = START.y; }
       me.path = [];
     }
-    netSend({ t: 'go', x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(me.x), ty: Math.round(me.y) }); savePos();
+    if (STEER.on) { STEER.t = 0; STEER.gap = 0; STEER.sp = -1; } else netStop(); savePos();
   }
+}
+// ───────── 스페이스바 = 가까이 있는 것 누르기 (PC, 2026-11-18) ─────────
+// 주민 · 건물 · 집 · 나무 · 바위 · 물가 · 분수 · 포탈 · 벤치 · 텃밭 · 표지판 · 전광판 중 가장 가까운 것을 누른 것처럼 (tap에 월드 좌표를 넘김)
+const SPACE_R = 1.7 * T;   // 이만큼 안에 있어야 함 (건물·집은 테두리까지 거리)
+function spaceAct() {
+  if (HT || RD || S.away) return;
+  const d = (x, y) => Math.hypot(x - me.x, y - me.y), rect = (x, y, w, h) => Math.hypot(Math.max(x - me.x, 0, me.x - (x + w)), Math.max(y - me.y, 0, me.y - (y + h)));
+  const C = [];   // [거리, 누를 자리, 우선(주민 먼저)]
+  if (me.room) {
+    const dx = (ROOM_DOOR.x + .5) * T, dy = ROOM_H * T - 10; if (d(dx, dy) < 2 * T) C.push([0, { x: dx, y: dy }]);
+  } else {
+    for (const p of NPC.list) C.push([d(p.x, p.y) - 12, { x: p.x, y: p.y - 30 }]);
+    for (const b of BUILDINGS) C.push([rect(b.x * T, b.y * T, b.w * T, b.h * T), { x: (b.x + b.w / 2) * T, y: (b.y + b.h - .5) * T }]);
+    for (const h of HOUSES) C.push([rect(h.x * T, h.y * T, HOUSE_W * T, HOUSE_H * T), { x: (h.x + HOUSE_W / 2) * T, y: (h.y + HOUSE_H - .5) * T }]);
+    for (const n of NODES) if (!n.off) C.push([d((n.x + .5) * T, (n.y + .5) * T) - 8, { x: (n.x + .5) * T, y: n.y * T + 20 }]);
+    const fo = SPOTS.find(s => s.id === 'fountain'); C.push([d((fo.x + 1) * T, (fo.y + 1) * T) - 40, { x: (fo.x + 1) * T, y: (fo.y + 1) * T }]);
+    const sc = SPOTS.find(s => s.id === 'screen'); if (sc) C.push([rect(sc.x * T, sc.y * T, sc.w * T, sc.h * T), { x: (sc.x + sc.w / 2) * T, y: (sc.y + sc.h) * T - 6 }]);
+    C.push([d(PORTAL.x, PORTAL.y) - 20, { x: PORTAL.x, y: PORTAL.y - 10 }]);
+    C.push([d(FSIGN.x, FSIGN.y), { x: FSIGN.x, y: FSIGN.y - 24 }]);
+    BENCHES.forEach(b => C.push([d(b.x * T + T / 2, b.y * T + T / 2), { x: b.x * T + T / 2, y: b.y * T + T / 2 }]));
+    if (me.life?.farm) for (const P of PLOTS) C.push([d(P.x, P.y) - 12, { x: P.x, y: P.y }]);
+    // 물: 가까운 물 칸 (낚시)
+    const tx = Math.floor(me.x / T), ty = Math.floor(me.y / T); let wb = null;
+    for (let y = ty - 2; y <= ty + 2; y++) for (let x = tx - 2; x <= tx + 2; x++) if (tileAt(x, y) === WATER) { const k = d((x + .5) * T, (y + .5) * T) - T / 2; if (!wb || k < wb[0]) wb = [k, { x: (x + .5) * T, y: (y + .5) * T }]; }
+    if (wb) C.push(wb);
+  }
+  const best = C.filter(c => c[0] <= SPACE_R).sort((a, b) => a[0] - b[0])[0];
+  if (!best) return toast('가까이에 이용할 수 있는 게 없어요');
+  tap(0, 0, best[1]);
 }
 // 점프 먼지 (마을)
 const TJ = [];
@@ -4101,13 +4141,13 @@ function drawStick() {
   ctx.fillStyle = 'rgba(232,85,58,.85)'; ctx.beginPath(); ctx.arc(down.x + dx * k, down.y + dy * k, 13, 0, 7); ctx.fill();
 }
 
-function tap(sx, sy) {
+function tap(sx, sy, wIn) {
   closePanel(); ROAM.pause = 15; GA = null;   // 직접 움직이면 자유 행동은 잠깐 쉼
-  const w = toWorld(sx, sy);
+  const w = wIn || toWorld(sx, sy);
   if (RD) { if (!RD.dead) RD.goal = { x: w.x, y: w.y }; return; }   // 레이드: 누른 곳으로 피하기
   // 사냥 중: 몬스터를 누르면 그 몬스터부터 공격
   if (HT) { const m = HT.mons.filter(m => !m.dead).find(m => Math.abs(w.x - m.x) < 20 * m.d.s && w.y > m.y - 40 * m.d.s && w.y < m.y + 8); if (m) HT.target = m; return; }
-  const hitP = people.filter(shown).find(p => Math.abs(w.x - p.x) < 16 && w.y > p.y - 66 && w.y < p.y + 10), onMe = Math.abs(w.x - me.x) < 14 && w.y > me.y - 56 && w.y < me.y + 8;
+  const hitP = !wIn && people.filter(shown).find(p => Math.abs(w.x - p.x) < 16 && w.y > p.y - 66 && w.y < p.y + 10), onMe = !wIn && Math.abs(w.x - me.x) < 14 && w.y > me.y - 56 && w.y < me.y + 8;
   if (me.room) {   // 집 안
     if (hitP) return openProfile(hitP);
     if (onMe) return openPanelTab('stat');
@@ -5982,7 +6022,23 @@ function netSend(o) { if (!NET.ready || NET.ws?.readyState !== 1) return false; 
 function netClose() { NET.want = false; NET.ready = false; try { NET.ws?.close(); } catch {} NET.ws = null; people = []; }
 function netGo() { if (HT) return; const d = me.path[me.path.length - 1] || me; netSend({ t: 'go', x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(d.x), ty: Math.round(d.y) }); }
 // 다른 사람이 걷기 시작: 거리가 많이 벌어졌으면 순간 이동, 아니면 같은 길로 걸어감
+// 받은 자리에서 받은 속도로 지금쯤 있을 곳(예측)을 계산하고, 그쪽으로 부드럽게 다가감
+function netStep(p, dt) {
+  const n = p.net, dx = n.tx - n.x, dy = n.ty - n.y, L = Math.hypot(dx, dy), e = (performance.now() - n.t) / 1000;
+  const go = L > .5 && n.v > 0 ? Math.min(L, n.v * e) : L, gx = L > .5 ? n.x + dx / L * go : n.tx, gy = L > .5 ? n.y + dy / L * go : n.ty;
+  const k = 1 - Math.exp(-14 * dt), ox = p.x;
+  p.x += (gx - p.x) * k; p.y += (gy - p.y) * k;
+  const left = Math.hypot(gx - p.x, gy - p.y);
+  p.moving = (n.v > 5 && go < L) || left > 3;
+  if (p.moving) { const fx = n.v > 5 && go < L ? dx : gx - ox; if (Math.abs(fx) > 1) p.dir = fx < 0 ? -1 : 1; }
+}
 function netMove(p, m) {
+  if (m.st) {
+    p.path = []; p.then = null;
+    if (Math.hypot(p.x - m.x, p.y - m.y) > 8 * T) { p.x = m.x; p.y = m.y; }   // 너무 멀면(다시 들어옴 등) 바로
+    p.net = { x: m.x, y: m.y, tx: m.tx, ty: m.ty, v: m.v || 0, t: performance.now() }; return;
+  }
+  p.net = null;
   const tp = m.tx === m.x && m.ty === m.y;
   if (p.jfly) { if (Math.hypot(p.x - m.x, p.y - m.y) > 2 * T) { p.x = m.x; p.y = m.y; } p.path = tp ? [] : [{ x: m.tx, y: m.ty }]; return; }   // 더블 점프로 건물 위를 나는 중: 일직선으로
   if (tp || Math.hypot(p.x - m.x, p.y - m.y) > 1.5 * T) { p.x = m.x; p.y = m.y; p.path = []; }
@@ -6327,7 +6383,7 @@ const liveOn = () => S.live || !!me.world?.live;
 const GUIDE = () => [
   ['🚶', '처음 시작', [
     ['걷기', isPC() ? '바닥을 누르거나 화살표·WASD로 걸어요.' : '바닥을 누르거나, 화면을 끌면 그 방향으로 계속 걸어요.'],
-    ...(isPC() ? [['점프 · 공격', 'C = 점프, 공중에서 C 한 번 더 = 더블 점프(건물·나무도 넘어가요). 화살표를 누른 채 C면 그쪽으로 뛰어요. Z = 공격(마을에선 바라보는 쪽, 사냥터에선 가까운 몬스터에게 · 쿨타임 찬 스킬부터 순서대로).']] : []),
+    ...(isPC() ? [['점프 · 공격', 'C = 점프, 공중에서 C 한 번 더 = 더블 점프(건물·나무도 넘어가요). 화살표를 누른 채 C면 그쪽으로 뛰어요. Z = 공격(마을에선 바라보는 쪽, 사냥터에선 가까운 몬스터에게 · 쿨타임 찬 스킬부터 순서대로). 스페이스바 = 가까이 있는 건물·주민·나무·바위·물가를 누른 것처럼 이용.']] : []),
     ['건물 이용', '건물을 누르면 그 앞까지 걸어가서 바로 창이 열려요.'],
     ['🏘️ 바로가기', '오른쪽 버튼. 가고 싶은 곳을 누르면 그 자리로 바로 이동하고 시설 창도 열려요.'],
     ['채팅·이모트', '아래 채팅 칸은 같은 채널의 모두에게 보여요. 😊 버튼으로 이모트. 귓속말·친구·거래는 없어요.'],
@@ -6462,7 +6518,7 @@ function showGuide(keep) {
       <div class="bs-sec">👉 오른쪽 버튼 (눌러서 바로 열기)</div>
       <ul class="bs-list gd">${btn.map(([x, i, n, t]) => `<li><button class="gd-row" data-x="${x}"><span>${i}</span><div><b class="t">${n}</b><small class="d">${t}</small></div><small class="go">›</small></button></li>`).join('')}</ul>`;
   } else {
-    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 빈 칸에서 Enter/Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>C</kbd>', '점프 · 공중에서 한 번 더 누르면 더블 점프(건물도 넘어가요) · 화살표와 같이 누르면 그쪽으로 뛰어요'], ['<kbd>Z</kbd>', '공격 · 마을에선 바라보는 쪽으로, 사냥터에선 가까운 몬스터에게 (쿨타임 찬 스킬부터)'], ['<kbd>Esc</kbd>', '창 닫기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
+    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 빈 칸에서 Enter/Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>C</kbd>', '점프 · 공중에서 한 번 더 누르면 더블 점프(건물도 넘어가요) · 화살표와 같이 누르면 그쪽으로 뛰어요'], ['<kbd>Space</kbd>', '가까이 있는 건물 · 주민 · 나무 · 바위 · 물가 등을 누른 것처럼 이용'], ['<kbd>Z</kbd>', '공격 · 마을에선 바라보는 쪽으로, 사냥터에선 가까운 몬스터에게 (쿨타임 찬 스킬부터)'], ['<kbd>Esc</kbd>', '창 닫기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
       : [['끌기', '화면을 끌면 그 방향으로 걸어요'], ['누르기', '바닥 · 건물 · 사람을 누르면 그곳으로'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅 기록 펼치기 · ⚙️로 글씨 크기'], ['⚙️', '설정: 내 정보 · 비밀번호 · 차단 목록']];
     body = `<ul class="bs-list gd">${tips.map(([k, t]) => `<li class="gd-key"><span>${k}</span><span>${t}</span></li>`).join('')}</ul>`;
   }

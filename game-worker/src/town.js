@@ -11,7 +11,7 @@ export const nearPlaza = (x, y) => Math.hypot(x - PLAZA.x, y - PLAZA.y) <= PLAZA
 
 export const MAX_CH = 3;              // 마을 채널 수 (채널마다 50명)
 const MAX = 50, NEAR = 9 * T, DAY = 864e5;
-const RATE = { cap: 12, per: 6 };     // 한 연결에서 1초에 6개(순간 12개)까지만. 넘으면 끊음 (도배·과부하 방지)
+const RATE = { cap: 20, per: 10 };     // 한 연결에서 1초에 6개(순간 12개)까지만. 넘으면 끊음 (도배·과부하 방지)
 const CHAT_DAY = 1500;                // 한 사람이 하루에 보낼 수 있는 채팅 수 (DB 쓰기 한도 지키기)
 const EMOTES = ['👋', '❤️', '😂', '🎉', '💤', '❓', '✨'];
 const now = () => Date.now();
@@ -100,7 +100,8 @@ export class Town extends DurableObject {
     if (m.t === 'go') {   // 걷기 시작 (x,y → tx,ty). 순간 이동은 tx=x
       if (![m.x, m.tx].every(v => num(v, MW * T)) || ![m.y, m.ty].every(v => num(v, MH * T))) return;
       Object.assign(a, { x: m.x, y: m.y, tx: m.tx, ty: m.ty, sit: -1 }); this.save(ws, a);
-      return this.all({ t: 'go', id: a.id, x: m.x, y: m.y, tx: m.tx, ty: m.ty }, ws);
+      const st = m.st === 1 && num(m.v, 1000) ? { st: 1, v: Math.round(m.v) } : {};   // 방향 이동: 속도도 같이 (다른 화면이 미리 움직임)
+      return this.all({ t: 'go', id: a.id, x: m.x, y: m.y, tx: m.tx, ty: m.ty, ...st }, ws);
     }
     if (m.t === 'sit') {   // 벤치에 앉기 (b = 벤치 번호 0~7, -1 = 일어남)
       const b = Number.isInteger(m.b) && m.b >= -1 && m.b < 8 ? m.b : -1;
