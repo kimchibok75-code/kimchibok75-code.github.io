@@ -2013,10 +2013,11 @@ function bSprite(b) {
   }
   return sprite('bk:' + b.id, Wd + 40, Hh + 100, 20, 90, g => inkDraw(g, BLD[b.id](Wd, Hh)));
 }
-function drawBuilding(b, now) {
+function drawBuilding(b, now) { hoverWrap(b, (b.x + b.w / 2) * T, (b.y + b.h) * T, () => drawBuilding0(b, now)); }
+function drawBuilding0(b, now) {
   const X = b.x * T, Y = b.y * T, Wd = b.w * T, Hh = b.h * T;
   ctx.fillStyle = 'rgba(31,42,58,.16)'; ctx.beginPath(); ctx.ellipse(X + Wd / 2 + 4, Y + Hh, Wd / 2 + 6, 7, 0, 0, 7); ctx.fill();
-  blit(bSprite(b), X, Y);
+  const bs = bSprite(b); glowSp(b, bs, X, Y, 1, now); blit(bs, X, Y);
   if (ART['b-' + b.id]) return;   // 그림에 간판·연기가 다 있음
   const tt = now / 1000;
   if (b.id === 'smith' || b.id === 'cafe') {   // 굴뚝 연기 · 커피 김
@@ -2089,10 +2090,11 @@ function houseImg(roof, lv) {
   });
 }
 const houseSprite = (roof, lv = 0) => houseImg(roof, lv) || ((l = Math.min(lv, 5)) => sprite(`hk:${roof}:${l}`, HOUSE_W * T + 40, HOUSE_H * T + 50 + HOUSE_EX[l], 20, 40 + HOUSE_EX[l], g => inkDraw(g, houseTop(l, HOUSE.roofs[roof] || HOUSE.roofs[0]))))();
-function drawHouse(h) {
+function drawHouse(h) { hoverWrap(h, (h.x + HOUSE_W / 2) * T, (h.y + HOUSE_H) * T, () => drawHouse0(h, performance.now())); }
+function drawHouse0(h, now) {
   const X = h.x * T, Y = h.y * T, Wd = HOUSE_W * T;
   ctx.fillStyle = 'rgba(31,42,58,.16)'; ctx.beginPath(); ctx.ellipse(X + Wd / 2 + 3, Y + HOUSE_H * T, Wd / 2 + 4, 5, 0, 0, 7); ctx.fill();
-  blit(houseSprite(h.roof, h.lv || 0), X, Y);
+  const hs = houseSprite(h.roof, h.lv || 0); glowSp(h, hs, X, Y, 1, now); blit(hs, X, Y);
   plaque(`🏠 ${h.nick}${h.lv ? ` · ${HOUSE_TIERS[h.lv].n}` : ''}`, X + Wd / 2, Y + HOUSE_H * T + 12, h.id === me.uid ? '#fff4e0' : '#fbfcf7', 11);
 }
 // 나무 · 바위 (꾸밈 + 채집 자원)
@@ -2140,11 +2142,17 @@ function glowOf(c) {
   q.drawImage(c, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = '#62d2ff'; q.fillRect(0, 0, g.width, g.height); GLOW.set(c, g); return g;
 }
 function blitGlow(sp, x, y, sc, O, a) { const g = glowOf(sp.c); ctx.save(); ctx.globalAlpha = a; for (const [dx, dy] of RING) ctx.drawImage(g, x - sp.ox * sc + dx * O, y - sp.oy * sc + dy * O, sp.w * sc, sp.h * sc); ctx.restore(); }
-const nodePicked = (n, now) => GA?.node === n || (S.pick?.n === n && now - S.pick.t < 2500);
+// 건물·집·포탈·분수도 같이 (2026-11-18): 누른 것은 1.5초 + 그 창이 열려 있는 동안 테두리
+const HV_UP = { node: .045, big: .02 };   // 마우스 올렸을 때 커지는 비율 (나무·바위 / 건물 등)
+const hvTick = (o, k) => { o.hv = (o.hv || 0) + ((S.hover === o ? 1 : 0) - (o.hv || 0)) * .25; if (o.hv < .01) o.hv = 0; return 1 + o.hv * k; };
+const picked = (o, now) => S.pick?.o === o && (now - S.pick.t < 1500 || (!modal.hidden && !(o.k && NODES.includes(o))));
+const nodePicked = (n, now) => GA?.node === n || (S.pick?.o === n && now - S.pick.t < 2500);
+function glowSp(o, sp, x, y, sc, now, pk = picked(o, now)) { if (pk) blitGlow(sp, x, y, sc, 2.6 + Math.sin(now / 160) * .5, .95); else if (o.hv > .05) blitGlow(sp, x, y, sc, 1.8, .45 * o.hv); }
+// (ax, ay) = 발 자리 기준으로 살짝 키워서 그림
+function hoverWrap(o, ax, ay, draw) { const up = hvTick(o, HV_UP.big); if (up === 1) return draw(); ctx.save(); ctx.translate(ax, ay); ctx.scale(up, up); ctx.translate(-ax, -ay); draw(); ctx.restore(); }
 function drawNode(n, now) {
   const x = n.x * T + T / 2, y = n.y * T + T - 3, ok = nodeReady(n), shake = GA?.node === n ? Math.sin(now / 30) * 1.6 : 0;
-  n.hv = (n.hv || 0) + ((S.hover === n ? 1 : 0) - (n.hv || 0)) * .25; if (n.hv < .01) n.hv = 0;   // 마우스 올림 → 부드럽게 커짐
-  const up = 1 + n.hv * .09, pick = nodePicked(n, now);
+  const up = hvTick(n, HV_UP.node), pick = nodePicked(n, now);   // 마우스 올림 → 부드럽게 살짝 커짐
   ctx.fillStyle = 'rgba(31,42,58,.15)'; ctx.beginPath(); ctx.ellipse(x, y, 12 * up, 4 * up, 0, 0, 7); ctx.fill();
   const sp = ok && n.v ? SP_TREE[n.v]() : SP_NODE[ok ? n.k : n.k === 'tree' ? 'stump' : 'rubble'](), sc = (ok && n.v ? n.s : n.k === 'tree' ? 1.05 : 1) * up;
   if (pick) blitGlow(sp, x + shake, y, sc, 2.6 + Math.sin(now / 160) * .5, .95);
@@ -2155,8 +2163,9 @@ function drawNode(n, now) {
 // 분수 · 벤치 · 전광판 · 포탈 (위에서 본 모습, 테두리 없음)
 const SP_FOUNT = () => sprite('fount3', 90, 80, 45, 50, g => flatInk(g, [{ path: E(0, 9, 38, 24), c: '#a99f8c' }, { path: E(0, 4, 38, 24), c: '#d8d0bf' }, { path: E(0, 4, 31, 18), c: '#5fb3d6' }, { path: E(0, 6, 31, 15), c: '#7cc6e6' }, { path: E(-12, 0, 10, 3.5), c: 'rgba(255,255,255,.45)' },
   { path: R(-6, -18, 12, 22, 2), c: '#bfb5a2' }, { path: R(-6, -18, 6, 22, 0), c: '#d0c7b5' }, { path: E(0, -18, 16, 10), c: '#a99f8c' }, { path: E(0, -21, 16, 10), c: '#d8d0bf' }, { path: E(0, -21, 12, 7), c: '#8fd3ef' }, { path: E(0, -25, 4.5, 4), c: '#d8d0bf' }]));
-function drawFountain(s, now) {
-  const x = (s.x + 1) * T, y = (s.y + 1) * T + 4, tt = now / 300; blit(SP_FOUNT(), x, y);
+function drawFountain(s, now) { hoverWrap(s, (s.x + 1) * T, (s.y + 1) * T + 4, () => drawFountain0(s, now)); }
+function drawFountain0(s, now) {
+  const x = (s.x + 1) * T, y = (s.y + 1) * T + 4, tt = now / 300, fs = SP_FOUNT(); glowSp(s, fs, x, y, 1, now); blit(fs, x, y);
   ctx.fillStyle = 'rgba(255,255,255,.85)'; for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2 + tt * .4, p = (tt * .5 + k / 6) % 1; ctx.beginPath(); ctx.arc(x + Math.cos(a) * (4 + p * 14), y - 36 + p * p * 34, 2, 0, 7); ctx.fill(); }
   if (me.life && (me.life.wishAt || 0) + WISH.cd < Date.now() && Math.sin(now / 300) > .6) { ctx.fillStyle = '#ffe28a'; starPath(ctx, x + 22, y - 40, 4); ctx.fill(); }
 }
@@ -2242,11 +2251,11 @@ function portalSwirl(tt, Wd, Hd) {
   q.globalCompositeOperation = 'destination-in'; q.drawImage(hole, 0, 0, cw, ch);
   return A;
 }
-function drawPortal(now) {
-  if (!ART.portal) return drawPortalOld(now);
+function drawPortal(now) { if (!ART.portal) return drawPortalOld(now); hoverWrap(PORTAL, PORTAL.x, PORTAL.y, () => drawPortal0(now)); }
+function drawPortal0(now) {
   const b = portalBox(), tt = now / 1000;
   ctx.fillStyle = 'rgba(31,42,58,.2)'; ctx.beginPath(); ctx.ellipse(PORTAL.x, PORTAL.y - 1, b.w * .46, 6, 0, 0, 7); ctx.fill();
-  blit(sprite('portal', b.w + BP * 2, b.h + BP * 2, b.w / 2 + BP, b.h * PORTAL_FOOT + BP, g => inkImage(g, ART.portal, -b.w / 2, -b.h * PORTAL_FOOT, b.w, b.h)), PORTAL.x, PORTAL.y);
+  const ps = sprite('portal', b.w + BP * 2, b.h + BP * 2, b.w / 2 + BP, b.h * PORTAL_FOOT + BP, g => inkImage(g, ART.portal, -b.w / 2, -b.h * PORTAL_FOOT, b.w, b.h)); glowSp(PORTAL, ps, PORTAL.x, PORTAL.y, 1, now); blit(ps, PORTAL.x, PORTAL.y);
   const [hx, hy, hw, hh] = PORTAL_HOLE, X = b.x + hx * b.w, Y = b.y + hy * b.h, Wd = hw * b.w, Hd = hh * b.h;
   if (ART['portal-hole']) ctx.drawImage(portalSwirl(tt, Wd, Hd), X, Y, Wd, Hd);
   // 문 밖으로 새어 나오는 빛 + 떠오르는 알갱이
@@ -3742,9 +3751,15 @@ const toWorld = (sx, sy) => ({ x: (sx - W / 2) / S.zoom + cam.x, y: (sy - H / 2)
 let down = null, pinch = null;
 // 나무·바위 찾기 (누르기·마우스 올리기 같이)
 const nodeAtW = w => NODES.find(n => !n.off && Math.abs(w.x - (n.x + .5) * T) < 18 && w.y > n.y * T + (n.k === 'tree' ? -30 : 6) && w.y < (n.y + 1) * T);
+const houseAtW = w => HOUSES.find(h => w.x > h.x * T - 4 && w.x < (h.x + HOUSE_W) * T + 4 && w.y > (h.y - .5) * T && w.y < (h.y + HOUSE_H) * T);
+const bldAtW = w => BUILDINGS.find(b => w.x > b.x * T && w.x < (b.x + b.w) * T && w.y > (b.y - 1) * T && w.y < (b.y + b.h) * T);
+const onPortal = w => Math.abs(w.x - PORTAL.x) < (ART.portal ? PORTAL_W * .45 : 24) && w.y > (ART.portal ? portalBox().y + 6 : PORTAL.y - 74) && w.y < PORTAL.y + 6;
+const onFountain = w => { const fo = SPOTS.find(s => s.id === 'fountain'); return Math.hypot((w.x - (fo.x + 1) * T) / 38, (w.y - (fo.y + .8) * T) / 36) < 1 ? fo : null; };
+// 마우스가 가리키는 것 (누르기와 같은 순서): 포탈 · 분수 · 나무/바위 · 집 · 건물
+const hoverAt = w => (onPortal(w) ? PORTAL : onFountain(w) || nodeAtW(w) || houseAtW(w) || bldAtW(w) || null);
 cv.addEventListener('pointermove', e => {
   if (e.pointerType !== 'mouse') return;
-  const n = HT || me.room || pts.size ? null : nodeAtW(toWorld(e.offsetX, e.offsetY));
+  const n = HT || me.room || pts.size ? null : hoverAt(toWorld(e.offsetX, e.offsetY));
   if (n !== S.hover) { S.hover = n; cv.style.cursor = n ? 'pointer' : ''; }
 });
 cv.addEventListener('pointerleave', () => { S.hover = null; cv.style.cursor = ''; });
@@ -3838,8 +3853,8 @@ function tap(sx, sy) {
   }
   if (Math.hypot(w.x - FSIGN.x, w.y - (FSIGN.y - 24)) < 26) return openFishing();
   { const ss = SPOTS.find(s => s.id === 'screen'), r = screenRect(ss); if (w.x > r.x - 10 && w.x < r.x + r.w + 10 && w.y > r.y - 10 && w.y < r.base) return openSpot(ss); }   // 큰 전광판
-  if (Math.abs(w.x - PORTAL.x) < (ART.portal ? PORTAL_W * .45 : 24) && w.y > (ART.portal ? portalBox().y + 6 : PORTAL.y - 74) && w.y < PORTAL.y + 6) return openHuntSelect();
-  const fo = SPOTS.find(s => s.id === 'fountain'); if (Math.hypot((w.x - (fo.x + 1) * T) / 38, (w.y - (fo.y + .8) * T) / 36) < 1) return openWish();
+  if (onPortal(w)) { S.pick = { o: PORTAL, t: performance.now() }; return openHuntSelect(); }
+  const fo = onFountain(w); if (fo) { S.pick = { o: fo, t: performance.now() }; return openWish(); }
   if (hitP) return openProfile(hitP);
   if (onMe) { openPanelTab('stat'); return; }
   // 벤치: 앞까지 걸어가서 앉기
@@ -3853,12 +3868,12 @@ function tap(sx, sy) {
   }
   // 나무 · 바위: 걸어가서 도끼 · 곡괭이질
   const n = nodeAtW(w);
-  if (n) { S.pick = { n, t: performance.now() }; return startGather(n); }
-  const h = HOUSES.find(h => w.x > h.x * T - 4 && w.x < (h.x + HOUSE_W) * T + 4 && w.y > (h.y - .5) * T && w.y < (h.y + HOUSE_H) * T);
-  if (h) return openHouse(h);
+  if (n) { S.pick = { o: n, t: performance.now() }; return startGather(n); }
+  const h = houseAtW(w);
+  if (h) { S.pick = { o: h, t: performance.now() }; return openHouse(h); }
   // 건물: 누르면 바로 이용 (입구까지 안 걸어감)
-  const b = BUILDINGS.find(b => w.x > b.x * T && w.x < (b.x + b.w) * T && w.y > (b.y - 1) * T && w.y < (b.y + b.h) * T);
-  if (b) return openBuilding(b);
+  const b = bldAtW(w);
+  if (b) { S.pick = { o: b, t: performance.now() }; return openBuilding(b); }
   const pi = plotAt(w.x, w.y); if (pi >= 0) return farmTap(pi);
   const s = SPOTS.find(s => s.id !== 'fountain' && w.x > s.x * T && w.x < (s.x + s.w) * T && w.y > (s.y - .2) * T && w.y < (s.y + s.h) * T);
   if (s) return openSpot(s);
