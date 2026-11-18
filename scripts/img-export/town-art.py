@@ -149,14 +149,21 @@ def crop(rgba, b):
     bx = bbox(sub[:, :, 3])
     return sub[bx[1]:bx[3], bx[0]:bx[2]]
 
-# 1) 가게 건물 (한 장에 하나)
+def load_rgba(name):
+    return np.asarray(Image.open(os.path.join(SRC, name + '.png')).convert('RGBA'))
+
+def keep_rgba(name):
+    """이미 배경이 투명한 그림 (2026-11-18 새 그림): 투명 칸 색은 0으로"""
+    a = load_rgba(name).copy(); a[a[:, :, 3] == 0] = 0; return a
+
+# 1) 가게 건물 (한 장에 하나). 2026-11-19 새 그림은 배경이 투명 → keep_rgba
 for src, key in [('건물_가챠센터', 'gacha'), ('건물_카페', 'cafe'), ('건물_스킨샵', 'skin'), ('건물_마을회관', 'hall'), ('건물_대장간', 'smith'),
                  ('건물_낚시점', 'fishshop'), ('건물_벌목소', 'lumber'), ('건물_채석장', 'quarry'), ('건물_텃밭 창고', 'farmshed')]:
-    r = cut_bg(load(src)); r = r[bbox(r[:, :, 3])[1]:, :]
+    r = keep_rgba(src)
     b = bbox(r[:, :, 3]); save('b-' + key, r[b[1]:b[3], b[0]:b[2]], width=720)
 
 # 2) 텃밭 (울타리 + 흙). 두둑 줄 위치도 기록 (0~1)
-r = cut_bg(load('건물_텃밭')); b = bbox(r[:, :, 3]); f = r[b[1]:b[3], b[0]:b[2]]
+r = keep_rgba('건물_텃밭'); b = bbox(r[:, :, 3]); f = r[b[1]:b[3], b[0]:b[2]]
 im = save('farm', f, width=900)
 # 두둑(밝은 갈색 줄) 가운데: 원본 그림에서 잰 y (215, 335, 460, 580, 695)
 META['farmRows'] = [round((y - b[1]) / (b[3] - b[1]), 4) for y in (215, 335, 460, 580, 695)]
@@ -164,13 +171,6 @@ META['farmRows'] = [round((y - b[1]) / (b[3] - b[1]), 4) for y in (215, 335, 460
 row = f[int(f.shape[0] * .5), :, :3].astype(int)
 soil = np.where((row[:, 0] < 180) & (row[:, 0] > 110) & (row[:, 1] < 110))[0]
 META['farmIn'] = [round(soil.min() / f.shape[1], 4), round(soil.max() / f.shape[1], 4)]
-
-def load_rgba(name):
-    return np.asarray(Image.open(os.path.join(SRC, name + '.png')).convert('RGBA'))
-
-def keep_rgba(name):
-    """이미 배경이 투명한 그림 (2026-11-18 새 그림): 투명 칸 색은 0으로"""
-    a = load_rgba(name).copy(); a[a[:, :, 3] == 0] = 0; return a
 
 # 3) 나무 5그루 (2026-11-18 새 그림, 배경 투명)
 r = keep_rgba('풍경_나무')

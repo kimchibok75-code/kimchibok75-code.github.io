@@ -890,6 +890,9 @@ a.iconbtn { color: inherit; text-decoration: none; }
 .admform { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
 .admform input { flex: 1; min-width: 120px; padding: 8px 10px; border: 2px solid var(--line); border-radius: 10px; font: inherit; font-size: calc(16px * var(--fs)); }
 .rank .ic { font-weight: 800; font-size: calc(16px * var(--fs)); }
+  .itip { position: relative; display: inline-grid; place-items: center; width: 20px; height: 20px; min-height: 0; padding: 0; margin-left: 4px; border-radius: 50%; border: 2px solid currentColor; background: none; color: var(--muted, #7a8494); font: 800 12px/1 Georgia, serif; font-style: italic; vertical-align: middle; cursor: pointer; box-shadow: none; }
+  .itip:hover, .itip:focus-visible, .itip.on { color: #1f2a3a; }
+  .itip-pop { position: fixed; z-index: 120; pointer-events: none; width: max-content; max-width: min(300px, calc(100vw - 24px)); padding: 9px 11px; border-radius: 10px; background: #1f2a3a; color: #fff; font: 600 13px/1.45 "IBM Plex Sans KR", sans-serif; font-style: normal; text-align: left; white-space: normal; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
 </style>
 </head>
 <body>
@@ -4495,7 +4498,7 @@ function ask(msg, { title = '', ok = '확인', no = '취소', danger = false } =
     document.body.append(el); by.focus();
   });
 }
-function closeModal() { if (!modal.hidden) sfx('close'); modal.hidden = true; sheet.innerHTML = ''; reopen = null; }
+function closeModal() { itipShow(null); if (!modal.hidden) sfx('close'); modal.hidden = true; sheet.innerHTML = ''; reopen = null; }
 modal.addEventListener('click', e => { if (performance.now() - modalAt < 400) { e.stopPropagation(); e.preventDefault(); } }, true);
 modal.addEventListener('click', e => { if (e.target === modal || e.target.closest('[data-close]')) closeModal(); });
 addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
@@ -4838,6 +4841,16 @@ function trySend(raw) {
 }
 // ───── 소리 ─────
 sndUnlock();
+// i 아이콘 설명: 창 밖(body)에 띄워서 창 테두리에 잘리지 않게. 누르면 열고, 다른 곳을 누르면 닫힘
+function itipShow(t, on) {
+  document.querySelector('.itip-pop')?.remove(); document.querySelectorAll('.itip.on').forEach(x => x !== t && x.classList.remove('on'));
+  if (!t || !on) { t?.classList.remove('on'); return; }
+  t.classList.add('on'); const d = document.createElement('div'); d.className = 'itip-pop'; d.textContent = t.dataset.tip; document.body.append(d);
+  const r = t.getBoundingClientRect(), w = d.offsetWidth, h = d.offsetHeight;
+  d.style.left = Math.max(12, Math.min(innerWidth - w - 12, r.left - 10)) + 'px';
+  d.style.top = (r.bottom + 8 + h > innerHeight - 8 ? r.top - h - 8 : r.bottom + 8) + 'px';
+}
+document.addEventListener('click', e => { const t = e.target.closest?.('.itip'); if (t) { e.stopPropagation(); itipShow(t, !t.classList.contains('on')); } else itipShow(null); }, true);
 document.addEventListener('click', e => { const b = e.target.closest('button, .gcard, [data-x], [data-a]'); if (b && !b.disabled && !b.closest('[data-close], .close')) sfx('click'); }, true);
 // 서버 버튼(act)이 성공했을 때 소리
 const ACT_SND = [[/house\/(build|up)/, 'build'], [/(collect|job\/finish|sell|claim)/, 'coin'], [/(skin|pots|shop|pack|hire|unlock|farm\/can|farm\/plot|title)/, 'buy'], [/farm\/(plant|plantall)/, 'plant'], [/farm\/water/, 'water'], [/farm\/harvest/, 'harvest'], [/village\/give|wish/, 'coin'], [/equip|unequip|preset|stats/, 'pop']];
@@ -5189,7 +5202,7 @@ function took(j) {
     for (const it of h.drops || []) if (it.g && ['epic', 'legend', 'myth'].includes(it.g)) { toast(`✨ ${GRADES[it.g].n} 장비! ${itemName(it)}`); sysMsg(`✨ ${GRADES[it.g].n} 장비 획득: ${itemName(it)}`); }
     if (HT && h.drops?.length) h.drops.slice(0, 3).forEach((it, i) => floatText(me.x + (i - 1) * 26, me.y - 84 - i * 10, `${itemIcon(it)} ${GRADES[it.g].n}`, it.g === 'normal' ? '#e6ebf2' : GRADES[it.g].c, 14, 1.8));
     if (h.offline >= 60 && !h.died) { const L = h.life || {}, n = v => (v || 0).toLocaleString();
-      openModal(`<h3>🌙 자리 비운 동안</h3><p>${Math.floor(h.sec / 3600)}시간 ${Math.floor(h.sec % 3600 / 60)}분 동안 부지런히 움직였어요!${h.offline >= HUNT.offlineMax ? ` (최대 ${HUNT.offlineMax / 3600}시간까지만 계산)` : ''} 사냥도 하고 마을 일도 했어요. (화면을 닫은 시간은 효율 ${Math.round(HUNT.offlineEff * 100)}%, 경험치는 ${Math.round(HUNT.offlineExp * 100)}%. 그 절반은 사냥 · 절반은 생활)</p>
+      openModal(`<h3>🌙 자리 비운 동안 ${awayTip()}</h3><p>${Math.floor(h.sec / 3600)}시간 ${Math.floor(h.sec % 3600 / 60)}분 동안 부지런히 움직였어요! 사냥도 하고 마을 일도 했어요.</p>
       <h4 class="placeh">⚔️ 사냥</h4><table class="ruletable"><tbody><tr><td>처치</td><td>${h.kills.toLocaleString()}마리</td></tr><tr><td>경험치</td><td>+${h.exp.toLocaleString()}${h.up ? ` (레벨 +${h.up})` : ''}</td></tr><tr><td>골드</td><td>+${h.gold.toLocaleString()}</td></tr><tr><td>물약</td><td>${h.pots}개 마심</td></tr></tbody></table>
       ${h.life ? `<h4 class="placeh">🧺 생활</h4><table class="ruletable"><tbody><tr><td>생활 경험치</td><td>+${n(L.exp)}${L.up ? ` (레벨 +${L.up})` : ''}</td></tr><tr><td>골드</td><td>+${n(L.gold)}</td></tr><tr><td>목재 · 석재</td><td>🪵 +${n(L.wood)} · 🪨 +${n(L.stone)}</td></tr><tr><td>코인</td><td>${COIN.fish[0]} +${n(L.fish)} · ${COIN.farm[0]} +${n(L.farm)}</td></tr></tbody></table>` : ''}<button class="btn main" data-close>확인</button>`); }
     if (h.died) {
@@ -5417,12 +5430,15 @@ $('#makeDone').onclick = async () => {
 };
 
 // 자리 비운 동안 (마을에서 화면을 닫았을 때): 서버가 효율 50%로 마을 일을 해 둠
+// i 아이콘: 누르거나 마우스를 올리면 작은 설명 (2026-11-19: 방치 효율 같은 설명은 글로 다 적지 않고 여기로)
+const itip = t => `<button type="button" class="itip" aria-label="설명" data-tip="${esc(t)}">i</button>`;
+const awayTip = () => itip(`화면을 닫아 둔 시간은 최대 ${HUNT.offlineMax / 3600}시간까지, 효율 ${Math.round(HUNT.offlineEff * 100)}%로 계산해요 (경험치는 ${Math.round(HUNT.offlineExp * 100)}%). 절반은 사냥, 절반은 마을 일이에요.`);
 function awaySheet(a) {
   const L = a.life || {}, n = v => (v || 0).toLocaleString(), hm = s => `${Math.floor(s / 3600)}시간 ${Math.floor(s % 3600 / 60)}분`;
   const H = a.hunt || {}, up = (L.up || 0) + (H.up || 0);
-  const show = () => openModal(`<h3>🌙 자리 비운 동안</h3><p>${hm(a.sec)} 동안 <b>사냥</b>과 <b>마을 일</b>을 열심히 했어요!${a.off >= HUNT.offlineMax ? ` (최대 ${HUNT.offlineMax / 3600}시간까지만 계산)` : ''}</p>
+  const show = () => openModal(`<h3>🌙 자리 비운 동안 ${awayTip()}</h3><p>${hm(a.sec)} 동안 <b>사냥</b>과 <b>마을 일</b>을 열심히 했어요!</p>
     <table class="ruletable"><tbody><tr><td>⚔️ 사냥</td><td>몬스터 ${n(H.kill)}마리 처치</td></tr><tr><td>경험치</td><td>+${n((L.exp || 0) + (H.exp || 0))}${up ? ` (레벨 +${up})` : ''} <small class="muted">(사냥 ${n(H.exp)} · 마을 일 ${n(L.exp)})</small></td></tr><tr><td>골드</td><td>+${n((L.gold || 0) + (H.gold || 0))} <small class="muted">(사냥 ${n(H.gold)} · 마을 일 ${n(L.gold)})</small></td></tr><tr><td>목재 · 석재</td><td>🪵 +${n(L.wood)} · 🪨 +${n(L.stone)}</td></tr><tr><td>코인</td><td>${COIN.fish[0]} +${n(L.fish)} · ${COIN.farm[0]} +${n(L.farm)}</td></tr></tbody></table>
-    <p class="muted">화면을 닫아 둔 시간은 효율 ${Math.round(HUNT.offlineEff * 100)}%(경험치는 ${Math.round(HUNT.offlineExp * 100)}%)로, 최대 ${HUNT.offlineMax / 3600}시간까지 계산해요. 그 절반은 사냥, 절반은 마을 일이에요.</p><button class="btn main" data-close>확인</button>`);
+    <button class="btn main" data-close>확인</button>`);
   logAct(`자리 비운 동안 ${hm(a.sec)}: 골드 +${n((L.gold || 0) + (H.gold || 0))}`);
   if (modal.hidden) show(); else { const t = setInterval(() => { if (modal.hidden) { clearInterval(t); show(); } }, 500); }
 }
