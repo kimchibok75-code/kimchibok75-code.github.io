@@ -5095,7 +5095,7 @@ function busyPace(dt) {
 }
 function roamTick(dt) {
   if (AU.on && AU.hold) {   // 직접 조작 중: 하는 일이 있으면 계속 미루고, 끝나면 자동 생활 다시 시작
-    if (me.path.length || GA || F.busy || F.loop || !modal.hidden || STEER.on || S.place) AU.hold = Math.max(AU.hold, performance.now() + AU_HOLD);
+    if (me.path.length || GA || F.busy || !modal.hidden || STEER.on || S.place) AU.hold = Math.max(AU.hold, performance.now() + AU_HOLD);
     else if (!auHeld()) { AU.hold = 0; AU.mode = ''; AU.left = 0; AU.wait = .5; AU.walked = false; autoUi(); toast('🧺 자동 생활을 다시 이어서 해요'); }
   }
   if (BUSY()) return busyPace(dt);
@@ -5785,36 +5785,24 @@ function fishAtWater(px, py) {
   if (F.auto) return openFishing();
   if (F.busy) return toast('🎣 지금 낚시 중이에요');
   const s = shoreNear(px, py); if (!s) return toast('여기서는 물가로 갈 수 없어요');
-  const go = () => handFish(px, py, !AU.on || auHeld());   // 2026-11-17: 한 번 누르면 움직이기 전까지 계속 낚음 (자동 생활은 자기가 알아서)
+  const go = () => handFish(px, py);   // 2026-11-18: 다시 클릭형 (한 번 누르면 한 번만 던짐, 계속 낚기 없앰)
   const [mx, my] = meTile(); if (mx === s.x && my === s.y) return go();
   if (!walkToTile(me, s.x, s.y, go)) toast('여기서는 물가로 갈 수 없어요');
 }
-// 계속 낚시: F.loop = { px, py, x, y } (던진 자리). 걷거나 다른 일을 하면 멈춤
-function fishLoopOk(L) {
-  const moved = Math.hypot(me.x - L.x, me.y - L.y) > 6 || me.path.length || me.moving;
-  if (F.loop !== L || moved || F.auto || (AU.on && !auHeld()) || HT || RD || me.room || me.job || document.hidden) { if (F.loop === L) F.loop = null; return false; }
-  return true;
-}
-function fishLoopNext() {
-  const L = F.loop; if (!L || !fishLoopOk(L)) return;
-  clearTimeout(F.loopT); F.loopT = setTimeout(() => { if (fishLoopOk(L)) handFish(L.px, L.py, true); }, Math.max(2000, F.nextAt - Date.now() + 100));   // 결과 뒤 2초 쉬고 다시 던짐
-}
-async function handFish(px, py, loop) {
+async function handFish(px, py) {
   if (F.busy || F.auto || HT || me.room) return;
-  if (loop) { if (!F.loop) say(me, '🎣 계속 낚을게요 (움직이면 멈춰요)', 2200); F.loop = { px, py, x: me.x, y: me.y }; } else F.loop = null;
   const w = Math.ceil((F.nextAt - Date.now()) / 1000); if (w > 0) return toast(`⏳ ${w}초 뒤에 다시 던질 수 있어요`);
   if (!nearWater(...meTile())) return toast('물가에서만 낚시할 수 있어요');
   F.busy = true; if (me.sit >= 0) standUp(me); me.path = []; me.moving = false;
   const [bx, by] = bobberAt(px, py), r = me.life.fish.rod || 0;
   rodOut(me, bx, by, r); const mine = me.fz; netSend({ t: 'fish', s: 1, bx: Math.round(bx), by: Math.round(by), r }); sfx('cast');
   let j; try { j = await api('/api/fish/hand', { w: [Math.floor(bx / T), Math.floor(by / T)], p: [Math.round(bx), Math.round(by)] }); took(j); }
-  catch (x) { F.busy = false; F.loop = null; if (me.fz === mine) { me.fz = null; netSend({ t: 'fish', s: 0 }); } toast(x.message); return; }
+  catch (x) { F.busy = false; if (me.fz === mine) { me.fz = null; netSend({ t: 'fish', s: 0 }); } toast(x.message); return; }
   F.nextAt = Date.now() + j.cooldown;
   await sleep(j.wait);
   if (me.fz === mine) { mine.ph = 'bite'; sfx('bite'); await sleep(600); }
-  F.busy = false;
+  F.busy = false; F.nextAt = Math.max(F.nextAt, Date.now() + FISHING.cooldown);   // 결과가 나온 뒤 2초 쉬어야 다시 던짐
   fishShow(j, me.fz === mine);
-  if (loop && F.loop) fishLoopNext();   // 던진 자리에서 움직였으면 멈춤
 }
 // 결과 보여 주기 (손 낚시·자동 낚시 같이). here = 아직 그 자리에서 낚시하는 모습이면 true
 function fishShow(j, here, auto) {
@@ -5986,7 +5974,7 @@ const GUIDE = () => [
     ['대장간', `장비 칸을 강화해요 (최대 +${ENH_MAX}, 1단계마다 +${Math.round(ENH_STEP * 100)}%). 장비를 바꿔도 칸 강화는 그대로예요.`],
   ]],
   ['🎣', '낚시', [
-    ['손 낚시', '아무 물이나 누르면 물가로 걸어가서 바로 낚싯대를 던져요. 한 번 누르면 움직이기 전까지 계속 낚아요. 잡으면 머리 위로 자랑해요!'],
+    ['손 낚시', '아무 물이나 누르면 물가로 걸어가서 바로 낚싯대를 던져요. 한 번 누를 때마다 한 번 던지고, 결과가 나오면 2초 뒤에 다시 던질 수 있어요. 잡으면 머리 위로 자랑해요!'],
     ['강 · 바다', '강·연못과 마을 남쪽 바다에서 나는 물고기가 달라요. 목록은 낚시터 창에서 볼 수 있어요.'],
     ['보상', '낚은 물고기는 바로 팔려서 골드가 되고, 🐚 낚시 코인도 받아요. 2초에 한 번 던질 수 있어요.'],
     ['낚시점', '낚시 코인으로 낚싯대(낚을 확률 ↑)와 미끼(좋은 등급 ↑)를 올려요.'],
