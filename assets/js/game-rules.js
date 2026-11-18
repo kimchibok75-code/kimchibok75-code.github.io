@@ -8,11 +8,11 @@ export const FACES = ['#ffe0c2', '#f7c9a0', '#d9a77a', '#a8754f', '#ffd4e0', '#c
 export const BODIES = ['#e8553a', '#4f9d5a', '#3d7bd9', '#9a5ad6', '#e9a23b', '#2f3b4f', '#ef7fa6', '#2bb3a6'];
 export const EYES = ['dot', 'happy', 'sleep', 'wow'];
 // 헤어스타일 · 헤어 색 (겉모습만, 언제든 무료로 바꿈). none = 민머리(처음 모습)
-// 헤어 (2026-11-18 사용자 그림 8종 h1~h8). 예전 코드 그림 헤어(short…pony)는 HAIR_OLD로 비슷한 새 헤어로 바꿔 보여 줌
-export const HAIRS = [{ id: 'none', n: '민머리' }, { id: 'h1', n: '짧은 머리' }, { id: 'h2', n: '넘긴 앞머리' }, { id: 'h3', n: '가르마 머리' }, { id: 'h4', n: '삐죽 머리' },
+// 헤어: 예전 코드 그림 6종 + 2026-11-18 사용자 그림 8종(h1~h8). 둘 다 고를 수 있음
+export const HAIRS = [{ id: 'none', n: '민머리' }, { id: 'short', n: '짧은 머리' }, { id: 'side', n: '옆머리 대머리' }, { id: 'bowl', n: '바가지 머리' }, { id: 'spiky', n: '삐죽 머리' }, { id: 'long', n: '긴 머리' }, { id: 'pony', n: '묶은 머리' },
+  { id: 'h1', n: '숏컷' }, { id: 'h2', n: '넘긴 앞머리' }, { id: 'h3', n: '가르마 머리' }, { id: 'h4', n: '뾰족 머리' },
   { id: 'h5', n: '웨이브 단발' }, { id: 'h6', n: '양갈래' }, { id: 'h7', n: '옆 웨이브' }, { id: 'h8', n: '긴 단발' }];
-export const HAIR_OLD = { short: 'h1', side: 'h3', bowl: 'h8', spiky: 'h4', long: 'h7', pony: 'h6' };
-export const hairId = id => HAIR_OLD[id] || id || 'none';
+export const hairId = id => id || 'none';
 export const HAIR_COLORS = ['#3a2a20', '#7a4a2a', '#e8c15a', '#d0502f', '#c9ccd4', '#f2a0c2', '#5b86e0', '#5fae5a'];
 export const MAX_LV = 100;
 export const START_GOLD = 500;
@@ -85,10 +85,13 @@ export const ENH_COST = [700, 1400, 2400, 3600, 5600, 8400, 12000, 17000, 22000,
 // fx = 보유 효과 (가지고만 있어도 붙음. 쓰고 있지 않아도 됨)
 export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'ribbon', n: '🎀 리본', price: 300, fx: { expP: 2 } }, { id: 'sprout', n: '🌱 새싹', price: 500, fx: { farmP: 5 } }, { id: 'cat', n: '🐱 고양이 귀', price: 800, fx: { crit: 1 } }, { id: 'straw', n: '👒 밀짚모자', price: 1200, fx: { fishP: 4 } }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 2000, fx: { atkP: 2, goldP: 2 } },
   { id: 'rdragon', n: '🐉 용의 뿔', price: 0, raid: 'rdragon', fx: { atkP: 5, crit: 2 } },
-  { id: 'ogre', n: '👹 오우거 투구', price: 0, raid: 'ogre', fx: { hpP: 5, defP: 4 } }];   // raid = 레이드에서만 얻음 (상점에 안 팖)
+  { id: 'ogre', n: '👹 오우거 투구', price: 0, raid: 'ogre', fx: { hpP: 5, defP: 4 } },
+  { id: 'magic', n: '💗 마법소녀 왕관', price: 25000, fx: { expP: 4, crit: 1 } }];   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
 // 눈 모양 스킨 (가진 것은 hats 목록에 'eye:별' 처럼 저장). dot은 기본
 export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 400, fx: { defP: 3 } }, { id: 'star', n: '⭐ 별 눈', price: 700, fx: { expP: 3 } }, { id: 'wink', n: '😉 윙크', price: 800, fx: { crit: 1 } }, { id: 'heart', n: '💗 하트 눈', price: 1000, fx: { hpP: 3 } }, { id: 'cat', n: '🐱 고양이 눈', price: 1200, fx: { fishC: 5 } }, { id: 'big', n: '✨ 반짝 큰 눈', price: 1500, fx: { goldP: 3 } },
-  { id: 'rdragon', n: '🐉 용의 눈', price: 0, raid: 'rdragon', fx: { crit: 3, expP: 5 } }];
+  { id: 'rdragon', n: '🐉 용의 눈', price: 0, raid: 'rdragon', fx: { crit: 3, expP: 5 } },
+  { id: 'ogre', n: '👹 오우거 눈', price: 0, raid: 'ogre', fx: { atkP: 3, hpP: 3 } },
+  { id: 'magic', n: '💗 반짝 마법 눈', price: 15000, fx: { crit: 2, goldP: 2 } }];
 // 의상 스킨 (몸 전체 겉모습, 입으면 갑옷 그림 대신 보임). 가진 것은 c.hats 에 'suit:id', 입은 것은 c.suit
 export const SUITS = [
   { id: 'hoodie', n: '🧥 후드티', price: 3000, fx: { spdP: 3 } },
@@ -99,6 +102,7 @@ export const SUITS = [
   { id: 'cabbage', n: '🥬 배추 옷', price: 22000, fx: { hpP: 4, expP: 3 } },
   { id: 'rdragon', n: '🐉 레드 드래곤 갑옷', price: 0, raid: 'rdragon', fx: { hpP: 8, defP: 6 } },
   { id: 'ogre', n: '👹 오우거 가죽 갑옷', price: 0, raid: 'ogre', fx: { hpP: 6, atkP: 3 } },
+  { id: 'magic', n: '💗 마법소녀 드레스', price: 30000, fx: { hpP: 5, expP: 3 } },
 ];
 // 무기 스킨 (그 무기의 겉모습만). 가진 것은 'wsk:무기:id', 쓰는 것은 c.wsk = { sword, bow, staff }
 export const WSKINS = [
@@ -123,6 +127,9 @@ export const WSKINS = [
   { t: 'sword', id: 'rdragon', n: '🐉 레드 드래곤 검', price: 0, raid: 'rdragon', fx: { atkP: 5, bossP: 5 } },
   { t: 'bow', id: 'rdragon', n: '🐉 레드 드래곤 활', price: 0, raid: 'rdragon', fx: { atkP: 5, bossP: 5 } },
   { t: 'staff', id: 'rdragon', n: '🐉 레드 드래곤 지팡이', price: 0, raid: 'rdragon', fx: { atkP: 5, bossP: 5 } },
+  { t: 'sword', id: 'magic', n: '💗 하트 날개 검', price: 20000, fx: { atkP: 4, expP: 2 } },
+  { t: 'bow', id: 'magic', n: '💗 꽃 날개 활', price: 20000, fx: { atkP: 4, expP: 2 } },
+  { t: 'staff', id: 'magic', n: '💗 달빛 요술봉', price: 20000, fx: { atkP: 4, expP: 2 } },
   { t: 'sword', id: 'ogre', n: '👹 오우거 돌칼', price: 0, raid: 'ogre', fx: { atkP: 4, hpP: 3 } },
   { t: 'bow', id: 'ogre', n: '👹 오우거 뼈활', price: 0, raid: 'ogre', fx: { atkP: 4, hpP: 3 } },
   { t: 'staff', id: 'ogre', n: '👹 오우거 돌 지팡이', price: 0, raid: 'ogre', fx: { atkP: 4, hpP: 3 } },

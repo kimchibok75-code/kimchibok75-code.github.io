@@ -1285,9 +1285,14 @@ function bowArc(ro, th, col, cx = 4 - ro) {
 }
 const swirl = (cx, cy, r, c) => g => { g.save(); g.strokeStyle = c; g.lineWidth = 1.8; g.beginPath(); for (let a = 0; a < 12.6; a += .25) g.lineTo(cx + Math.cos(a) * a * r / 12.6, cy + Math.sin(a) * a * r / 12.6); g.stroke(); g.restore(); };
 // 오우거 스킨 (2026-11-18): 템플릿 틀 그대로 (town-art.py 9번 meta 'og')
-const OGS = { hat: [-21.5, -63.5, 43.25, 44], suit: [-13.75, -23.75, 28, 22], sword: [-9.75, -34.375, 19.625, 44.625], bow: [-14.375, -18.875, 19.375, 39], staff: [-11.125, -38.125, 22.375, 52.5] };
+const OGS = { hat: [-21.5, -63.5, 43.25, 44], suit: [-13.75, -23.75, 28, 22], eyes: [-10.25, -30.5, 20.5, 4.5], sword: [-9.75, -34.375, 19.625, 44.625], bow: [-14.375, -18.875, 19.375, 39], staff: [-11.125, -38.125, 22.375, 52.5] };
+// 마법소녀 세트 (2026-11-18, 스킨샵): town-art.py tpl_set → meta 'mg'
+const MGS = { hat: [-23.5, -58, 47, 39], suit: [-13.5, -23.5, 27.5, 20.25], eyes: [-9, -32.75, 18, 7.75], sword: [-12.25, -30, 24.625, 40.5], bow: [-12.375, -20, 23.125, 40.75], staff: [-13.875, -37.125, 28.125, 50.875] };
+// 템플릿 틀 그대로 그린 스킨 세트: 스킨 id → [그림 앞글자, 위치표]. 눈은 drawEyes, 모자는 hatParts, 의상은 suitParts, 무기는 wskParts
+const TSK = { ogre: ['og', OGS], magic: ['mg', MGS] };
+const HAT_NOHAIR = new Set(['magic']);   // 머리카락까지 그려진 모자: 쓰면 헤어를 안 그림
 function wskParts(type, id) {
-  if (id === 'ogre' && ART['og-' + type]) return [imgPart('og-' + type, ...OGS[type])];
+  const ts = TSK[id]; if (ts && ART[ts[0] + '-' + type]) return [imgPart(ts[0] + '-' + type, ...ts[1][type])];
   const P = [], glint = (x, y) => ({ flat: 1, path: E(x, y, 1.3, 1.3), c: 'rgba(255,255,255,.8)' });
   if (type === 'bow' && id === 'rdragon' && ART['rd-bow']) return [imgPart('rd-bow', -11.625, -20.375, 18.625, 41.75)];   // 2026-11-18 템플릿 틀 그대로 (손잡이 = 기준점)
   if (type === 'staff' && id === 'rdragon' && ART['rd-staff']) return [imgPart('rd-staff', -14.875, -39.125, 28.375, 53.25)];
@@ -1363,9 +1368,9 @@ function suitParts(id, bob, hy) {
         { path: E(-8.6, y + 2, 3.8, 3), c: '#9aa5b1' }, { path: E(8.6, y + 2, 3.8, 3), c: '#9aa5b1' }); break;
     case 'cabbage': sl = '#bfe39a'; F.push(body('#bfe39a'), { flat: 1, path: R(-.5, y + 2, 1, 11, .5), c: 'rgba(255,255,255,.6)' }, { flat: 1, path: PG([[0, y + 7], [-5, y + 4], [-5, y + 5.2], [0, y + 8.5]]), c: 'rgba(255,255,255,.45)' },
       ...[-8, -3, 3, 8].map(x => ({ path: E(x, y + 1, 3.8, 2.6, x * .06), c: '#7fcf6a' }))); break;
-    case 'ogre': sl = '#7d9a3c';
-      if (ART['og-suit']) { F.push(imgPart('og-suit', OGS.suit[0], y + OGS.suit[1] + 20, OGS.suit[2], OGS.suit[3])); break; }
-      F.push(body('#7d9a3c')); break;
+    case 'ogre': case 'magic': { sl = id === 'ogre' ? '#7d9a3c' : '#f7b6cf'; const [pf, ps] = TSK[id];
+      if (ART[pf + '-suit']) { F.push(imgPart(pf + '-suit', ps.suit[0], y + ps.suit[1] + 20, ps.suit[2], ps.suit[3])); break; }
+      F.push(body(sl)); break; }
     case 'rdragon': sl = '#a8322a';
       if (ART['rd-suit']) { F.push(imgPart('rd-suit', -14.5, y - 3.25, 29, 21)); break; }   // 템플릿 틀 그대로 (몸 위치 y = -20 기준)
       for (const s of [-1, 1]) B.push({ path: PG([[s * 5, y + 3], [s * 21, y - 9], [s * 18, y + 1], [s * 23, y + 3], [s * 15, y + 8], [s * 7, y + 10]]), c: '#7a1f1a' }, { flat: 1, path: PG([[s * 8, y + 4], [s * 19, y - 6], [s * 14, y + 6]]), c: '#a8322a' });
@@ -1437,7 +1442,7 @@ function helmParts(it, hy) {
 }
 // 모자 스킨
 function hatParts(kind, hy, face) {
-  if (kind === 'ogre') return ART['og-hat'] ? [imgPart('og-hat', OGS.hat[0], hy + OGS.hat[1] + 45, OGS.hat[2], OGS.hat[3])] : [];
+  if (TSK[kind]) { const [pf, ps] = TSK[kind]; return ART[pf + '-hat'] ? [imgPart(pf + '-hat', ps.hat[0], hy + ps.hat[1] + 45, ps.hat[2], ps.hat[3])] : []; }
   if (kind === 'rdragon' && ART['rd-hat']) return [imgPart('rd-hat', -25.25, hy - 21.5, 50.5, 50.75)];   // 템플릿 틀 그대로 (머리 꼭대기 hy = -45 기준), 얼굴 자리는 뚫려 있음
   if (kind === 'rdragon') return [...[-1, 1].flatMap(s => [{ path: PG([[s * 5, hy + 3], [s * 9, hy - 5], [s * 17, hy - 13], [s * 13, hy - 3], [s * 11.5, hy + 4]]), c: '#4a2a20' }, { flat: 1, path: PG([[s * 13.5, hy - 8], [s * 17, hy - 13], [s * 14.5, hy - 6]]), c: '#f3e6cf' }]),
     { path: PG([[-3.5, hy + 1], [0, hy - 8], [3.5, hy + 1]]), c: '#d4473b' }, { flat: 1, path: E(0, hy - 1, 1.3, 1.3), c: '#ffd45a' }];
@@ -1463,6 +1468,8 @@ function drawEyes(g, c, ey, t) {
   const eye = c.emoEyes || c.eyes || 'dot';
   g.fillStyle = INK; g.strokeStyle = INK; g.lineWidth = 2.2; g.lineCap = 'round';
   const blink = !c.still && (Math.sin(t * 1.3 + (c.seed || 0) * 5) > .985);
+  const ts = TSK[eye];   // 그림 눈 (템플릿 틀: 눈 높이 ey = hy + 16, hy = -45 기준)
+  if (ts && ART[ts[0] + '-eyes'] && !blink) { const [x, y0, w, h] = ts[1].eyes; g.drawImage(ART[ts[0] + '-eyes'], x, y0 + ey + 29, w, h); return; }
   for (const ex of [-6, 6]) {
     const kind = eye === 'wink' ? (ex > 0 ? 'happy' : 'dot') : eye;
     if (kind === 'happy') { g.beginPath(); g.arc(ex, ey + 1.5, 3, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); }
@@ -1507,7 +1514,7 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   else { P.push({ path: R(-9, -20 - bob, 18, 14, 5), c: c.body }); if (eq.armor?.st) P.push(...armorParts(eq.armor, bob)); }
   // 머리 + 눈 (+ 헤어: 뒷머리는 얼굴 뒤, 앞머리는 얼굴 위)
   P.push({ path: R(-14, hy, 28, 26, 9), c: c.face, after: g => drawEyes(g, c, hy + 16, t) });
-  P.push(...hp.front);
+  if (!HAT_NOHAIR.has(c.hat)) P.push(...hp.front);
   if (c.hat && c.hat !== 'none') P.push(...hatParts(c.hat, hy, c.face));
   if (eq.hat?.st && !(c.hat && c.hat !== 'none')) P.push(...helmParts(eq.hat, hy));   // 모자 스킨을 쓰면 머리 장비는 안 보임
   // 오른팔 (몸 앞) + 무기: 손(팔 끝)이 손잡이를 쥠
@@ -1620,7 +1627,7 @@ const ART = {};
 const ART_N = ['b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
   ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
-  ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'sword', 'bow', 'staff'].map(n => 'og-' + n), 'ogre-bg'];
+  ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'mg-' + n), 'ogre-bg'];
 const artReady = Promise.all(ART_N.map(n => new Promise(ok => { const im = new Image(); im.onload = () => { ART[n] = im; ok(); }; im.onerror = () => ok(); im.src = `assets/img/town/${n}.webp?v=__BUILD__`; })));
 // 그림 조각 (캐릭터 스킨용): inkDraw 안에서 테두리 없이 그림을 그림. rot = 돌리기(가운데 기준)
 // 그림 바깥 테두리 (2026-11-18): 그림 모양대로 검게 칠한 판(silOf)을 둘레 16방향으로 O만큼 밀어 그린 뒤 그 위에 그림

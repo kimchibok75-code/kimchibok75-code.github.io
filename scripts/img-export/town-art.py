@@ -243,24 +243,27 @@ bg = Image.open(os.path.join(SRC, '배경_오우거.png')).convert('RGB')
 bg.resize((1344, round(1344 * bg.height / bg.width)), Image.LANCZOS).save(os.path.join(OUT, 'ogre-bg.webp'), 'WEBP', quality=86, method=6)
 META['ogre-bg'] = [bg.width, bg.height]
 TPL = os.path.join('텍스쳐 템플릿')
-OS = {}
-for src, n, ox, oy, k in [('char/hat_guide_오우거', 'hat', 192, 336, 4), ('char/suit-front_guide_오우거', 'suit', 192, 336, 4),
-                          ('weapon/sword_guide_오우거', 'sword', 192, 368, 8), ('weapon/bow_guide_오우거', 'bow', 192, 368, 8), ('weapon/staff_guide_오우거', 'staff', 192, 368, 8)]:
-    a = np.asarray(Image.open(os.path.join(TPL, src + '.png')).convert('RGBA')).copy(); a[a[:, :, 3] == 0] = 0
-    full = clean(a, rel=.03)   # 떨어진 점 지우기 (잘린 그림)
-    # 잘린 위치를 다시 찾기: 원본에서 큰 덩어리의 bbox
-    m = np.zeros(a.shape[:2], bool); al = a[:, :, 3] > 8
-    b0 = bbox(a[:, :, 3], pad=1)
-    # clean 은 잘라서 돌려주므로, 원본에서 같은 크기 창을 찾음
-    H0, W0 = full.shape[:2]; best = None
-    for y in range(b0[1], b0[3] - H0 + 2):
-        for x in range(b0[0], b0[2] - W0 + 2):
-            if np.array_equal(a[y:y + H0, x:x + W0, 3] > 8, full[:, :, 3] > 8) or best is None and False: best = (x, y); break
-        if best: break
-    if not best: best = (b0[0], b0[1])
-    save('og-' + n, full.copy())
-    OS[n] = [round((best[0] - ox) / k, 3), round((best[1] - oy) / k, 3), round(W0 / k, 3), round(H0 / k, 3)]
-META['og'] = OS
+# 템플릿 틀 그대로 그린 스킨 세트 → <prefix>-<부위>.webp + META[prefix] = {부위: [x, y, w, h]} (게임 단위, 발/손잡이 기준)
+def tpl_set(tag, prefix):
+    OS = {}
+    for src, n, ox, oy, k in [('char/hat_guide_' + tag, 'hat', 192, 336, 4), ('char/suit-front_guide_' + tag, 'suit', 192, 336, 4), ('char/eyes_guide_' + tag, 'eyes', 192, 336, 4),
+                              ('weapon/sword_guide_' + tag, 'sword', 192, 368, 8), ('weapon/bow_guide_' + tag, 'bow', 192, 368, 8), ('weapon/staff_guide_' + tag, 'staff', 192, 368, 8)]:
+        if not os.path.exists(os.path.join(TPL, src + '.png')): continue
+        a = np.asarray(Image.open(os.path.join(TPL, src + '.png')).convert('RGBA')).copy(); a[a[:, :, 3] == 0] = 0
+        if n == 'eyes':   # 눈은 두 덩어리라 clean(가장 큰 덩어리만)을 쓰지 않음
+            b0 = bbox(a[:, :, 3], pad=1); full = a[b0[1]:b0[3], b0[0]:b0[2]]; best = (b0[0], b0[1]); H0, W0 = full.shape[:2]
+        else:
+            full = clean(a, rel=.03); b0 = bbox(a[:, :, 3], pad=1); H0, W0 = full.shape[:2]; best = None
+            for y in range(b0[1], b0[3] - H0 + 2):
+                for x in range(b0[0], b0[2] - W0 + 2):
+                    if np.array_equal(a[y:y + H0, x:x + W0, 3] > 8, full[:, :, 3] > 8): best = (x, y); break
+                if best: break
+            if not best: best = (b0[0], b0[1])
+        save(prefix + '-' + n, full.copy())
+        OS[n] = [round((best[0] - ox) / k, 3), round((best[1] - oy) / k, 3), round(W0 / k, 3), round(H0 / k, 3)]
+    return OS
+META['og'] = tpl_set('오우거', 'og')
+META['mg'] = tpl_set('마법소녀', 'mg')   # 2026-11-18 마법소녀 스킨 (스킨샵)
 
 # 10) 소원 분수 (2026-11-18 새 그림, 흰 배경): 그림 + 물 칸만 뗀 그림(물결·반짝임을 물 안에만 그리려고) + 위치(비율)
 r = cut_bg(load('건물_분수')); b = bbox(r[:, :, 3]); t = r[b[1]:b[3], b[0]:b[2]]

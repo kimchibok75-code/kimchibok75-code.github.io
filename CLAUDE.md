@@ -186,7 +186,7 @@
   - 실시간: `{t:'sit', b}` (b = 벤치 번호, -1 = 일어남). 서버(town.js)는 누가 앉아 있으면 거절, `go`·`hunt`가 오면 자동으로 일어난 것으로 침
   - 벤치는 1칸(막힌 칸)이지만 그림·누르는 범위는 양옆으로 10px씩 넓음
 - 헤어: `HAIRS`(민머리 + 6종: 짧은·옆머리 대머리·바가지·삐죽·긴·묶은), `HAIR_COLORS` 8색 (game-rules.js). 무료, 캐릭터 만들기와 캐릭터창 → 스킨에서 고름
-  - **2026-11-18 사용자 그림 8종으로 바뀜** (`h1`~`h8`): 템플릿 `char/hair-front_guide_머리N.png`(흰색) → town-art.py 11번 → `hair-N.webp` + meta `hair`(틀 안 위치) → game.html `HAIR_POS`, `hairTint`(흰 그림에 머리 색을 곱함, 색마다 캐시). 예전 헤어 id는 `HAIR_OLD`/`hairId`로 비슷한 새 헤어로 보임·저장됨
+  - **2026-11-18 사용자 그림 8종 추가** (`h1`~`h8`, 예전 6종도 그대로 고를 수 있음 — 사용자 요청): 템플릿 `char/hair-front_guide_머리N.png`(흰색) → town-art.py 11번 → `hair-N.webp` + meta `hair` → game.html `HAIR_POS`, `hairTint`(흰 그림에 머리 색을 곱함, 색마다 캐시)
   - DB `characters.hair`, `hair_c` (`migrations/0006_hair.sql`). 그림은 `hairParts` (뒷머리는 얼굴 뒤, 앞머리는 얼굴 위)
 
 ### 3단계 (같이 놀기) — 2026-11-15 배포, 테스트 통과
@@ -556,7 +556,14 @@
 - 오우거 공격 (`raidPattern(start, 'ogre')`): 💥 내려찍기 slam(큰 원 1~2개) · 🪨 바위 던지기 rock(작은 원 3~5개, 손에서 포물선으로 날아옴) · 몽둥이 휘두르기 swing(앞쪽 부채꼴 `OGRE_SWING`) · 포효. 피해 `RAID_HIT`
 - 그림: `내 디자인/오우거_다리·몸통·오른팔·왼팔·머리.png` + `배경_오우거.png` → town-art.py 9번 → `og-leg/body/rarm/larm/head.webp`(절반 크기), `ogre-bg.webp`, meta `ogre`(판 좌표). game.html `drawOgre` (`OPART`, 오른팔은 어깨 `OSHOULDER` 기준으로 공격 예고 동안 치켜들고 칠 때 내려침, 예고 중 눈이 붉게). 배경 화로 불빛·불티는 `ogreAmbient`
 - 오우거 스킨 (템플릿 `char/hat_guide_오우거.png`, `char/suit-front_guide_오우거.png`, `weapon/*_guide_오우거.png`) → `og-hat/suit/sword/bow/staff.webp`, meta `og` → game.html `OGS`. id는 모두 `ogre` (HATS·SUITS·WSKINS, `raid: 'ogre'`)
+- 오우거 눈 스킨 `eye:ogre` 추가 (레이드 세트 6부위)
 - 스킨샵 레이드 탭은 보스별로 나눠 보임. 치트 탭: '👕 모든 스킨 받기' + '⭐ 레이드 스킨 최고 레벨'(`rskmax`: 모든 레이드 스킨 Lv10)
+
+### 마법소녀 스킨 세트 — 2026-11-18
+- 템플릿 틀(`char/hat·suit-front·eyes_guide_마법소녀.png`, `weapon/sword·bow·staff_guide_마법소녀.png`) → town-art.py `tpl_set('마법소녀', 'mg')` → `mg-*.webp`, meta `mg` → game.html `MGS`
+- 스킨샵에서 팖 (id 모두 `magic`): 💗 마법소녀 왕관 25,000 · 반짝 마법 눈 15,000 · 드레스 30,000 · 하트 날개 검/꽃 날개 활/달빛 요술봉 각 20,000
+- 템플릿 세트 그림은 `TSK = {스킨 id: [그림 앞글자, 위치표]}` 하나로 모자·의상·눈·무기 모두 그림 (새 세트는 여기에 한 줄 + ART_N). 머리카락까지 그린 모자는 `HAT_NOHAIR`에 넣으면 헤어를 안 그림
+- 그림 눈은 깜빡일 때만 기본 선 눈
 
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감
