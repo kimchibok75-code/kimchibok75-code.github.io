@@ -217,6 +217,12 @@
       "ko": "야요 허핑, 연기 잎사귀, 플레이크 던지는 지역 부족 기술자의 빛나는 마음에서 나온 것입니다.",
       "at": 1794721707083
     },
+    "3838997972": {
+      "src": "This mod adds two unarmed helicopter families, the Ka-27PS/PSD and Mi-38/T/PS, across five search-and-rescue and passenger/cargo configurations, giving your colony long-range transport and logistical ",
+      "full": "이 모드는 5가지 수색 및 구조 및 승객/화물 구성에 걸쳐 두 개의 비무장 헬리콥터 계열 Ka-27PS/PSD 및 Mi-38/T/PS를 추가하여 식민지에 장거리 운송 및 물류를 제공합니다.",
+      "ko": "이 모드는 5가지 수색 및 구조 및 승객/화물 구성에 걸쳐 두 개의 비무장 헬리콥터 계열 Ka-27PS/PSD 및 Mi-38/T/PS를 추가하여 식민지에 장거리 운송 및 물류를 제공합니다.",
+      "at": 1794986303244
+    },
     "3839018811": {
       "src": "Gestate the Biotech boss mechanoid, the apocriton, and play it as a colonist.",
       "full": "Biotech 보스 메카노이드인 아포크리톤을 임신시키고 식민지 개척자로 플레이하세요.",
@@ -265,11 +271,23 @@
       "ko": "모드와 인포그래픽이 제작 중입니다. 언제든지 무엇이든 바뀔 수 있습니다. 현재 베타를 인포그래픽이 없는 모험으로 생각하세요",
       "at": 1794788970506
     },
+    "3840130852": {
+      "src": "The Sling Framework allows mod authors to add an external sling to aircraft for transporting vehicles and structures between maps.",
+      "full": "Sling Framework를 사용하면 모드 작성자가 맵 간에 차량과 구조물을 운반하기 위해 항공기에 외부 슬링을 추가할 수 있습니다.",
+      "ko": "Sling Framework를 사용하면 모드 작성자가 맵 간에 차량과 구조물을 운반하기 위해 항공기에 외부 슬링을 추가할 수 있습니다.",
+      "at": 1794986304878
+    },
     "3840311067": {
       "src": "It includes new color variations of military uniforms, workwear that provides bonuses to various tasks, combat equipment with special functions, new sets of camouflage combat gear, underwear, and cere",
       "full": "여기에는 군복의 새로운 색상 변형, 다양한 임무에 보너스를 제공하는 작업복, 특수 기능을 갖춘 전투 장비, 새로운 위장 전투 장비 세트, 속옷 및 세레가 포함됩니다.",
       "ko": "여기에는 군복의 새로운 색상 변형, 다양한 임무에 보너스를 제공하는 작업복, 특수 기능을 갖춘 전투 장비, 새로운 위장 전투 장비 세트, 속옷 및 세레가 포함됩니다.",
       "at": 1794912160077
+    },
+    "3840679920": {
+      "src": "Explore, catch and raise Pokémon alongside your colony.",
+      "full": "식민지와 함께 포켓몬을 탐험하고, 잡고, 키우세요.",
+      "ko": "식민지와 함께 포켓몬을 탐험하고, 잡고, 키우세요.",
+      "at": 1794986305736
     },
     "3840681140": {
       "src": "I Am Mother adds an automated ovum harvesting and processing chain, inspired by the 2019 film.",
