@@ -892,7 +892,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 .rank .ic { font-weight: 800; font-size: calc(16px * var(--fs)); }
   .itip { position: relative; display: inline-grid; place-items: center; width: 20px; height: 20px; min-height: 0; padding: 0; margin-left: 4px; border-radius: 50%; border: 2px solid currentColor; background: none; color: var(--muted, #7a8494); font: 800 12px/1 Georgia, serif; font-style: italic; vertical-align: middle; cursor: pointer; box-shadow: none; }
   .itip:hover, .itip:focus-visible, .itip.on { color: #1f2a3a; }
-  .itip-pop { position: fixed; z-index: 120; pointer-events: none; width: max-content; max-width: min(300px, calc(100vw - 24px)); padding: 9px 11px; border-radius: 10px; background: #1f2a3a; color: #fff; font: 600 13px/1.45 "IBM Plex Sans KR", sans-serif; font-style: normal; text-align: left; white-space: normal; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+  .itip-pop { position: fixed; z-index: 120; pointer-events: none; width: max-content; max-width: min(440px, calc(100vw - 24px)); padding: 9px 11px; border-radius: 10px; background: #1f2a3a; color: #fff; font: 600 13px/1.45 "IBM Plex Sans KR", sans-serif; font-style: normal; text-align: left; white-space: pre-line; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
 </style>
 </head>
 <body>
@@ -2055,6 +2055,42 @@ const LAB = { cafe: 62, gacha: 100, skin: 66, hall: 86, smith: 72, fishshop: 50,
 // 그림 건물: 차지하는 칸보다 조금 넓게(비율 그대로), 아래쪽이 칸 아래 + 6px
 const BP = 4;   // 그림 테두리 여백
 const BSC = { farmshed: 1.3, fishshop: 1.35 };   // 2026-11-18 사용자 요청: 작아 보이던 텃밭 창고 · 낚시점만 크게
+// 그림 건물이 실제로 놓이는 자리 (bSprite와 같은 계산)
+// 마을회관: 집 모든 단계 금액 (i 아이콘 설명)
+function houseTierTip(lv) {
+  const c = o => [o.gold && `${fmtN(o.gold)} 골드`, o.wood && `목재 ${fmtN(o.wood)}`, o.stone && `석재 ${fmtN(o.stone)}`].filter(Boolean).join(' · ');
+  return itip(HOUSE_TIERS.map((t, i) => `${i + 1}. ${t.n}: ${c(i ? t.cost : HOUSE.cost)}${t.inc ? ` (수입 1시간 ${fmtN(t.inc)})` : ''}${i === lv ? '  ← 지금' : ''}`).join('\n'));
+}
+function bImgRect(b, im) {
+  const Wd = b.w * T, Hh = b.h * T, a = im.height / im.width, w = Math.min(Wd + 56, Math.max(Wd + 24, (Hh + 20) / a)) * (BSC[b.id] || 1), h = w * a;
+  return { x: b.x * T - (w - Wd) / 2, y: b.y * T - (h - Hh - 6), w, h };
+}
+// ───────── 굴뚝 연기 (2026-11-19): 그림 속 굴뚝 구멍 자리(그림 비율) · 연기 색 ─────────
+const CHIMNEY = { cafe: [.857, .07, '#f4f1ec'], smith: [.774, .1, '#cfcac4'], lumber: [.69, .175, '#ebe6df'], fishshop: [.789, .127, '#eef0f2'], skin: [.857, .027, '#f1edf3'] };
+let PUFF = null;   // 부드러운 연기 한 덩이 (가운데 진하고 가장자리로 흐려짐)
+function puffImg(c) {
+  PUFF ||= {}; if (PUFF[c]) return PUFF[c];
+  const cv = document.createElement('canvas'); cv.width = cv.height = 64; const g = cv.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, c); gr.addColorStop(.45, c + 'cc'); gr.addColorStop(1, c + '00'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+  return PUFF[c] = cv;
+}
+function drawSmoke(b, now) {
+  const C = CHIMNEY[b.id], im = ART['b-' + b.id]; if (!C || !im) return;
+  const R = bImgRect(b, im), sx = R.x + C[0] * R.w, sy = R.y + C[1] * R.h, t = now / 1000, N = 11, LIFE = 4.6, pi = puffImg(C[2]);
+  const seed = b.x * 7.3 + b.y * 3.1, wind = .75 + Math.sin(t * .23 + seed) * .35;   // 바람은 천천히 세졌다 약해졌다
+  ctx.save();
+  for (let i = 0; i < N; i++) {
+    const r = Math.sin((i + 1) * 91.7 + seed) * .5 + .5, r2 = Math.sin((i + 1) * 37.3 + seed * 2) * .5 + .5;
+    const age = (t + i * LIFE / N + r * .3) % LIFE, p = age / LIFE;   // 0 → 1: 막 나옴 → 사라짐
+    const rise = 58 + r * 16, y = sy - Math.pow(p, .82) * rise;
+    const x = sx + wind * Math.pow(p, 1.6) * 34 + Math.sin(t * 1.1 + i * 2.4 + seed) * 3.2 * p + (r2 - .5) * 3;
+    const rad = 3.5 + p * (12 + r2 * 6);
+    const a = Math.min(1, p / .12) * Math.pow(1 - p, 1.4) * (.5 + r * .18);
+    if (a <= .01) continue;
+    ctx.globalAlpha = a; ctx.drawImage(pi, x - rad, y - rad, rad * 2, rad * 2);
+  }
+  ctx.restore();
+}
 function bSprite(b) {
   const Wd = b.w * T, Hh = b.h * T, im = ART['b-' + b.id];
   if (im) {
@@ -2068,7 +2104,7 @@ function drawBuilding0(b, now) {
   const X = b.x * T, Y = b.y * T, Wd = b.w * T, Hh = b.h * T;
   ctx.fillStyle = 'rgba(31,42,58,.16)'; ctx.beginPath(); ctx.ellipse(X + Wd / 2 + 4, Y + Hh, Wd / 2 + 6, 7, 0, 0, 7); ctx.fill();
   const bs = bSprite(b); glowSp(b, bs, X, Y, 1, now); blit(bs, X, Y);
-  if (ART['b-' + b.id]) return;   // 그림에 간판·연기가 다 있음
+  if (ART['b-' + b.id]) return drawSmoke(b, now);   // 그림에 간판이 다 있음. 굴뚝 연기만 코드로
   const tt = now / 1000;
   if (b.id === 'smith' || b.id === 'cafe') {   // 굴뚝 연기 · 커피 김
     const sx = b.id === 'smith' ? X + Wd - 46 : X + Wd / 2, sy = b.id === 'smith' ? Y + 8 : Y + 20;
@@ -6066,7 +6102,7 @@ function hallSheet(b, keep) {
     const lv = h.lv || 0, nx = HOUSE_TIERS[lv + 1], ok = nx && canPay(nx.cost), inc = houseSettle({ ...h }, Date.now());
     body = `<div class="bs-card hero"><h4>🏠 ${HOUSE_TIERS[lv].n} <small>${lv + 1} / ${HOUSE_TIERS.length}단계</small></h4>${steps(lv + 1, HOUSE_TIERS.length)}
       ${inc.rate ? `${pbar(inc.have / inc.cap, `💰 ${fmtN(inc.have)} / ${fmtN(inc.cap)}`)}<div class="cs">${chip(`1시간에 🪙 ${fmtN(inc.rate)}`, 'gold')}${chip(`최대 ${HOUSE_INC_CAP}시간`)}</div>${bbtn('collect', '💰 임대 수입 받기', '', { wide: true, main: inc.have >= 1, dis: inc.have < 1 })}` : '<p class="muted">빌라(4단계)부터 임대 수입(골드)이 들어와요.</p>'}</div>
-      ${nx ? `<div class="bs-card"><h4>⬆️ 다음 단계: ${nx.n}</h4><div class="cs">${costChips(nx.cost)}${nx.inc ? chip(`수입 1시간 🪙 ${fmtN(nx.inc)}`, 'up') : ''}</div>${bbtn('up', `${nx.n}(으)로 올리기`, ok ? '' : '재료가 모자라요', { wide: true, dis: !ok })}</div>` : '<div class="bs-card"><h4>🏆 가장 높은 단계예요</h4></div>'}
+      ${nx ? `<div class="bs-card"><h4>⬆️ 다음 단계: ${nx.n} ${houseTierTip(lv)}</h4><div class="cs">${costChips(nx.cost)}${nx.inc ? chip(`수입 1시간 🪙 ${fmtN(nx.inc)}`, 'up') : ''}</div>${bbtn('up', `${nx.n}(으)로 올리기`, ok ? '' : '재료가 모자라요', { wide: true, dis: !ok })}</div>` : '<div class="bs-card"><h4>🏆 가장 높은 단계예요</h4></div>'}
       <div class="bs-card"><h4>🎨 지붕 색 <small>무료</small></h4>${sw('reroof', h.roof)}</div>
       <div class="bs-card"><h4>🚚 이사하기</h4><div class="cs">${costChips(cost)}</div>${bbtn('place', '새 자리 고르기', '', { wide: true, dis: !can })}</div>`;
     foot = bbtn(`visit:${me.uid}`, '🚪 내 집에 들어가기', '', { wide: true, main: true });
