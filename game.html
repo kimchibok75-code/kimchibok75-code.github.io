@@ -84,7 +84,7 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .roombtn { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); z-index: 6; padding: 9px 16px; border-radius: 14px; border: 2px solid var(--ink); background: #fff4e0; font: inherit; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
 .placebar { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); z-index: 6; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; align-items: center; background: #fff; border: 2px solid var(--ink); border-radius: 14px; padding: 8px 10px; box-shadow: 0 6px 18px rgba(0,0,0,.18); font-weight: 700; max-width: calc(100% - 24px); }
 .roofdot { display: inline-block; width: 24px; height: 24px; border-radius: 7px; border: 2px solid var(--ink); }
-.wishres { background: #fff8e1; border: 2px solid #f2c14e; border-radius: 12px; padding: 10px; text-align: center; font-size: calc(15px * var(--fs)); margin: 8px 0; }
+.wishres { background: #fff8e1; border: 2px solid #f2c14e; border-radius: 14px; padding: 10px 12px; text-align: center; font-size: calc(15px * var(--fs)); line-height: 1.45; }   /* 1초마다 다시 그려서 등장 애니메이션은 안 씀 */
 .workbox { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: grid; gap: 8px; }
 .odds { width: 100%; } .odds th, .odds td { text-align: center; }
 /* ───── 건물 창 공통 틀 (2026-11-17 UI 개편): 머리 → 지갑 → 탭 → 내용 → 도움말(접힘) → 주 버튼(아래 고정) ───── */
@@ -1152,7 +1152,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 <script type="module">
 'use strict';
 import { jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
-  T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, fishHit, FISH_RIVER, FISH_SEA, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, BUFFS,
+  T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, fishHit, FISH_RIVER, FISH_SEA, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
@@ -2132,11 +2132,24 @@ const SP_NODE = { tree: () => treeImg('round') || sprite('n:tree5', 50, 60, 25, 
   stump: () => sprite('n:stump5', 30, 18, 15, 14, g => inkDraw(g, stumpP)), rubble: () => sprite('n:rubble5', 30, 16, 15, 12, g => inkDraw(g, rubbleP)) };
 const nodeReady = n => !((me.life?.nodes?.[n.i] || 0) > Date.now());
 function drawDeco(d) { const x = d.x * T + T / 2, y = d.y * T + T - 3; ctx.fillStyle = 'rgba(31,42,58,.15)'; ctx.beginPath(); ctx.ellipse(x, y, 13 * d.s, 4, 0, 0, 7); ctx.fill(); blit(SP_TREE[d.k](), x, y, d.s); }
+// 나무·바위 고르기 표시 (2026-11-18): 마우스를 올리면 살짝 커지고, 누르면(캐는 동안에도) 둘레에 하늘색 테두리
+const GLOW = new WeakMap();
+function glowOf(c) {
+  let g = GLOW.get(c); if (g) return g;
+  g = document.createElement('canvas'); g.width = c.width; g.height = c.height; const q = g.getContext('2d');
+  q.drawImage(c, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = '#62d2ff'; q.fillRect(0, 0, g.width, g.height); GLOW.set(c, g); return g;
+}
+function blitGlow(sp, x, y, sc, O, a) { const g = glowOf(sp.c); ctx.save(); ctx.globalAlpha = a; for (const [dx, dy] of RING) ctx.drawImage(g, x - sp.ox * sc + dx * O, y - sp.oy * sc + dy * O, sp.w * sc, sp.h * sc); ctx.restore(); }
+const nodePicked = (n, now) => GA?.node === n || (S.pick?.n === n && now - S.pick.t < 2500);
 function drawNode(n, now) {
   const x = n.x * T + T / 2, y = n.y * T + T - 3, ok = nodeReady(n), shake = GA?.node === n ? Math.sin(now / 30) * 1.6 : 0;
-  ctx.fillStyle = 'rgba(31,42,58,.15)'; ctx.beginPath(); ctx.ellipse(x, y, 12, 4, 0, 0, 7); ctx.fill();
-  if (ok && n.v) blit(SP_TREE[n.v](), x + shake, y, n.s);
-  else blit(SP_NODE[ok ? n.k : n.k === 'tree' ? 'stump' : 'rubble'](), x + shake, y, n.k === 'tree' ? 1.05 : 1);
+  n.hv = (n.hv || 0) + ((S.hover === n ? 1 : 0) - (n.hv || 0)) * .25; if (n.hv < .01) n.hv = 0;   // 마우스 올림 → 부드럽게 커짐
+  const up = 1 + n.hv * .09, pick = nodePicked(n, now);
+  ctx.fillStyle = 'rgba(31,42,58,.15)'; ctx.beginPath(); ctx.ellipse(x, y, 12 * up, 4 * up, 0, 0, 7); ctx.fill();
+  const sp = ok && n.v ? SP_TREE[n.v]() : SP_NODE[ok ? n.k : n.k === 'tree' ? 'stump' : 'rubble'](), sc = (ok && n.v ? n.s : n.k === 'tree' ? 1.05 : 1) * up;
+  if (pick) blitGlow(sp, x + shake, y, sc, 2.6 + Math.sin(now / 160) * .5, .95);
+  else if (n.hv > .05) blitGlow(sp, x + shake, y, sc, 1.8, .45 * n.hv);
+  blit(sp, x + shake, y, sc);
 }
 // 분수 · 벤치 · 전광판 · 포탈
 // 분수 · 벤치 · 전광판 · 포탈 (위에서 본 모습, 테두리 없음)
@@ -3727,6 +3740,14 @@ requestAnimationFrame(frame);
 // ───────── 누르기: 걷기 / 건물 / 사람 ─────────
 const toWorld = (sx, sy) => ({ x: (sx - W / 2) / S.zoom + cam.x, y: (sy - H / 2) / S.zoom + cam.y });
 let down = null, pinch = null;
+// 나무·바위 찾기 (누르기·마우스 올리기 같이)
+const nodeAtW = w => NODES.find(n => !n.off && Math.abs(w.x - (n.x + .5) * T) < 18 && w.y > n.y * T + (n.k === 'tree' ? -30 : 6) && w.y < (n.y + 1) * T);
+cv.addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse') return;
+  const n = HT || me.room || pts.size ? null : nodeAtW(toWorld(e.offsetX, e.offsetY));
+  if (n !== S.hover) { S.hover = n; cv.style.cursor = n ? 'pointer' : ''; }
+});
+cv.addEventListener('pointerleave', () => { S.hover = null; cv.style.cursor = ''; });
 const pts = new Map();
 cv.addEventListener('pointerdown', e => { try { cv.setPointerCapture(e.pointerId); } catch {} pts.set(e.pointerId, { x: e.offsetX, y: e.offsetY }); if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: S.zoom }; down = null; } else down = { x: e.offsetX, y: e.offsetY, t: performance.now() }; });
 cv.addEventListener('pointermove', e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.offsetX, y: e.offsetY }); if (pinch && pts.size === 2) { const [a, b] = [...pts.values()]; setZoom(pinch.z * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d); return; }
@@ -3831,8 +3852,8 @@ function tap(sx, sy) {
     return;
   }
   // 나무 · 바위: 걸어가서 도끼 · 곡괭이질
-  const n = NODES.find(n => !n.off && Math.abs(w.x - (n.x + .5) * T) < 18 && w.y > n.y * T + (n.k === 'tree' ? -30 : 6) && w.y < (n.y + 1) * T);
-  if (n) return startGather(n);
+  const n = nodeAtW(w);
+  if (n) { S.pick = { n, t: performance.now() }; return startGather(n); }
   const h = HOUSES.find(h => w.x > h.x * T - 4 && w.x < (h.x + HOUSE_W) * T + 4 && w.y > (h.y - .5) * T && w.y < (h.y + HOUSE_H) * T);
   if (h) return openHouse(h);
   // 건물: 누르면 바로 이용 (입구까지 안 걸어감)
@@ -4075,7 +4096,7 @@ function spend(n) { if (me.gold < n) { toast('골드가 부족해요'); return f
 //  · 점진적 공개 · 밀러의 법칙: 긴 설명은 접은 '도움말'에, 화면에는 한 줄 소개 + 숫자 꼬리표만
 //  · 상태 보이기: 진행 막대, 모자란 재료는 빨간 꼬리표에 '얼마 모자란지'까지
 //  · 일관성(제이콥의 법칙): 모든 건물이 같은 순서 — 머리 → 지갑 → 탭 → 내용 → 도움말 → 주 버튼
-const BC = { raid: '#c0392b', cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a' };
+const BC = { raid: '#c0392b', cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a', fountain: '#3f8fd0' };
 S.btab = {}; S.bhelp = {};
 const WAL = { gold: () => ['🪙', me.gold], wood: () => [RES.wood.i, LIFE().res.wood], stone: () => [RES.stone.i, LIFE().res.stone], fish: () => [COIN.fish[0], LIFE().coins.fish], farm: () => [COIN.farm[0], LIFE().coins.farm] };
 const fmtN = n => Math.floor(n || 0).toLocaleString();
@@ -5323,16 +5344,27 @@ function fishShop(b, keep) {
 
 // ───────── 소원 분수 ─────────
 const buffNow = () => { const b = LIFE()?.buff; return b && b.until > Date.now() && BUFFS[b.k] ? b : null; };
-function openWish(msg) {
+// 2026-11-18 건물 창 틀(bsOpen)로: 머리 → 지갑 → 결과 → 분수 상태(남은 시간 막대) → 나올 확률 → 도움말 → 아래 고정 버튼
+function openWish(msg, keep) {
   if (HT) return;
-  reopen = null;
-  const L = LIFE(), left = Math.max(0, Math.ceil((L.wishAt + WISH.cd - Date.now()) / 1000)), b = buffNow();
-  openModal(`<div id="wishSheet"><h3>⛲ 소원 분수</h3><p><b>10분에 한 번</b>, 🪙 ${WISH.cost}을 던져 소원을 빌 수 있어요. 대부분은 퐁당… 하지만 가끔 <b>골드·버프·코인</b>이, 아주 드물게 <b>대박</b>이 나와요.</p>
-    ${msg ? `<div class="wishres">${msg}</div>` : ''}
-    ${b ? `<div class="points" style="background:#fff;border-color:var(--line)"><span>${BUFFS[b.k].i} ${BUFFS[b.k].n}</span><span style="font-size:13px">${BUFFS[b.k].d} · ${fmtLeft(Math.ceil((b.until - Date.now()) / 1000))} 남음</span></div>` : ''}
-    <div class="actions"><button class="btn main" id="wishBtn" data-x="wish" ${left || me.gold < WISH.cost ? 'disabled' : ''}>${left ? `💤 분수가 잔잔해요 · ${fmtLeft(left)} 뒤에` : `🪙 ${WISH.cost} 던지고 소원 빌기`}</button></div>
-    <details class="gfold"><summary>나올 수 있는 것</summary><p class="muted">작은 골드 · ${Object.values(BUFFS).map(x => `${x.i} ${x.n}(${x.d})`).join(' · ')} · 코인 3개 · 특대 음료 2개 · 💰 대박(1,000골드) · 🌈 무지개 소원(3,000골드 + 무지개 축복). 버프는 한 번에 하나만, 새로 받으면 바뀌어요.</p></details>
-    <p class="muted">소원을 많이 빌면 칭호도 생겨요 🏷️</p></div>`, el => wire(el, doWish), true);
+  reopen = () => openWish(msg, true);
+  const L = LIFE(), left = Math.max(0, Math.ceil((L.wishAt + WISH.cd - Date.now()) / 1000)), b = buffNow(), poor = me.gold < WISH.cost;
+  const tot = WISH_TABLE.reduce((a, [w]) => a + w, 0), pct = f => +(WISH_TABLE.filter(([, o]) => f(o)).reduce((a, [w]) => a + w, 0) / tot * 100).toFixed(1);
+  const odds = [['💧 퐁당', pct(o => o.k === 'none'), '#b9c6d3'], ['🪙 골드', pct(o => o.k === 'gold'), '#f2c14e'], ['✨ 버프', pct(o => o.k === 'buff'), '#7cc1ef'],
+    ['🎟️ 코인', pct(o => o.k === 'coin'), '#8fd18a'], ['🍹 음료', pct(o => o.k === 'pots'), '#f39ac2'], ['💰 대박', pct(o => o.k === 'jackpot'), '#e8553a'], ['🌈 무지개', pct(o => o.k === 'rainbow'), '#a77be0']];
+  const n = L.cnt?.wish || 0;
+  const body = `${msg ? `<div class="wishres">${msg}</div>` : ''}
+    <div class="bs-card hero"><h4>${left ? '💤 분수가 잔잔해요' : '✨ 분수가 반짝여요'}<small>${left ? `${fmtLeft(left)} 뒤에` : '지금 빌 수 있어요'}</small></h4>
+      ${thinBar(left ? 1 - left / (WISH.cd / 1000) : 1)}
+      <div class="cs">${chip(`🪙 ${WISH.cost} / 1번`)}${chip('⏱ 10분에 한 번')}${chip(`🙏 지금까지 ${fmtN(n)}번`)}</div></div>
+    ${b ? `<div class="bs-card"><h4>${BUFFS[b.k].i} ${BUFFS[b.k].n}<small>${fmtLeft(Math.ceil((b.until - Date.now()) / 1000))} 남음</small></h4><p class="muted">${BUFFS[b.k].d} · 지금 받고 있는 축복</p></div>` : ''}
+    <div class="bs-card"><h4>🎲 나올 수 있는 것</h4>${oddsBar(odds)}</div>`;
+  const help = `<ul><li>대부분은 퐁당… 하지만 가끔 <b>골드·버프·코인</b>이, 아주 드물게 <b>대박</b>이 나와요.</li>
+    <li>버프: ${Object.values(BUFFS).map(x => `${x.i} ${x.n}(${x.d})`).join(' · ')}</li>
+    <li>버프는 한 번에 하나만, 새로 받으면 바뀌어요.</li><li>코인 3개 · 특대 음료 2개 · 💰 대박 1,000골드 · 🌈 무지개 소원 3,000골드 + 무지개 축복</li>
+    <li>소원을 많이 빌면 칭호도 생겨요 🏷️</li></ul>`;
+  const foot = bbtn('wish', left ? `💤 ${fmtLeft(left)} 뒤에 빌 수 있어요` : poor ? '골드가 모자라요' : `🪙 ${WISH.cost} 던지고 소원 빌기`, '', { main: 1, wide: 1, dis: left || poor });
+  bsOpen({ id: 'fountain', icon: '⛲', name: '소원 분수' }, { tag: '동전을 던지고 소원을 빌어 보세요', wal: ['gold'], body, help, foot, live: !!left || !!b }, x => x === 'wish' && doWish(), keep);
 }
 async function doWish() {
   const fo = SPOTS.find(s => s.id === 'fountain'), j = await act('/api/wish', {}); if (!j) return;
