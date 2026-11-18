@@ -222,7 +222,7 @@ async function recover(req, env) {
 // ───────── 로그인한 뒤 ─────────
 // DB 한 줄 ↔ 캐릭터
 function toChar(r) {
-  const c = { face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, hair: r.hair, hairC: r.hair_c, suit: r.suit || '', wsk: jp(r.wsk, {}), intro: r.intro, title: r.title, x: r.x, y: r.y, lv: r.lv, exp: r.exp, gold: r.gold,
+  const c = { face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, hair: r.hair, hairC: r.hair_c, hatHair: r.hat_hair !== 0, suit: r.suit || '', wsk: jp(r.wsk, {}), intro: r.intro, title: r.title, x: r.x, y: r.y, lv: r.lv, exp: r.exp, gold: r.gold,
     str: r.s_str, dex: r.s_dex, int: r.s_int, luk: r.s_luk, points: r.points, hp: r.hp, hpAt: r.hp_at,
     equip: JSON.parse(r.equip), bag: JSON.parse(r.bag), hats: JSON.parse(r.hats), pots: JSON.parse(r.pots), potAt: r.pot_at,
     hunt: r.hunt ? JSON.parse(r.hunt) : null, bonusDay: r.bonus_day, jobAt: r.job_at, ver: r.ver,
@@ -245,7 +245,7 @@ function meOut(user, c) {
   const h = c.hunt;
   return {
     id: user.id, nick: user.nick, admin: !!user.is_admin, gfx: c.gfx || {}, world: c._w ? { lv: c._w.lv, live: c._w.live } : null,
-    char: { face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair, hairC: c.hairC, suit: c.suit, wsk: c.wsk, intro: c.intro, title: c.title, x: c.x, y: c.y, lv: c.lv, exp: c.exp, gold: c.gold,
+    char: { face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair, hairC: c.hairC, hatHair: c.hatHair, suit: c.suit, wsk: c.wsk, intro: c.intro, title: c.title, x: c.x, y: c.y, lv: c.lv, exp: c.exp, gold: c.gold,
       str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
       cls: c.cls, enh: c.enh, gacha: c.gacha, preset: c.preset, life: c.life, presets: c.presets.map((p, i) => (i === c.preset ? { ...p, s: [c.str, c.dex, c.int, c.luk] } : p)),
       hunt: h ? { f: h.f, start: h.start, t: Math.round(h.t), boss: h.boss, kills: h.kills, exp: h.exp, gold: h.gold, drops: h.drops } : null,
@@ -455,7 +455,7 @@ const GAME = {
   async '/api/raid/join'(c, b, at, out, env, user) {
     townOnly(c);
     const D = derive(c), dps = raidDps(D);
-    const look = { lv: c.lv, title: c.title, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair, hairC: c.hairC, suit: c.suit, wsk: c.wsk, cls: c.cls, enh: c.enh, equip: c.equip };
+    const look = { lv: c.lv, title: c.title, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair, hairC: c.hairC, hatHair: c.hatHair, suit: c.suit, wsk: c.wsk, cls: c.cls, enh: c.enh, equip: c.equip };
     const res = await raidDO(env).fetch('https://raid/join', { method: 'POST', body: JSON.stringify({ start: Number(b.start), uid: user.id, nick: user.nick, lv: c.lv, dps, maxHp: D.maxHp, look }) });
     const j = await res.json(); if (!res.ok) fail(400, j.error || '참여하지 못했어요');
     c.hp = D.maxHp;
@@ -754,7 +754,7 @@ async function saveLook(req, env, user) {
   const face = FACES.includes(b.face) ? b.face : null, body = BODIES.includes(b.body) ? b.body : null;
   const eyes = b.eyes === 'dot' || (EYE_SKINS.some(e => e.id === b.eyes) && owned.includes('eye:' + b.eyes)) ? b.eyes : null;
   const hat = typeof b.hat === 'string' && owned.includes(b.hat) ? b.hat : null;
-  const hair = HAIRS.some(h => h.id === hairId(b.hair)) ? hairId(b.hair) : null, hairC = HAIR_COLORS.includes(b.hairC) ? b.hairC : null;
+  const hair = HAIRS.some(h => h.id === hairId(b.hair)) ? hairId(b.hair) : null, hairC = HAIR_COLORS.includes(b.hairC) ? b.hairC : null, hh = typeof b.hatHair === 'boolean' ? (b.hatHair ? 1 : 0) : null;
   const suit = b.suit === '' || (typeof b.suit === 'string' && SUITS.some(s => s.id === b.suit) && owned.includes('suit:' + b.suit)) ? b.suit : null;
   let wsk = null;
   if (b.wsk && typeof b.wsk === 'object') {   // { sword, bow, staff }: 빈 값 = 기본 무기 그림
@@ -769,8 +769,8 @@ async function saveLook(req, env, user) {
     const r = scanBad(intro); if (r.hard) fail(400, '한 줄 소개에 쓸 수 없는 말이 있어요'); intro = r.text;
   }
   // ver + 1: 같은 때 다른 요청(사냥 정산 등)이 옛 값으로 덮어쓰지 않게
-  await env.DB.prepare('UPDATE characters SET face = COALESCE(?, face), body = COALESCE(?, body), eyes = COALESCE(?, eyes), hat = COALESCE(?, hat), hair = COALESCE(?, hair), hair_c = COALESCE(?, hair_c), suit = COALESCE(?, suit), wsk = COALESCE(?, wsk), intro = COALESCE(?, intro), ver = ver + 1, updated_at = ? WHERE user_id = ?')
-    .bind(face, body, eyes, hat, hair, hairC, suit, wsk, intro, now(), user.id).run();
+  await env.DB.prepare('UPDATE characters SET face = COALESCE(?, face), body = COALESCE(?, body), eyes = COALESCE(?, eyes), hat = COALESCE(?, hat), hair = COALESCE(?, hair), hair_c = COALESCE(?, hair_c), hat_hair = COALESCE(?, hat_hair), suit = COALESCE(?, suit), wsk = COALESCE(?, wsk), intro = COALESCE(?, intro), ver = ver + 1, updated_at = ? WHERE user_id = ?')
+    .bind(face, body, eyes, hat, hair, hairC, hh, suit, wsk, intro, now(), user.id).run();
   return json({ me: await loadMe(env, user) });
 }
 async function saveMove(req, env, user) {

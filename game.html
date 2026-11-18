@@ -1057,7 +1057,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
           <div class="arow" id="hairSw2"></div>
         </div>
         <p class="skfxsum" id="skinFxSum"></p>
-        <div class="field"><label>모자</label><div class="skgrid" id="hatList"></div></div>
+        <div class="field"><label>모자</label><label class="check hathair"><input type="checkbox" id="hatHair" checked> 모자를 써도 헤어 보이기</label><div class="skgrid" id="hatList"></div></div>
         <div class="field"><label>눈 모양</label><div class="skgrid" id="eyeList"></div></div>
         <div class="field"><label>의상</label><div class="skgrid" id="suitList"></div></div>
         <div class="field"><label>무기 스킨</label><div class="skgrid" id="wskList"></div></div>
@@ -1514,7 +1514,8 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   else { P.push({ path: R(-9, -20 - bob, 18, 14, 5), c: c.body }); if (eq.armor?.st) P.push(...armorParts(eq.armor, bob)); }
   // 머리 + 눈 (+ 헤어: 뒷머리는 얼굴 뒤, 앞머리는 얼굴 위)
   P.push({ path: R(-14, hy, 28, 26, 9), c: c.face, after: g => drawEyes(g, c, hy + 16, t) });
-  if (!HAT_NOHAIR.has(c.hat)) P.push(...hp.front);
+  const hatOn = c.hat && c.hat !== 'none';
+  if (!HAT_NOHAIR.has(c.hat) && !(hatOn && c.hatHair === false)) P.push(...hp.front);   // 모자를 쓸 때 헤어 보이기 (캐릭터창 체크, 기본 보임)
   if (c.hat && c.hat !== 'none') P.push(...hatParts(c.hat, hy, c.face));
   if (eq.hat?.st && !(c.hat && c.hat !== 'none')) P.push(...helmParts(eq.hat, hy));   // 모자 스킨을 쓰면 머리 장비는 안 보임
   // 오른팔 (몸 앞) + 무기: 손(팔 끝)이 손잡이를 쥠
@@ -1525,7 +1526,7 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   const arm = tool === 'axe' || tool === 'pick' ? -2.5 + tw * 2.3 : (c.fz || tool === 'rod') && !HT ? -1.25 : sw ? (far ? -1.5 + sw * .35 : -2.6 + (1 - sw) * 2.1) : -.25 - walk * .45, sx = 9, sy = -17 - bob;
   P.push({ path: at(sx, sy, arm, R(-2.5, 0, 5, 10, 2.5)), c: su?.sleeve || c.face });
   if (tool && TOOL_P[tool] && !(tool === 'rod' && c.fz)) for (const p of TOOL_P[tool]) P.push({ ...p, path: at(sx, sy, arm, at(0, 9, tool === 'rod' ? 1.95 : 1.25, p.path)) });   // 도구 (낚싯대는 던졌을 때 drawRods가 그림)
-  if (W) { const tilt = wt === 'bow' ? -arm : wt === 'staff' ? (sw ? -arm + .5 : .3) : 1.2; for (const p of (wk ? wskParts(wt, wk) : weaponParts(W))) P.push({ ...p, path: at(sx, sy, arm, at(0, 9, tilt, p.path)), ...(p.after && { after: at(sx, sy, arm, at(0, 9, tilt, p.after)) }), ...(p.ink && { ink: (g, O) => at(sx, sy, arm, at(0, 9, tilt, q => p.ink(q, O)))(g) }) }); }
+  if (W) { const tilt = wt === 'bow' ? (sw ? -arm : .8) : wt === 'staff' ? (sw ? -arm + .5 : .75) : 1.2; /* 2026-11-18: 서 있을 때 활·지팡이를 바깥으로 기울여 얼굴을 덜 가림 */ for (const p of (wk ? wskParts(wt, wk) : weaponParts(W))) P.push({ ...p, path: at(sx, sy, arm, at(0, 9, tilt, p.path)), ...(p.after && { after: at(sx, sy, arm, at(0, 9, tilt, p.after)) }), ...(p.ink && { ink: (g, O) => at(sx, sy, arm, at(0, 9, tilt, q => p.ink(q, O)))(g) }) }); }
   P.push({ path: at(sx, sy, arm, E(0, 9, 3.1, 3.1)), c: c.face });
   inkDraw(ctx, P, 2.2);
   ctx.restore();
@@ -1878,7 +1879,7 @@ function stepChar(ch, dt) {
 // ───────── 다른 유저 (실시간: 서버의 마을 방에서 받아 옴) ─────────
 let people = [];
 function mkPerson(d) {
-  return { id: d.id, name: d.n, adm: d.adm, lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {},
+  return { id: d.id, name: d.n, adm: d.adm, lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, hatHair: d.hatHair !== false, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {},
     x: d.tx ?? d.x, y: d.ty ?? d.y, path: [], seed: (d.id % 17) * .37, speed: 195, hunt: !!d.hunt, room: d.room || 0, sit: -1, bubble: null, emote: null };
 }
 const personOf = id => people.find(p => p.id === id);
@@ -4753,6 +4754,7 @@ function skinTile(cv, look, mode) {
   drawChar(g, w / 2 - (mode === 'weapon' ? 7 * sc : 0), fy, { equip: {}, cls: '', ...look, moving: false, still: true }, 0, sc);
 }
 function renderSkins() {
+  $('#hatHair').checked = me.hatHair !== false;
   const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
   const hats = HATS.filter(h => me.hats.includes(h.id)), eyes = EYE_SKINS.filter(e => e.id === 'dot' || me.hats.includes('eye:' + e.id));
   const suits = SUITS.filter(s => me.hats.includes('suit:' + s.id)), wsks = WSKINS.filter(w => me.hats.includes(wskKey(w)));
@@ -4778,6 +4780,7 @@ function arrowPick(el, label, list, key, show, after) {
   el.onclick = e => { const d = +e.target.closest('[data-d]')?.dataset.d; if (!d) return; const i = Math.max(0, list.indexOf(me[key])); me[key] = list[(i + d + list.length) % list.length]; draw(); after(); };
   ARROWS.push(draw); draw();
 }
+$('#hatHair').addEventListener('change', e => { me.hatHair = e.target.checked; syncMe(); saveLook(); });
 $('#eyeList').addEventListener('click', e => { const y = e.target.closest('[data-y]')?.dataset.y; if (y) { me.eyes = y; syncMe(); saveLook(); } });
 $('#suitList').addEventListener('click', e => { const s = e.target.closest('[data-s]')?.dataset.s; if (s) { me.suit = me.suit === s ? '' : s; syncMe(); saveLook(); } });
 $('#wskList').addEventListener('click', e => { const w = e.target.closest('[data-w]')?.dataset.w; if (!w) return; const [t, id] = w.split(':'); me.wsk = { ...(me.wsk || {}) }; me.wsk[t] = me.wsk[t] === id ? '' : id; syncMe(); saveLook(); });
@@ -4843,7 +4846,7 @@ async function api(path, body, opts = {}) {
 // 서버에서 받은 내 정보로 캐릭터 맞추기
 function applyMe(m, keep) {   // keep: 지금 위치 그대로 (서버 저장 위치는 45초마다라서 예전 자리일 수 있음)
   const c = m.char, keepPos = keep || (HT && c.hunt);
-  Object.assign(me, { name: m.nick, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: hairId(c.hair), hairC: c.hairC || HAIR_COLORS[0], suit: c.suit || '', wsk: c.wsk || {}, intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
+  Object.assign(me, { name: m.nick, admin: m.admin, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: hairId(c.hair), hairC: c.hairC || HAIR_COLORS[0], hatHair: c.hatHair !== false, suit: c.suit || '', wsk: c.wsk || {}, intro: c.intro, title: c.title, ...(keepPos ? {} : { x: c.x, y: c.y }), lv: c.lv, exp: c.exp, gold: c.gold,
     str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp || derive().maxHp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
     cls: c.cls || 'sword', enh: c.enh || {}, presets: c.presets, preset: c.preset || 0, gacha: c.gacha || { w: 0, a: 0 }, life: c.life || me.life, uid: m.id ?? me.uid, gfx: m.gfx || {}, world: m.world || me.world });
   me.job = c.job; me.jobEnd = c.job ? Date.now() + c.job.left * 1000 : 0;
@@ -4936,7 +4939,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 let lookT = null;
 function saveLook() {
   clearTimeout(lookT);
-  lookT = setTimeout(() => api('/api/character', { face: me.face, body: me.body, eyes: me.eyes, hat: me.hat, hair: me.hair, hairC: me.hairC, suit: me.suit || '', wsk: me.wsk || {} }).catch(e => toast(e.message)), 700);
+  lookT = setTimeout(() => api('/api/character', { face: me.face, body: me.body, eyes: me.eyes, hat: me.hat, hair: me.hair, hairC: me.hairC, hatHair: me.hatHair !== false, suit: me.suit || '', wsk: me.wsk || {} }).catch(e => toast(e.message)), 700);
 }
 // 실제 김치복 방송 상태 (홈페이지와 같은 Worker)
 const LIVE_IMG = new Image(); let liveInfo = null;
@@ -5888,7 +5891,7 @@ function onNet(m) {
   else if (m.t === 'hunt') { const p = personOf(m.id); if (p) { p.hunt = m.on; p.path = []; p.sit = -1; } }
   else if (m.t === 'fish') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) { if (m.s === 1) rodOut(p, m.bx, m.by, m.r); else if (m.s === 2) { rodEnd(p, { i: m.i, n: m.n, grade: m.g, len: m.len }, m.big); if (m.sh) SH_GONE.add(m.sh); } else if (m.s === 3) rodEnd(p, null); else p.fz = null; } }
   else if (m.t === 'emo') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) emote(p, m.e); }
-  else if (m.t === 'look') { const p = personOf(m.p.id), d = m.p; if (p) Object.assign(p, { lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {} }); }
+  else if (m.t === 'look') { const p = personOf(m.p.id), d = m.p; if (p) Object.assign(p, { lv: d.lv, title: d.title, intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, hatHair: d.hatHair !== false, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {} }); }
   else if (m.t === 'say') {
     if (S.blocked.has(m.id)) return;
     const mine = m.id === NET.me, p = mine ? me : personOf(m.id);
@@ -5905,7 +5908,7 @@ function onNet(m) {
   setOnline();
 }
 // 내 겉모습·레벨이 바뀌면 다른 사람 화면에도 (서버가 저장된 값을 다시 읽음)
-const lookSig = () => JSON.stringify([me.lv, me.title, me.intro, me.face, me.body, me.eyes, me.hat, me.hair, me.hairC, me.suit, me.wsk, me.cls, me.enh, Object.values(me.equip || {}).map(it => it?.id)]);
+const lookSig = () => JSON.stringify([me.lv, me.title, me.intro, me.face, me.body, me.eyes, me.hat, me.hair, me.hairC, me.hatHair, me.suit, me.wsk, me.cls, me.enh, Object.values(me.equip || {}).map(it => it?.id)]);
 function lookChanged() { if (!NET.ready) return; const s = lookSig(); if (s === NET.sig) return; NET.sig = s; clearTimeout(NET.lookT); NET.lookT = setTimeout(() => netSend({ t: 'look' }), 1600); }
 
 // ───────── 차단 목록 (설정) ─────────
