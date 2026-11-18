@@ -1594,7 +1594,7 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 const ART = {};
 const ART_N = ['b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg',
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
-  ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff'];
+  ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole'];
 const artReady = Promise.all(ART_N.map(n => new Promise(ok => { const im = new Image(); im.onload = () => { ART[n] = im; ok(); }; im.onerror = () => ok(); im.src = `assets/img/town/${n}.webp?v=__BUILD__`; })));
 // 그림 조각 (캐릭터 스킨용): inkDraw 안에서 테두리 없이 그림을 그림. rot = 돌리기(가운데 기준)
 // 그림 바깥 테두리 (2026-11-18): 그림 모양대로 검게 칠한 판(silOf)을 둘레 16방향으로 O만큼 밀어 그린 뒤 그 위에 그림
@@ -2122,19 +2122,19 @@ const rockP = (c = '#9aa0a8', ore) => [{ path: PG([[-16, -8], [-17, -1], [-12, 3
   ...(ore ? [{ path: E(7, -10, 2.8, 2.1), c: '#e8c55a' }, { path: E(-5, -8, 2.2, 1.7), c: '#e8c55a' }, { path: E(10, -15, 1.7, 1.4), c: '#bfe9ff' }] : [])];
 const stumpP = [{ path: R(-8, -7, 16, 8, [0, 0, 3, 3]), c: '#8a5a30' }, { path: E(0, -7, 8, 5), c: '#d8a56a' }, { path: E(0, -7, 4.5, 2.8), c: '#c48a4f' }, { path: E(0, -7, 1.6, 1), c: '#a0703c' }, { path: E(9, -1, 3, 1.6, .5), c: '#6cc35a' }];
 const rubbleP = [{ path: E(-6, -2, 5, 3.4), c: '#7e848c' }, { path: E(-6, -3.5, 5, 3), c: '#a3a9b1' }, { path: E(5, -2, 4, 3), c: '#757b83' }, { path: E(5, -3.2, 4, 2.6), c: '#9aa0a8' }, { path: E(0, -5, 3.5, 2.6), c: '#b4bac2' }];
-// 그림 나무: [그림 번호, 너비]. 발(줄기 밑동) = 그림 아래에서 7%
+// 그림 나무: [그림 번호, 너비]. 발(줄기 밑동) = 그림 맨 아래 (2026-11-18 새 그림, 그림자는 코드가 그림)
 const TREE_IMG = { maple: [1, 52], pine: [2, 46], round: [3, 60], birch: [4, 48], cherry: [5, 56] };
-const treeImg = k => { const [n, w] = TREE_IMG[k] || [], im = ART['tree-' + n]; if (!im) return null; const h = w * im.height / im.width; return sprite('to:' + k, w + BP * 2, h + BP * 2, w / 2 + BP, h * .93 + BP, g => inkImage(g, im, -w / 2, -h * .93, w, h)); };
+const treeImg = k => { const [n, w] = TREE_IMG[k] || [], im = ART['tree-' + n]; if (!im) return null; const h = w * im.height / im.width; return sprite('to:' + k, w + BP * 2, h + BP * 2, w / 2 + BP, h * .985 + BP, g => inkImage(g, im, -w / 2, -h * .985, w, h)); };
 const SP_TREE0 = { birch: () => sprite('t:birch5', 40, 70, 20, 64, g => inkDraw(g, birchP)), cherry: () => sprite('t:cherry5', 60, 50, 30, 44, g => inkDraw(g, cherryP)), maple: () => sprite('t:maple5', 50, 50, 25, 44, g => inkDraw(g, mapleP)),
   round: () => sprite('t:round5', 50, 60, 25, 54, g => inkDraw(g, treeP('round'))), pine: () => sprite('t:pine5', 50, 62, 25, 56, g => inkDraw(g, treeP('pine'))), stone: () => sprite('t:stone5', 48, 34, 24, 28, g => inkDraw(g, rockP('#a39a8c'))) };
 const SP_TREE = Object.fromEntries(Object.entries(SP_TREE0).map(([k, f]) => [k, () => treeImg(k) || f()]));
 const SP_NODE = { tree: () => treeImg('round') || sprite('n:tree5', 50, 60, 25, 54, g => inkDraw(g, treeP('round', '#58a856'))), rock: () => sprite('n:rock5', 48, 34, 24, 28, g => inkDraw(g, rockP('#a3a8b0', true))),
   stump: () => sprite('n:stump5', 30, 18, 15, 14, g => inkDraw(g, stumpP)), rubble: () => sprite('n:rubble5', 30, 16, 15, 12, g => inkDraw(g, rubbleP)) };
 const nodeReady = n => !((me.life?.nodes?.[n.i] || 0) > Date.now());
-function drawDeco(d) { const x = d.x * T + T / 2, y = d.y * T + T - 3; if (TREE_IMG[d.k] && ART['tree-1']) return blit(SP_TREE[d.k](), x, y, d.s); ctx.fillStyle = 'rgba(31,42,58,.15)'; ctx.beginPath(); ctx.ellipse(x, y, 13 * d.s, 4, 0, 0, 7); ctx.fill(); blit(SP_TREE[d.k](), x, y, d.s); }
+function drawDeco(d) { const x = d.x * T + T / 2, y = d.y * T + T - 3; ctx.fillStyle = 'rgba(31,42,58,.15)'; ctx.beginPath(); ctx.ellipse(x, y, 13 * d.s, 4, 0, 0, 7); ctx.fill(); blit(SP_TREE[d.k](), x, y, d.s); }
 function drawNode(n, now) {
   const x = n.x * T + T / 2, y = n.y * T + T - 3, ok = nodeReady(n), shake = GA?.node === n ? Math.sin(now / 30) * 1.6 : 0;
-  if (!(ok && n.k === 'tree' && ART['tree-1'])) { ctx.fillStyle = 'rgba(31,42,58,.15)'; ctx.beginPath(); ctx.ellipse(x, y, 12, 4, 0, 0, 7); ctx.fill(); }
+  ctx.fillStyle = 'rgba(31,42,58,.15)'; ctx.beginPath(); ctx.ellipse(x, y, 12, 4, 0, 0, 7); ctx.fill();
   if (ok && n.v) blit(SP_TREE[n.v](), x + shake, y, n.s);
   else blit(SP_NODE[ok ? n.k : n.k === 'tree' ? 'stump' : 'rubble'](), x + shake, y, n.k === 'tree' ? 1.05 : 1);
 }
@@ -2193,7 +2193,58 @@ function drawScreen(s, now) {
   const bw = 42 * K, bh = 16 * K; ctx.fillStyle = S.live ? (Math.floor(now / 600) % 2 ? '#ff3b3b' : '#ff6b6b') : '#5d6b7e'; rr(ctx, r.x + 8, r.y + 8, bw, bh, 5 * K); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.font = f(800, 10); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(S.live ? '● LIVE' : 'OFF AIR', r.x + 8 + bw / 2, r.y + 8 + bh / 2 + .5);
 }
+// 사냥터 포탈 그림 (2026-11-18 사용자 그림): 가운데 파란 소용돌이 칸만 코드로 돌림 + 빛 줄기 · 빨려 드는 빛 알갱이
+const PORTAL_W = 92, PORTAL_FOOT = .97, PORTAL_HOLE = [.3102, .3988, .3795, .3683];   // 소용돌이 칸 (그림 안 비율, town-art.py 8번 meta.portal.hole)
+const portalBox = () => { const im = ART.portal, w = PORTAL_W, h = im ? w * im.height / im.width : 74; return { x: PORTAL.x - w / 2, y: PORTAL.y - h * PORTAL_FOOT, w, h }; };
+const PH = [document.createElement('canvas'), document.createElement('canvas')];
+function portalSwirl(tt, Wd, Hd) {
+  const hole = ART['portal-hole'], k = 4, cw = Math.ceil(Wd * k), ch = Math.ceil(Hd * k), [A, B] = PH;
+  for (const c of PH) if (c.width !== cw || c.height !== ch) { c.width = cw; c.height = ch; }
+  const q = A.getContext('2d'), r = B.getContext('2d'), cx = cw * .5, cy = ch * .54, R = Math.min(cw, ch) * .5;
+  q.setTransform(1, 0, 0, 1, 0, 0); q.globalCompositeOperation = 'source-over'; q.globalAlpha = 1; q.clearRect(0, 0, cw, ch);
+  q.drawImage(hole, 0, 0, cw, ch);   // 그대로 있는 바탕
+  // 1) 가운데 원판: 그림을 돌리고 가장자리는 흐리게 바탕과 섞음
+  r.setTransform(1, 0, 0, 1, 0, 0); r.globalCompositeOperation = 'source-over'; r.clearRect(0, 0, cw, ch);
+  r.save(); r.translate(cx, cy); r.rotate(-tt * 1.6); r.drawImage(hole, -cx, -cy, cw, ch); r.restore();
+  r.globalCompositeOperation = 'destination-in';
+  const fade = r.createRadialGradient(cx, cy, 0, cx, cy, R * 1.02); fade.addColorStop(0, '#000'); fade.addColorStop(.72, '#000'); fade.addColorStop(1, 'rgba(0,0,0,0)');
+  r.fillStyle = fade; r.fillRect(0, 0, cw, ch);
+  q.drawImage(B, 0, 0);
+  // 2) 빛 줄기 3개 (나선)
+  q.globalCompositeOperation = 'lighter'; q.lineCap = 'round';
+  for (let j = 0; j < 3; j++) {
+    q.beginPath();
+    for (let i = 0; i <= 24; i++) { const u = i / 24, a = -tt * 2.6 + j * 2.094 + u * 3.4, rr = R * (.08 + u * .95); q.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * .92); }
+    q.strokeStyle = `rgba(150,235,255,${.28 + .12 * Math.sin(tt * 3 + j)})`; q.lineWidth = R * .13; q.stroke();
+  }
+  // 3) 빨려 드는 빛 알갱이
+  for (let i = 0; i < 9; i++) {
+    const u = 1 - ((tt * .45 + i / 9) % 1), a = -tt * 2 + i * 2.4 + u * 3, rr = R * (.1 + u * .9);
+    q.fillStyle = `rgba(220,250,255,${.9 * (1 - u * .6)})`; q.beginPath(); q.arc(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * .92, R * (.025 + u * .03), 0, 7); q.fill();
+  }
+  // 4) 가운데 맥박 빛
+  const glow = q.createRadialGradient(cx, cy, 0, cx, cy, R * .55), pul = .45 + .2 * Math.sin(tt * 4);
+  glow.addColorStop(0, `rgba(210,250,255,${pul})`); glow.addColorStop(1, 'rgba(120,200,255,0)'); q.fillStyle = glow; q.fillRect(0, 0, cw, ch);
+  // 5) 소용돌이 칸 모양대로 자름
+  q.globalCompositeOperation = 'destination-in'; q.drawImage(hole, 0, 0, cw, ch);
+  return A;
+}
 function drawPortal(now) {
+  if (!ART.portal) return drawPortalOld(now);
+  const b = portalBox(), tt = now / 1000;
+  ctx.fillStyle = 'rgba(31,42,58,.2)'; ctx.beginPath(); ctx.ellipse(PORTAL.x, PORTAL.y - 1, b.w * .46, 6, 0, 0, 7); ctx.fill();
+  blit(sprite('portal', b.w + BP * 2, b.h + BP * 2, b.w / 2 + BP, b.h * PORTAL_FOOT + BP, g => inkImage(g, ART.portal, -b.w / 2, -b.h * PORTAL_FOOT, b.w, b.h)), PORTAL.x, PORTAL.y);
+  const [hx, hy, hw, hh] = PORTAL_HOLE, X = b.x + hx * b.w, Y = b.y + hy * b.h, Wd = hw * b.w, Hd = hh * b.h;
+  if (ART['portal-hole']) ctx.drawImage(portalSwirl(tt, Wd, Hd), X, Y, Wd, Hd);
+  // 문 밖으로 새어 나오는 빛 + 떠오르는 알갱이
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const gx = X + Wd / 2, gy = Y + Hd * .55, gl = ctx.createRadialGradient(gx, gy, Wd * .2, gx, gy, Wd * .95);
+  gl.addColorStop(0, `rgba(90,170,255,${.16 + .06 * Math.sin(tt * 2.2)})`); gl.addColorStop(1, 'rgba(90,170,255,0)'); ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(gx, gy, Wd * .95, 0, 7); ctx.fill();
+  for (let i = 0; i < 6; i++) { const u = (tt * .35 + i / 6) % 1, px = gx + Math.sin(i * 2.1 + tt * 1.3) * Wd * .4, py = Y + Hd * (.95 - u * 1.1); ctx.fillStyle = `rgba(170,230,255,${(1 - u) * .8})`; ctx.beginPath(); ctx.arc(px, py, 1.1 + (1 - u), 0, 7); ctx.fill(); }
+  ctx.restore();
+  plaque('⚔️ 사냥터 포탈', PORTAL.x, b.y - 8, '#f3e3c3', 12);
+}
+function drawPortalOld(now) {
   const x = PORTAL.x, y = PORTAL.y, tt = now / 1000;
   ctx.fillStyle = 'rgba(31,42,58,.2)'; ctx.beginPath(); ctx.ellipse(x, y, 22, 5, 0, 0, 7); ctx.fill();
   flatInk(ctx, [{ path: E(x, y - 4, 24, 9), c: '#5a4398' }, { path: E(x, y - 5, 19, 6.5), c: '#7d62d4' },
@@ -3766,7 +3817,7 @@ function tap(sx, sy) {
   }
   if (Math.hypot(w.x - FSIGN.x, w.y - (FSIGN.y - 24)) < 26) return openFishing();
   { const ss = SPOTS.find(s => s.id === 'screen'), r = screenRect(ss); if (w.x > r.x - 10 && w.x < r.x + r.w + 10 && w.y > r.y - 10 && w.y < r.base) return openSpot(ss); }   // 큰 전광판
-  if (Math.abs(w.x - PORTAL.x) < 24 && w.y > PORTAL.y - 74 && w.y < PORTAL.y + 6) return openHuntSelect();
+  if (Math.abs(w.x - PORTAL.x) < (ART.portal ? PORTAL_W * .45 : 24) && w.y > (ART.portal ? portalBox().y + 6 : PORTAL.y - 74) && w.y < PORTAL.y + 6) return openHuntSelect();
   const fo = SPOTS.find(s => s.id === 'fountain'); if (Math.hypot((w.x - (fo.x + 1) * T) / 38, (w.y - (fo.y + .8) * T) / 36) < 1) return openWish();
   if (hitP) return openProfile(hitP);
   if (onMe) { openPanelTab('stat'); return; }

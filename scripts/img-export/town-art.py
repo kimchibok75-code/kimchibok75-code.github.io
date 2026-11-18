@@ -4,7 +4,7 @@
 import json, os, sys
 from collections import deque
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 SRC = os.path.join('텍스쳐 템플릿', '내 디자인')
 OUT = os.path.join('assets', 'img', 'town')
@@ -165,50 +165,31 @@ row = f[int(f.shape[0] * .5), :, :3].astype(int)
 soil = np.where((row[:, 0] < 180) & (row[:, 0] > 110) & (row[:, 1] < 110))[0]
 META['farmIn'] = [round(soil.min() / f.shape[1], 4), round(soil.max() / f.shape[1], 4)]
 
-# 3) 나무 5그루
-r = cut_bg(load('풍경_나무'), holes=True)
+def load_rgba(name):
+    return np.asarray(Image.open(os.path.join(SRC, name + '.png')).convert('RGBA'))
+
+def keep_rgba(name):
+    """이미 배경이 투명한 그림 (2026-11-18 새 그림): 투명 칸 색은 0으로"""
+    a = load_rgba(name).copy(); a[a[:, :, 3] == 0] = 0; return a
+
+# 3) 나무 5그루 (2026-11-18 새 그림, 배경 투명)
+r = keep_rgba('풍경_나무')
 for i, (x0, x1) in enumerate(split_n(r, 5)):
     save('tree-%d' % (i + 1), clean(crop(r, (x0, 0, x1, r.shape[0]))), width=240)
 
-# 4) 집 4 + 빌라 4: 지붕(하얀색)은 따로 떼어서 색을 입힐 수 있게
-def roof_mask(t):
-    rgb = t[:, :, :3].astype(int); al = t[:, :, 3]
-    mn = rgb.min(2); mx = rgb.max(2)
-    m = (al > 8) & (mn >= 214) & ((mx - mn) <= 10)
-    # 위쪽 60% 안에서 시작하는 큰 덩어리만 (계단·난간 빼기)
-    h, w = m.shape; lab = -np.ones((h, w), int); keep = np.zeros_like(m)
-    step = 2; ms = m[::step, ::step]; hh, ww = ms.shape; seen = np.zeros_like(ms)
-    for y in range(hh):
-        for x in range(ww):
-            if not ms[y, x] or seen[y, x]: continue
-            q = deque([(y, x)]); seen[y, x] = True; pts = []
-            while q:
-                cy, cx = q.popleft(); pts.append((cy, cx))
-                for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                    ny, nx = cy + dy, cx + dx
-                    if 0 <= ny < hh and 0 <= nx < ww and ms[ny, nx] and not seen[ny, nx]:
-                        seen[ny, nx] = True; q.append((ny, nx))
-            top = min(p[0] for p in pts)
-            if len(pts) * step * step > h * w * .004 and top < hh * .6:
-                for cy, cx in pts: keep[cy * step:(cy + 1) * step, cx * step:(cx + 1) * step] = True
-    keep &= m
-    # 테두리 1칸 넓혀서 틈 메우기 (밝은 칸만)
-    grow = keep | np.roll(keep, 1, 0) | np.roll(keep, -1, 0) | np.roll(keep, 1, 1) | np.roll(keep, -1, 1)
-    grow &= (al > 8) & (mn >= 200) & ((mx - mn) <= 16)
-    return grow
-
+# 4) 집 4 + 빌라 4 (2026-11-18 새 그림): 지붕 칸은 사용자가 그린 마스킹 그림(빨간 칸)으로 떼어서 색을 입힘
 k = 0
-for src in ['건물_집', '건물_빌라']:
-    r = cut_bg(load(src))
+for src, msk in [('건물_집', '건물_집_지붕색마스킹'), ('건물_빌라_리뉴얼', '건물_빌라_지붕색 마스킹')]:
+    r = keep_rgba(src); M = load_rgba(msk)[:, :, 3].astype(np.float32) / 255
     for (x0, x1) in col_segments(r, 4):
         k += 1
-        t = crop(r, (x0, 0, x1, r.shape[0]))
-        base = save('house-%d' % k, t, width=360)
-        m = roof_mask(t)
-        roof = t.copy(); roof[:, :, 3] = np.where(m, t[:, :, 3], 0)
-        # 지붕 칸은 밝기만 남김 (회색조) → 화면에서 색을 곱함
+        sub = r[:, x0:x1]; bx = bbox(sub[:, :, 3]); X0, Y0, X1, Y1 = bx[0] + x0, bx[1], bx[2] + x0, bx[3]
+        t = r[Y0:Y1, X0:X1]; m = M[Y0:Y1, X0:X1]
+        save('house-%d' % k, t, width=360)
+        roof = t.copy(); roof[:, :, 3] = (t[:, :, 3] * m).round().astype(np.uint8)
+        # 지붕 칸은 밝기만 남김 (회색조) → 화면에서 색을 곱함 (그림의 음영은 살림)
         g = roof[:, :, :3].astype(int).mean(2)
-        g = np.clip((g - 200) * 255 / 55, 0, 255) * .35 + 255 * .65
+        g = np.clip((g - 170) * 255 / 85, 0, 255) * .45 + 255 * .55
         roof[:, :, 0] = roof[:, :, 1] = roof[:, :, 2] = g.astype(np.uint8)
         save('house-%d-roof' % k, roof, width=360)
 
@@ -219,8 +200,6 @@ META['raid-bg'] = [bg.width, bg.height]
 
 # 6) 드래곤 조각 (2026-11-18 새로): 사용자가 1182×1024 판 하나에 위치까지 맞춰 그린 조각 5장 (왼쪽만 → 오른쪽은 좌우로 뒤집음)
 #    meta 'dragon' = { 이름: [x, y, w, h] } 판 좌표 (원점은 화면이 정함: 가운데 x = 591, 바닥 = 가장 아래 칸)
-def load_rgba(name):
-    return np.asarray(Image.open(os.path.join(SRC, name + '.png')).convert('RGBA'))
 PART = {}; FW = 1182; bottom = 0
 for src, n in [('드래곤_날개', 'wing'), ('드래곤_뒷다리', 'leg'), ('드래곤_몸통', 'body'), ('드래곤_앞발', 'arm'), ('드래곤_머리', 'head')]:
     a = load_rgba(src); b = bbox(a[:, :, 3], pad=1); t = a[b[1]:b[3], b[0]:b[2]]
@@ -237,6 +216,21 @@ for src, n, ox, oy, k in [('스킨_드래곤_모자', 'hat', 192, 336, 4), ('스
     save('rd-' + n, t.copy())
     RD[n] = [round((b[0] - ox) / k, 3), round((b[1] - oy) / k, 3), round(t.shape[1] / k, 3), round(t.shape[0] / k, 3)]   # 게임 단위 x, y, w, h (기준점에서)
 META['rd'] = RD
+
+# 8) 사냥터 포탈 (2026-11-18): 그림 + 가운데 소용돌이 칸(파란 칸) 위치 → 화면이 그 칸만 돌림
+r = keep_rgba('건물_사냥터 포탈'); b = bbox(r[:, :, 3]); t = r[b[1]:b[3], b[0]:b[2]]
+save('portal', t, width=480)
+c = t[:, :, :3].astype(int); hole = (t[:, :, 3] > 200) & (c[:, :, 2] > c[:, :, 0] + 70) & (c[:, :, 2] > 150)
+# 큰 덩어리만 (깃발 등 파란 점 빼기) → 구멍 메우기
+hm = Image.fromarray(hole.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))
+ha = np.asarray(hm) > 0; ys, xs = np.where(ha)
+hb = [int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1]
+hole_img = t.copy(); hole_img[:, :, 3] = np.where(ha, 255, 0); hole_img = hole_img[hb[1]:hb[3], hb[0]:hb[2]]
+im = Image.fromarray(hole_img, 'RGBA'); sc = 480 / t.shape[1]
+im = im.resize((max(1, round(im.width * sc)), max(1, round(im.height * sc))), Image.LANCZOS); im.save(os.path.join(OUT, 'portal-hole.webp'), 'WEBP', quality=92, method=6)
+H, W = t.shape[:2]
+META['portal'] = {'hole': [round(hb[0] / W, 4), round(hb[1] / H, 4), round((hb[2] - hb[0]) / W, 4), round((hb[3] - hb[1]) / H, 4)]}
+print('portal hole', hb, t.shape)
 
 json.dump(META, open(os.path.join(OUT, 'meta.json'), 'w'), ensure_ascii=False, indent=1)
 print(json.dumps(META, ensure_ascii=False))
