@@ -723,6 +723,8 @@ export const raidSlotStart = t => Math.floor(t / RAID.every) * RAID.every + RAID
 export const isHourlyRaid = start => (start - RAID.recruit) % RAID.every === 0;
 // 보상: 사냥 약 25분어치 골드 + 지금 레벨의 30% 경험치
 export const raidReward = lv => ({ gold: Math.round((1500 * lv + 8000) * .4), exp: Math.round(needExp(lv) * .3) });
+// 인원 보너스 (2026-11-18): 많이 모일수록 보스 체력이 커지니 골드·경험치를 더 줌. 1명 0% · 사람마다 +3% · 최대 +60% (21명)
+export const raidCrowd = n => 1 + Math.min(.6, Math.max(0, (n || 1) - 1) * .03);
 // 초당 피해 (서버가 화면이 보낸 피해를 이 값으로 막음)
 // 스킬도 자동으로 쓰니까 스킬 평균 피해(공격 스킬 · 독 · 공격 버프)까지 더함
 export const raidDps = D => {
