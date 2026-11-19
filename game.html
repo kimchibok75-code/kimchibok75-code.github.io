@@ -6685,7 +6685,7 @@ const DX = { tg: '전체', bg: '전체' };
 async function goDex(tab) {
   const b = BUILDINGS.find(x => x.id === 'dex'); S.btab.dex = tab;
   if (HT || me.room) return toast('📖 칭호·뱃지는 마을의 도감 센터에서 바꿔요');
-  if (!await ask('칭호·뱃지는 이제 📖 도감 센터에서 바꿔요.\n도감 센터로 갈까요?', { title: '📖 도감 센터', ok: '가기', no: '닫기' })) return;
+  if (!await ask('칭호·뱃지는 도감 센터에서 바꿔요.\n도감 센터로 갈까요?', { title: '📖 도감 센터', ok: '가기', no: '닫기' })) return;
   closePanel(); teleport((b.door.x + .5) * T, (b.door.y + .7) * T); setTimeout(() => openBuilding(b), 350);
 }
 // 물고기·스킨 도감 효과 칸 (5개마다)
