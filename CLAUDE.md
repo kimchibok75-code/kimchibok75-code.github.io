@@ -569,6 +569,7 @@
 - 오우거 공격 (`raidPattern(start, 'ogre')`): 💥 내려찍기 slam(큰 원 1~2개) · 🪨 바위 던지기 rock(작은 원 3~5개, 손에서 포물선으로 날아옴) · 몽둥이 휘두르기 swing(앞쪽 부채꼴 `OGRE_SWING`) · 포효. 피해 `RAID_HIT`
 - 그림: `내 디자인/오우거_다리·몸통·오른팔·왼팔·머리.png` + `배경_오우거.png` → town-art.py 9번 → `og-leg/body/rarm/larm/head.webp`(절반 크기), `ogre-bg.webp`, meta `ogre`(판 좌표). game.html `drawOgre` (`OPART`, 오른팔은 어깨 `OSHOULDER` 기준으로 공격 예고 동안 치켜들고 칠 때 내려침, 예고 중 눈이 붉게). 배경 화로 불빛·불티는 `ogreAmbient`
 - 오우거 스킨 (템플릿 `char/hat_guide_오우거.png`, `char/suit-front_guide_오우거.png`, `weapon/*_guide_오우거.png`) → `og-hat/suit/sword/bow/staff.webp`, meta `og` → game.html `OGS`. id는 모두 `ogre` (HATS·SUITS·WSKINS, `raid: 'ogre'`)
+- **이름표** (2026-11-20): 8px 위로 (`nameTag`의 oy +8, 큰 모자가 안 가리게). **배경색 고르기**: 캐릭터창 → 스킨 → 이름표 색 (`TAG_COLORS` 15색, '' = 기본, 저장 `life.tagc`, 서버 `/api/tagc`, town.js `lookRow`의 `tagc` → 다른 사람에게도 보임)
 - **레이드 세트 이펙트** (2026-11-20): 모자·눈·의상 + **지금 클래스 무기** 스킨이 모두 그 레이드 세트면 캐릭터 뒤에 은은히 빛나는 문양 — 드래곤 붉게 · 오우거 초록 (`RAID_FX`, `raidFxOf`, `setAura`, drawChar 맨 앞). 그림 `내 디자인/이펙트_드래곤 세트.png`·`이펙트_오우거 세트.png`(검은 바탕 흰 그림, 정사각 판 그대로 · 아래 고리 = 발, 세로 86%) → town-art.py 14번 → `fx-dragon/fx-ogre.webp`
 - 오우거 눈 스킨 `eye:ogre` 추가 (레이드 세트 6부위)
 - 스킨샵 레이드 탭은 보스별로 나눠 보임. 치트 탭: '👕 모든 스킨 받기' + '⭐ 레이드 스킨 최고 레벨'(`rskmax`: 모든 레이드 스킨 Lv10)
@@ -713,8 +714,8 @@
   - 호미·비료는 골드 + **누적 수확 횟수**(`cnt.crops`) 조건, 저장은 `life.farm.hoe/fert` = 0~9 (화면 Lv = +1)
   - 예전 텃밭(`farm.v !== 2`)은 `fixLife`가 새 텃밭으로 바꿈. **텃밭 코인(🌻) 없앰**: 남은 코인은 `play()`가 1개 = 100골드(응답 `farmCoin` → 토스트). 도장(600골드)·주간 상자·자리 비움·주민 임무(골드 +150)·분수(골드 300)도 코인 대신 골드
 - 서버 index.js: `/api/farm/plant {i | all}`, `/api/farm/harvest {i | all}`(응답 `got`), `/api/farm/sell {ks, want}`, `/api/farm/shop {k: hoe|fert}`, `/api/farm/king`, `GET /api/farm/rank`. 치트 `farm`(다 자람) · `farmmax`(호미·비료 최고)
-- **텃밭 창고 창** (`openFarm`, 탭 `fmTabs`): 🌱 밭(전체 심기 · 전체 수확) / 💰 팔기(`farmSell`, 고르기 · 등급 · `ask` 확인) / 🛒 호미·비료(`farmShop`) / 👑 농사왕(`kingSheet` + `KINGS.farm`)
-  - 지도 두둑을 직접 누르면 **그 칸 하나씩** 심기 · 수확 (`farmTap`, 사용자 결정 2026-11-20). 창의 빈 칸 · 전체 심기 버튼은 빈 밭 모두. 자동 생활도 두둑을 하나씩 누름 (`auFarm`)
+- **텃밭 창고 창** (`openFarm`, 탭 `fmTabs`): 🌱 밭(전체 심기·수확 버튼은 2026-11-20 없앰) / 💰 팔기(`farmSell`, 고르기 · 등급 · `ask` 확인) / 🛒 호미·비료(`farmShop`) / 👑 농사왕(`kingSheet` + `KINGS.farm`)
+  - 지도 두둑을 직접 누르면 **그 칸 하나씩** 심기 · 수확 (`farmTap`, 사용자 결정 2026-11-20). 창의 빈 칸을 누르면 빈 밭 모두. 자동 생활도 두둑을 하나씩 누름 (`auFarm`)
   - 수확하면 제일 비싼 작물을 머리 위에 들고 있음 (`me.brag.crop`, `drawBrag`), 전설이면 축하 창 `legendCropPop`
   - 그림 도우미: `cropPic`(창), `cropImgC`(캔버스)
 - **도감 센터 🌾 작물 탭** (`dexHero('crop')`, 5종마다 `DEX_FX.crop`) · **작물 뱃지** `c_작물id` (한 번 수확하면, `badgeCanvas`가 작물 그림). 수확 수 `cnt.cc_작물id`, 최고 무게 `life.cbest`

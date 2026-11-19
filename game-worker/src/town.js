@@ -23,7 +23,8 @@ async function sha256(s) {   // index.js 와 같은 방식 (base64url)
 
 // 다른 사람에게 보이는 겉모습
 const badgeOfRow = r => { try { const b = JSON.parse(r.life || '{}').badge; return typeof b === 'string' ? b.slice(0, 24) : ''; } catch { return ''; } };
-export const lookRow = r => ({ lv: r.lv, title: r.title, badge: badgeOfRow(r), intro: r.intro, face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, hair: r.hair || 'none', hairC: r.hair_c, hatHair: r.hat_hair !== 0, suit: r.suit || '', wsk: JSON.parse(r.wsk || '{}'), cls: r.cls || 'sword', enh: JSON.parse(r.enh || '{}'), equip: (e => ('weapon' in e ? {} : e))(JSON.parse(r.equip || '{}')) });
+const tagcOfRow = r => { try { const v = JSON.parse(r.life || '{}').tagc; return typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v : ''; } catch { return ''; } };
+export const lookRow = r => ({ lv: r.lv, title: r.title, badge: badgeOfRow(r), tagc: tagcOfRow(r), intro: r.intro, face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, hair: r.hair || 'none', hairC: r.hair_c, hatHair: r.hat_hair !== 0, suit: r.suit || '', wsk: JSON.parse(r.wsk || '{}'), cls: r.cls || 'sword', enh: JSON.parse(r.enh || '{}'), equip: (e => ('weapon' in e ? {} : e))(JSON.parse(r.equip || '{}')) });
 // 모든 채널에 알리기 (관리자: 공지·내보내기·채팅 금지 등). skip = 지금 방(자기 자신은 부르지 않음)
 export async function toRooms(env, body, skip) {
   await Promise.all(Array.from({ length: MAX_CH }, (_, i) => i + 1).filter(ch => ch !== skip).map(ch =>

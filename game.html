@@ -682,6 +682,7 @@ body.hunting .side { display: none; }
 .arrows { display: grid; gap: 6px; }
 .arow { display: grid; grid-template-columns: minmax(64px, auto) 32px minmax(0, 1fr) 32px; gap: 6px; align-items: center; }
 .arow > b { font-size: calc(14px * var(--fs)); white-space: nowrap; }
+.tagsw { display: flex; flex-wrap: wrap; gap: 6px; } .tagsw .tsw { min-width: 30px; height: 30px; border-radius: 15px; border: 2px solid rgba(31,42,58,.25); background: var(--tc); color: #fff; font-size: 11px; font-weight: 800; padding: 0 8px; cursor: pointer; } .tagsw .tsw.on { border-color: var(--ink); box-shadow: 0 0 0 2px #fff inset; }
 .arow > button { width: 32px; height: 32px; border-radius: 9px; border: 2px solid var(--ink); background: #fff; font-weight: 700; font-size: calc(15px * min(var(--fs), 1.15)); line-height: 1; padding: 0; display: grid; place-items: center; }
 .arow > button:hover { background: var(--paper-2); }
 .arow .aval { display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 0; height: 32px; border: 1px solid var(--line); border-radius: 9px; background: #fff; padding: 0 8px; font-weight: 700; font-size: calc(13.5px * var(--fs)); }
@@ -1151,6 +1152,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
           <div class="arow" id="hairSw2"></div>
         </div>
         <p class="skfxsum" id="skinFxSum"></p>
+        <div class="field"><label>이름표 색</label><div class="tagsw" id="tagSw"></div></div>
         <div class="field"><label>모자</label><label class="check hathair"><input type="checkbox" id="hatHair" checked> 모자를 써도 헤어 보이기</label><div class="skgrid" id="hatList"></div></div>
         <div class="field"><label>눈 모양</label><div class="skgrid" id="eyeList"></div></div>
         <div class="field"><label>의상</label><div class="skgrid" id="suitList"></div></div>
@@ -1248,7 +1250,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
@@ -2012,7 +2014,7 @@ function stepChar(ch, dt) {
 // ───────── 다른 유저 (실시간: 서버의 마을 방에서 받아 옴) ─────────
 let people = [];
 function mkPerson(d) {
-  return { id: d.id, name: d.n, adm: d.adm, lv: d.lv, title: d.title, badge: d.badge || "", intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, hatHair: d.hatHair !== false, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {},
+  return { id: d.id, name: d.n, adm: d.adm, lv: d.lv, title: d.title, badge: d.badge || "", tagc: d.tagc || '', intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, hatHair: d.hatHair !== false, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {},
     x: d.tx ?? d.x, y: d.ty ?? d.y, path: [], seed: (d.id % 17) * .37, speed: 195, hunt: !!d.hunt, au: !!d.au, room: d.room || 0, sit: -1, bubble: null, emote: null };
 }
 const personOf = id => people.find(p => p.id === id);
@@ -2716,7 +2718,7 @@ function update(dt, now) {
 function setPlace(place) { if ($('#placeChip').dataset.p !== place) { $('#placeChip').dataset.p = place; $('#placeChip').textContent = `📍 ${place}`; } }
 // 이름표는 머리 위. 칭호가 있으면 그 위에 작은 글씨로 ("10레벨을 달성한" + "Lv.10 김치복")
 function nameTag(c, now) {
-  const oy = (c.sit >= 0 && !HT ? 12 : 0) + (c.jz || 0);
+  const oy = (c.sit >= 0 && !HT ? 12 : 0) + (c.jz || 0) + 8;   // 2026-11-20 +8: 큰 모자가 이름표에 가리지 않게
   if (oy) { ctx.save(); ctx.translate(0, -oy); nameTagAt(c, now); ctx.restore(); return; }
   nameTagAt(c, now);
 }
@@ -2725,7 +2727,7 @@ function nameTagAt(c, now) {
   // 2026-11-20 두 줄: 윗줄 Lv.00 (작게, 바탕 없음) / 아랫줄 뱃지 + 닉네임 (바탕). 둘 다 가운데
   ctx.font = '700 11.5px "IBM Plex Sans KR", sans-serif'; const label = `${c.adm ? '🛡️ ' : ''}${c.name}`;
   const bd = c === me ? LIFE()?.badge : c.badge, bw = bd ? 19 : 0, tw = ctx.measureText(label).width + 12 + bw;
-  ctx.fillStyle = c === me ? 'rgba(232,85,58,.94)' : c.adm ? 'rgba(108,79,194,.94)' : 'rgba(31,42,58,.76)'; rr(ctx, c.x - tw / 2, c.y - 66, tw, 17, 8.5); ctx.fill();
+  const tc = c === me ? LIFE()?.tagc : c.tagc; ctx.fillStyle = tc ? tc + 'f0' : c === me ? 'rgba(232,85,58,.94)' : c.adm ? 'rgba(108,79,194,.94)' : 'rgba(31,42,58,.76)'; rr(ctx, c.x - tw / 2, c.y - 66, tw, 17, 8.5); ctx.fill();   // 이름표 배경색 (life.tagc)
   ctx.fillStyle = '#fff'; ctx.fillText(label, c.x + bw / 2, c.y - 57.5);
   if (bd) drawBadge(bd, c.x - tw / 2 + 12, c.y - 57.5, 21);
   ctx.font = '800 9.5px "IBM Plex Sans KR", sans-serif'; ctx.lineJoin = 'round'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(31,42,58,.8)';
@@ -5664,7 +5666,7 @@ function skinTile(cv, look, mode) {
   drawChar(g, w / 2 - (mode === 'weapon' ? 7 * sc : 0), fy, { equip: {}, cls: '', ...look, moving: false, still: true }, 0, sc);
 }
 function renderSkins() {
-  $('#hatHair').checked = me.hatHair !== false;
+  $('#hatHair').checked = me.hatHair !== false; renderTagSw();
   const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
   const hats = HATS.filter(h => me.hats.includes(h.id)), eyes = EYE_SKINS.filter(e => e.id === 'dot' || me.hats.includes('eye:' + e.id));
   const suits = SUITS.filter(s => me.hats.includes('suit:' + s.id)), wsks = WSKINS.filter(w => me.hats.includes(wskKey(w)));
@@ -5690,6 +5692,15 @@ function arrowPick(el, label, list, key, show, after) {
   el.onclick = e => { const d = +e.target.closest('[data-d]')?.dataset.d; if (!d) return; const i = Math.max(0, list.indexOf(me[key])); me[key] = list[(i + d + list.length) % list.length]; draw(); after(); };
   ARROWS.push(draw); draw();
 }
+// 이름표 배경색 고르기 (2026-11-20): 첫 칸 = 기본
+function renderTagSw() {
+  const cur = LIFE()?.tagc || '';
+  $('#tagSw').innerHTML = TAG_COLORS.map(v => `<button type="button" class="tsw${v === cur ? ' on' : ''}" data-tc="${v}" aria-label="${v || '기본'}" style="--tc:${v || 'rgba(232,85,58,.94)'}">${v ? '' : '기본'}</button>`).join('');
+}
+$('#tagSw').addEventListener('click', async e => {
+  const b = e.target.closest('[data-tc]'); if (!b) return; const v = b.dataset.tc; if (v === (LIFE()?.tagc || '')) return;
+  const j = await act('/api/tagc', { c: v }); if (j) { renderTagSw(); lookChanged(); toast(v ? '🎨 이름표 색을 바꿨어요' : '🎨 이름표 색을 기본으로'); }
+});
 $('#hatHair').addEventListener('change', e => { me.hatHair = e.target.checked; syncMe(); saveLook(); });
 $('#eyeList').addEventListener('click', e => { const y = e.target.closest('[data-y]')?.dataset.y; if (y) { me.eyes = y; syncMe(); saveLook(); } });
 $('#suitList').addEventListener('click', e => { const s = e.target.closest('[data-s]')?.dataset.s; if (s) { me.suit = me.suit === s ? '' : s; syncMe(); saveLook(); } });
@@ -6534,7 +6545,7 @@ function openFarm(keep) {
       <p class="muted" style="text-align:center;margin:4px 0 0">무엇이 자랄지는 수확할 때 알 수 있어요!</p>`,
     help: `<p>씨앗은 <b>수수께끼 씨앗 하나</b>뿐이에요. 무료로 얼마든지 심어요.</p><p>심는 순간 무엇이 자랄지 정해지지만, <b>수확할 때까지 비밀</b>이에요. 1~2분이면 자라요 (호미가 좋을수록 빨리).</p>
       <p>수확한 작물은 🎒 작물 가방(최대 ${FARM.bag}개)에 들어가요. <b>💰 팔기</b> 탭에서 팔아야 골드가 돼요.</p><p><b>호미</b>: 밭 칸 · 큰 작물 · 빨리 자람 / <b>비료</b>: 희귀 · 전설 작물이 잘 나옴.</p><p>마을 텃밭 두둑을 직접 누르면 그 칸 하나씩 심고 · 수확해요.</p>`,
-    foot: `<div class="bs-two">${bbtn('plantall', '🌱 전체 심기', `빈 밭 ${empty}칸`, { main: !ready && !!empty, dis: !empty })}${bbtn('harvestall', '🧺 전체 수확', full ? '가방이 꽉 찼어요' : `${ready}칸`, { main: !!ready, dis: !ready || full })}</div>` },
+  },   // 2026-11-20 전체 심기 · 전체 수확 버튼 없앰 (사용자 요청)
     async x => {
       const [a, v] = x.split(':');
       if (a === 'lk') return toast(`🔒 호미를 Lv${plotNeed(+v)}로 올리면 열려요 (🛒 호미·비료 탭)`);
@@ -7305,7 +7316,7 @@ function onNet(m) {
   else if (m.t === 'nick') { const p = personOf(m.id); if (p) p.name = m.n; if (m.id === me.uid) { me.name = m.n; syncMe(); } }
   else if (m.t === 'mv') { const p = personOf(m.id); if (p && Array.isArray(m.p)) netRecv(p, m.p); }
   else if (m.t === 'atk') { const p = personOf(m.id); if (p && shown(p) && Number.isFinite(m.a)) townAtk(p, m.a); }
-  else if (m.t === 'look') { const p = personOf(m.p.id), d = m.p; if (p) Object.assign(p, { lv: d.lv, title: d.title, badge: d.badge || "", intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, hatHair: d.hatHair !== false, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {} }); }
+  else if (m.t === 'look') { const p = personOf(m.p.id), d = m.p; if (p) Object.assign(p, { lv: d.lv, title: d.title, badge: d.badge || "", tagc: d.tagc || '', intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, hatHair: d.hatHair !== false, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {} }); }
   else if (m.t === 'say') {
     if (S.blocked.has(m.id)) return;
     const mine = m.id === NET.me, p = mine ? me : personOf(m.id);
@@ -7322,7 +7333,7 @@ function onNet(m) {
   setOnline();
 }
 // 내 겉모습·레벨이 바뀌면 다른 사람 화면에도 (서버가 저장된 값을 다시 읽음)
-const lookSig = () => JSON.stringify([me.lv, me.title, LIFE()?.badge || '', me.intro, me.face, me.body, me.eyes, me.hat, me.hair, me.hairC, me.hatHair, me.suit, me.wsk, me.cls, me.enh, Object.values(me.equip || {}).map(it => it?.id)]);
+const lookSig = () => JSON.stringify([me.lv, me.title, LIFE()?.badge || '', LIFE()?.tagc || '', me.intro, me.face, me.body, me.eyes, me.hat, me.hair, me.hairC, me.hatHair, me.suit, me.wsk, me.cls, me.enh, Object.values(me.equip || {}).map(it => it?.id)]);
 function lookChanged() { if (!NET.ready) return; const s = lookSig(); if (s === NET.sig) return; NET.sig = s; clearTimeout(NET.lookT); NET.lookT = setTimeout(() => netSend({ t: 'look' }), 1600); }
 
 // ───────── 차단 목록 (설정) ─────────

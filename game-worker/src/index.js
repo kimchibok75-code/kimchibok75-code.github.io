@@ -1,6 +1,6 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
+import { TAG_COLORS, RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
@@ -632,6 +632,7 @@ const GAME = {
   '/api/mine/king'(c, b) { return kingClaim(c, 'mine', b); },   // 채굴왕 (2026-11-19): 손으로 캔 석재 100개마다
   '/api/title'(c, b) { const id = String(b.id || ''); if (!c.life.titles.includes(id)) fail(400, '아직 없는 칭호예요'); c.title = id; },
   // 뱃지 달기 (2026-11-20 도감 센터). id = '' 이면 떼기
+  '/api/tagc'(c, b) { const v = String(b.c || ''); if (!TAG_COLORS.includes(v)) fail(400, '없는 색이에요'); c.life.tagc = v; },   // 이름표 배경색
   '/api/badge'(c, b) { const id = String(b.id || ''); if (id && !hasBadge(c, id)) fail(400, '아직 없는 뱃지예요'); c.life.badge = id; },
   // 낚시점: 낚싯대 · 미끼 올리기 (2026-11-20부터 골드, 한 단계씩)
   '/api/fish/shop'(c, b) {

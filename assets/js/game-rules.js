@@ -16,6 +16,8 @@ export const HAIRS = [{ id: 'none', n: '민머리' }, { id: 'short', n: '짧은 
   { id: 'h1', n: '숏컷' }, { id: 'h2', n: '넘긴 앞머리' }, { id: 'h3', n: '가르마 머리' }, { id: 'h4', n: '뾰족 머리' },
   { id: 'h5', n: '웨이브 단발' }, { id: 'h6', n: '양갈래' }, { id: 'h7', n: '옆 웨이브' }, { id: 'h8', n: '긴 단발' }];
 export const hairId = id => id || 'none';
+// 이름표 배경색 (2026-11-20): '' = 기본 (나는 주황, 다른 사람은 남색). 저장 life.tagc
+export const TAG_COLORS = ['', '#e8553a', '#d6336c', '#9c36b5', '#6c4fc2', '#3b5bdb', '#1c7ed6', '#0c8599', '#2b8a3e', '#5c940d', '#e67700', '#c2410c', '#8a5a32', '#495057', '#1f2a3a'];
 export const HAIR_COLORS = ['#3a2a20', '#7a4a2a', '#e8c15a', '#d0502f', '#c9ccd4', '#f2a0c2', '#5b86e0', '#5fae5a'];
 export const MAX_LV = 100;
 export const START_GOLD = 500;
