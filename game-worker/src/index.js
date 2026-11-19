@@ -229,6 +229,7 @@ function toChar(r) {
     equip: JSON.parse(r.equip), bag: JSON.parse(r.bag), hats: JSON.parse(r.hats), pots: JSON.parse(r.pots), potAt: r.pot_at,
     hunt: r.hunt ? JSON.parse(r.hunt) : null, bonusDay: r.bonus_day, jobAt: r.job_at, ver: r.ver,
     cls: CLASSES[r.cls] ? r.cls : 'sword', enh: jp(r.enh, {}), presets: jp(r.presets, null) || defaultPresets(), preset: r.preset || 0, gacha: { w: 0, a: 0, ...jp(r.gacha, {}) }, life: fixLife(jp(r.life, null)) };
+  for (const h of HATS) if (h.free && !c.hats.includes(h.id)) c.hats.push(h.id);   // 처음부터 가지는 모자 (투명 모자)
   if ('weapon' in c.equip || 'acc' in c.equip) oldGear(c);
   if (!titleOf(c.title) || !c.life.titles.includes(c.title)) c.title = 'new';   // 예전 칭호 글자 → 새 칭호
   if (isSolid(Math.floor(c.x / T), Math.floor(c.y / T))) { c.x = START.x; c.y = START.y; }   // 지도가 바뀌어서 막힌 곳에 있으면 광장으로
@@ -503,7 +504,7 @@ const GAME = {
       spend(c, s.price); c.hats.push(id);
       return { log: ['skin', id] };
     }
-    const h = HATS.find(x => x.id === id && x.id !== 'none' && !x.raid); if (!h) fail(400, '없는 스킨이에요');
+    const h = HATS.find(x => x.id === id && x.id !== 'none' && !x.raid && !x.free); if (!h) fail(400, '없는 스킨이에요');
     if (c.hats.includes(h.id)) fail(400, '이미 가지고 있어요');
     spend(c, h.price); c.hats.push(h.id); c.hat = h.id;
     return { log: ['skin', h.id] };
@@ -756,7 +757,7 @@ async function saveLook(req, env, user) {
   const owned = JSON.parse(c.hats);
   const face = FACES.includes(b.face) ? b.face : null, body = BODIES.includes(b.body) ? b.body : null;
   const eyes = b.eyes === 'dot' || (EYE_SKINS.some(e => e.id === b.eyes) && owned.includes('eye:' + b.eyes)) ? b.eyes : null;
-  const hat = typeof b.hat === 'string' && owned.includes(b.hat) ? b.hat : null;
+  const hat = typeof b.hat === 'string' && (owned.includes(b.hat) || HATS.some(h => h.free && h.id === b.hat)) ? b.hat : null;
   const hair = HAIRS.some(h => h.id === hairId(b.hair)) ? hairId(b.hair) : null, hairC = HAIR_COLORS.includes(b.hairC) ? b.hairC : null, hh = typeof b.hatHair === 'boolean' ? (b.hatHair ? 1 : 0) : null;
   const suit = b.suit === '' || (typeof b.suit === 'string' && SUITS.some(s => s.id === b.suit) && owned.includes('suit:' + b.suit)) ? b.suit : null;
   let wsk = null;

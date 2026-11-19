@@ -1460,6 +1460,7 @@ function helmParts(it, hy) {
 }
 // 모자 스킨
 function hatParts(kind, hy, face) {
+  if (kind === 'clear') return [];   // 투명 모자: 아무것도 안 그림 (머리 장비만 가려짐)
   if (TSK[kind]) { const [pf, ps] = TSK[kind]; return ART[pf + '-hat'] ? [imgPart(pf + '-hat', ps.hat[0], hy + ps.hat[1] + 45, ps.hat[2], ps.hat[3])] : []; }
   if (kind === 'rdragon' && ART['rd-hat']) return [imgPart('rd-hat', -25.25, hy - 21.5, 50.5, 50.75)];   // 템플릿 틀 그대로 (머리 꼭대기 hy = -45 기준), 얼굴 자리는 뚫려 있음
   if (kind === 'rdragon') return [...[-1, 1].flatMap(s => [{ path: PG([[s * 5, hy + 3], [s * 9, hy - 5], [s * 17, hy - 13], [s * 13, hy - 3], [s * 11.5, hy + 4]]), c: '#4a2a20' }, { flat: 1, path: PG([[s * 13.5, hy - 8], [s * 17, hy - 13], [s * 14.5, hy - 6]]), c: '#f3e6cf' }]),
@@ -1532,7 +1533,7 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   else { P.push({ path: R(-9, -20 - bob, 18, 14, 5), c: c.body }); if (eq.armor?.st) P.push(...armorParts(eq.armor, bob)); }
   // 머리 + 눈 (+ 헤어: 뒷머리는 얼굴 뒤, 앞머리는 얼굴 위)
   P.push({ path: R(-14, hy, 28, 26, 9), c: c.face, after: g => drawEyes(g, c, hy + 16, t) });
-  const hatOn = c.hat && c.hat !== 'none';
+  const hatOn = c.hat && c.hat !== 'none' && c.hat !== 'clear';   // 투명 모자는 헤어를 안 가림
   if (!HAT_NOHAIR.has(c.hat) && !(hatOn && c.hatHair === false)) P.push(...hp.front);   // 모자를 쓸 때 헤어 보이기 (캐릭터창 체크, 기본 보임)
   if (c.hat && c.hat !== 'none') P.push(...hatParts(c.hat, hy, c.face));
   if (eq.hat?.st && !(c.hat && c.hat !== 'none')) P.push(...helmParts(eq.hat, hy));   // 모자 스킨을 쓰면 머리 장비는 안 보임
@@ -6124,7 +6125,7 @@ function skinShop(b, keep) {
   reopen = () => skinShop(b, true);
   const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
   const tile = (key, name, own, on, price, fx) => `<button type="button" data-x="${key}" aria-pressed="${on}" title="${name} · 보유 효과: ${fxText(fx || {})}" aria-label="${name} · 보유 효과 ${fxText(fx || {})}${own ? '' : ` · ${price.toLocaleString()} 골드`}"><canvas></canvas>${own ? `<em class="own">${on ? '착용' : '보유'}</em>` : price ? `<em>🪙 ${price.toLocaleString()}</em>` : ''}<small>${name.replace(/^\S+\s/, '')}<i class="skfx">${fxText(fx || {})}</i></small></button>`;
-  const hats = HATS.filter(h => h.id !== 'none' && !h.raid), eyes = EYE_SKINS.filter(e => e.price), suits = SUITS.filter(s => !s.raid);
+  const hats = HATS.filter(h => h.id !== 'none' && !h.raid && !h.free), eyes = EYE_SKINS.filter(e => e.price), suits = SUITS.filter(s => !s.raid);
   const WT = [['sword', '검'], ['bow', '활'], ['staff', '지팡이']], rsets = [['rdragon', '🐉 레드 드래곤 · 매시 정각'], ['ogre', '👹 오우거 · 매시 30분']];
   const rItem = k => k.startsWith('eye:') ? EYE_SKINS.find(e => 'eye:' + e.id === k) : k.startsWith('suit:') ? SUITS.find(s => 'suit:' + s.id === k) : k.startsWith('wsk:') ? WSKINS.find(w => wskKey(w) === k) : HATS.find(h => h.id === k);
   const worn = k => { const [a, b, c2] = k.split(':'); return a === 'eye' ? me.eyes === b : a === 'suit' ? me.suit === b : a === 'wsk' ? me.wsk?.[b] === c2 : me.hat === k; };

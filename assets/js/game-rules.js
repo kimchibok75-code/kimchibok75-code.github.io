@@ -84,7 +84,8 @@ export const enhRate = (enh, D) => Math.min(100, ENH_RATE[enh] + (D?.enhB || 0))
 export const ENH_COST = [700, 1400, 2400, 3600, 5600, 8400, 12000, 17000, 22000, 30000];
 // fx = 보유 효과 (가지고만 있어도 붙음. 쓰고 있지 않아도 됨)
 // 스킨샵 값 (2026-11-18 평균화): 최소 10,000 · 10k ≈ 효과 3점, 15k ≈ 4점, 20k ≈ 5점, 30k ≈ 7점 (공격·경험치·골드·체력·방어 1% = 1점, 치명타 1%p = 1.5점, 생활 효과는 절반)
-export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'ribbon', n: '🎀 리본', price: 10000, fx: { expP: 3 } }, { id: 'sprout', n: '🌱 새싹', price: 10000, fx: { farmP: 6 } }, { id: 'cat', n: '🐱 고양이 귀', price: 15000, fx: { crit: 2, expP: 1 } }, { id: 'straw', n: '👒 밀짚모자', price: 15000, fx: { fishP: 8 } }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 20000, fx: { atkP: 3, goldP: 2 } },
+// clear = 투명 모자 (2026-11-19): 아무 효과 없음, 모두 처음부터 가짐(free). 쓰면 머리 장비가 안 보이고 헤어는 그대로
+export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'clear', n: '✨ 투명 모자', price: 0, free: 1 }, { id: 'ribbon', n: '🎀 리본', price: 10000, fx: { expP: 3 } }, { id: 'sprout', n: '🌱 새싹', price: 10000, fx: { farmP: 6 } }, { id: 'cat', n: '🐱 고양이 귀', price: 15000, fx: { crit: 2, expP: 1 } }, { id: 'straw', n: '👒 밀짚모자', price: 15000, fx: { fishP: 8 } }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 20000, fx: { atkP: 3, goldP: 2 } },
   { id: 'rdragon', n: '🐉 용의 뿔', price: 0, raid: 'rdragon', fx: { atkP: 5, crit: 2 } },
   { id: 'ogre', n: '👹 오우거 투구', price: 0, raid: 'ogre', fx: { hpP: 5, defP: 4 } },
   { id: 'magic', n: '💗 마법소녀 왕관', price: 30000, fx: { expP: 4, crit: 2 } }];   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
