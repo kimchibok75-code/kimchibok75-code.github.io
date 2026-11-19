@@ -4208,8 +4208,11 @@ function updateHunt(dt) {
     if (m.g) { gimStep(m, dt, D); continue; }   // 기믹(돌진·달려들기·급강하·내려찍기) 중
     if (m.aggro && m.gim && !HT.dying && (m.gT -= dt) <= 0 && (d < 8 * T || m.d.k === 'mole' || m.gim.k === 'spit')) { gimStart(m); continue; }
     if (m.aggro) {
-      if (d > 26 + m.d.s * 10) { if (m.d.k === 'mole') { m.moving = false; continue; } m.moving = true; m.x += dx / d * 55 * dt; m.y += dy / d * 55 * dt; }   // 두더지: 걸어서는 안 움직임 (땅굴로만)
-      else { m.moving = false; m.atkT -= dt; if (m.atkT <= 0) { m.atkT = m.boss ? 1.3 : 1.6; hitMe(m, D); } }
+      // 2026-11-20 공격 시간은 쫓아가는 중에도 흐름 → 몸이 닿는 순간(공격 거리 + 여유 14px) 바로 때림. 예전엔 멈춰 서야만 시간이 흘러서 움직이거나 점프하면 거의 안 맞았음
+      const reach = 26 + m.d.s * 10; m.atkT = Math.max(0, m.atkT - dt);
+      if (d > reach) { if (m.d.k !== 'mole') { m.moving = true; const sp = (m.boss ? 75 : 85) * dt; m.x += dx / d * sp; m.y += dy / d * sp; } else m.moving = false; }   // 두더지: 걸어서는 안 움직임 (땅굴로만)
+      else m.moving = false;
+      if (d <= reach + 14 && m.atkT <= 0) { m.atkT = m.boss ? 1.3 : 1.6; hitMe(m, D); }
     } else {
       m.wait -= dt;
       if (m.wait <= 0) { m.wait = 1.5 + Math.random() * 3; m.wx = Math.max(2 * T, Math.min((HW - 2) * T, m.x + (Math.random() - .5) * 4 * T)); m.wy = Math.max(2 * T, Math.min((HH - 2) * T, m.y + (Math.random() - .5) * 4 * T)); }
