@@ -1,7 +1,7 @@
 {
   "name": "김치복",
   "tagline": "림월드 크리에이터 · 유튜브 영상 & 치지직 생방송",
-  "siteUrl": "https://kimchibok75-code.github.io",
+  "siteUrl": "https://kimchibok.com",
   "youtube": [
     { "key": "kimchibok", "name": "김치복", "desc": "메인 채널 · 림월드 시리즈", "handle": "@김치복", "channelId": "UC699Y51pMl0wWLPA4atcZjQ", "url": "https://www.youtube.com/@%EA%B9%80%EC%B9%98%EB%B3%B5" },
     { "key": "pulchibok", "name": "풀치복", "desc": "생방송 다시 보기", "handle": "@풀치복", "channelId": "UCBr55M2zkT9QdG5cqn7GNGg", "url": "https://www.youtube.com/@%ED%92%80%EC%B9%98%EB%B3%B5" },
