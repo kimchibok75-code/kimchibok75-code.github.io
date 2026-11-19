@@ -330,6 +330,12 @@
       "full": "모래 순찰대: 강철 350개, 화학 연료 200개, 부품 12개, 엔진 블록 1개(EI가 있는 경엔진), 바퀴 4개, 서스펜션 4개, 교류 발전기 1개, 연료 탱크 1개, 변속기 1개, 라디에이터 1개, 배기 장치 1개.",
       "ko": "모래 순찰대: 강철 350개, 화학 연료 200개, 부품 12개, 엔진 블록 1개(EI가 있는 경엔진), 바퀴 4개, 서스펜션 4개, 교류 발전기 1개, 연료 탱크 1개, 변속기 1개, 라디에이터 1개, 배기 장치 1개.",
       "at": 1795015137536
+    },
+    "3842174841": {
+      "src": "This is a major expansion mod that adds ocean content to RimWorld, centered around 4 vehicles created using the Vehicle Map Framework",
+      "full": "Vehicle Map Framework를 사용하여 생성된 4대의 차량을 중심으로 RimWorld에 해양 콘텐츠를 추가하는 주요 확장 모드입니다.",
+      "ko": "Vehicle Map Framework를 사용하여 생성된 4대의 차량을 중심으로 RimWorld에 해양 콘텐츠를 추가하는 주요 확장 모드입니다.",
+      "at": 1795066609153
     }
   }
 }
