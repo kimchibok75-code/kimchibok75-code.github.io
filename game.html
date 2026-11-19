@@ -2643,15 +2643,15 @@ function drawScreen(s, now) {
       ctx.fillStyle = '#00ffa3'; ctx.font = f(800, 20); ctx.fillText('CHZZK LIVE', r.x + r.w / 2, r.y + r.h / 2 - 8); }
   } else {
     const g = ctx.createLinearGradient(r.x, r.y, r.x, r.y + r.h); g.addColorStop(0, '#22304a'); g.addColorStop(1, '#141c2c'); ctx.fillStyle = g; ctx.fillRect(r.x, r.y, r.w, r.h);
-    {   // 김치복 프로필 사진 + '김치복 생방송' (2026-11-20)
-      ctx.font = f(800, 16); const t = '김치복 생방송', tw = ctx.measureText(t).width, ps = 20 * K, gap = 5 * K, x0 = r.x + r.w / 2 - (tw + ps + gap) / 2, cy = r.y + r.h * .3;
+    // 2026-11-20 환영 인사가 크게, 생방송 안내는 아래에 작게
+    ctx.fillStyle = '#ffd166'; ctx.font = f(800, 17); ctx.fillText('환영합니다!', r.x + r.w / 2, r.y + r.h * .27);
+    ctx.fillStyle = '#e8f1ff'; ctx.font = f(700, 9.5); ctx.fillText('처음 온 뉴비는 가이드 퀘스트,', r.x + r.w / 2, r.y + r.h * .5); ctx.fillText('혹은 초보자 가이드를 확인해 주세요.', r.x + r.w / 2, r.y + r.h * .64);
+    {   // 아래 줄: 김치복 프로필 사진 + 생방송 안내 (작게)
+      ctx.font = f(700, 7.5); const t = `김치복 생방송 · ${boardText()}`, tw = ctx.measureText(t).width, ps = 10 * K, gap = 3 * K, x0 = r.x + r.w / 2 - (tw + ps + gap) / 2, cy = r.y + r.h * .86;
       ctx.save(); ctx.beginPath(); ctx.arc(x0 + ps / 2, cy, ps / 2, 0, 7); ctx.fillStyle = '#ffd166'; ctx.fill(); ctx.clip();
-      if (PROFILE_IMG.complete && PROFILE_IMG.naturalWidth) ctx.drawImage(PROFILE_IMG, x0 + 1, cy - ps / 2 + 1, ps - 2, ps - 2); ctx.restore();
-      ctx.strokeStyle = '#ffd166'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x0 + ps / 2, cy, ps / 2, 0, 7); ctx.stroke();
-      ctx.fillStyle = '#ffd166'; ctx.textAlign = 'left'; ctx.fillText(t, x0 + ps + gap, cy + .5); ctx.textAlign = 'center';
+      if (PROFILE_IMG.complete && PROFILE_IMG.naturalWidth) ctx.drawImage(PROFILE_IMG, x0 + .5, cy - ps / 2 + .5, ps - 1, ps - 1); ctx.restore();
+      ctx.fillStyle = '#c9f0d2'; ctx.textAlign = 'left'; ctx.fillText(t, x0 + ps + gap, cy + .5); ctx.textAlign = 'center';
     }
-    ctx.fillStyle = '#c9f0d2'; ctx.font = f(700, 11); ctx.fillText(boardText(), r.x + r.w / 2, r.y + r.h * .55);
-    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.font = f(600, 8.5); ctx.fillText('방송이 켜지면 여기서 같이 봐요', r.x + r.w / 2, r.y + r.h * .74);
   }
   ctx.fillStyle = 'rgba(255,255,255,.05)'; for (let y = r.y; y < r.y + r.h; y += 3) ctx.fillRect(r.x, y, r.w, 1);   // 전광판 줄무늬
   if (S.live) { ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(r.x, r.y + r.h - 20 * K, r.w, 20 * K); ctx.fillStyle = '#fff'; ctx.font = f(700, 11); ctx.fillText('▶ 눌러서 같이 보기', r.x + r.w / 2, r.y + r.h - 10 * K); }
