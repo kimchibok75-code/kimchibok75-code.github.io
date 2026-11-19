@@ -409,9 +409,10 @@ const GAME = {
   },
   '/api/pot-at'(c, b) { const v = Number(b.v); if (!Number.isInteger(v) || v < 10 || v > 90) fail(400, '10~90 사이로 정해 주세요'); c.potAt = v; },
   // 가챠센터: 무기 뽑기 · 방어구 뽑기 (1회 / 10회)
-  // 지금 낀 것보다 좋은 장비는 칸마다 가장 좋은 것 하나만 "바꿀지 고르기"로 남기고, 나머지는 자동으로 분해(골드)
+  // 2026-11-20 리뉴얼: 뽑은 장비는 모두 가방(c.bag)에 남음 → 화면에서 칸마다 착용을 고르고 /api/gacha/done
   '/api/gacha/pull'(c, b) {
     townOnly(c);
+    if (c.bag.length) fail(400, '먼저 지난 뽑기 결과를 골라 주세요');
     const box = b.box, n = Number(b.n);
     if (!own(GACHA, box) || ![1, 10].includes(n)) fail(400, '잘못된 요청이에요');
     const g0 = gachaInfo(c.gacha[box]), cost = n === 10 ? Math.round(g0.cost * 10 * GACHA_TEN) : g0.cost;
@@ -420,17 +421,25 @@ const GAME = {
     for (let k = 0; k < n; k++) {
       const it = rollGacha(box, gachaInfo(c.gacha[box]).lv); c.gacha[box]++; items.push(it); cntAdd(c, 'gacha');
       if (it.g === 'legend') cntAdd(c, 'gotLegend'); if (it.g === 'myth') cntAdd(c, 'gotMyth');
-      const pi = c.bag.findIndex(p => p.slot === it.slot), best = Math.max(itemPower(c.equip[it.slot]), pi >= 0 ? itemPower(c.bag[pi]) : 0);
-      if (itemPower(it) > best) { if (pi >= 0) { got += dismantle(c.bag[pi]); c.bag.splice(pi, 1); } c.bag.push(it); }
-      else got += dismantle(it);
+      c.bag.push(it);
     }
-    c.gold += got;
     const g1 = gachaInfo(c.gacha[box]), keep = new Set(c.bag.map(p => p.id));
     const myth = items.find(it => it.g === 'myth');
     return { items: items.map(it => ({ ...it, keep: keep.has(it.id) })), got, cost, lvUp: g1.lv > g0.lv ? g1.lv : 0, chron: myth ? ['myth', `신화 장비 「${itemName(myth)}」를 뽑았어요!`] : null,
       log: ['gacha', `${GACHA[box].n} ${n}회 -${cost} +${got} ${items.filter(it => ['epic', 'legend', 'myth'].includes(it.g)).map(it => `${it.st}단계 ${GRADES[it.g].n} ${itemName(it)}`).join(', ')}`] };
   },
-  // 비교 창에서 고르기: take = 바꾸기(쓰던 것은 분해) / 아니면 새 장비를 분해
+  // 선택 완료: take = 착용할 장비 id 목록 (칸마다 첫 번째 하나만). 고른 것은 끼고(쓰던 것은 분해), 나머지는 모두 분해
+  '/api/gacha/done'(c, b) {
+    const take = Array.isArray(b.take) ? b.take.slice(0, 20).map(String) : [], done = new Set(), on = [];
+    let got = 0;
+    for (const it of c.bag) {
+      if (take.includes(it.id) && !done.has(it.slot)) { done.add(it.slot); if (c.equip[it.slot]) got += dismantle(c.equip[it.slot]); c.equip[it.slot] = it; on.push(itemName(it)); }
+      else got += dismantle(it);
+    }
+    const n = c.bag.length; c.bag = []; c.gold += got; c.hp = Math.min(c.hp, derive(c).maxHp);
+    return { got, on: on.length, log: ['gacha-done', `${n}개 중 ${on.join(', ') || '없음'} 장착, 나머지 분해 +${got}`] };
+  },
+  // (예전 화면용) 비교 창에서 고르기: take = 바꾸기(쓰던 것은 분해) / 아니면 새 장비를 분해
   '/api/gacha/pick'(c, b) {
     const i = findBag(c, b.id), it = c.bag[i]; c.bag.splice(i, 1);
     let got;
