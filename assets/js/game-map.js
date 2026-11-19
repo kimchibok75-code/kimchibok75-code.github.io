@@ -299,6 +299,12 @@ for (let x = 51; x <= 60; x++) { set(x, 45, G); set(x, 50, G); }
   set(b.door.x, b.door.y, PATH);
   road([[b.door.x + .5, b.door.y + .5], [26.5, 37.2], [25, 37.6]], .8, 33);   // 새 문 → 예전 길
 }
+// 16) 2026-11-20: 광장 남쪽에 건의 게시판 · 초보자 가이드 나란히 (가운데 2칸은 남쪽 길로 비워 둠)
+for (const b of [{ id: 'suggest', name: '건의 게시판', icon: '📮', x: 37, y: 37, w: 2, h: 1 }, { id: 'beginner', name: '초보자 가이드', icon: '🔰', x: 41, y: 37, w: 2, h: 1 }]) {
+  for (let k = DECO.length - 1; k >= 0; k--) { const d = DECO[k]; if (d.x >= b.x - 1 && d.x <= b.x + b.w && d.y >= b.y - 1 && d.y <= b.y + b.h) { if (tileAt(d.x, d.y) !== WATER) solid[d.y * MW + d.x] = 0; DECO.splice(k, 1); } }
+  b.door = { x: b.x + Math.floor(b.w / 2), y: b.y + b.h }; BUILDINGS.push(b);
+  for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) block(x, y);
+}
 // 치복동 포탈 (집 동네로 가는 문, 발 위치 픽셀) — 광장 남쪽 길 옆
 export const DPORTAL = { x: 41.4 * T, y: 47.4 * T };
 

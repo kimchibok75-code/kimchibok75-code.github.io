@@ -212,6 +212,26 @@ canvas.bdg { width: 44px; height: 44px; } canvas.bdg.big, .bdg.big { width: 58px
 .bdg.none { display: inline-grid; place-items: center; border-radius: 50%; background: #eef0f3; color: #8a93a0; font-weight: 900; font-size: 22px; }
 .bdhero { display: flex; gap: 12px; align-items: center; } .bdhero > div { flex: 1; min-width: 0; } .bdhero .bb { margin-top: 6px; min-height: 34px; }
 .fdex.unk img.fpic { filter: brightness(0) opacity(.35); }
+/* 건의 게시판 · 초보자 가이드 (2026-11-20) */
+.sg-lab { display: block; font-weight: 700; margin-bottom: 6px; font-size: calc(13px * var(--fs)); }
+.sg-text { width: 100%; box-sizing: border-box; resize: vertical; min-height: 110px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; font: inherit; font-size: calc(14px * var(--fs)); line-height: 1.5; }
+.sg-text:focus { outline: none; border-color: var(--bc); }
+.sg-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.sg-lock { display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; } .sg-lock small { font-weight: 400; color: var(--muted, #6b7280); }
+.sg-n { font-size: calc(12px * var(--fs)); color: var(--muted, #6b7280); } .sg-n.full { color: #d33; font-weight: 700; }
+.sg-alt { font-size: calc(13px * var(--fs)); line-height: 1.5; } .sg-alt a { color: var(--bc); font-weight: 700; }
+.sg-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sg-list li { border: 1.5px solid var(--line); border-radius: 12px; padding: 9px 12px; background: #fff; }
+.sg-list li.priv { background: #f6f3fb; } .sg-list li.mine { border-color: color-mix(in srgb, var(--bc) 55%, #fff); }
+.sg-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } .sg-meta small { color: var(--muted, #6b7280); margin-left: auto; } .sg-meta .mini { min-height: 0; padding: 3px 8px; }
+.sg-list p { margin: 6px 0 0; white-space: pre-wrap; word-break: break-word; line-height: 1.5; }
+.bg-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.bg-steps li, .bg-card { display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--line); border-radius: 14px; padding: 10px 12px; background: #fff; }
+.bg-steps li > div, .bg-card > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.bg-steps b, .bg-card b { font-size: calc(15px * var(--fs)); } .bg-steps small, .bg-card small { color: var(--muted, #6b7280); font-size: calc(12.5px * var(--fs)); line-height: 1.35; }
+.bg-n { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--bc); color: #fff; font-weight: 900; font-size: 13px; }
+.bg-i { flex: none; font-size: 26px; line-height: 1; }
+.bg-sys { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
 /* 시작 안내 (2026-11-17) */
 .bs-list.gd { gap: 6px; }
 .gd-row { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 48px; padding: 6px 12px 6px 8px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-size: calc(14.5px * var(--fs)); }
@@ -2127,7 +2147,8 @@ const BLD = {
 const LAB = { tower: 60, kfr: 60, cafe: 62, gacha: 100, skin: 66, hall: 86, smith: 72, fishshop: 50, lumber: 66, quarry: 50, farmshed: 46 };
 // 그림 건물: 차지하는 칸보다 조금 넓게(비율 그대로), 아래쪽이 칸 아래 + 6px
 const BP = 4;   // 그림 테두리 여백
-const BSC = { dex: 1.05, farmshed: 1.3, fishshop: 1.35, tower: .62, fishrank: 1.15 };   // 2026-11-20 낚시 랭킹판   // 2026-11-18 사용자 요청: 작아 보이던 텃밭 창고 · 낚시점만 크게 / 2026-11-19 무한의 탑은 작게
+const B_ALL = .9;   // 2026-11-20 사용자 요청: 모든 건물 그림 90% (벤치·분수·나무·돌·포탈은 그대로)
+const BSC = { suggest: 1.12, beginner: 1.12, dex: 1.05, farmshed: 1.3, fishshop: 1.35, tower: .62, fishrank: 1.15 };   // 2026-11-20 낚시 랭킹판   // 2026-11-18 사용자 요청: 작아 보이던 텃밭 창고 · 낚시점만 크게 / 2026-11-19 무한의 탑은 작게
 // 그림 건물이 실제로 놓이는 자리 (bSprite와 같은 계산)
 // 마을회관: 집 모든 단계 금액 (i 아이콘 설명)
 function houseTierTip(lv) {
@@ -2135,7 +2156,7 @@ function houseTierTip(lv) {
   return itip(HOUSE_TIERS.map((t, i) => `${i + 1}. ${t.n}: ${c(i ? t.cost : HOUSE.cost)}${t.inc ? ` (수입 1시간 ${fmtN(t.inc)})` : ''}${i === lv ? '  ← 지금' : ''}`).join('\n'));
 }
 function bImgRect(b, im) {
-  const Wd = b.w * T, Hh = b.h * T, a = im.height / im.width, w = Math.min(Wd + 56, Math.max(Wd + 24, (Hh + 20) / a)) * (BSC[b.id] || 1), h = w * a;
+  const Wd = b.w * T, Hh = b.h * T, a = im.height / im.width, w = Math.min(Wd + 56, Math.max(Wd + 24, (Hh + 20) / a)) * (BSC[b.id] || 1) * B_ALL, h = w * a;
   return { x: b.x * T - (w - Wd) / 2, y: b.y * T - (h - Hh - 6), w, h };
 }
 // ───────── 굴뚝 연기 (2026-11-19): 그림 속 굴뚝 구멍 자리(그림 비율) · 연기 색 ─────────
@@ -2167,7 +2188,7 @@ function drawSmoke(b, now) {
 function bSprite(b) {
   const Wd = b.w * T, Hh = b.h * T, im = ART['b-' + b.id];
   if (im) {
-    const a = im.height / im.width, w = Math.min(Wd + 56, Math.max(Wd + 24, (Hh + 20) / a)) * (BSC[b.id] || 1), h = w * a, ox = (w - Wd) / 2, oy = h - Hh - 6;
+    const a = im.height / im.width, w = Math.min(Wd + 56, Math.max(Wd + 24, (Hh + 20) / a)) * (BSC[b.id] || 1) * B_ALL, h = w * a, ox = (w - Wd) / 2, oy = h - Hh - 6;
     return sprite('bo:' + b.id, w + BP * 2, h + BP * 2, ox + BP, oy + BP, g => inkImage(g, im, -ox, -oy, w, h));
   }
   return sprite('bk:' + b.id, Wd + 40, Hh + 100, 20, 90, g => inkDraw(g, BLD[b.id](Wd, Hh)));
@@ -2243,7 +2264,7 @@ function houseTop(lv, roof) {
   return P;
 }
 // 그림 집 (2026-11-18, 8단계): 하얀 지붕 그림(house-N-roof)에 지붕 색을 곱해서 얹음
-const HOUSE_IW = [100, 112, 124, 136, 118, 128, 138, 150];   // 단계별 그림 너비(px)
+const HOUSE_IW = [100, 112, 124, 136, 118, 128, 138, 150].map(w => w * .9);   // 단계별 그림 너비(px) · 2026-11-20 90%로
 function houseImg(roof, lv) {
   const im = ART['house-' + (lv + 1)], rf = ART['house-' + (lv + 1) + '-roof']; if (!im) return null;
   const Wd = HOUSE_W * T, Hh = HOUSE_H * T, w = HOUSE_IW[lv] || 110, h = w * im.height / im.width, ox = (w - Wd) / 2, oy = h - Hh - 4;
@@ -2670,7 +2691,7 @@ function nameTagAt(c, now) {
   ctx.font = '700 11.5px "IBM Plex Sans KR", sans-serif'; const label = `${c.adm ? '🛡️ ' : ''}Lv.${c.lv} ${c.name}`; const tw = ctx.measureText(label).width + 12;
   ctx.fillStyle = c === me ? 'rgba(232,85,58,.94)' : c.adm ? 'rgba(108,79,194,.94)' : 'rgba(31,42,58,.76)'; rr(ctx, c.x - tw / 2, c.y - 66, tw, 17, 8.5); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.fillText(label, c.x, c.y - 57.5);
-  const bd = c === me ? LIFE()?.badge : c.badge; if (bd) drawBadge(bd, c.x - tw / 2 - 10, c.y - 57.5, 19);   // 뱃지: 이름 왼쪽 (2026-11-20)
+  const bd = c === me ? LIFE()?.badge : c.badge; if (bd) drawBadge(bd, c.x - tw / 2 - 13, c.y - 58, 26);   // 뱃지: 이름 왼쪽 (2026-11-20)
   let top = c.y - 66;
   const tn = c.title && c.title !== 'new' ? titleName(c.title) : '';
   if (tn) {
@@ -4861,7 +4882,7 @@ function spend(n) { if (me.gold < n) { toast('골드가 부족해요'); return f
 //  · 점진적 공개 · 밀러의 법칙: 긴 설명은 접은 '도움말'에, 화면에는 한 줄 소개 + 숫자 꼬리표만
 //  · 상태 보이기: 진행 막대, 모자란 재료는 빨간 꼬리표에 '얼마 모자란지'까지
 //  · 일관성(제이콥의 법칙): 모든 건물이 같은 순서 — 머리 → 지갑 → 탭 → 내용 → 도움말 → 주 버튼
-const BC = { dex: '#8a5bd0', tower: '#7b6fd6', kfr: '#d9472b', raid: '#c0392b', cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', fishrank: '#1f7fa8', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a', fountain: '#3f8fd0' };
+const BC = { suggest: '#d0743a', beginner: '#3f9a4a', dex: '#8a5bd0', tower: '#7b6fd6', kfr: '#d9472b', raid: '#c0392b', cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', fishrank: '#1f7fa8', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a', fountain: '#3f8fd0' };
 S.btab = {}; S.bhelp = {};
 const WAL = { gold: () => ['🪙', me.gold], wood: () => [RES.wood.i, LIFE().res.wood], stone: () => [RES.stone.i, LIFE().res.stone], fish: () => [COIN.fish[0], LIFE().coins.fish], farm: () => [COIN.farm[0], LIFE().coins.farm] };
 const fmtN = n => Math.floor(n || 0).toLocaleString();
@@ -4905,9 +4926,140 @@ function openBuilding(b, keep) {
   if (id === 'fishshop') return fishShop(b, keep);
   if (id === 'fishrank') return fishRankSheet(b, keep);
   if (id === 'dex') return dexSheet(b, keep);
+  if (id === 'suggest') return suggestSheet(b, keep);
+  if (id === 'beginner') return beginnerSheet(b, keep);
   if (id === 'lumber' || id === 'quarry') return workSheet(b, keep);
   if (id === 'farmshed') return openFarm(keep);
   if (b.soon) return soonSheet(b, keep);
+}
+// ───────── 📮 건의 게시판 · 🔰 초보자 가이드 (2026-11-20, 광장 남쪽에 나란히) ─────────
+// 그림: 코드로 판 하나를 그려 ART에 넣음 → 다른 그림 건물처럼 bSprite가 검은 테두리를 둘러 그림 (글씨도 그림 안에)
+function boardArt(kind) {
+  const W = 300, H = 290, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
+  const sug = kind === 'suggest', roof = sug ? '#d0743a' : '#3f9a4a', roofD = sug ? '#a9552a' : '#2e7a38';
+  const rrp = (x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); };
+  // 기둥 두 개
+  for (const x of [46, 236]) { g.fillStyle = '#8a5a33'; rrp(x, 70, 20, H - 72, 4); g.fill(); g.fillStyle = '#6e4626'; g.fillRect(x + 13, 72, 7, H - 76); }
+  // 판 (나무 테 + 안쪽)
+  g.fillStyle = '#a8713f'; rrp(22, 84, 256, 150, 14); g.fill();
+  g.fillStyle = '#8c5c31'; rrp(22, 214, 256, 20, [0, 0, 14, 14]); g.fill();
+  g.fillStyle = sug ? '#e6bf86' : '#fdf6e3'; rrp(34, 96, 232, 120, 9); g.fill();
+  // 지붕 (작은 박공)
+  g.fillStyle = roof; g.beginPath(); g.moveTo(8, 84); g.lineTo(150, 22); g.lineTo(292, 84); g.closePath(); g.fill();
+  g.fillStyle = roofD; g.beginPath(); g.moveTo(8, 84); g.lineTo(292, 84); g.lineTo(292, 96); g.lineTo(8, 96); g.closePath(); g.fill();
+  g.fillStyle = 'rgba(255,255,255,.22)'; g.beginPath(); g.moveTo(40, 72); g.lineTo(150, 30); g.lineTo(150, 40); g.lineTo(58, 76); g.closePath(); g.fill();
+  // 이름판
+  g.fillStyle = roofD; rrp(64, 104, 172, 34, 9); g.fill();
+  g.fillStyle = '#fff'; g.font = '900 23px "IBM Plex Sans KR", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(sug ? '건의 게시판' : '초보자 가이드', 150, 122);
+  if (sug) {   // 꽂아 둔 쪽지 3장 + 압정
+    const notes = [[78, 176, -.12, '#fff3a6'], [150, 180, .06, '#ffd3df'], [222, 175, -.05, '#cfe8ff']];
+    for (const [x, y, r, c] of notes) {
+      g.save(); g.translate(x, y); g.rotate(r);
+      g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(-26, -24, 54, 50);
+      g.fillStyle = c; g.fillRect(-28, -27, 54, 50);
+      g.fillStyle = 'rgba(60,60,80,.35)'; for (const ly of [-12, -3, 6, 15]) g.fillRect(-20, ly, ly === 15 ? 22 : 38, 3);
+      g.fillStyle = '#e04a3a'; g.beginPath(); g.arc(-1, -24, 5, 0, 7); g.fill();
+      g.restore();
+    }
+    // 아래 빨간 우체통
+    g.fillStyle = '#d93a2c'; rrp(122, 238, 56, 44, [16, 16, 4, 4]); g.fill();
+    g.fillStyle = '#a82a1f'; g.fillRect(122, 270, 56, 12);
+    g.fillStyle = '#4a1a14'; rrp(134, 250, 32, 6, 3); g.fill();
+  } else {   // 초보 마크 + 할 일 목록
+    g.save(); g.translate(86, 176);
+    g.fillStyle = '#f5c531'; g.beginPath(); g.moveTo(0, -30); g.lineTo(26, -14); g.lineTo(26, 26); g.lineTo(0, 10); g.closePath(); g.fill();
+    g.fillStyle = '#3fae4a'; g.beginPath(); g.moveTo(0, -30); g.lineTo(-26, -14); g.lineTo(-26, 26); g.lineTo(0, 10); g.closePath(); g.fill();
+    g.restore();
+    for (let i = 0; i < 3; i++) {
+      const y = 152 + i * 25;
+      g.fillStyle = '#fff'; g.strokeStyle = '#3f9a4a'; g.lineWidth = 3; rrp(132, y, 18, 18, 4); g.fill(); g.stroke();
+      if (i < 2) { g.strokeStyle = '#2e7a38'; g.lineWidth = 3.5; g.lineCap = 'round'; g.beginPath(); g.moveTo(136, y + 9); g.lineTo(140, y + 14); g.lineTo(147, y + 4); g.stroke(); }
+      g.fillStyle = 'rgba(60,70,60,.4)'; g.fillRect(158, y + 7, i === 1 ? 62 : 84, 4);
+    }
+    // 아래 작은 화살표 팻말
+    g.fillStyle = '#f5c531'; g.beginPath(); g.moveTo(112, 244); g.lineTo(176, 244); g.lineTo(192, 258); g.lineTo(176, 272); g.lineTo(112, 272); g.closePath(); g.fill();
+    g.fillStyle = '#5a4210'; g.font = '900 15px "IBM Plex Sans KR", sans-serif'; g.fillText('START', 148, 259);
+  }
+  return cv;
+}
+artReady.then(() => { ART['b-suggest'] = boardArt('suggest'); ART['b-beginner'] = boardArt('beginner'); });
+
+// 건의 게시판: 글쓰기 / 모아 보기. 비공개(🔒)는 쓴 사람과 김치복만 봄
+const SG = { list: null, max: 500, admin: false, draft: '', priv: false, err: '', at: 0 };
+const SG_LINKS = { cafe: 'https://cafe.naver.com/kimchibok', discord: 'https://discord.com/channels/1197441179197915136/1560847726143471758' };
+const sgTime = t => { const d = (Date.now() - t) / 1000; return d < 60 ? '방금' : d < 3600 ? `${Math.floor(d / 60)}분 전` : d < 86400 ? `${Math.floor(d / 3600)}시간 전` : `${Math.floor(d / 86400)}일 전`; };
+async function sgLoad(force) {
+  if (!force && SG.list && Date.now() - SG.at < 30e3) return;
+  try { const j = await api('/api/suggest'); Object.assign(SG, { list: j.list, max: j.max, admin: j.admin, err: '', at: Date.now() }); } catch (x) { SG.err = x.message; }
+}
+function suggestSheet(b, keep) {
+  reopen = () => suggestSheet(b, true);
+  const tab = btab('suggest', 'write', ['write', 'list']);
+  if (tab === 'list' && !SG.list && !SG.err) sgLoad().then(() => !modal.hidden && reopen?.());
+  const n = [...SG.draft].length;
+  const write = `<div class="bs-card"><label class="sg-lab" for="sgText">김치복에게 하고 싶은 말, 고쳤으면 하는 점, 새 아이디어를 적어 주세요</label>
+      <textarea id="sgText" class="sg-text" maxlength="${SG.max}" rows="6" placeholder="예) 낚시터에 의자가 있으면 좋겠어요!">${esc(SG.draft)}</textarea>
+      <div class="sg-row"><label class="sg-lock"><input type="checkbox" id="sgPriv"${SG.priv ? ' checked' : ''}> 🔒 비공개 <small>(나와 김치복만 볼 수 있어요)</small></label><span class="sg-n${n > SG.max ? ' full' : ''}" id="sgN">${n} / ${SG.max}</span></div></div>
+    <div class="bs-card sg-alt">💬 길게 쓰거나 사진을 보내고 싶으면 <a href="${SG_LINKS.cafe}" target="_blank" rel="noopener">네이버 카페</a>나 <a href="${SG_LINKS.discord}" target="_blank" rel="noopener">디스코드</a>로 알려 줘도 좋아요!</div>`;
+  const list = SG.err ? `<p class="muted">불러오지 못했어요: ${esc(SG.err)}</p>` : !SG.list ? '<p class="muted">불러오는 중…</p>' : !SG.list.length ? '<p class="muted">아직 건의 글이 없어요. 첫 글을 써 주세요!</p>'
+    : `<ul class="sg-list">${SG.list.map(r => `<li class="${r.priv ? 'priv' : ''}${r.mine ? ' mine' : ''}"><div class="sg-meta"><b>${esc(r.nick)}</b>${r.priv ? chip('🔒 비공개', 'lk') : ''}${r.mine ? chip('내 글', 'up') : ''}<small>${sgTime(r.at)}</small>${r.mine || SG.admin ? `<button class="mini" data-x="del:${r.id}">지우기</button>` : ''}</div><p>${esc(r.body)}</p></li>`).join('')}</ul>`;
+  bsOpen(b, {
+    tag: '게임에 바라는 점을 김치복에게 전해요', tabs: [['write', '✏️ 글쓰기'], ['list', `📋 건의 글${SG.list ? ` ${SG.list.length}` : ''}`]], tab,
+    body: tab === 'write' ? write : list,
+    help: `· 한 글에 ${SG.max}글자까지, 하루 5개까지 쓸 수 있어요 (1분에 한 번).<br>· 🔒 비공개로 쓰면 나와 김치복만 볼 수 있어요. 공개 글은 모두가 볼 수 있어요.<br>· 내가 쓴 글은 지울 수 있어요. 나쁜 말은 가려지거나 막혀요.`,
+    foot: tab === 'write' ? bbtn('send', '📮 건의 글 보내기', '', { wide: true, main: true, dis: n < 5 || n > SG.max }) : bbtn('reload', '🔄 새로 고침', '', { wide: true }),
+    ready: el => {
+      const ta = el.querySelector('#sgText'); if (!ta) return;
+      ta.addEventListener('input', () => { SG.draft = ta.value; const k = [...ta.value].length; const nn = el.querySelector('#sgN'); nn.textContent = `${k} / ${SG.max}`; nn.classList.toggle('full', k > SG.max); const sb = el.querySelector('[data-x="send"]'); if (sb) sb.disabled = k < 5 || k > SG.max; });
+      el.querySelector('#sgPriv').onchange = e => { SG.priv = e.target.checked; };
+    },
+  }, async x => {
+    if (x === 'reload') { await sgLoad(true); return reopen(); }
+    if (x === 'send') {
+      if ([...SG.draft.trim()].length < 5) return toast('5글자 이상 써 주세요');
+      if (!await ask(`${SG.priv ? '🔒 비공개로 ' : ''}건의 글을 보낼까요?`, { title: '📮 건의 글 보내기', ok: '보내기' })) return;
+      try { const j = await api('/api/suggest', { body: SG.draft, priv: SG.priv }); Object.assign(SG, { list: j.list, admin: j.admin, at: Date.now(), draft: '', err: '' }); toast('📮 건의 글을 보냈어요. 고마워요!'); sfx('coin'); S.btab.suggest = 'list'; reopen(); }
+      catch (e) { toast('⚠️ ' + e.message); }
+      return;
+    }
+    if (x.startsWith('del:')) {
+      if (!await ask('이 글을 지울까요? 되돌릴 수 없어요.', { title: '🗑️ 글 지우기', ok: '지우기', danger: true })) return;
+      try { const j = await api('/api/suggest/del', { id: +x.slice(4) }); SG.list = j.list; SG.at = Date.now(); toast('지웠어요'); reopen(); } catch (e) { toast('⚠️ ' + e.message); }
+    }
+  }, keep);
+}
+
+// 초보자 가이드: 처음 할 일(차례대로, 누르면 그곳으로) + 시스템 한눈에(크게 묶어 한 줄씩)
+const BG_STEPS = [
+  ['🎰', '무기부터 뽑기', '가챠센터에서 무기 뽑기 → 더 센 걸 끼기', '가챠'],
+  ['🌀', '사냥 가기', '포탈로 들어가면 자동으로 싸워요', '사냥'],
+  ['❗', '주민 임무 받기', '머리 위 ❗ 주민을 누르면 골드·경험치', null],
+  ['💪', '능력치 찍기', '레벨이 오르면 왼쪽 창에서 + 누르기', null],
+  ['🔨', '강화하기', '남는 골드로 대장간에서 장비 칸 강화', '강화'],
+];
+const BG_SYS = [
+  ['⚔️', '싸우며 크기', '사냥 · 가챠 · 강화 · 스킬 · 레이드(30분마다 보스)'],
+  ['🎣', '마을 생활', '낚시 · 나무 베기 · 돌 캐기 · 텃밭 · 카페 알바 · 🧺 자동 생활'],
+  ['🏡', '내 집', '마을회관에서 치복동에 집 짓기 · 키우면 임대 수입'],
+  ['🎨', '꾸미고 모으기', '스킨샵 · 도감 센터(칭호 · 뱃지) · 🏆 랭킹'],
+  ['👋', '함께 놀기', '채팅 · 이모트 · 소원 분수 · 공동 건설 · 같이 레이드'],
+  ['💤', '쉬는 동안에도', '게임을 닫아도 최대 4시간 조금씩 성장'],
+];
+function beginnerSheet(b, keep) {
+  reopen = () => beginnerSheet(b, true);
+  const tab = btab('beginner', 'start', ['start', 'sys']);
+  const body = tab === 'start'
+    ? `<ol class="bg-steps">${BG_STEPS.map(([i, t, d, go], k) => `<li><span class="bg-n">${k + 1}</span><span class="bg-i">${i}</span><div><b>${t}</b><small>${d}</small></div>${go ? `<button class="mini main" data-x="go:${go}">가기</button>` : ''}</li>`).join('')}</ol>`
+    : `<div class="bg-sys">${BG_SYS.map(([i, t, d]) => `<div class="bg-card"><span class="bg-i">${i}</span><div><b>${t}</b><small>${d}</small></div></div>`).join('')}</div>`;
+  bsOpen(b, {
+    tag: '처음이라면 여기부터!', tabs: [['start', '👣 처음 할 일'], ['sys', '🗺️ 한눈에 보기']], tab, body,
+    foot: bbtn('book', '📖 자세한 가이드', '', { wide: true }) + bbtn('close', '알겠어요', '', { wide: true, main: true }),
+  }, x => {
+    if (x === 'close') return closeModal();
+    if (x === 'book') return openGuideBook();
+    if (x.startsWith('go:')) { const p = PLACES.find(q => q[1] === x.slice(3)); if (!p) return; closeModal(); ROAM.pause = 20; teleport(p[2], p[3]); setTimeout(() => placeOpen(p[1]), 250); }
+  }, keep);
 }
 // 아직 준비 중인 건물 (2026-11-19 무한의 탑 · 김치볶음밥 전문점)
 const SOON = { tower: '끝없이 올라가는 탑이에요. 층마다 더 센 몬스터가 기다려요.', kfr: '김치복이 직접 볶는 김치볶음밥 가게예요. 맛있는 요리로 힘을 얻어요.' };
@@ -5266,7 +5418,7 @@ const sizeSetHtml = () => isPC() ? `<div class="uiset" id="uiSet"><div><label>�
   <div><label>✏️ 글씨 크기</label><div class="seg">${segHtml(FS_STEPS, SZ.fs, 'fs')}</div></div><p class="muted">지도 그림 크기는 오른쪽 ＋/－ 버튼으로 바꿔요. 이 컴퓨터에만 저장돼요.</p></div>` : '';
 function wireSizeSet(el) { el.querySelector('#uiSet')?.addEventListener('click', e => { const b = e.target.closest('[data-ui], [data-fs]'); if (!b) return; if (b.dataset.ui) SZ.ui = +b.dataset.ui; else SZ.fs = +b.dataset.fs; applySize(true); b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }); }
 
-// PC: 아무것도 안 하고 있을 때 Enter → 채팅 시작. 채팅 칸에서 Enter → 보내고 채팅 끝(빈 칸이면 그냥 끝), Esc → 채팅 끝 (다시 화살표로 걷기)
+// PC: 아무것도 안 하고 있을 때 Enter → 채팅 시작. 채팅 칸에서 Enter → 보내고 계속 채팅(빈 칸이면 끝), Esc → 채팅 끝 (다시 화살표로 걷기)
 const PC_KEYS = matchMedia('(hover: hover) and (pointer: fine)').matches;
 // ───────── 창 키보드 조작 (PC, 2026-11-18): 창이 열려 있으면 화살표 = 다음·이전 선택(가까운 쪽), Enter·스페이스바 = 누르기 ─────────
 // 누를 수 있는 것 = 버튼·링크·입력칸 + 손가락 모양(cursor: pointer)인 칸. 창이 다시 그려져도(1초마다 갱신 등) 같은 것을 다시 찾아 이어서 고름
@@ -5352,7 +5504,7 @@ $('#chatIn').addEventListener('keydown', e => {
   if (e.key === 'Escape' || (e.key === 'Enter' && !e.target.value.trim())) { e.preventDefault(); e.stopPropagation(); e.target.blur(); }   // stopPropagation: 안 막으면 아래 창 전체 Enter가 바로 다시 채팅 칸을 켬 (2026-11-19 고침)
 });
 $('#chatIn').addEventListener('input', e => { const n = [...e.target.value].length; $('#chatCount').textContent = `${n}/60`; $('#chatCount').classList.toggle('full', n >= 60); $('#chatCount').classList.toggle('near', n >= 45); });
-$('#chatForm').addEventListener('submit', e => { e.preventDefault(); const v = $('#chatIn').value; if (!v.trim()) return; if (trySend(v) !== false) { $('#chatIn').value = ''; $('#chatCount').textContent = '0/60'; $('#chatCount').classList.remove('full'); if (!PC_KEYS) $('#chatIn').focus(); } if (PC_KEYS) $('#chatIn').blur(); });   // PC: Enter로 보내면 채팅 끝 → 바로 다시 걷기 (2026-11-18 요청). 휴대폰은 계속 칠 수 있게
+$('#chatForm').addEventListener('submit', e => { e.preventDefault(); const v = $('#chatIn').value; if (!v.trim()) return; if (trySend(v) !== false) { $('#chatIn').value = ''; $('#chatCount').textContent = '0/60'; $('#chatCount').classList.remove('full'); $('#chatIn').focus(); } });   // 2026-11-20 요청: 보낸 뒤에도 채팅 칸 그대로 → Enter 없이 바로 다음 말. 끝내려면 빈 칸에서 Enter · Esc · 바닥 누르기
 $('#emoBtn').onclick = () => { $('#emotes').hidden = !$('#emotes').hidden; if (innerWidth <= 760) $('#chat').classList.add('expanded'); };
 $('#emotes').addEventListener('click', e => { const em = e.target.closest('[data-e]')?.dataset.e; if (em) { emote(me, em); $('#emotes').hidden = true; } });
 $('#chatExp').onclick = () => $('#chat').classList.toggle('expanded');
@@ -6491,28 +6643,25 @@ function openTitles(tab) {
 // ───────── 📖 도감 센터 (2026-11-20): 칭호 · 뱃지 · 물고기 · 스킨. 칭호·뱃지는 여기서 바꿈 ─────────
 // 뱃지 그림 (64px 판에 한 번 그려 둠): 새내기 = 나뭇잎, 레이드 = 보스 얼굴, 물고기 = 그 물고기 그림
 const BADGE_SP = {};
-function badgeCanvas(id) {
+function badgeCanvas(id) {   // 2026-11-20 사용자 요청: 둥근 바탕 없이 그림만 크게 (검은 테두리)
   if (BADGE_SP[id]) return BADGE_SP[id];
   const b = badgeOf(id); if (!b) return null;
-  const fd = b.fish && FISH_BY[b.fish], im = b.raid ? ART[b.raid === 'ogre' ? 'og-head' : 'd-head'] : fd?.img ? fishImgC(b.fish) : null;
+  const fd = b.fish && FISH_BY[b.fish]; let im = b.raid ? ART[b.raid === 'ogre' ? 'og-head' : 'd-head'] : fd?.img ? fishImgC(b.fish) : null;
   if ((b.raid || fd?.img) && !im) return null;   // 그림을 아직 불러오는 중 → 다음에 다시
   const cv = document.createElement('canvas'); cv.width = cv.height = 64; const g = cv.getContext('2d');
-  const ring = b.raid ? (b.raid === 'ogre' ? '#5e8c2a' : '#c0392b') : fd ? FG[fd.grade].c : '#3f9a4a';
-  g.fillStyle = INK; g.beginPath(); g.arc(32, 32, 31.5, 0, 7); g.fill();
-  g.fillStyle = ring; g.beginPath(); g.arc(32, 32, 28.5, 0, 7); g.fill();
-  g.fillStyle = b.raid ? '#2b2230' : '#fffaf0'; g.beginPath(); g.arc(32, 32, 24, 0, 7); g.fill();
-  if (b.id === 'leaf') {   // 새내기: 초록 나뭇잎
-    g.save(); g.translate(32, 33); g.rotate(-.65);
-    const leaf = () => { g.beginPath(); g.moveTo(0, -18); g.bezierCurveTo(15, -10, 13, 10, 0, 18); g.bezierCurveTo(-13, 10, -15, -10, 0, -18); };
-    g.fillStyle = '#6cc04a'; leaf(); g.fill();
-    g.save(); leaf(); g.clip(); g.fillStyle = '#4f9d34'; g.fillRect(0, -20, 20, 40); g.restore();
-    g.strokeStyle = '#2f6b22'; g.lineWidth = 2.2; g.lineCap = 'round'; g.beginPath(); g.moveTo(0, -14); g.lineTo(0, 22); g.stroke();
-    g.lineWidth = 1.5; for (const y of [-6, 1, 8]) { g.beginPath(); g.moveTo(0, y + 4); g.lineTo(-7, y - 1); g.moveTo(0, y + 4); g.lineTo(7, y - 1); g.stroke(); }
-    g.restore();
+  if (b.id === 'leaf') {   // 새내기: 초록 나뭇잎 (따로 그린 뒤 테두리)
+    const lc = document.createElement('canvas'); lc.width = lc.height = 64; const q = lc.getContext('2d');
+    q.translate(32, 32); q.rotate(-.65);
+    const leaf = () => { q.beginPath(); q.moveTo(0, -27); q.bezierCurveTo(22, -15, 19, 15, 0, 27); q.bezierCurveTo(-19, 15, -22, -15, 0, -27); };
+    q.fillStyle = '#6cc04a'; leaf(); q.fill();
+    q.save(); leaf(); q.clip(); q.fillStyle = '#4f9d34'; q.fillRect(0, -30, 30, 60); q.restore();
+    q.strokeStyle = '#2f6b22'; q.lineWidth = 3; q.lineCap = 'round'; q.beginPath(); q.moveTo(0, -21); q.lineTo(0, 30); q.stroke();
+    q.lineWidth = 2.2; for (const y of [-9, 1, 11]) { q.beginPath(); q.moveTo(0, y + 6); q.lineTo(-10, y - 1); q.moveTo(0, y + 6); q.lineTo(10, y - 1); q.stroke(); }
+    inkImage(g, lc, 4, 4, 56, 56, 2.6);
   } else if (im) {
-    const k = (b.raid ? 42 : 40) / Math.max(im.width, im.height);
-    g.save(); g.beginPath(); g.arc(32, 32, 24, 0, 7); g.clip(); (b.raid ? g.drawImage.bind(g) : (...q) => inkImage(g, ...q, 1.6))(im, 32 - im.width * k / 2, 32 - im.height * k / 2 + (b.raid ? 2 : 0), im.width * k, im.height * k); g.restore();
-  } else { g.font = '28px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; fillTextIco(g, fd?.i || '🐟', 32, 33); }
+    const k = 56 / Math.max(im.width, im.height), w = im.width * k, h = im.height * k;
+    inkImage(g, im, 32 - w / 2, 32 - h / 2, w, h, 2.4);
+  } else { g.font = '44px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; fillTextIco(g, fd?.i || '🐟', 32, 34); }
   return BADGE_SP[id] = cv;
 }
 function drawBadge(id, cx, cy, size) { const cv = badgeCanvas(id); if (cv) ctx.drawImage(cv, cx - size / 2, cy - size / 2, size, size); }
@@ -7254,6 +7403,7 @@ const GUIDE = () => [
     ['걷기', isPC() ? '바닥을 누르거나 화살표·WASD로 걸어요.' : '바닥을 누르거나, 화면을 끌면 그 방향으로 계속 걸어요.'],
     ...(isPC() ? [['점프 · 공격', 'C = 점프, 공중에서 C 한 번 더 = 더블 점프(건물·나무도 넘어가요). 화살표를 누른 채 C면 그쪽으로 뛰어요. Z = 공격(마을에선 바라보는 쪽, 사냥터에선 가까운 몬스터에게 · 쿨타임 찬 스킬부터 순서대로). 스페이스바 = 가까이 있는 건물·주민·나무·바위·물가를 누른 것처럼 이용.']] : []),
     ['건물 이용', '건물을 누르면 그 앞까지 걸어가서 바로 창이 열려요.'],
+    ['🔰 초보자 가이드 · 📮 건의 게시판', '광장 남쪽 팻말 두 개. 처음 할 일을 차례대로 알려 주고, 김치복에게 바라는 점을 글로 남길 수 있어요(🔒 비공개도 돼요).'],
     ['🏘️ 바로가기', '오른쪽 버튼. 가고 싶은 곳을 누르면 그 자리로 바로 이동하고 시설 창도 열려요.'],
     ['채팅·이모트', '아래 채팅 칸은 같은 채널의 모두에게 보여요. 😊 버튼으로 이모트. 귓속말·친구·거래는 없어요.'],
     ['🏆 랭킹', '오른쪽 버튼. 레벨 · 번 돈 · 비싼 물고기 · 큰 물고기 · 강화 합 · 기여도 순위(상위 50명)와 내 순위를 봐요.'],
@@ -7393,7 +7543,7 @@ function showGuide(keep) {
       <div class="bs-sec">👉 오른쪽 버튼 (눌러서 바로 열기)</div>
       <ul class="bs-list gd">${btn.map(([x, i, n, t]) => `<li><button class="gd-row" data-x="${x}"><span>${i}</span><div><b class="t">${n}</b><small class="d">${t}</small></div><small class="go">›</small></button></li>`).join('')}</ul>`;
   } else {
-    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 한 번 더 Enter → 보내고 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>C</kbd>', '점프 · 공중에서 한 번 더 누르면 더블 점프(건물도 넘어가요) · 화살표와 같이 누르면 그쪽으로 뛰어요'], ['<kbd>Space</kbd>', '가까이 있는 건물 · 주민 · 나무 · 바위 · 물가 등을 누른 것처럼 이용'], ['<kbd>Z</kbd>', '공격 · 마을에선 바라보는 쪽으로, 사냥터에선 가까운 몬스터에게 (쿨타임 찬 스킬부터)'], ['<kbd>Esc</kbd>', '창 닫기'], ['창에서 <kbd>←↑↓→</kbd>', '버튼 고르기 · <kbd>Enter</kbd>나 <kbd>Space</kbd>로 누르기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
+    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 보낸 뒤에도 계속 칠 수 있어요 · 빈 칸에서 Enter나 Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>C</kbd>', '점프 · 공중에서 한 번 더 누르면 더블 점프(건물도 넘어가요) · 화살표와 같이 누르면 그쪽으로 뛰어요'], ['<kbd>Space</kbd>', '가까이 있는 건물 · 주민 · 나무 · 바위 · 물가 등을 누른 것처럼 이용'], ['<kbd>Z</kbd>', '공격 · 마을에선 바라보는 쪽으로, 사냥터에선 가까운 몬스터에게 (쿨타임 찬 스킬부터)'], ['<kbd>Esc</kbd>', '창 닫기'], ['창에서 <kbd>←↑↓→</kbd>', '버튼 고르기 · <kbd>Enter</kbd>나 <kbd>Space</kbd>로 누르기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
       : [['끌기', '화면을 끌면 그 방향으로 걸어요'], ['누르기', '바닥 · 건물 · 사람을 누르면 그곳으로'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅 기록 펼치기 · ⚙️로 글씨 크기'], ['⚙️', '설정: 내 정보 · 비밀번호 · 차단 목록']];
     body = `<ul class="bs-list gd">${tips.map(([k, t]) => `<li class="gd-key"><span>${k}</span><span>${t}</span></li>`).join('')}</ul>`;
   }

@@ -81,6 +81,9 @@ async function route(req, env, url) {
   if (m === 'GET' && p === '/api/blocks') return json({ blocks: (await env.DB.prepare('SELECT b.target_id AS id, u.nick FROM blocks b JOIN users u ON u.id = b.target_id WHERE b.user_id = ?').bind(s.user.id).all()).results });
   if (m === 'POST' && p === '/api/block') return block(req, env, s.user);
   if (m === 'POST' && p === '/api/report') return report(req, env, s.user);
+  if (m === 'GET' && p === '/api/suggest') return suggestList(env, s.user);
+  if (m === 'POST' && p === '/api/suggest') return suggestWrite(req, env, s.user);
+  if (m === 'POST' && p === '/api/suggest/del') return suggestDel(req, env, s.user);
   const g = GAME[p];
   if (m === 'POST' && g) { const b = await readBody(req); return play(env, s.user, (c, at, out) => g(c, b, at, out, env, s.user)); }
   if (m === 'POST' && p === '/api/password') return changePw(req, env, s);
@@ -968,6 +971,33 @@ async function block(req, env, user) {
   return json({ ok: true });
 }
 const REASONS = ['욕설·비하', '도배', '불쾌한 행동', '사칭', '기타'];
+// ───── 건의 게시판 (2026-11-20): 공개 글은 모두가, 비공개(priv) 글은 쓴 사람과 김치복(관리자)만 봄 ─────
+const SUGGEST_MAX = 500;
+async function suggestList(env, user) {
+  const adm = !!user.is_admin;
+  const rows = (await env.DB.prepare(`SELECT s.id, s.user_id AS uid, u.nick, s.body, s.priv, s.at FROM suggestions s JOIN users u ON u.id = s.user_id
+    WHERE u.banned = 0 AND (s.priv = 0 OR s.user_id = ? OR ?) ORDER BY s.at DESC LIMIT 60`).bind(user.id, adm ? 1 : 0).all()).results;
+  return json({ list: rows.map(r => ({ ...r, mine: r.uid === user.id })), max: SUGGEST_MAX, admin: adm });
+}
+async function suggestWrite(req, env, user) {
+  const b = await readBody(req), t = now();
+  let body = String(b.body || '').replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').trim();
+  if (body.length < 5) fail(400, '5글자 이상 써 주세요');
+  if ([...body].length > SUGGEST_MAX) fail(400, `${SUGGEST_MAX}글자까지 쓸 수 있어요`);
+  const r = scanBad(body); if (r.hard) fail(400, '쓸 수 없는 말이 들어 있어요'); body = r.text;
+  const last = await env.DB.prepare('SELECT at FROM suggestions WHERE user_id = ? ORDER BY at DESC LIMIT 1').bind(user.id).first();
+  if (last && t - last.at < 60e3) fail(429, '1분 뒤에 다시 쓸 수 있어요');
+  if ((await env.DB.prepare('SELECT COUNT(*) AS n FROM suggestions WHERE user_id = ? AND at > ?').bind(user.id, t - DAY).first()).n >= 5) fail(429, '건의 글은 하루 5개까지예요');
+  await env.DB.prepare('INSERT INTO suggestions (user_id, body, priv, at) VALUES (?, ?, ?, ?)').bind(user.id, body, b.priv ? 1 : 0, t).run();
+  return suggestList(env, user);
+}
+async function suggestDel(req, env, user) {
+  const b = await readBody(req), id = Number(b.id);
+  const r = await env.DB.prepare('SELECT user_id FROM suggestions WHERE id = ?').bind(id).first(); if (!r) fail(404, '없는 글이에요');
+  if (r.user_id !== user.id && !user.is_admin) fail(403, '내 글만 지울 수 있어요');
+  await env.DB.prepare('DELETE FROM suggestions WHERE id = ?').bind(id).run();
+  return suggestList(env, user);
+}
 async function report(req, env, user) {
   const b = await readBody(req), id = Number(b.id), t = now();
   if (!Number.isInteger(id) || id === user.id || !REASONS.includes(b.reason)) fail(400, '잘못된 요청이에요');
