@@ -396,7 +396,7 @@
 - 검사 스킬 `s_bash` 강타 → **돌진 베기** 🏃 (`dash: 1`, m 2.1, stun .5). id는 그대로라서 모은 장 수 유지
   - 사냥터: 공격 거리 밖이어도 6칸 안이면 씀 → `HT.dash`로 0.16초 동안 몬스터 앞까지 미끄러짐 + 잔상 `HT.trail`. 레이드: 드래곤 앞으로 바로 이동(`raidSkill`)
 - **새 버전 자동 새로 고침**: 배포할 때 update.yml이 `game.html + assets/js/game-*.js` 지문(8글자)을 `game-version.txt`에 쓰고 game.html의 `__GAMEV__`에 넣음
-  - 화면은 1분마다(그리고 다시 볼 때) `game-version.txt`를 읽고 다르면 토스트 → 3초 뒤 위치 저장 → 새로 고침 (`checkVer`, `reloadSoon`). 레이드 중이면 끝난 뒤
+  - 화면은 1분마다(그리고 다시 볼 때) `game-version.txt`를 읽고 다르면 **화면 위 큰 알림 `#rlBox`로 10초 카운트다운**(남은 초·막대, 3초 전부터 빨갛게 흔들림, '지금 새로 고침' 버튼) → 위치 저장 → 새로 고침 (`checkVer`, `reloadSoon`, `RL_SEC`). 레이드 중이면 끝난 뒤 (2026-11-20 사용자 요청)
   - 데이터 자동 갱신(봇 커밋)으로는 지문이 안 바뀌어서 새로 고침 안 됨. 내 컴퓨터에서는 `__GAMEV__` 그대로라 꺼져 있음
 - **그림 폴더** `assets/img/game/` (2026-11-16): 지금 코드 그림을 PNG로 뽑아 둔 참고용 사본 380장 (char·item·mon·build·nature·props·ui·bg, 설명은 그 폴더 README.md). 게임은 아직 이 파일을 안 읽음
   - **사용자 요청: 그림을 고쳐도 PNG를 다시 뽑지 말 것** (직접 부탁할 때만). 다시 뽑기: (1) 백그라운드로 `node scripts/img-export/recv.mjs` (5199 포트, 받은 PNG를 그 폴더에 씀) (2) `scripts/img-export/exporter.js` 내용을 한 줄로 합쳐 game.html의 `// 화면 이동은 실제 화면 점` 줄 앞에 `// DEBUG-REMOVE`로 넣기 (3) 로컬 서버 + 미리보기에서 로그인 후 `window.__export()` (숨긴 창이면 몇 분 걸림, `.then`으로 돌리고 기다리기) (4) DEBUG-REMOVE 지우기
@@ -629,6 +629,7 @@
 
 ### 치복동 · 무한의 탑 · 김치볶음밥 전문점 — 2026-11-19 배포
 - **새 건물 2곳 (내용은 "준비 중")**: 🗼 무한의 탑 `tower` (69,24, 사냥터 포탈 위쪽) · 🍳 김치볶음밥 전문점 `kfr` (52,29, 스킨샵과 대장간 사이). `BUILDINGS`에 `soon: 1` → `openBuilding`이 `soonSheet`(글은 `SOON`). 그림 `b-tower`, `b-kfr` (town-art.py 1번). 탑 그림 배율 `BSC.tower` .62
+  - **공사중 표지판** (2026-11-20): `soon: 1` 건물 문 앞 가운데에 사용자 그림 `내 디자인/공사중.png` → town-art.py 13번 → `soon-sign.webp` (`drawSoon`, `soonAt`, `SOON_W`). 준비가 끝나 `soon`을 빼면 표지판도 사라짐
   - game-map.js **11번**(맨 마지막)에서 추가 + 길 2개. 사냥터 포탈은 (74, 37.6)으로 옮김 (`PORTAL`, `BACK`)
 - **치복동 A동** (`assets/js/game-dong.js`, 46×34칸, 화면·서버 같이 씀): 집은 이제 여기에만 지음. 서쪽 숲, 북동쪽 호수 공원(`LAKE`, 벤치 `DBENCH`), 남쪽 가운데 타운으로 가는 포탈 `DGATE`. 꾸밈 나무 `DTREES`(못 캠, 집 아래 깔리면 `off`)
   - 집 자리 `canHouseD`: 붙여 짓기 OK, 나무 위 OK. 공원·길·물가·포탈 앞마당·가장자리 X

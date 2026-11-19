@@ -682,6 +682,15 @@ body.hunting .side { display: none; }
 .arrows { display: grid; gap: 6px; }
 .arow { display: grid; grid-template-columns: minmax(64px, auto) 32px minmax(0, 1fr) 32px; gap: 6px; align-items: center; }
 .arow > b { font-size: calc(14px * var(--fs)); white-space: nowrap; }
+#rlBox { position: fixed; left: 50%; top: 16px; transform: translateX(-50%); z-index: 9999; display: flex; align-items: center; gap: 14px; width: min(560px, calc(100vw - 24px)); padding: 16px 18px; border-radius: 18px;
+  background: #1f2a3a; color: #fff; box-shadow: 0 12px 40px rgba(0,0,0,.45), 0 0 0 3px #ffd166; animation: rlIn .35s ease-out; }
+#rlBox .rl-ic { font-size: 34px; animation: rlSpin 2s linear infinite; } #rlBox .rl-ic img { width: 38px; height: 38px; }
+#rlBox .rl-tx { flex: 1; min-width: 0; display: grid; gap: 4px; } #rlBox .rl-tx b { font-size: 19px; } #rlBox .rl-tx span { font-size: 14px; opacity: .9; } #rlBox em { font-style: normal; font-size: 22px; font-weight: 900; color: #ffd166; margin-right: 2px; }
+#rlBox .rl-bar { display: block; height: 7px; border-radius: 9px; background: rgba(255,255,255,.18); overflow: hidden; margin-top: 4px; } #rlBox .rl-bar i { display: block; height: 100%; width: 100%; background: #ffd166; border-radius: 9px; transition: width .1s linear; }
+#rlBox button { flex: none; padding: 10px 14px; border: 0; border-radius: 12px; background: #ffd166; color: #1f2a3a; font: inherit; font-weight: 800; cursor: pointer; }
+#rlBox.hot { box-shadow: 0 12px 40px rgba(0,0,0,.45), 0 0 0 4px #ff6b5a; animation: rlShake .5s ease-in-out infinite; } #rlBox.hot em { color: #ff8f80; } #rlBox.hot .rl-bar i { background: #ff6b5a; }
+@keyframes rlIn { from { opacity: 0; transform: translate(-50%, -20px); } } @keyframes rlSpin { to { transform: rotate(360deg); } } @keyframes rlShake { 50% { transform: translateX(-50%) scale(1.03); } }
+@media (max-width: 600px) { #rlBox { flex-wrap: wrap; } #rlBox button { width: 100%; } }
 .tagpv { display: inline-block; margin-left: 8px; padding: 1px 9px; border-radius: 999px; color: #fff; font-size: 12px; font-weight: 800; vertical-align: middle; }
 .tagsw { display: flex; flex-wrap: wrap; gap: 6px; } .tagsw .tsw { min-width: 30px; height: 30px; border-radius: 15px; border: 2px solid rgba(31,42,58,.25); background: var(--tc); color: #fff; font-size: 11px; font-weight: 800; padding: 0 8px; cursor: pointer; } .tagsw .tsw.on { border-color: var(--ink); box-shadow: 0 0 0 2px #fff inset; }
 .arow > button { width: 32px; height: 32px; border-radius: 9px; border: 2px solid var(--ink); background: #fff; font-weight: 700; font-size: calc(15px * min(var(--fs), 1.15)); line-height: 1; padding: 0; display: grid; place-items: center; }
@@ -1770,7 +1779,7 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 // 다 불러온 뒤에 마을을 시작함 (artReady). 못 불러온 그림은 예전 코드 그림을 그대로 씀
 const ART = {};
 const MON_IMG = ['rat', 'hen', 'boar', 'wolf', 'shroom', 'vine', 'eagle', 'turtle', 'golem', 'drone', 'guard', 'fixbot', 'kingboar', 'bear', 'lord', 'boss'];   // 2026-11-20 사용자 몬스터 그림 (mon-art.py)
-const ART_N = [...MON_IMG.map(k => 'mon-' + k), 'fx-dragon', 'fx-ogre', 'b-farmrank', 'b-suggest', 'b-beginner', 'b-dex', 'bench', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
+const ART_N = [...MON_IMG.map(k => 'mon-' + k), 'fx-dragon', 'fx-ogre', 'b-farmrank', 'b-suggest', 'b-beginner', 'b-dex', 'bench', 'soon-sign', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
   'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
   ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].flatMap(n => ['mg-' + n, 'fk-' + n, 'mk-' + n, 'fa-' + n])];
@@ -2484,6 +2493,11 @@ function icoBubble(x, y, ico) {
   ctx.restore();
 }
 const SP_BENCH = () => ART.bench ? sprite('benchI', 58 + BP * 2, 36 + BP * 2, 29 + BP, 35 + BP, g => inkImage(g, ART.bench, -29, -35, 58, 36)) : sprite('bench3', 64, 36, 32, 30, g => flatInk(g, [{ path: R(-24, -3, 4, 5, 1), c: '#4a2f1a' }, { path: R(20, -3, 4, 5, 1), c: '#4a2f1a' }, { path: R(-26, -27, 52, 6, 2), c: '#a86f3f' }, { path: R(-26, -21, 52, 3, 0), c: '#7a4f2c' }, { path: R(-26, -16, 52, 13, 2), c: '#c08550' }, { path: R(-26, -11.5, 52, 1.4, 0), c: 'rgba(90,50,20,.3)' }, { path: R(-26, -7, 52, 1.4, 0), c: 'rgba(90,50,20,.3)' }, { path: R(-26, -3, 52, 4, [0, 0, 2, 2]), c: '#8a5a33' }, { path: R(-26, -16, 52, 2, 0), c: 'rgba(255,255,255,.25)' }]));
+// 2026-11-20 준비 중 건물(soon) 앞 공사중 표지판 (사용자 그림). 문 바로 앞 가운데에 세움
+const SOON_W = 46, SOON_H = Math.round(SOON_W * 173 / 200);
+const SP_SOON = () => sprite('soonI', SOON_W + BP * 2, SOON_H + BP * 2, SOON_W / 2 + BP, SOON_H + BP, g => inkImage(g, ART['soon-sign'], -SOON_W / 2, -SOON_H, SOON_W, SOON_H));
+const soonAt = b => ({ x: (b.x + b.w / 2) * T, y: (b.y + b.h) * T + T * 1.1 });
+function drawSoon(b) { const p = soonAt(b); ctx.fillStyle = 'rgba(31,42,58,.16)'; ctx.beginPath(); ctx.ellipse(p.x, p.y - 1, SOON_W * .42, 4, 0, 0, 7); ctx.fill(); blit(SP_SOON(), p.x, p.y); }
 function drawBench(b) { blit(SP_BENCH(), b.x * T + T / 2, b.y * T + 28); }
 // 전광판: 홈페이지와 같은 방송 일정(data/schedule.json)으로 다음 방송까지 남은 시간
 const SCHED = { d: null, at: 0, next: 0, nAt: 0 };
@@ -2871,7 +2885,7 @@ function render(now) {
   if (me.path.length && !STEER.on) { const d = me.path[me.path.length - 1]; ctx.strokeStyle = 'rgba(232,85,58,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(d.x, d.y + 6, 9 + Math.sin(now / 150) * 2, 4, 0, 0, 7); ctx.stroke(); }
   const m = 5 * T, vis = (x, y) => x > vx0 - m && x < vx0 + vw + m && y > vy0 - m && y < vy0 + vh + m * 1.6;
   const list = [];
-  for (const b of BUILDINGS) if (vis(b.x * T + b.w * T / 2, (b.y + b.h) * T)) list.push({ y: (b.y + b.h) * T, f: () => drawBuilding(b, now) });
+  for (const b of BUILDINGS) if (vis(b.x * T + b.w * T / 2, (b.y + b.h) * T)) { list.push({ y: (b.y + b.h) * T, f: () => drawBuilding(b, now) }); if (b.soon && ART['soon-sign']) list.push({ y: soonAt(b).y, f: () => drawSoon(b) }); }
   if (vis(DPORTAL.x, DPORTAL.y)) list.push({ y: DPORTAL.y, f: () => drawGate(GATE_T, now) });
   for (const d of DECO) if (vis(d.x * T, d.y * T)) list.push({ y: d.y * T + T - 3, f: () => drawDeco(d) });
   for (const n of NODES) if (!n.off && vis(n.x * T, n.y * T)) list.push({ y: n.y * T + T - 3, f: () => drawNode(n, now) });
@@ -5952,10 +5966,21 @@ async function checkVer() {
     if (/^[0-9a-f]{8}$/.test(v) && v !== GAMEV) { verNew = true; reloadSoon(); }
   } catch {}
 }
+// 2026-11-20 새로 고침 10초 전부터 화면 위에 큰 알림 (남은 초 · 막대 · 지금 새로 고침 버튼). 레이드 중이면 끝난 뒤에 시작
+const RL_SEC = 10;
 function reloadSoon() {
-  if (RD) return setTimeout(reloadSoon, 5000);   // 레이드 중이면 끝난 뒤에
-  toast('🔄 게임이 새로 바뀌었어요! 잠깐 뒤 다시 시작할게요');
-  setTimeout(() => { try { savePos(true); } catch {} setTimeout(() => location.reload(), 700); }, 3000);
+  if (RD) return setTimeout(reloadSoon, 5000);
+  let el = $('#rlBox'); if (!el) { el = document.createElement('div'); el.id = 'rlBox'; el.setAttribute('role', 'alert'); document.body.append(el); }
+  el.innerHTML = `<div class="rl-ic">🔄</div><div class="rl-tx"><b>게임이 새로 바뀌었어요!</b><span><em id="rlN">${RL_SEC}</em>초 뒤에 자동으로 새로 고침해요 · 위치·진행은 그대로예요</span><i class="rl-bar"><i id="rlBar"></i></i></div><button type="button" id="rlGo">지금 새로 고침</button>`;
+  iconize(el); sfx('alarm');
+  const end = Date.now() + RL_SEC * 1000, go = () => { clearInterval(tk); try { savePos(true); } catch {} el.querySelector('em').textContent = '0'; setTimeout(() => location.reload(), 700); };
+  el.querySelector('#rlGo').onclick = go;
+  const tk = setInterval(() => {
+    if (RD) { clearInterval(tk); el.remove(); return setTimeout(reloadSoon, 5000); }   // 그 사이 레이드에 들어가면 끝난 뒤 다시
+    const left = Math.max(0, end - Date.now()); $('#rlN').textContent = Math.ceil(left / 1000); $('#rlBar').style.width = `${left / (RL_SEC * 10)}%`;
+    if (left <= 3000 && !el.classList.contains('hot')) { el.classList.add('hot'); sfx('alarm'); }
+    if (left <= 0) go();
+  }, 100);
 }
 setInterval(checkVer, 60000); setTimeout(checkVer, 8000);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkVer(); });
