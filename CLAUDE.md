@@ -673,7 +673,7 @@
 - 낚싯대·미끼를 사려면 낚시 횟수 필요: `RODS`·`BAITS` 줄 맨 끝 칸(필요 횟수), 값도 새로 (`FISH_SHOP.*.need`). 서버 `/api/fish/shop`이 확인. 낚시점 줄의 단계 막대는 없앰, '지금 장비로 만나는 등급' 옆 i = 모든 단계 표 (`fishLvTip`)
 - **낚은 물고기 들고 있기**: 낚으면 머리 위에 그 물고기를 들고 있음 (`c.brag`, `bragFish`, `drawBrag`). 움직이거나 다시 던지면 내려놓음. 가방의 물고기를 누르면 🙌 자랑하기 → 실시간 `{t:'fish', s:4}` (town.js가 `s:2`처럼 확인)
 - **낚시왕 세트 조건**: 부위마다 다른 목표 (`KINGS.fish.goals`: 50마리 · 낚시 300번 · 희귀 15 · 도감 25종 · 대어 30 · 전설 1), 순서 상관없이 달성한 것부터 받기 (`kingGoal`, `kingReady`, 서버 `kingClaim(c, kind, b)`의 `b.k`). 채굴왕은 예전처럼 순서대로
-- **📖 도감 센터** `dex` (58,37, game-map.js 13번, 그림 `b-dex`): 탭 칭호 / 뱃지 / 물고기 / 스킨 (`dexSheet`, `goDex(tab)`, 왼쪽 캐릭터창 칭호를 눌러도 열림). 칭호·뱃지 바꾸기는 여기서
+- **📖 도감 센터** `dex` (15,35 가챠센터 서쪽, game-map.js 13번, 그림 `b-dex`). 가챠센터는 7×4칸으로 줄여 (24,32)로 옮김 (15번): 탭 칭호 / 뱃지 / 물고기 / 스킨 (`dexSheet`, `goDex(tab)`, 왼쪽 캐릭터창 칭호를 눌러도 열림). 칭호·뱃지 바꾸기는 여기서
   - 물고기·스킨 도감: 5개 모을 때마다 효과 (`DEX_STEP`, `DEX_FX`, `dexFx` → `statFx`). 스킨 도감 대상 `DEX_SKINS()`
   - **뱃지** (효과 없음, 이름표 왼쪽): 새내기 🍃 · 레드 드래곤/오우거 얼굴(그 레이드 스킨 6개 다 모으면) · 물고기마다 하나(한 번 낚으면). `BADGES`, `hasBadge`, 그림 `drawBadge`. 저장 `life.badge`, 서버 `/api/badge`, town.js `lookRow`의 `badge`
 - 낚시터 표지판 삭제 (FSIGN은 안 그림). 벤치 새 그림 `bench.webp` (town-art.py 13번). 물고기 그림에도 검은 테두리 (`inkImage`, `.fpic` drop-shadow)

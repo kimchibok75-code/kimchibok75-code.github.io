@@ -275,18 +275,30 @@ for (let x = 51; x <= 60; x++) { set(x, 45, G); set(x, 50, G); }
   for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) block(x, y);
   set(b.door.x, b.door.y, PATH);
 }
-// 13) 2026-11-20: 도감 센터 (대장간 동쪽 풀밭). 칭호·뱃지·물고기·스킨 도감. 맨 마지막에 놓아서 나무·돌 번호 그대로
+// 13) 2026-11-20: 도감 센터 (가챠센터 서쪽 풀밭, 사용자 요청으로 대장간 동쪽에서 옮김). 칭호·뱃지·물고기·스킨 도감. 맨 마지막에 놓아서 나무·돌 번호 그대로
 {
-  const b = { id: 'dex', name: '도감 센터', icon: '📚', x: 58, y: 37, w: 5, h: 4 };
+  const b = { id: 'dex', name: '도감 센터', icon: '📚', x: 15, y: 35, w: 5, h: 4 };
   for (let k = DECO.length - 1; k >= 0; k--) { const d = DECO[k]; if (d.x >= b.x - 1 && d.x <= b.x + b.w && d.y >= b.y - 1 && d.y <= b.y + b.h + 1) { if (tileAt(d.x, d.y) !== WATER) solid[d.y * MW + d.x] = 0; DECO.splice(k, 1); } }
   for (const n of NODES) if (!n.off && n.x >= b.x - 1 && n.x <= b.x + b.w && n.y >= b.y - 1 && n.y <= b.y + b.h + 1) { n.off = true; if (tileAt(n.x, n.y) !== WATER) solid[n.y * MW + n.x] = 0; }
   b.door = { x: b.x + Math.floor(b.w / 2), y: b.y + b.h }; BUILDINGS.push(b);
   for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) block(x, y);
   set(b.door.x, b.door.y, PATH);
-  road([[60.5, 41.5], [59, 42.6], [57.4, 43.5]], .85, 32);   // 문 → 대장간 앞 길
+  road([[17.5, 39.6], [21.5, 39.4], [25, 37.6]], .85, 32);   // 문 → 가챠센터 앞 길
 }
 // 14) 2026-11-20: 대형 전광판 뒤(위쪽 2줄)에 사람이 못 서게 막음 (화면 그림에 가려 보이지 않던 자리)
 { const sc = SPOTS.find(s => s.id === 'screen'); if (sc) for (let y = sc.y - 2; y < sc.y; y++) for (let x = sc.x; x < sc.x + sc.w; x++) if (tileAt(x, y) !== WATER) block(x, y); }
+// 15) 2026-11-20: 가챠센터를 조금 작게(8×5 → 7×4) 해서 동쪽(광장 쪽)으로 옮김 (사용자 요청)
+{
+  const b = BUILDINGS.find(q => q.id === 'gacha');
+  for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) solid[y * MW + x] = 0;
+  set(b.door.x, b.door.y, G);
+  Object.assign(b, { x: 24, y: 32, w: 7, h: 4 }); b.door = { x: b.x + Math.floor(b.w / 2), y: b.y + b.h };
+  for (let k = DECO.length - 1; k >= 0; k--) { const d = DECO[k]; if (d.x >= b.x - 1 && d.x <= b.x + b.w && d.y >= b.y - 1 && d.y <= b.y + b.h) { solid[d.y * MW + d.x] = 0; DECO.splice(k, 1); } }
+  for (const n of NODES) if (!n.off && n.x >= b.x - 1 && n.x <= b.x + b.w && n.y >= b.y - 1 && n.y <= b.y + b.h) { n.off = true; solid[n.y * MW + n.x] = 0; }
+  for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) block(x, y);
+  set(b.door.x, b.door.y, PATH);
+  road([[b.door.x + .5, b.door.y + .5], [26.5, 37.2], [25, 37.6]], .8, 33);   // 새 문 → 예전 길
+}
 // 치복동 포탈 (집 동네로 가는 문, 발 위치 픽셀) — 광장 남쪽 길 옆
 export const DPORTAL = { x: 41.4 * T, y: 47.4 * T };
 
