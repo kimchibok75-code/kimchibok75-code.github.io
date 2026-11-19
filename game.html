@@ -1544,7 +1544,7 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   // 근접: 위에서 아래로 내려침 · 원거리(지팡이·활): 팔을 앞으로 뻗고 반동
   // 벌목·채광·낚시 중에는 무기 대신 도구 (c.tool: axe 도끼 · pick 곡괭이 · rod 낚싯대). 도끼·곡괭이는 팔을 들었다 내려찍음
   const tool = HT ? null : c.tool, tw = tool === 'axe' || tool === 'pick' ? (c.toolBusy ? 1 : c.toolW ?? Math.sin((c.toolT || 0) * 10 - 1.6) * .5 + .5) : 0;   // toolW: gatherTick이 타격 박자에 맞춰 정함 (1 = 내려찍은 자세)
-  const cl = c.cls || 'sword', wk = c.wsk?.[cl], W = c.fz || tool ? null : eq[cl]?.st ? eq[cl] : wk ? { slot: cl, st: 1 } : null, wt = W?.slot, far = wt === 'staff' || wt === 'bow', sw = c.swing > 0 ? c.swing / .18 : 0;
+  const cl = c.cls || 'sword', wk = c.wsk?.[cl], W = c.fz || tool ? null : eq[cl]?.st ? eq[cl] : wk ? { slot: cl, st: 1 } : null, wt = W?.slot, far = wt === 'staff' || wt === 'bow', sw = c.swing > 0 ? Math.min(1, c.swing / (c.swMax || .18)) : 0;
   const arm = tool === 'axe' || tool === 'pick' ? -2.5 + tw * 2.3 : (c.fz || tool === 'rod') && !HT ? -1.25 : sw ? (far ? -1.5 + sw * .35 : -2.6 + (1 - sw) * 2.1) : -.25 - walk * .45, sx = 9, sy = -17 - bob;
   P.push({ path: at(sx, sy, arm, R(-2.5, 0, 5, 10, 2.5)), c: su?.sleeve || c.face });
   if (tool && TOOL_P[tool] && !(tool === 'rod' && c.fz)) for (const p of TOOL_P[tool]) P.push({ ...p, path: at(sx, sy, arm, at(0, 9, tool === 'rod' ? 1.95 : 1.25, p.path)) });   // 도구 (낚싯대는 던졌을 때 drawRods가 그림)
@@ -2080,7 +2080,7 @@ function bImgRect(b, im) {
   return { x: b.x * T - (w - Wd) / 2, y: b.y * T - (h - Hh - 6), w, h };
 }
 // ───────── 굴뚝 연기 (2026-11-19): 그림 속 굴뚝 구멍 자리(그림 비율) · 연기 색 ─────────
-const CHIMNEY = { cafe: [.857, .07, '#f4f1ec'], smith: [.774, .1, '#cfcac4'], lumber: [.69, .175, '#ebe6df'], fishshop: [.789, .127, '#eef0f2'], skin: [.857, .027, '#f1edf3'] };
+const CHIMNEY = { cafe: [.857, .07, '#f4f1ec'], smith: [.774, .1, '#cfcac4'], lumber: [.69, .175, '#ebe6df'], fishshop: [.789, .127, '#eef0f2'], skin: [.857, .027, '#f1edf3'], quarry: [.098, .3, '#e6e3de'] };
 let PUFF = null;   // 부드러운 연기 한 덩이 (가운데 진하고 가장자리로 흐려짐)
 function puffImg(c) {
   PUFF ||= {}; if (PUFF[c]) return PUFF[c];
@@ -2113,11 +2113,19 @@ function bSprite(b) {
   }
   return sprite('bk:' + b.id, Wd + 40, Hh + 100, 20, 90, g => inkDraw(g, BLD[b.id](Wd, Hh)));
 }
+// 꽉 참 (2026-11-19): 벌목소·채광소는 쌓인 목재·석재가 최대, 마을회관은 임대 수입이 최대 → 아이콘
+function bFull(b) {
+  const L = me.life; if (!L) return '';
+  if ((b.id === 'lumber' || b.id === 'quarry') && L.work?.[b.id]?.n) { const r = workSettle({ ...L.work[b.id] }, b.id, Date.now()); return r.cap && r.have >= r.cap ? (b.id === 'lumber' ? '🪵' : '🪨') : ''; }
+  if (b.id === 'hall' && L.house) { const r = houseSettle({ ...L.house }, Date.now()); return r.cap && r.have >= r.cap ? '🏠' : ''; }
+  return '';
+}
 function drawBuilding(b, now) { hoverWrap(b, (b.x + b.w / 2) * T, (b.y + b.h) * T, () => drawBuilding0(b, now)); }
 function drawBuilding0(b, now) {
   const X = b.x * T, Y = b.y * T, Wd = b.w * T, Hh = b.h * T;
   ctx.fillStyle = 'rgba(31,42,58,.16)'; ctx.beginPath(); ctx.ellipse(X + Wd / 2 + 4, Y + Hh, Wd / 2 + 6, 7, 0, 0, 7); ctx.fill();
   const bs = bSprite(b); glowSp(b, bs, X, Y, 1, now); blit(bs, X, Y);
+  const full = bFull(b); if (full) { const im = ART['b-' + b.id], top = im ? bImgRect(b, im).y : Y - 30; icoBubble(X + Wd / 2, top - 6 + Math.sin(now / 260) * 2.5, full); }   // 꽉 찼으면 머리 위 아이콘
   if (ART['b-' + b.id]) return drawSmoke(b, now);   // 그림에 간판이 다 있음. 굴뚝 연기만 코드로
   const tt = now / 1000;
   if (b.id === 'smith' || b.id === 'cafe') {   // 굴뚝 연기 · 커피 김
@@ -2265,7 +2273,7 @@ const SP_FOUNT = () => sprite('fount3', 90, 80, 45, 50, g => flatInk(g, [{ path:
   { path: R(-6, -18, 12, 22, 2), c: '#bfb5a2' }, { path: R(-6, -18, 6, 22, 0), c: '#d0c7b5' }, { path: E(0, -18, 16, 10), c: '#a99f8c' }, { path: E(0, -21, 16, 10), c: '#d8d0bf' }, { path: E(0, -21, 12, 7), c: '#8fd3ef' }, { path: E(0, -25, 4.5, 4), c: '#d8d0bf' }]));
 function drawFountain(s, now) {
   const x = (s.x + 1) * T, y = (s.y + 1) * T + 4; hoverWrap(s, x, y, () => drawFountain0(s, now));
-  if (me.life && (me.life.wishAt || 0) + WISH.cd < Date.now()) wishBubble(x, y - 76 + Math.sin(now / 260) * 2.5);   // 빌 수 있으면 머리 위 말풍선 ❗🪙
+  if (me.life && (me.life.wishAt || 0) + WISH.cd < Date.now()) icoBubble(x, y - 76 + Math.sin(now / 260) * 2.5, '🪙');   // 빌 수 있으면 머리 위 말풍선 🪙 (2026-11-19 동전만)
 }
 // 소원 분수 (2026-11-18 사용자 그림 건물_분수.png → fountain.webp + 물 칸 fountain-water.webp, town-art.py 10번)
 // 그림 둘레 검은 테두리(inkImage) + 물 안에만 퍼지는 물결·반짝임(물 칸 모양으로 오림) + 가운데 물기둥·물줄기·물방울·튀는 물
@@ -2321,15 +2329,14 @@ function drawFountainOld(s, now) {
   ctx.fillStyle = 'rgba(255,255,255,.85)'; for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2 + tt * .4, p = (tt * .5 + k / 6) % 1; ctx.beginPath(); ctx.arc(x + Math.cos(a) * (4 + p * 14), y - 36 + p * p * 34, 2, 0, 7); ctx.fill(); }
 }
 // 소원 분수 말풍선 (주민 ❗ 말풍선과 같은 모양): 노란 느낌표 + 동전
-function wishBubble(x, y) {
-  const w = 44, h = 26;
+// 머리 위 아이콘 말풍선 (2026-11-19): 분수(🪙) · 벌목소(🪵) · 채광소(🪨) · 마을회관(🏠) 꽉 참
+function icoBubble(x, y, ico) {
+  const w = 32, h = 28;
   ctx.save(); ctx.fillStyle = '#fff'; ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 2;
-  rr(ctx, x - w / 2, y - h / 2, w, h, 9); ctx.fill(); ctx.stroke();
+  rr(ctx, x - w / 2, y - h / 2, w, h, 10); ctx.fill(); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(x - 5, y + h / 2 - .5); ctx.lineTo(x, y + h / 2 + 6); ctx.lineTo(x + 5, y + h / 2 - .5); ctx.fill(); ctx.stroke();
   ctx.fillRect(x - 4, y + h / 2 - 2.5, 8, 3);
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.font = '900 19px "IBM Plex Sans KR", sans-serif'; ctx.lineWidth = 3.5; ctx.lineJoin = 'round'; ctx.strokeStyle = '#7a4a00'; ctx.strokeText('!', x - 9, y + 1); ctx.fillStyle = '#ffc21a'; ctx.fillText('!', x - 9, y + 1);
-  ctx.font = '17px sans-serif'; fillTextIco(ctx, '🪙', x + 7, y + 1);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '19px sans-serif'; fillTextIco(ctx, ico, x, y + 1);
   ctx.restore();
 }
 const SP_BENCH = () => sprite('bench3', 64, 36, 32, 30, g => flatInk(g, [{ path: R(-24, -3, 4, 5, 1), c: '#4a2f1a' }, { path: R(20, -3, 4, 5, 1), c: '#4a2f1a' }, { path: R(-26, -27, 52, 6, 2), c: '#a86f3f' }, { path: R(-26, -21, 52, 3, 0), c: '#7a4f2c' }, { path: R(-26, -16, 52, 13, 2), c: '#c08550' }, { path: R(-26, -11.5, 52, 1.4, 0), c: 'rgba(90,50,20,.3)' }, { path: R(-26, -7, 52, 1.4, 0), c: 'rgba(90,50,20,.3)' }, { path: R(-26, -3, 52, 4, [0, 0, 2, 2]), c: '#8a5a33' }, { path: R(-26, -16, 52, 2, 0), c: 'rgba(255,255,255,.25)' }]));
@@ -2574,6 +2581,7 @@ function update(dt, now) {
   if (me.room > 0 && me.y > (ROOM_H - .55) * T && Math.abs(me.x - (ROOM_DOOR.x + .5) * T) < T * .8) leaveRoom();   // 문으로 걸어 나가기
   const D = derive(); if (me.hp < D.maxHp) me.hp = Math.min(D.maxHp, me.hp + D.maxHp * .02 * dt);
   for (const p of people) if (p.buf?.length) netPlay(p, dt); else if (p.net) netStep(p, dt); else stepChar(p, dt);
+  for (const c of [me, ...people]) if (c.swing > 0) { c.swing = Math.max(0, c.swing - dt); if (!c.swing) c.swMax = 0; }   // 마을 Z 공격 휘두르기 (2026-11-19: 안 줄어서 칼이 머리 위에 멈춰 있었음)
   rodTick(now);
   for (const f of TF) f.t += dt; while (TF.length && TF[0].t > 1.4) TF.shift();
   if (me.room === DONG) { S.zoom = Math.max(S.zoom, W / (DW * T), H / (DH * T)); follow(dt, DW * T, DH * T); setPlace(DONG_NAME); return; }   // 치복동은 작아서 지도 밖이 안 보이게 확대 하한
@@ -4246,7 +4254,7 @@ function myAttack() {
 }
 function townAtk(ch, a) {
   const D = ch === me ? derive() : null, cls = ch === me ? (D.magic ? 'staff' : D.far ? 'bow' : 'sword') : ch.cls || 'sword';
-  ch.swing = .18; if (Math.abs(Math.cos(a)) > .2) ch.dir = Math.cos(a) < 0 ? -1 : 1;
+  ch.swing = ch.swMax = .3; if (Math.abs(Math.cos(a)) > .2) ch.dir = Math.cos(a) < 0 ? -1 : 1;   // 2026-11-19: 마을은 조금 길게 휘두름 (swMax)
   const x = ch.x + Math.cos(a) * 14, y = ch.y - 22 - (ch.jz || 0) + Math.sin(a) * 8;
   if (cls === 'sword') TATK.push({ k: 'slash', x: ch.x + Math.cos(a) * 22, y: ch.y - 20 - (ch.jz || 0) + Math.sin(a) * 14, a, t: 0, life: .22 });
   else TATK.push({ k: cls === 'staff' ? 'magic' : 'arrow', x, y, a, sp: cls === 'staff' ? 330 : 560, t: 0, life: cls === 'staff' ? .75 : .5, room: ch.room || 0 });
