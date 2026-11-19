@@ -18,8 +18,8 @@ export const LAKE = { x: 33, y: 11, rx: 6.2, ry: 4 };
 const lakeD = (x, y) => ((x + .5 - LAKE.x) / LAKE.rx) ** 2 + ((y + .5 - LAKE.y) / LAKE.ry) ** 2 + .18 * (noise2(x / 3, y / 3, 71) - .5);
 const loopD = (x, y) => ((x + .5 - LAKE.x) / (LAKE.rx + 3)) ** 2 + ((y + .5 - LAKE.y) / (LAKE.ry + 2.6)) ** 2;
 export const inPark = (x, y) => ((x + .5 - LAKE.x) / (LAKE.rx + 4.6)) ** 2 + ((y + .5 - LAKE.y) / (LAKE.ry + 4)) ** 2 < 1;
-// 숲 (서쪽 + 북서쪽 모서리)
-const forestZ = (x, y) => x + 2.4 * (noise2(x / 6, y / 6, 72) - .5) < 9.5 || (x < 18 && y + 1.6 * (noise2(x / 6, y / 6, 73) - .5) < 4.5);
+// 숲 (서쪽 + 북쪽 가장자리, 동쪽으로 갈수록 얇아짐). 2026-11-19 사용자 요청으로 서쪽 숲을 넓힘
+const forestZ = (x, y) => x + 2.4 * (noise2(x / 6, y / 6, 72) - .5) < 14 || y + 1.6 * (noise2(x / 6, y / 6, 73) - .5) < 5.5 - Math.max(0, x - 16) * .3;
 
 // 1) 바닥
 for (let y = 0; y < DH; y++) for (let x = 0; x < DW; x++) {

@@ -1714,8 +1714,9 @@ async function paintGround(step, M = MAP_T) {   // M: 어떤 지도를 그릴지
   await step(1);
   // 1) 풀밭: 큰 얼룩 → 작은 얼룩 → 풀잎
   g.fillStyle = '#8fcb70'; g.fillRect(0, 0, WP, HP);
-  for (let i = 0; i < Math.round(260 * AK); i++) { g.globalAlpha = r(.12, .26); g.fillStyle = pick(['#a7db86', '#7fbd62', '#9ad37b', '#86c468']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(120, 260), r(70, 150), r(0, 3), 0, 7); g.fill(); }
-  for (let i = 0; i < Math.round(900 * AK); i++) { g.globalAlpha = r(.15, .35); g.fillStyle = pick(['#a2d982', '#84c266', '#97d079', '#8cc86d', '#aadd8b']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(14, 46), r(8, 24), r(0, 3), 0, 7); g.fill(); }
+  for (let i = 0; i < Math.round(260 * AK); i++) { g.globalAlpha = r(.12, .26) * (M.town ? 1 : .45);   // 치복동은 얼룩을 옅게 (지저분해 보여서, 2026-11-19)
+    g.fillStyle = pick(['#a7db86', '#7fbd62', '#9ad37b', '#86c468']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(120, 260), r(70, 150), r(0, 3), 0, 7); g.fill(); }
+  if (M.town) for (let i = 0; i < Math.round(900 * AK); i++) { g.globalAlpha = r(.15, .35); g.fillStyle = pick(['#a2d982', '#84c266', '#97d079', '#8cc86d', '#aadd8b']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(14, 46), r(8, 24), r(0, 3), 0, 7); g.fill(); }
   g.globalAlpha = 1; g.lineCap = 'round';
   for (let i = 0; i < Math.round(9000 * AK); i++) {   // 풀잎 (짧은 획 두세 개)
     if (i && i % 3000 === 0) await new Promise(res => setTimeout(res));
