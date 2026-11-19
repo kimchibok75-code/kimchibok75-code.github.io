@@ -599,10 +599,13 @@ function renderCafe() {
       ${a.thumb ? `<img src="${esc(a.thumb)}?type=w300" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
     </a></li>`).join('');
 }
-function initCafe() {
+function commCards() {
   const cc = $('#cafeCard'), dc = $('#discordCard');
-  if (cc) { cc.href = S.cfg.cafe.url; cc.querySelector('p').textContent = S.cfg.cafe.desc; }
-  if (dc) { dc.href = S.cfg.discord.url; dc.querySelector('p').textContent = S.cfg.discord.desc; }
+  if (cc) { cc.href = S.cfg.cafe.url; if (S.cfg.cafe.desc) cc.querySelector('p').textContent = S.cfg.cafe.desc; }
+  if (dc) { dc.href = S.cfg.discord.url; if (S.cfg.discord.desc) dc.querySelector('p').textContent = S.cfg.discord.desc; }
+}
+function initCafe() {
+  commCards();
   renderCafe();
 }
 
@@ -691,7 +694,7 @@ async function main() {
   if (!S.cfg) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:20px">설정 파일을 불러오지 못했어요. 로컬에서는 <code>npm run dev</code>로 열어 주세요.</p>'); return; }
   if (PAGE === 'home') {
     renderHero(); renderLive();
-    renderVideoTabs(); renderVideos(); renderPosts();
+    renderVideoTabs(); renderVideos(); renderPosts(); commCards();
     renderWeek(); initNav();
     setInterval(tickBoard, 1000);
     refreshLive(); setInterval(refreshLive, 60e3);
