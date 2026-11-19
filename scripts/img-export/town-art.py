@@ -318,5 +318,10 @@ print('dportal hole', hb, t.shape)
 # 13) 벤치 (2026-11-20 새 그림, 배경 투명)
 r = keep_rgba('벤치'); b = bbox(r[:, :, 3]); save('bench', r[b[1]:b[3], b[0]:b[2]], width=240)
 
+# 14) 드래곤 세트 이펙트 (2026-11-20): 검은 바탕 + 흰 그림 → 밝기를 투명도로 (흰 그림만 남김). 화면이 붉게 물들여 캐릭터 뒤에 은은하게
+g = np.asarray(Image.open(os.path.join(SRC, '이펙트_드래곤 세트.png')).convert('L')).astype(np.float32)
+al = np.clip((g - 30) * 255 / 200, 0, 255).astype(np.uint8); fx = np.dstack([np.full_like(al, 255)] * 3 + [al]); b = bbox(al)
+save('fx-dragon', fx[b[1]:b[3], b[0]:b[2]], width=512)
+
 json.dump(META, open(os.path.join(OUT, 'meta.json'), 'w'), ensure_ascii=False, indent=1)
 print(json.dumps(META, ensure_ascii=False))

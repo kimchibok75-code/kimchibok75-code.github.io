@@ -1587,6 +1587,17 @@ function drawEyes(g, c, ey, t) {
     else { g.beginPath(); g.ellipse(ex, ey, 2.4, 3.2, 0, 0, Math.PI * 2); g.fill(); }
   }
 }
+// ───── 레드 드래곤 세트 이펙트 (2026-11-20): 모자·눈·의상·검·활·지팡이 모두 레드 드래곤이면 등 뒤에 은은하게 빛나는 붉은 문양 (그림 fx-dragon, 흰 그림을 붉게 물들임)
+const dragonFull = c => c.hat === 'rdragon' && c.eyes === 'rdragon' && c.suit === 'rdragon' && c.wsk?.sword === 'rdragon' && c.wsk?.bow === 'rdragon' && c.wsk?.staff === 'rdragon';
+let FXD = null;
+function dragonAura(g, t) {
+  const im = ART['fx-dragon']; if (!im) return;
+  if (!FXD) { const W = 256, H = Math.round(W * im.height / im.width), cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d');
+    x.drawImage(im, 0, 0, W, H); x.globalCompositeOperation = 'source-in'; const gr = x.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#ff6a3a'); gr.addColorStop(.55, '#e8202a'); gr.addColorStop(1, '#a30d1e'); x.fillStyle = gr; x.fillRect(0, 0, W, H); FXD = cv; }
+  const p = .5 + .5 * Math.sin(t * 1.8), w = 104 * (1 + p * .04), h = w * FXD.height / FXD.width;
+  g.save(); g.globalAlpha = .45 + p * .25; g.shadowColor = 'rgba(255,40,30,.9)'; g.shadowBlur = 10 + p * 8;
+  g.drawImage(FXD, -w / 2, -33 - h / 2, w, h); g.restore();
+}
 function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   // (x, y) = 발 위치
   const sit = c.sit >= 0 && !HT && !c.still, jz = c.still ? 0 : c.jz || 0;
@@ -1594,6 +1605,7 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   const walk = c.moving && !sit ? Math.sin(t * 14) : 0;
   const bob = c.moving && !sit ? Math.abs(Math.sin(t * 14)) * 2 : Math.sin(t * 2.2 + (c.seed || 0)) * .6;
   if (!sit) { const rb = c.still ? 0 : c === me ? (me.roof?.h || 0) : (c.rz || 0), dz = Math.max(0, jz - rb), k = Math.max(.45, 1 - dz / 160); ctx.fillStyle = `rgba(31,42,58,${.18 * k})`; ctx.beginPath(); ctx.ellipse(0, dz, 11 * k, 3.5 * k, 0, 0, Math.PI * 2); ctx.fill(); }   // 지붕 위면 그림자도 지붕에
+  if (dragonFull(c)) dragonAura(ctx, t + (c.seed || 0));   // 2026-11-20 레드 드래곤 세트 6부위를 다 입으면 캐릭터 뒤에 붉은 드래곤 문양
   const eq = c.equip || {}, hy = -45 - bob, P = [];
   // 뒷머리(긴 머리·묶은 머리)는 몸·팔보다 먼저 그려서 몸 뒤로
   const hp = hairParts(c.hair, c.hairC || HAIR_COLORS[0], hy);
@@ -1733,7 +1745,7 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 // ───── 사용자가 그린 그림 (텍스쳐 템플릿/내 디자인 → scripts/img-export/town-art.py → assets/img/town) ─────
 // 다 불러온 뒤에 마을을 시작함 (artReady). 못 불러온 그림은 예전 코드 그림을 그대로 씀
 const ART = {};
-const ART_N = ['b-farmrank', 'b-suggest', 'b-beginner', 'b-dex', 'bench', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
+const ART_N = ['fx-dragon', 'b-farmrank', 'b-suggest', 'b-beginner', 'b-dex', 'bench', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
   ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
   ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].flatMap(n => ['mg-' + n, 'fk-' + n, 'mk-' + n, 'fa-' + n]), 'ogre-bg'];

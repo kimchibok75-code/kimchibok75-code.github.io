@@ -569,6 +569,7 @@
 - 오우거 공격 (`raidPattern(start, 'ogre')`): 💥 내려찍기 slam(큰 원 1~2개) · 🪨 바위 던지기 rock(작은 원 3~5개, 손에서 포물선으로 날아옴) · 몽둥이 휘두르기 swing(앞쪽 부채꼴 `OGRE_SWING`) · 포효. 피해 `RAID_HIT`
 - 그림: `내 디자인/오우거_다리·몸통·오른팔·왼팔·머리.png` + `배경_오우거.png` → town-art.py 9번 → `og-leg/body/rarm/larm/head.webp`(절반 크기), `ogre-bg.webp`, meta `ogre`(판 좌표). game.html `drawOgre` (`OPART`, 오른팔은 어깨 `OSHOULDER` 기준으로 공격 예고 동안 치켜들고 칠 때 내려침, 예고 중 눈이 붉게). 배경 화로 불빛·불티는 `ogreAmbient`
 - 오우거 스킨 (템플릿 `char/hat_guide_오우거.png`, `char/suit-front_guide_오우거.png`, `weapon/*_guide_오우거.png`) → `og-hat/suit/sword/bow/staff.webp`, meta `og` → game.html `OGS`. id는 모두 `ogre` (HATS·SUITS·WSKINS, `raid: 'ogre'`)
+- **레드 드래곤 세트 이펙트** (2026-11-20): 모자·눈·의상·검·활·지팡이 6부위를 모두 레드 드래곤으로 입으면 캐릭터 뒤에 붉게 은은히 빛나는 드래곤 문양 (`dragonFull`, `dragonAura`, drawChar 맨 앞). 그림 `내 디자인/이펙트_드래곤 세트.png`(검은 바탕 흰 그림) → town-art.py 14번 → `fx-dragon.webp`(흰 그림, 화면이 붉게 물들임)
 - 오우거 눈 스킨 `eye:ogre` 추가 (레이드 세트 6부위)
 - 스킨샵 레이드 탭은 보스별로 나눠 보임. 치트 탭: '👕 모든 스킨 받기' + '⭐ 레이드 스킨 최고 레벨'(`rskmax`: 모든 레이드 스킨 Lv10)
 
