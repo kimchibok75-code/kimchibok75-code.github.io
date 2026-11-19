@@ -1,6 +1,8 @@
 // 치복 타운 — 게임 규칙 (화면 game.html 과 서버 game-worker 가 같이 씀)
 // 숫자는 plan/웹게임-기획서.md 3장·4장과 같아요. 여기를 고치면 화면과 서버가 함께 바뀌어요.
 
+import { FISH_TABLE } from './game-fish.js';
+
 export const T = 32;                 // 타일 한 칸 크기 (px)
 export const MW = 80, MH = 72;       // 마을 지도 칸 수 (지도 모양은 game-map.js)
 export const START = { x: 40.5 * T, y: 34.5 * T };   // 광장 분수 아래
@@ -303,69 +305,69 @@ export const gimDmg = (mon, D, gm) => D.god ? 0 : Math.round(biteDmg(mon, D) * g
 // 몬스터 한 번 공격의 피해 (물리/마법 방어력, 무작위 ±15%)
 export const biteDmg = (mon, D) => D.god ? 0 : Math.max(1, Math.round(mon.atk * 100 / (100 + (mon.mg ? D.mdef : D.def)) * (.85 + Math.random() * .3)));
 
-// ───────── 낚시 (기획서 4-6) ─────────
-// 물을 누르면 바로 낚싯대를 던짐 (미니게임 없음). 낚을 확률은 낚싯대 단계로 오름
-// 등급: 확률(%)
+// ───────── 낚시 (2026-11-20 대개편: 텍스쳐 템플릿/내 디자인/물고기/낚시게임_최종규칙.txt · 최종밸런스표.xlsx) ─────────
+// 물고기 69종 표는 game-fish.js (엑셀에서 자동으로 만듦). 민물 32종 · 바다 37종, 등급은 일반 · 희귀 · 전설
+// 낚싯대(10단계): 낚을 확률 · 낚을 수 있는 가장 큰 크기 · 전설 물고기 최소 단계 / 미끼(10단계): 일반·희귀·전설 중 무엇을 만날지. 둘 다 골드로 한 번 사면 영구
+// 낚은 물고기는 물고기 가방(최대 50마리)에 들어가고, 낚시점에서 팔아야 골드가 됨. 등급별 '낚자마자 팔기'도 있음
 export const FISH_GRADES = {
-  normal: { n: '일반', c: '#6f7a8a', p: 60 },
-  uncommon: { n: '고급', c: '#2f8f45', p: 26 },
-  rare: { n: '희귀', c: '#2f6fd0', p: 10 },
-  epic: { n: '영웅', c: '#8a48cc', p: 3.5 },
-  legend: { n: '전설', c: '#e0731c', p: .5 },
+  normal: { n: '일반', c: '#6f7a8a' }, rare: { n: '희귀', c: '#2f6fd0' }, legend: { n: '전설', c: '#e0731c' },
+  uncommon: { n: '고급', c: '#2f8f45', old: 1 }, epic: { n: '영웅', c: '#8a48cc', old: 1 },   // 예전 기록(순위 등) 보여 주기용
 };
-// 물고기: [아이콘, 이름, 최소 cm, 최대 cm, 기본 값(골드)]
-// 강(연못 포함)과 바다에서 나는 물고기가 달라요. 등급별 확률은 같음
-export const FISH_RIVER = {
-  normal: [['🐟', '붕어', 15, 40, 10], ['🐟', '피라미', 6, 15, 6], ['🐍', '미꾸라지', 8, 20, 8], ['🐟', '송사리', 3, 6, 5], ['🐟', '잉어', 25, 70, 14], ['👢', '낡은 장화', 25, 30, 1]],
-  uncommon: [['🐟', '메기', 30, 90, 30], ['🐟', '빙어', 8, 15, 24], ['🐟', '은어', 12, 30, 28], ['🐠', '쏘가리', 20, 50, 36], ['🐟', '가물치', 40, 100, 40]],
-  rare: [['🌈', '무지개송어', 30, 70, 90], ['🐍', '장어', 40, 120, 110], ['🐟', '산천어', 20, 40, 85], ['🦀', '참게', 5, 10, 80]],
-  epic: [['🦈', '철갑상어', 80, 200, 350], ['🐢', '자라', 20, 40, 300], ['🐟', '괴물 메기', 120, 250, 420]],
-  legend: [['🥬', '김치 잉어', 50, 120, 1500], ['🐉', '강의 용', 100, 300, 2000], ['👑', '황금 붕어', 20, 50, 1200]],
+export const FG_KEYS = ['normal', 'rare', 'legend'];
+// 물고기 하나 = { id, sea, grade, i(아이콘), n(이름), min, max(cm), p(등장 가중치), base(기본 판매가), rod(최소 낚싯대 Lv), ms(크기 재는 곳), img(그림 있음) }
+export const FISH_LIST = FISH_TABLE.map(([id, w, grade, i, n, min, max, p, base, rod, ms, img]) => ({ id, sea: w === 'sea', grade, i, n, min, max, p, base, rod, ms, img: !!img }));
+export const FISH_BY = Object.fromEntries(FISH_LIST.map(f => [f.id, f]));
+const byWater = sea => Object.fromEntries(FG_KEYS.map(g => [g, FISH_LIST.filter(f => f.sea === sea && f.grade === g)]));
+export const FISH_RIVER = byWater(false), FISH_SEA = byWater(true);
+export const fishByName = (n, g) => FISH_LIST.find(f => f.n === n && (!g || f.grade === g));
+export const FISH_PRICE_MAX = 10e6, FISH_LEGEND_MIN = 10e3, FISH_BAG = 50;
+// 낚싯대 10단계: [이름, 가장 큰 크기 cm, 낚을 확률, 그 단계로 올리는 값(골드)]
+export const RODS = [['낡은 낚싯대', 30, .6, 0], ['대나무 낚싯대', 60, .65, 300], ['튼튼한 낚싯대', 120, .7, 1000], ['강철 낚싯대', 250, .75, 4000], ['강화 낚싯대', 500, .8, 15000],
+  ['합금 낚싯대', 1000, .85, 27000], ['티타늄 낚싯대', 2000, .9, 72000], ['장인의 낚싯대', 5000, .93, 210000], ['전설의 낚싯대', 15000, .96, 900000], ['신화의 낚싯대', 30000, .99, 3000000]];
+// 미끼 10단계: [이름, 일반, 희귀, 전설 확률(합 1), 그 단계로 올리는 값(골드)]
+export const BAITS = [['평범한 미끼', 1, 0, 0, 0], ['향기로운 미끼', .98, .02, 0, 200], ['신선한 미끼', .96, .04, 0, 800], ['특제 미끼', .94, .06, 0, 3000], ['고급 미끼', .92, .08, 0, 12000],
+  ['황금 미끼', .905, .094, .001, 18000], ['마력 미끼', .895, .102, .003, 48000], ['신비한 미끼', .888, .107, .005, 140000], ['전설의 미끼', .883, .109, .008, 600000], ['신화의 미끼', .88, .11, .01, 2000000]];
+// 낚시점 (저장: life.fish.rod / bait = 0~9, 화면에는 Lv 1~10). cost[l] = 지금(l)에서 다음 단계로 올리는 값
+export const FISH_SHOP = {
+  rod: { n: '낚싯대', i: '🎣', names: RODS.map(r => r[0]), cost: RODS.slice(1).map(r => r[3]), d: '낚을 확률 ↑ · 더 큰 물고기 · 전설 물고기는 낚싯대 Lv6부터' },
+  bait: { n: '미끼', i: '🪱', names: BAITS.map(b => b[0]), cost: BAITS.slice(1).map(b => b[4]), d: '희귀 · 전설을 만날 확률 ↑ (전설은 미끼 Lv6부터)' },
 };
-export const FISH_SEA = {
-  normal: [['🐟', '고등어', 20, 40, 10], ['🐟', '전갱이', 15, 35, 8], ['🐟', '멸치', 5, 12, 5], ['⭐', '불가사리', 8, 25, 6], ['🐚', '소라', 5, 15, 9], ['👢', '낡은 장화', 25, 30, 1]],
-  uncommon: [['🐟', '우럭', 20, 45, 30], ['🐟', '광어', 30, 80, 38], ['🦀', '꽃게', 10, 25, 32], ['🦐', '대하', 12, 25, 28], ['🐠', '쥐치', 15, 30, 26]],
-  rare: [['🐡', '복어', 15, 40, 85], ['🐙', '문어', 30, 90, 100], ['🐠', '참돔', 30, 80, 95], ['🐟', '갈치', 60, 150, 90]],
-  epic: [['🐟', '참치', 100, 250, 400], ['🐢', '바다거북', 30, 80, 300], ['🦈', '상어', 150, 350, 450], ['🐋', '돌고래', 150, 250, 380]],
-  legend: [['🐋', '아기 고래', 300, 800, 1800], ['🦈', '고래상어', 500, 1200, 2000], ['🐙', '대왕문어', 150, 400, 1600], ['👑', '황금 참치', 100, 200, 1500]],
-};
-// 이름으로 찾기용 (강 + 바다 합침). 예전 기록의 물고기(아기 고래 등)도 여기서 찾음
-export const FISH = Object.fromEntries(Object.keys(FISH_RIVER).map(g => [g, [...FISH_RIVER[g], ...FISH_SEA[g].filter(f => !FISH_RIVER[g].some(r => r[1] === f[1]))]]));
-export const FISHING = { cooldown: 2e3, waitMin: 3000, waitMax: 8000, dayFull: 400 };   // 2026-11-17 두 배로 (예전 1.5~4초). wait: 던지고 입질까지(ms), fishWait로 무작위. dayFull: 하루에 이만큼 넘게 낚으면 값·코인 절반
-// 낚을 확률: 기본 60% + 낚싯대 1단계마다 +6%p + 칭호·스킨·마을 효과(fishZ, %p). 최대 95%. 자동 낚시는 10%p 낮음
-export const FISH_HIT = { base: .6, rod: .06, max: .95, auto: .1 };
-export const fishHit = (rod = 0, fx = {}, auto = false) => Math.max(.3, Math.min(FISH_HIT.max, FISH_HIT.base + FISH_HIT.rod * rod + (fx.fishZ || 0) / 100) - (auto ? FISH_HIT.auto : 0));
-// 대어: 그 물고기 길이 범위의 위쪽 30%
+export const FISHING = { cooldown: 2e3, waitMin: 3000, waitMax: 8000, dayFull: 400 };   // wait: 던지고 입질까지(ms), fishWait로 무작위. dayFull: 하루에 이만큼 넘게 낚으면 값 절반
+// 낚을 확률: 낚싯대 단계 확률 + 칭호·스킨·마을 효과(fishZ, %p). 최대 99%
+export const fishHit = (rod = 0, fx = {}) => Math.min(.99, RODS[Math.max(0, Math.min(9, rod))][2] + (fx.fishZ || 0) / 100);
 // 입질까지 기다리는 시간: 3~8초 사이 무작위. 가끔(15%) 금방 물거나 오래 걸려서 매번 다르게 느껴지게
 export const fishWait = () => { const r = Math.random(), lo = FISHING.waitMin, hi = FISHING.waitMax;
   return Math.round(r < .08 ? lo * (.6 + Math.random() * .4) : r < .15 ? hi * (1 + Math.random() * .3) : lo + Math.random() * (hi - lo)); };
-export const isBigFish = f => { const d = (FISH[f.grade] || []).find(x => x[1] === f.n); return !!d && f.len >= d[2] + (d[3] - d[2]) * .7; };
-// 등급별 확률(%) — 운 · 낚싯대(rod) · 미끼(bait)가 높을수록 좋은 등급이 잘 나옴
-export function fishOdds(luk = 0, rod = 0, bait = 0) {
-  const lb = 1 + luk * .005, m = { normal: 1, uncommon: 1 + .12 * bait + .04 * rod, rare: (1 + .22 * bait + .1 * rod) * lb, epic: (1 + .35 * bait + .15 * rod) * lb, legend: (1 + .5 * bait + .2 * rod) * lb };
-  const w = Object.entries(FISH_GRADES).map(([g, x]) => [g, x.p * m[g]]), sum = w.reduce((a, [, p]) => a + p, 0);
-  return Object.fromEntries(w.map(([g, p]) => [g, p / sum * 100]));
+// 이 장비로 나올 수 있는 물고기 (규칙 7-3): 최소 크기 ≤ 낚싯대 최대 크기, 낚싯대 Lv ≥ 최소 Lv, 미끼의 그 등급 확률 > 0
+// 등급 확률은 후보가 있는 등급끼리 다시 100%로, 등급 안에서는 엑셀 가중치로
+export function fishPool(rod = 0, bait = 0, sea = false) {
+  const R = RODS[Math.max(0, Math.min(9, rod))], B = BAITS[Math.max(0, Math.min(9, bait))], gp = { normal: B[1], rare: B[2], legend: B[3] };
+  const lists = {}, gw = {};
+  for (const g of FG_KEYS) {
+    const l = gp[g] > 0 ? (sea ? FISH_SEA : FISH_RIVER)[g].filter(f => f.min <= R[1] && rod + 1 >= f.rod) : [];
+    if (l.length) { lists[g] = l; gw[g] = gp[g]; }
+  }
+  const sum = Object.values(gw).reduce((a, b) => a + b, 0) || 1;
+  return { lists, grades: Object.fromEntries(Object.entries(gw).map(([g, p]) => [g, p / sum])), maxLen: R[1] };
 }
-// 물고기 하나 정하기. 길이가 길수록 드물게
-export function rollFish(luk = 0, rod = 0, bait = 0, sea = false) {
-  let r = Math.random() * 100, grade = 'normal';
-  for (const [g, p] of Object.entries(fishOdds(luk, rod, bait))) { if (r < p) { grade = g; break; } r -= p; }
-  const [i, n, min, max, base] = pick((sea ? FISH_SEA : FISH_RIVER)[grade]);
-  const k = Math.pow(Math.random(), 2.2);   // 긴 물고기일수록 드묾
-  const len = Math.round((min + (max - min) * k) * 10) / 10;
-  return { i, n, grade, len, price: Math.max(1, Math.round(base * (.6 + 1.4 * k))), sea };
+// 등급별 확률(%) — 화면 표시용
+export const fishOdds = (rod = 0, bait = 0, sea = false) => Object.fromEntries(FG_KEYS.map(g => [g, (fishPool(rod, bait, sea).grades[g] || 0) * 100]));
+// 물고기 한 마리 값: 기본가 × (0.5 + 크기 비율) (분모는 원래 크기 범위), 전설은 최소 1만, 모두 최대 1천만
+export const fishPrice = (f, len) => { const r = (len - f.min) / (f.max - f.min || 1); return Math.min(FISH_PRICE_MAX, Math.max(f.grade === 'legend' ? FISH_LEGEND_MIN : 1, Math.round(f.base * (.5 + r)))); };
+// 물고기 하나 정하기 (낚은 것으로 정해진 뒤): 등급 → 어종 → 크기(균등)
+export function rollFish(rod = 0, bait = 0, sea = false) {
+  const P = fishPool(rod, bait, sea);
+  let r = Math.random(), grade = 'normal';
+  for (const [g, p] of Object.entries(P.grades)) { grade = g; if (r < p) break; r -= p; }
+  const l = P.lists[grade], tot = l.reduce((a, f) => a + f.p, 0); let q = Math.random() * tot, f = l[l.length - 1];
+  for (const x of l) { if (q < x.p) { f = x; break; } q -= x.p; }
+  const hi = Math.min(f.max, P.maxLen), len = Math.round((f.min + Math.random() * (hi - f.min)) * 10) / 10;
+  return { id: f.id, i: f.i, n: f.n, grade, len, price: fishPrice(f, len), sea };
 }
-
-// 낚시 코인: 낚을 때마다 등급만큼
-// 자동 낚시: 자동용 미끼를 1개씩 쓰고 알아서 던지고 당김 (낚을 확률은 손 낚시보다 10%p 낮음). 미끼는 골드로 묶음 구매
-export const AUTO_FISH = { packs: [[20, 200], [100, 940], [300, 2640]] };
-export const FISH_COIN = { normal: 1, uncommon: 2, rare: 4, epic: 8, legend: 20 };
-// 낚시점 (낚시 코인으로 삼). 낚싯대: 낚을 확률 +6%p/단계 + 좋은 등급 조금 / 미끼: 좋은 등급이 훨씬 잘 나옴
-// 손 낚시가 쉬워져서 값을 약 1.4배로 올림 (2026-11-16)
-export const FISH_SHOP = {
-  rod: { n: '낚싯대', i: '🎣', names: ['나무 낚싯대', '대나무 낚싯대', '카본 낚싯대', '은빛 낚싯대', '황금 낚싯대', '용의 낚싯대'], cost: [28, 70, 155, 310, 560], d: '낚을 확률 +6%p · 희귀 이상 확률 ↑' },
-  bait: { n: '미끼', i: '🪱', names: ['지렁이', '새우 미끼', '반짝 루어', '황금 떡밥', '전설의 미끼', '김치 미끼'], cost: [21, 56, 126, 250, 490], d: '고급 이상 확률 크게 ↑' },
-};
+// 대어: 그 물고기 원래 크기 범위의 위쪽 30%
+export const isBigFish = f => { const d = FISH_BY[f.id] || fishByName(f.n); return !!d && f.len >= d.min + (d.max - d.min) * .7; };
+// 예전 낚시 코인(🐚): 2026-11-20 낚시점이 골드로 바뀌어서 쓸 곳이 없음 → 서버가 1개 = 100골드로 바꿔 줌 (다른 곳에서 받는 코인도)
+export const FISH_COIN_GOLD = 100;
 
 // ───────── 카페 알바 ─────────
 export const JOB = { sec: 60, pay: lv => 60 + lv * 7 };   // 카페 알바 1분 (예전 40 + 레벨×5)
@@ -482,9 +484,12 @@ export function optScore(it) { return (it?.o || []).reduce((a, [k, v]) => a + v 
 // ───────── 칭호 (도전 과제를 깨면 생김. 갖고만 있어도 효과) ─────────
 // k: 세는 것 (lv·str·dex·int·luk = 캐릭터 값, 나머지 = life.cnt) · v: 목표 · fx: 보유 효과
 export const FX_N = { atkP: ['공격력', '%'], defP: ['방어', '%'], hpP: ['최대 체력', '%'], crit: ['치명타', '%p'], eva: ['회피', '%p'], goldP: ['골드', '%'], expP: ['경험치', '%'], spdP: ['이동 속도', '%'],
-  fishC: ['낚시 코인', '%'], fishZ: ['낚을 확률', '%p'], farmP: ['작물 골드', '%'], farmC: ['텃밭 코인', '%'], gather: ['채집량', '개'], fishP: ['물고기 값', '%'], enhB: ['강화 확률', '%p'], bossP: ['보스 피해', '%'], regen: ['사냥 중 회복', '%p/초'] };
+  fishC: ['물고기 값', '%'], fishZ: ['낚을 확률', '%p'], farmP: ['작물 골드', '%'], farmC: ['텃밭 코인', '%'], gather: ['채집량', '개'], fishP: ['물고기 값', '%'], enhB: ['강화 확률', '%p'], bossP: ['보스 피해', '%'], regen: ['사냥 중 회복', '%p/초'] };
 const tt = (id, n, g, k, v, fx, d) => ({ id, n, g, k, v, fx, d });
-export const TITLE_GROUPS = ['마을', '성장', '사냥', '낚시', '텃밭', '채집', '장비'];
+// 전설 물고기 칭호 이름: '강의 용을 낚은', '은하 고래를 낚은' (받침에 따라 을/를)
+const josa = w => { const c = w.charCodeAt(w.length - 1) - 0xac00; return c >= 0 && c < 11172 && c % 28 ? '을' : '를'; };
+const legendTitle = n => `${n}${josa(n)} 낚은`;
+export const TITLE_GROUPS = ['마을', '성장', '사냥', '낚시', '전설 물고기', '텃밭', '채집', '장비'];
 export const TITLES = [
   tt('new', '새로 온', '마을', 'lv', 1, {}, '치복 타운에 처음 왔어요'),
   tt('lv5', '첫발을 뗀', '성장', 'lv', 5, { hpP: 1 }, '5레벨 달성'), tt('lv10', '10레벨을 달성한', '성장', 'lv', 10, { atkP: 1 }, '10레벨 달성'),
@@ -502,6 +507,11 @@ export const TITLES = [
   tt('f300', '강가의 단골인', '낚시', 'fish', 300, { fishC: 10, fishZ: 3 }, '물고기 300마리'), tt('f1000', '물고기와 친한', '낚시', 'fish', 1000, { fishC: 15, goldP: 1 }, '물고기 1,000마리'),
   tt('fp30', '손맛을 아는', '낚시', 'perfect', 30, { fishZ: 4 }, '대어(큰 물고기) 30마리'), tt('fl1', '전설을 낚은', '낚시', 'legendFish', 1, { fishC: 10 }, '전설 물고기 1마리'),
   tt('boot', '낡은 장화를 건진', '낚시', 'boot', 1, { spdP: 1 }, '낡은 장화 낚기 (?)'),
+  tt('fs1000', '수산 시장의 큰손인', '낚시', 'fishSold', 1000, { fishP: 3 }, '낚시점에 물고기 1,000마리 팔기'),
+  // 2026-11-20 전설 물고기 전용 칭호: 전설 물고기마다 하나 (그 물고기를 한 번 낚으면). 드물수록 효과가 큼
+  ...FISH_LIST.filter(f => f.grade === 'legend').sort((a, b) => a.base - b.base).map((f, i) => tt('lf_' + f.id, legendTitle(f.n), '전설 물고기', 'lf_' + f.id, 1,
+    i < 4 ? { fishP: 3, fishZ: 1 } : i < 8 ? { fishP: 5, fishZ: 1, goldP: 1 } : i < 11 ? { fishP: 8, fishZ: 2, goldP: 2 } : { fishP: 12, fishZ: 3, goldP: 3, expP: 2 },
+    `${f.sea ? '바다' : '민물'} 전설 ${f.n} 낚기 (낚싯대 Lv${f.rod} 이상)`)),
   tt('c1', '첫 수확을 한', '텃밭', 'crops', 1, { farmP: 2 }, '작물 수확 1번'), tt('c100', '텃밭을 가꾸는', '텃밭', 'crops', 100, { farmP: 5, farmC: 5 }, '작물 수확 100번'),
   tt('c500', '농사의 달인인', '텃밭', 'crops', 500, { farmP: 10, farmC: 10 }, '작물 수확 500번'), tt('w100', '물 주기를 잊지 않는', '텃밭', 'water', 100, { farmC: 5 }, '물 주기 100번'),
   tt('gold1', '황금 배추를 키운', '텃밭', 'goldCrop', 1, { goldP: 2 }, '황금 배추 수확'),
@@ -568,7 +578,7 @@ export const DAILY_POOL = [
 ];
 export const DAILY_N = 4, STAMP_GOAL = 5;
 export const dailyGold = lv => 500 + lv * 100;               // 의뢰 하나 보상 (사냥 약 4분어치)
-export const weekBox = lv => ({ gold: 5000 + lv * 1500, fish: 15, farm: 15 });   // 도장 5개 상자 (사냥 약 1시간어치)
+export const weekBox = lv => ({ gold: 5000 + lv * 1500 + 1500, fish: 0, farm: 15 });   // 2026-11-20 낚시 코인 15 → 골드 1,500   // 도장 5개 상자 (사냥 약 1시간어치)
 export function dailyTasks(day) {
   const r = seeded('daily' + day), pool = [...DAILY_POOL], out = [];
   while (out.length < DAILY_N) out.push(pool.splice(Math.floor(r() * pool.length), 1)[0]);
@@ -590,7 +600,7 @@ export function checkDaily(c, t) {
     d.done.push(i); const g = dailyGold(c.lv); c.gold += g; cntAdd(c, 'daily'); got.push({ n: q.n, i: q.i, gold: g });
   });
   if (got.length && d.done.length >= tasks.length && !d.stamped) {
-    d.stamped = true; const s = c.life.stamp; s.n++; c.life.coins.fish += 3; c.life.coins.farm += 3; got.push({ stamp: s.n });
+    d.stamped = true; const s = c.life.stamp; s.n++; c.gold += 300; c.life.coins.farm += 3; got.push({ stamp: s.n });
     if (s.n >= STAMP_GOAL && !s.box) { s.box = true; const b = weekBox(c.lv); c.gold += b.gold; c.life.coins.fish += b.fish; c.life.coins.farm += b.farm; cntAdd(c, 'weekBox'); got.push({ box: b }); }
   }
   return got;
@@ -839,7 +849,7 @@ export function autoSettle(c, now) {
 
 // ───────── 화면을 닫은 동안 (2026-11-17): 효율 50% 중 절반은 사냥(settle), 절반은 마을 일 ─────────
 // 1시간어치(효율 적용 뒤) 마을 일로 받는 것: 경험치·골드는 사냥 1시간과 비슷, 그리고 자원·코인
-export const OFFLINE_LIFE = lv => ({ exp: huntIdleExp(lv) / .7, gold: (1500 * lv + 8000) * .3, wood: 40, stone: 28, fish: 6, farm: 5 });
+export const OFFLINE_LIFE = lv => ({ exp: huntIdleExp(lv) / .7, gold: (1500 * lv + 8000) * .3 + 600, wood: 40, stone: 28, fish: 0, farm: 5 });   // 2026-11-20 낚시 코인 6 → 골드 600
 export function offlineLife(c, sec) {
   if (sec < 1) return null;
   const D = derive(c), P = OFFLINE_LIFE(c.lv), h = sec / 3600, L = c.life, got = {};
