@@ -7092,7 +7092,7 @@ const FSPOT = { x: FISH_AT.x, y: FISH_AT.y };
 const meTile = () => [Math.floor(me.x / T), Math.floor(me.y / T)];
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const fmtCm = n => (n >= 1000 ? `${(n / 100).toLocaleString(undefined, { maximumFractionDigits: 1 })}m` : `${n}cm`);
-const bragText = (f, big) => `${f.i} ${fmtCm(f.len)}짜리 ${f.n}(${fgOf(f.grade).n}) 잡았다!${big ? ' 대어!' : ''}`;
+const bragText = (f, big) => `${f.i} ${fmtCm(f.len)}짜리 ${f.n}${f.grade && f.grade !== 'normal' ? `(${fgOf(f.grade).n})` : ''} 잡았다!${big ? ' 대어!' : ''}`;
 const fishBagL = () => LIFE()?.fbag || [];
 const autoFishStop = () => { F.auto = false; };   // 자동 낚시는 2026-11-18에 없앰 (부르는 곳 호환용)
 // 낚시하는 모습: c.fz = { bx, by(찌 자리), r(낚싯대 단계), t0, ph: wait 기다림 · bite 입질 · got 낚음 · miss 놓침, at, fish, until }
