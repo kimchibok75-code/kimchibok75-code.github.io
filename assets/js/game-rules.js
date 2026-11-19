@@ -406,11 +406,21 @@ export const isBigFish = f => { const d = FISH_BY[f.id] || fishByName(f.n); retu
 export const FISH_COIN_GOLD = 100;
 
 // ───────── 카페 알바 ─────────
-export const JOB = { sec: 60, pay: lv => 60 + lv * 7 };   // 카페 알바 1분 (예전 40 + 레벨×5)
+// 2026-11-20 카페 알바 레벨: 캐릭터 레벨이 아니라 알바 경험치로 오르는 '알바 레벨'(1~30)에 따라 알바비·팁이 늘어남. 저장 life.cafe = { lv, xp }
+// 알바 한 번(1분) = 경험치 15 + 손님 1명당 3 (평균 약 30). 다음 레벨까지 30 + 레벨×20 → 30레벨까지 약 300번
+export const CAFE = { max: 30, need: l => 30 + l * 20, xp: guests => 15 + guests * 3 };
+export const cafeLv = c => Math.min(CAFE.max, Math.max(1, c?.life?.cafe?.lv || 1));
+export function cafeGain(c, xp) {   // 경험치를 더하고 오른 레벨 수를 돌려줌
+  const C = c.life.cafe ||= { lv: 1, xp: 0 }; C.lv = Math.max(1, C.lv || 1); C.xp = (C.xp || 0) + xp; let up = 0;
+  while (C.lv < CAFE.max && C.xp >= CAFE.need(C.lv)) { C.xp -= CAFE.need(C.lv); C.lv++; up++; }
+  if (C.lv >= CAFE.max) C.xp = 0;
+  return up;
+}
+export const JOB = { sec: 60, pay: cl => 80 + cl * 14 };   // 카페 알바 1분: 알바 레벨 1 = 94 · 10 = 220 · 30 = 500 (예전 60 + 캐릭터 레벨×7)
 // 카페 손님 (2026-11-17): 알바 중 가끔 마을 주민이 와서 커피를 사 감 → 팁. 알바 시작 시각(jobAt)으로 정해져서 화면·서버 같은 계산
 // 1분을 7토막(5초부터 7초씩)으로 나눠 토막마다 chance 확률로 손님 1명 (평균 약 5명). 팁 = tip(레벨) × 0.8~1.4, vip 확률로 VIP 손님(팁 ×5)
 // 밸런스: 30레벨 1분에 알바비 270 + 팁 약 250 (사냥 방치 시간당 약 2.8만 ≈ 1분 470)
-export const JOB_GUEST = { slots: [[5, 11], [12, 18], [19, 25], [26, 32], [33, 39], [40, 46], [47, 53]], chance: .75, tip: lv => 8 + lv * 1.2, vip: .06, vipMul: 5,
+export const JOB_GUEST = { slots: [[5, 11], [12, 18], [19, 25], [26, 32], [33, 39], [40, 46], [47, 53]], chance: .75, tip: cl => 8 + cl * 2.2, vip: .06, vipMul: 5,
   menu: ['아메리카노', '카페라테', '바닐라 라테', '카푸치노', '핫초코', '딸기 스무디', '녹차 라테', '아이스티', '돌체 라테', '캐러멜 마키아토', '레몬에이드', '흑당 밀크티', '에스프레소', '김치 라테(?)', '고구마 라테', '자몽 허니 블랙티'] };
 export function jobGuests(jobAt, lv) {
   const r = seeded('job' + jobAt), out = [];

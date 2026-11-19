@@ -744,6 +744,7 @@
   - 레이드 보상 받을 때 `cnt.raid` 셈 (가이드용)
   - 화면: 임무창(`#questBox`) 맨 위 파란 줄 `.qb-guide` → `openGuideQ` (가기 · 보상 받기 · 건너뛰기). 다 하면 노랗게 깜빡 + 토스트 한 번 (`GQ.toastI`)
   - 새 놀거리를 만들면 `GUIDE_Q`에 단계를 넣을 것 (넣으면 이미 끝낸 사람은 안 보임: i가 끝을 넘음 → 필요하면 끝에 추가)
+- **카페 알바 레벨** (캐릭터 레벨 기준 삭제): `life.cafe = {lv, xp}`, game-rules.js `CAFE`(최고 30, 다음까지 30+레벨×20, 한 번에 15 + 손님×3), `cafeLv`, `cafeGain`. 알바비 `JOB.pay(알바 레벨)` = 80 + 14×레벨, 팁 `8 + 2.2×레벨`. 그만두면 그때까지 온 손님 경험치만. 카페 창에 알바 레벨 막대 (`cafeSheet`의 `lvCard`)
 - **배경 음악 6곡 추가**: 사냥터 4곳 `hunt-plain/forest/canyon/factory.mp3`, 레이드 `raid-rdragon.mp3`(드래곤 레이드) · `raid-ogre.mp3`(오우거 부족장). 원본 `내 디자인/배경음/`. game-sound.js `FILES`, `bgm('hunt-' + 사냥터 id)` · `bgm('raid-' + 보스)` (파일 없으면 코드 노래 'hunt'/'raid')
 
 ### 다음: 4-2단계

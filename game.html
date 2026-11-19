@@ -1255,7 +1255,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { GUIDE_Q, guideProg, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { CAFE, cafeLv, GUIDE_Q, guideProg, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
@@ -4721,7 +4721,7 @@ function guestTick() {
   if (at !== JG.at) {   // 새 알바 (또는 끝남): 손님 목록 새로. 이미 지나간 손님은 건너뜀
     for (const g of JG.list) if (g.p && g.st !== 'gone') guestBye(g, true);
     JG.at = at; JG.n = 0; JG.sum = 0; const n0 = srvNow();
-    JG.list = at ? jobGuests(at, me.lv).map(g => ({ ...g, T0: at + g.t, st: at + g.t < n0 - 1500 ? 'gone' : 'wait' })) : [];
+    JG.list = at ? jobGuests(at, cafeLv(me)).map(g => ({ ...g, T0: at + g.t, st: at + g.t < n0 - 1500 ? 'gone' : 'wait' })) : [];
   }
   if (!JG.list.length) return;
   const n = srvNow(), [dx, dy] = door('cafe');
@@ -5162,18 +5162,19 @@ function soonSheet(b, keep) {
 // ───────── 카페: 체력 · 음료 · 알바 ─────────
 function cafeSheet(b, keep) {
   reopen = () => cafeSheet(b, true);
-  const pay = JOB.pay(me.lv), left = me.job ? jobLeft() : 0;
+  const cl = cafeLv(me), C = me.life?.cafe || { xp: 0 }, pay = JOB.pay(cl), left = me.job ? jobLeft() : 0;
+  const lvCard = `<div class="bs-card"><h4>☕ 알바 레벨 ${cl}${cl < CAFE.max ? `<small>다음 레벨 알바비 🪙 ${fmtN(JOB.pay(cl + 1))}</small>` : '<small>최고 레벨!</small>'}</h4>${cl < CAFE.max ? pbar(C.xp / CAFE.need(cl), `알바 경험치 ${fmtN(C.xp)} / ${fmtN(CAFE.need(cl))}`) : ''}</div>`;
   const pots = Object.entries(POTS).map(([k, p]) => `<li class="bs-row stack"><span class="bs-ri">${p.i}</span><div><b class="t">${p.n}</b><div class="cs">${chip(p.d, 'up')}${chip(`가진 것 ${me.pots[k]}개`)}</div></div><span></span>
     <div class="bs-qty">${[1, 5, 10].map(n => bbtn(`${k}:${n}`, `${n}개`, `🪙 ${fmtN(p.price * n)}`, { main: n === 5, dis: me.gold < p.price * n })).join('')}</div></li>`).join('');
   const job = me.job
     ? `<div class="bs-card hero"><h4>☕ 카페 알바 ${chip('일하는 중', 'up')}</h4>${pbar(1 - left / JOB.sec, `${fmtSec(left)} 남음 · 끝나면 🪙 ${fmtN(me.job.pay)}`)}${bbtn('quit', '그만두기', '', { wide: true })}</div>`
     : `<div class="bs-card hero"><h4>☕ 카페 알바<span class="cs">${chip('1분')}${chip(`🪙 ${fmtN(pay)}`, 'gold')}${chip(`✨ ${fmtN(lifeExp(me, 'job'))}`, 'up')}</span></h4>${bbtn('job', '알바 시작', '카페 앞에서 1분 동안 일해요', { wide: true })}</div>`;
   bsOpen(b, { tag: '1분 알바 · 체력 음료', wal: ['gold'], live: !!me.job,   // 2026-11-17 내 체력 칸 없앰, 알바가 맨 위
-    body: `${job}<div class="bs-sec">🥤 체력 음료</div><ul class="bs-list">${pots}</ul>`,
-    help: `<p>사냥 중에 체력이 <b>${me.potAt}%</b> 아래로 내려가면 음료를 자동으로 마셔요.</p><p>마을에서는 가만히 있어도 1초에 2%씩 체력이 차요.</p><p>알바 돈은 레벨이 높을수록 많아요. 생활 경험치(✨)도 받아요.</p>` },
+    body: `${job}${lvCard}<div class="bs-sec">🥤 체력 음료</div><ul class="bs-list">${pots}</ul>`,
+    help: `<p>사냥 중에 체력이 <b>${me.potAt}%</b> 아래로 내려가면 음료를 자동으로 마셔요.</p><p>마을에서는 가만히 있어도 1초에 2%씩 체력이 차요.</p><p>알바를 할수록 <b>알바 레벨</b>이 올라요 (한 번에 경험치 15 + 손님 1명당 3). 알바 레벨이 높을수록 알바비와 손님 팁이 많아요 (최고 ${CAFE.max}레벨).</p><p>생활 경험치(✨)도 받아요.</p>` },
     async x => {
       if (x === 'job') { if (await act('/api/job/start', {})) { closeModal(); say(me, '☕ 알바 중…', 4000); walkNear(me, ...door('cafe')); toast('☕ 알바 시작! 1분 동안 카페 앞에서 일해요. 끝나면 골드가 들어와요'); } return; }
-      if (x === 'quit') { const j = await act('/api/job/quit', {}); if (j) { toast(j.tips ? `알바를 그만뒀어요 · 손님 팁 🪙 +${j.tips.toLocaleString()}` : '알바를 그만뒀어요'); reopen?.(); } return; }
+      if (x === 'quit') { const j = await act('/api/job/quit', {}); if (j) { toast(j.tips ? `알바를 그만뒀어요 · 손님 팁 🪙 +${j.tips.toLocaleString()}` : '알바를 그만뒀어요'); if (j.cafe?.up) toast(`☕ 알바 레벨 ${j.cafe.lv}! 알바비가 올랐어요`); reopen?.(); } return; }
       const [k, n] = x.split(':'), j = await act('/api/pots', { k, n: +n });
       if (j) { logAct(`${POTS[k].n} ${n}개 −${POTS[k].price * n}`); toast(`${POTS[k].i} ${n}개 샀어요`); reopen?.(); }
     }, keep);
@@ -7483,6 +7484,7 @@ setInterval(async () => {
   const left = jobLeft(); chip.textContent = left ? `☕ 알바 ${fmtSec(left)}` : '☕ 알바 끝!';
   if (!left && !jobBusy && token) {
     jobBusy = true; const j = await act('/api/job/finish', {}); jobBusy = false;
+    if (j?.cafe?.up) setTimeout(() => { toast(`☕ 알바 레벨 ${j.cafe.lv}! 이제 알바비 🪙 ${fmtN(JOB.pay(j.cafe.lv))}`); sfx('levelup'); }, 900);
     if (j) { const tp = j.tips ? ` + 손님 팁 ${j.tips.toLocaleString()}${JG.n ? ` (손님 ${JG.n}명)` : ''}` : ''; toast(`☕ 알바 끝! 🪙 +${(j.pay + (j.tips || 0)).toLocaleString()}`); sysMsg(`☕ 카페 알바를 마쳤어요. 알바비 ${j.pay.toLocaleString()}${tp}`); logAct(`카페 알바 +${j.pay + (j.tips || 0)}`); emote(me, '🎉'); }
   }
 }, 1000);

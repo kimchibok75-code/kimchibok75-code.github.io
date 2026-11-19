@@ -1,6 +1,6 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { GUIDE_Q, guideProg, guideInit, guideNext, npcExp as guideExp, TAG_COLORS, RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
+import { jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, guideProg, guideInit, guideNext, npcExp as guideExp, TAG_COLORS, RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
@@ -259,7 +259,7 @@ function meOut(user, c) {
       str: c.str, dex: c.dex, int: c.int, luk: c.luk, points: c.points, hp: c.hp, equip: c.equip, bag: c.bag, hats: c.hats, pots: c.pots, potAt: c.potAt,
       cls: c.cls, enh: c.enh, gacha: c.gacha, preset: c.preset, life: lifeOut(c.life), presets: c.presets.map((p, i) => (i === c.preset ? { ...p, s: [c.str, c.dex, c.int, c.luk] } : p)),
       hunt: h ? { f: h.f, start: h.start, t: Math.round(h.t), boss: h.boss, kills: h.kills, exp: h.exp, gold: h.gold, drops: h.drops } : null,
-      job: c.jobAt ? { at: c.jobAt, left: Math.max(0, Math.ceil((c.jobAt + JOB.sec * 1000 - Date.now()) / 1000)), pay: JOB.pay(c.lv) } : null },
+      job: c.jobAt ? { at: c.jobAt, left: Math.max(0, Math.ceil((c.jobAt + JOB.sec * 1000 - Date.now()) / 1000)), pay: JOB.pay(cafeLv(c)) } : null },
   };
 }
 async function loadMe(env, user) {
@@ -548,12 +548,13 @@ const GAME = {
     if (!c.jobAt) fail(400, '알바 중이 아니에요');
     const left = Math.ceil((c.jobAt + JOB.sec * 1000 - at) / 1000);
     if (left > 0) fail(400, `아직 ${left}초 남았어요`);
-    const tips = jobTips(c.jobAt, c.lv), pay = JOB.pay(c.lv); c.gold += pay + tips; c.jobAt = 0; cntAdd(c, 'job');
+    const cl = cafeLv(c), tips = jobTips(c.jobAt, cl), pay = JOB.pay(cl), guests = jobGuests(c.jobAt, cl).length; c.gold += pay + tips; c.jobAt = 0; cntAdd(c, 'job');
     const lexp = lifeExp(c, 'job'); addExp(c, lexp);
-    return { pay, tips, lexp, log: ['job', String(pay + tips)] };
+    const cx = CAFE.xp(guests), up = cafeGain(c, cx);   // 알바 경험치 (2026-11-20)
+    return { pay, tips, lexp, cafe: { xp: cx, up, lv: cafeLv(c) }, log: ['job', String(pay + tips)] };
   },
   // 그만두면 알바비는 없고, 그때까지 온 손님 팁만 받음
-  '/api/job/quit'(c, b, at) { const tips = c.jobAt ? jobTips(c.jobAt, c.lv, at) : 0; c.gold += tips; c.jobAt = 0; return { tips }; },
+  '/api/job/quit'(c, b, at) { const cl = cafeLv(c), tips = c.jobAt ? jobTips(c.jobAt, cl, at) : 0, n = c.jobAt ? jobGuests(c.jobAt, cl).filter(g => c.jobAt + g.t <= at).length : 0; c.gold += tips; c.jobAt = 0; const cx = n * 3, up = cx ? cafeGain(c, cx) : 0; return { tips, cafe: { xp: cx, up, lv: cafeLv(c) } }; },   // 그만두면 손님 경험치만
   // 손 낚시: 물을 누르면 바로. 서버가 결과를 정하고, 화면은 wait(ms) 뒤에 입질 → 결과를 보여 줌
   // 손 낚시 (2026-11-19 나눔): 던지기(hand) → 입질 시간(wait) 뒤 당기기(reel). 자리를 떠나면 화면이 cancel → 아무것도 안 낚임
   '/api/fish/hand'(c, b, at, out, env, user) { return fishCast(c, b, at, env, user); },
