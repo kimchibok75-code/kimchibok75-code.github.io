@@ -69,7 +69,7 @@ function road(pts, r0 = 1.05, s = 1) {
 const DOCK_Y = 29, dockBank = Math.ceil(riverX(DOCK_Y) + riverHalf(DOCK_Y));
 road([[34, 31], [26, 26.5], [dockBank + 1, 29.5]], 1.1, 11);           // 서쪽: 강가 선착장
 road([[36, 26], [30, 18], [25, 15.5]], 1.05, 12);                     // 북서: 벌목소
-road([[45, 26], [53, 17], [63, 15.5]], 1.05, 13);                     // 북동: 채광소
+road([[45, 26], [53, 17], [63, 15.5]], 1.05, 13);                     // 북동: 채석장
 road([[47, 32], [61, 36], [75, 32]], 1.15, 14);                       // 동쪽: 사냥터 포탈
 road([[45, 36], [49, 44], [57, 43.5]], 1.05, 15);                     // 남동: 텃밭
 road([[40, 37], [36, 47], [41, 58.5]], 1.05, 16);                     // 남쪽: 집 동네
@@ -91,7 +91,7 @@ export const BUILDINGS = [
   { id: 'smith', name: '대장간', icon: '🔨', x: 48, y: 38, w: 6, h: 5 },
   { id: 'fishshop', name: '낚시점', icon: '🎣', x: dockBank + 2, y: DOCK_Y - 4, w: 3, h: 3 },
   { id: 'lumber', name: '벌목소', icon: '🪓', x: 22, y: 11, w: 5, h: 4 },
-  { id: 'quarry', name: '채광소', icon: '⛏️', x: 61, y: 11, w: 5, h: 4 },
+  { id: 'quarry', name: '채석장', icon: '⛏️', x: 61, y: 11, w: 5, h: 4 },
   { id: 'farmshed', name: '텃밭 창고', icon: '🧺', x: 62, y: 44, w: 4, h: 3 },
 ];
 for (const b of BUILDINGS) { b.door = { x: b.x + Math.floor(b.w / 2), y: b.y + b.h }; for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) block(x, y); if (tileAt(b.door.x, b.door.y) !== WATER) set(b.door.x, b.door.y, PATH); }
@@ -275,6 +275,18 @@ for (let x = 51; x <= 60; x++) { set(x, 45, G); set(x, 50, G); }
   for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) block(x, y);
   set(b.door.x, b.door.y, PATH);
 }
+// 13) 2026-11-20: 도감 센터 (대장간 동쪽 풀밭). 칭호·뱃지·물고기·스킨 도감. 맨 마지막에 놓아서 나무·돌 번호 그대로
+{
+  const b = { id: 'dex', name: '도감 센터', icon: '📚', x: 58, y: 37, w: 5, h: 4 };
+  for (let k = DECO.length - 1; k >= 0; k--) { const d = DECO[k]; if (d.x >= b.x - 1 && d.x <= b.x + b.w && d.y >= b.y - 1 && d.y <= b.y + b.h + 1) { if (tileAt(d.x, d.y) !== WATER) solid[d.y * MW + d.x] = 0; DECO.splice(k, 1); } }
+  for (const n of NODES) if (!n.off && n.x >= b.x - 1 && n.x <= b.x + b.w && n.y >= b.y - 1 && n.y <= b.y + b.h + 1) { n.off = true; if (tileAt(n.x, n.y) !== WATER) solid[n.y * MW + n.x] = 0; }
+  b.door = { x: b.x + Math.floor(b.w / 2), y: b.y + b.h }; BUILDINGS.push(b);
+  for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) block(x, y);
+  set(b.door.x, b.door.y, PATH);
+  road([[60.5, 41.5], [59, 42.6], [57.4, 43.5]], .85, 32);   // 문 → 대장간 앞 길
+}
+// 14) 2026-11-20: 대형 전광판 뒤(위쪽 2줄)에 사람이 못 서게 막음 (화면 그림에 가려 보이지 않던 자리)
+{ const sc = SPOTS.find(s => s.id === 'screen'); if (sc) for (let y = sc.y - 2; y < sc.y; y++) for (let x = sc.x; x < sc.x + sc.w; x++) if (tileAt(x, y) !== WATER) block(x, y); }
 // 치복동 포탈 (집 동네로 가는 문, 발 위치 픽셀) — 광장 남쪽 길 옆
 export const DPORTAL = { x: 41.4 * T, y: 47.4 * T };
 

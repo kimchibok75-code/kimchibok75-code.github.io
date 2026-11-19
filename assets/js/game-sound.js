@@ -1,4 +1,4 @@
-// 치복 타운 소리: 효과음과 배경 음악을 파일 없이 코드(Web Audio)로 만들어 냄
+// 치복 타운 소리: 효과음과 배경 음악을 코드(Web Audio)로 만들어 냄. 마을 배경 음악만 파일 (assets/audio/town.mp3, 2026-11-20)
 // sfx('coin') → 효과음, bgm('town' | 'hunt' | 'raid' | null) → 배경 음악
 // 설정은 이 기기에만 저장 (localStorage cbt-snd = { sfx, bgm, mute })
 
@@ -32,7 +32,7 @@ function init() {
 export function sndUnlock() {
   const go = () => { if (!init()) return; if (A.state === 'suspended') A.resume(); musicKick(); };
   for (const ev of ['pointerdown', 'keydown', 'touchend']) addEventListener(ev, go, { passive: true });
-  document.addEventListener('visibilitychange', () => { if (!A) return; if (document.hidden) A.suspend(); else A.resume(); });
+  document.addEventListener('visibilitychange', () => { if (!A) return; if (document.hidden) { A.suspend(); for (const k in FA) FA[k].el.pause(); } else A.resume().then(musicKick); });
 }
 
 // ───── 소리 재료 ─────
@@ -145,12 +145,29 @@ function schedule() {
     M.next += eighth; M.step++;
   }
 }
+// 파일로 된 배경 음악 (2026-11-20 사용자 곡). 없는 모드는 위의 코드 노래
+const FILES = { town: { src: 'assets/audio/town.mp3', v: .75 } };
+const FA = {};
+function fileOf(mode) {
+  const f = FILES[mode]; if (!f || !A) return null;
+  let o = FA[mode];
+  if (!o) {
+    const el = new Audio(f.src); el.loop = true; el.preload = 'auto';
+    const g = A.createGain(); g.gain.value = f.v;
+    try { A.createMediaElementSource(el).connect(g); g.connect(bgmBus); } catch { return null; }
+    o = FA[mode] = { el, g };
+  }
+  return o;
+}
 function musicKick() {
   if (!A || A.state !== 'running') return;
   const want = SND.mute || SND.bgm <= 0 ? null : M.want;
-  if (want === M.mode && (M.timer || !want)) return;
+  const fileOn = want && FILES[want];
+  if (want === M.mode && (M.timer || !want || (fileOn && FA[want] && !FA[want].el.paused))) return;
   clearInterval(M.timer); M.timer = null; M.mode = want;
+  for (const k in FA) if (k !== want) FA[k].el.pause();
   if (!want) return;
+  if (fileOn) { const o = fileOf(want); if (o) { o.el.play().catch(() => {}); return; } }
   M.step = 0; M.next = A.currentTime + .15; M.timer = setInterval(schedule, 120); schedule();
 }
 // 배경 음악 바꾸기 (null = 끔)

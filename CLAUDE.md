@@ -235,7 +235,7 @@
 - 기획서 4-7에 정리. 방송국은 삭제
 - **지도**: `assets/js/game-map.js` (80×60칸, 화면과 서버가 같은 파일). 정해진 규칙(노이즈)으로 만들어서 서버도 집 자리·나무·바위를 똑같이 확인함
   - 맨 위의 `T, MW, MH`는 game-rules.js와 꼭 같게 (두 번 불러오지 않으려고 따로 적음)
-  - `BUILDINGS`(마을회관 hall, 낚시점 fishshop, 벌목소 lumber, 채광소 quarry, 텃밭 창고 farmshed 등), `NODES`(나무·바위), `PLOTS`(텃밭 9칸), `canHouse`(중심가 `inCore` 밖, 안 겹치게), `ROOM_*`(집 안 11×8칸, 문 (5,7))
+  - `BUILDINGS`(마을회관 hall, 낚시점 fishshop, 벌목소 lumber, 채석장 quarry, 텃밭 창고 farmshed 등), `NODES`(나무·바위), `PLOTS`(텃밭 9칸), `canHouse`(중심가 `inCore` 밖, 안 겹치게), `ROOM_*`(집 안 11×8칸, 문 (5,7))
 - **자유 이동**: 길 찾기는 칸 A*로 한 뒤 직선으로 펴서 걸음(`walkTo(ch, px, py)` 픽셀, `walkToTile` 칸). 몸 반지름 7px로 부딪힘 확인(`freeAt`, `clear`). 화살표/끌기는 0.5초마다 예상 목적지만 보냄
 - **DB**: `migrations/0008_life.sql` — `characters.life`(JSON 한 칸: 코인·목재·석재·텃밭·칭호·버프·알바·채집 쿨), `houses` 표(user_id, x, y, roof). 모든 칭호를 `new`로 초기화함
 - **서버 기능**: `/api/title`, `/api/fish/shop`, `/api/farm/plant|plantall|water|harvest|can|plot|unlock`, `/api/gather`, `/api/work/hire|collect`, `/api/wish`, `/api/house/build|roof`, `GET /api/houses`. 칭호는 `checkTitles`가 확인해서 응답의 `newTitles`로 알려 줌
@@ -314,7 +314,7 @@
 - 확대 값은 PC·휴대폰, 마을·사냥터 따로 저장 (`cbt-zoom-pc`, `cbt-zoom-pc-hunt`, `cbt-zoom-m`, `cbt-zoom-m-hunt`)
 - **스킨 보유 효과**: `HATS`·`EYE_SKINS`의 `fx`. 가지고만 있으면 붙음(`skinFx` → `statFx`). 스킨샵 칸 아래·캐릭터창 스킨 탭 위에 합계
   - 물고기 값(`fishP`)은 이제 `derive(c).fx`로 계산 (예전엔 마을 효과만 봤음)
-- 알바 효율: 카페 알바 `JOB.pay` = 60 + 레벨×7 (예전 40 + 레벨×5), 벌목소 시간당 11·채광소 8, 쌓이는 최대 10시간
+- 알바 효율: 카페 알바 `JOB.pay` = 60 + 레벨×7 (예전 40 + 레벨×5), 벌목소 시간당 11·채석장 8, 쌓이는 최대 10시간
 - 자동 낚시 중에는 머리 위에 "🎣 낚시 중 · 미끼 N" 말풍선
 - **가챠센터는 광장 서쪽**(23,30, 카페·마을회관 사이)으로 옮김. **광장 북쪽(옛 가챠 자리)에 대형 전광판** `SPOTS`의 `screen` (35,22, 10×2칸)
   - 둘 다 game-map.js 7번에서 자원을 다 놓은 뒤에 옮김/추가 (나무·돌 번호 그대로)
@@ -425,7 +425,7 @@
 - 대장간 창: 설명 한 줄 + 칸마다 꼬리표 `[공격 7 → 8] [성공 95%]` (`.echip`, 확률 색 초록/노랑/빨강)
 
 ### 건물 창 UI 개편 — 2026-11-17
-- 마을 건물 9곳(카페·가챠센터·대장간·스킨샵·마을회관·낚시점·벌목소·채광소·텃밭 창고)이 **같은 틀**을 씀: `bsWrap` / `bsOpen` (game.html, `openBuilding` 바로 위)
+- 마을 건물 9곳(카페·가챠센터·대장간·스킨샵·마을회관·낚시점·벌목소·채석장·텃밭 창고)이 **같은 틀**을 씀: `bsWrap` / `bsOpen` (game.html, `openBuilding` 바로 위)
   - 순서: 머리(아이콘 + 이름 + 한 줄 소개) → 지갑(그 건물에 필요한 재화만, `WAL`) → 탭 → 내용 → ❓ 도움말(접힘) → 주 버튼(창 아래 고정 `.bs-foot`)
   - 적용한 원칙: 힉의 법칙(기능이 여러 개면 탭), 피츠의 법칙·엄지 영역(버튼 44px 이상, 주 버튼은 아래), 점진적 공개(긴 설명은 도움말), 상태 보이기(막대·꼬리표, 모자란 재료는 빨간 꼬리표에 "N 모자람"), 일관성
   - 탭: 가챠(무기/방어구/스킬), 스킨샵(머리/눈/의상/무기/레이드), 마을회관(내 집/이웃 집), 텃밭(밭/씨앗/상점). 고른 탭은 `S.btab[건물 id]`에 기억 (새로 고침 전까지)
@@ -552,7 +552,7 @@
   - 그림 바깥 라인 정리 도구: `python scripts/img-export/clean-edge.py "원본.png" "저장.png"` (떨어진 점·회색 번짐 지우기, 가장자리 다듬기. 원본은 그대로)
 - 소원 분수 쿨타임 10분 → **5분** (`WISH.cd`, 2026-11-18)
 - **분수 새 그림** (2026-11-18): `내 디자인/건물_분수.png` → town-art.py 10번 → `fountain.webp` + 물 칸만 뗀 `fountain-water.webp`. game.html `drawFountain0`: 검은 테두리(inkImage) + 물 안에만 물결·반짝임(`FWC`에 그린 뒤 물 칸 모양으로 오림) + 물기둥·물줄기 6개·물방울(`FDROP`). 크기 `FOUNT_W`, 옛 코드 그림은 `drawFountainOld`
-- 머리 위 아이콘 말풍선 `icoBubble(x, y, 아이콘)` (2026-11-19): 분수를 빌 수 있으면 🪙 · 벌목소 🪵 / 채광소 🪨 쌓인 자원이 꽉 참 · 마을회관 🏠 임대 수입이 꽉 참 (`bFull`). 채광소도 굴뚝 연기 (`CHIMNEY.quarry`, 그림 왼쪽 굴뚝)
+- 머리 위 아이콘 말풍선 `icoBubble(x, y, 아이콘)` (2026-11-19): 분수를 빌 수 있으면 🪙 · 벌목소 🪵 / 채석장 🪨 쌓인 자원이 꽉 참 · 마을회관 🏠 임대 수입이 꽉 참 (`bFull`). 채석장도 굴뚝 연기 (`CHIMNEY.quarry`, 그림 왼쪽 굴뚝)
 - 마을 Z 검 휘두르기: `swing`은 마을 update에서 줄임(예전엔 안 줄어서 칼이 머리 위에 멈춰 있었음), 마을은 0.3초(`swMax`)
 - 물고기 그림자 판정 후하게: 거리 1.7 → 2.8칸(`FSHADOW.range`), 찌 자리 + 누른 자리(`q`, 찌에서 5칸 안), 지금·3초 전·6초 전 위치 모두 확인
 - **소원 분수 창** (2026-11-18): 건물 창 틀(`bsOpen`, id `fountain`, 색 `BC.fountain`)로 바꿈. 결과 → 분수 상태(남은 시간 막대·지금까지 빈 횟수) → 지금 버프 → 나올 확률 막대(`WISH_TABLE`에서 계산) → 도움말 → 아래 고정 버튼. 쿨타임·버프가 있으면 1초마다 다시 그림
@@ -585,7 +585,7 @@
   - 서버 `/api/fish/king`: 아직 없는 첫 부위를 찾아 (순서 번호 + 1) × 50마리면 `hats`에 넣음. 따로 저장하는 값 없음
   - 낚아서 50의 배수가 되면 토스트로 알려 줌 (`fishShow`)
 - **채굴왕 세트** (2026-11-19): 같은 방식. 템플릿 `*_guide_채굴왕.png` → `tpl_set('채굴왕', 'mk')` → `mk-*.webp`, game.html `MKS`. id `mineking`
-  - 채광소 창 → ⛏️ 채굴왕 탭 (`workSheet` → `kingSheet`). **손으로 캔 석재(`life.cnt.stone`) 100개마다** (바위 하나에 1~3개, 알바가 모은 건 안 셈)
+  - 채석장 창 → ⛏️ 채굴왕 탭 (`workSheet` → `kingSheet`). **손으로 캔 석재(`life.cnt.stone`) 100개마다** (바위 하나에 1~3개, 알바가 모은 건 안 셈)
   - 두 세트 공통: game-rules.js `KINGS = { fish, mine }`, `kingNext`, `kingNeed` · 서버 `kingClaim(c, kind)` (`/api/fish/king`, `/api/mine/king`) · 화면 `kingSheet(b, keep, K, 탭, 돌아갈 창, 주소, 아래 버튼)`
   - 새 '왕' 세트를 만들면: KINGS에 한 줄 + 스킨 6개(`fk: 1`) + tpl_set 한 줄 + TSK·ART_N + 그 건물 창에 탭
 
@@ -667,6 +667,23 @@
 - **전설 물고기 칭호** 13개: `lf_물고기id` (그룹 '전설 물고기', 이름 '○○을/를 낚은', 비쌀수록 효과 큼) + '수산 시장의 큰손인'(1,000마리 팔기). 전설을 낚으면 축하 창 `legendPop`
 - **낚시 코인(🐚) 없앰**: 남은 코인은 서버 `play()`가 1개 = 100골드로 바꿔 줌(`FISH_COIN_GOLD`, 응답 `fishCoin` → 토스트). 도장·주간 상자·자리 비움의 낚시 코인은 골드로, 주민 임무·분수 코인은 텃밭 코인만
 - 다른 사람 화면의 낚은 물고기: 실시간 `fish s:2`에 `id`, town.js가 `FISH_BY`로 확인 → `fid`
+
+### 낚시 다듬기 · 도감 센터 · 오우거 새 패턴 · 김참치 — 2026-11-20
+- 낚시 시간: 입질까지 4~9초, 쿨타임 3초 (`FISHING`). 낚시 횟수 `cnt.cast` (`fishCasts(cnt)`, 예전 계정은 물고기 수로 대신). 서버 `fishReel`이 셈
+- 낚싯대·미끼를 사려면 낚시 횟수 필요: `RODS`·`BAITS` 줄 맨 끝 칸(필요 횟수), 값도 새로 (`FISH_SHOP.*.need`). 서버 `/api/fish/shop`이 확인. 낚시점 줄의 단계 막대는 없앰, '지금 장비로 만나는 등급' 옆 i = 모든 단계 표 (`fishLvTip`)
+- **낚은 물고기 들고 있기**: 낚으면 머리 위에 그 물고기를 들고 있음 (`c.brag`, `bragFish`, `drawBrag`). 움직이거나 다시 던지면 내려놓음. 가방의 물고기를 누르면 🙌 자랑하기 → 실시간 `{t:'fish', s:4}` (town.js가 `s:2`처럼 확인)
+- **낚시왕 세트 조건**: 부위마다 다른 목표 (`KINGS.fish.goals`: 50마리 · 낚시 300번 · 희귀 15 · 도감 25종 · 대어 30 · 전설 1), 순서 상관없이 달성한 것부터 받기 (`kingGoal`, `kingReady`, 서버 `kingClaim(c, kind, b)`의 `b.k`). 채굴왕은 예전처럼 순서대로
+- **📖 도감 센터** `dex` (58,37, game-map.js 13번, 그림 `b-dex`): 탭 칭호 / 뱃지 / 물고기 / 스킨 (`dexSheet`, `goDex(tab)`, 왼쪽 캐릭터창 칭호를 눌러도 열림). 칭호·뱃지 바꾸기는 여기서
+  - 물고기·스킨 도감: 5개 모을 때마다 효과 (`DEX_STEP`, `DEX_FX`, `dexFx` → `statFx`). 스킨 도감 대상 `DEX_SKINS()`
+  - **뱃지** (효과 없음, 이름표 왼쪽): 새내기 🍃 · 레드 드래곤/오우거 얼굴(그 레이드 스킨 6개 다 모으면) · 물고기마다 하나(한 번 낚으면). `BADGES`, `hasBadge`, 그림 `drawBadge`. 저장 `life.badge`, 서버 `/api/badge`, town.js `lookRow`의 `badge`
+- 낚시터 표지판 삭제 (FSIGN은 안 그림). 벤치 새 그림 `bench.webp` (town-art.py 13번). 물고기 그림에도 검은 테두리 (`inkImage`, `.fpic` drop-shadow)
+- 레이드 이동·더블 점프 속도를 마을과 같게
+- **오우거 새 패턴** (`raidPattern(…, 'ogre')`): 땅울림 quake(도넛 두 겹) · 돌진 charge(세로 줄) · 회오리 spin(맵 전체, 초록 안전 원 2~3개만 안전). **보스 등장 연출** `raidIntro` (그림자 → 위에서 떨어짐 → 흔들림·포효·"○○ 등장!")
+- 마을 배경 음악 = `assets/audio/town.mp3` (원본 `내 디자인/배경음/치복 타운.mp3`). game-sound.js `FILES` (mp3 파일을 bgmBus로, 화면 숨기면 멈춤)
+- **채광소 → 채석장** 이름 전체 변경 (바로가기 '채석')
+- 그루터기·돌 흔적(캔 뒤)은 지나갈 수 있음 (`TOWN.bad`의 `NODE_AT`, 서버 `walkSolid`). 전광판 뒤 2줄 막음 (game-map.js 14번)
+- 전광판: 왼쪽 아이콘 = 김치복 프로필(`assets/img/profile.jpg`), 글 '김치복 생방송'
+- **🎣 낚시왕 김참치** `KC`: 낚시점 앞에 가만히 서 있는 주민 (말 걸기 없음, 피부 3번, 낚시왕 세트 전부). 9칸 안에 있으면 7~15초마다 낚시 이야기 (`KC_LINES`, `kcTick`, `kcTag`)
 
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감

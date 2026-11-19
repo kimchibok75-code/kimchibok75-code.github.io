@@ -151,15 +151,30 @@ export const WSKINS = [
   { t: 'staff', id: 'mineking', n: '⛏️ 채굴왕 지팡이', price: 0, fk: 1, fx: { atkP: 4, defP: 3 } },
 ];
 // 낚시왕 보상 (2026-11-19, 낚시점 '낚시왕' 탭): 물고기 50마리마다 한 부위씩, '받기'를 눌러야 받음. 순서 = 모자 · 의상 · 눈 · 검 · 활 · 지팡이
-// '왕' 세트 (2026-11-19): 낚시왕(낚시점, 물고기 50마리마다) · 채굴왕(채광소, 손으로 캔 석재 100개마다). cnt = life.cnt 의 어느 값으로 셈
+// '왕' 세트 (2026-11-19): 낚시왕(낚시점, 물고기 50마리마다) · 채굴왕(채석장, 손으로 캔 석재 100개마다). cnt = life.cnt 의 어느 값으로 셈
 const kingKeys = id => [id, 'suit:' + id, 'eye:' + id, 'wsk:sword:' + id, 'wsk:bow:' + id, 'wsk:staff:' + id];
 export const KINGS = {
-  fish: { id: 'fishking', n: '낚시왕', i: '👑', cnt: 'fish', every: 50, what: '물고기', unit: '마리', keys: kingKeys('fishking') },
+  // 2026-11-20 낚시왕은 부위마다 다른 목표 (순서 상관없이, 이룬 것부터 받음). v(cnt) = 지금 값
+  fish: { id: 'fishking', n: '낚시왕', i: '👑', cnt: 'fish', every: 50, what: '물고기', unit: '마리', keys: kingKeys('fishking'), goals: [
+    { t: '물고기 50마리 낚기', u: '마리', need: 50, v: c => c.fish || 0 },
+    { t: '낚시 300번 하기', u: '번', need: 300, v: c => fishCasts(c) },
+    { t: '희귀 물고기 15마리 낚기', u: '마리', need: 15, v: c => fcSum(c, f => f.grade === 'rare') },
+    { t: '도감 25종 채우기', u: '종', need: 25, v: c => FISH_LIST.filter(f => c['fc_' + f.id]).length },
+    { t: '대어 30마리 낚기', u: '마리', need: 30, v: c => c.perfect || 0 },
+    { t: '전설 물고기 낚기', u: '마리', need: 1, v: c => c.legendFish || 0 },
+  ] },
   mine: { id: 'mineking', n: '채굴왕', i: '⛏️', cnt: 'stone', every: 100, what: '캔 석재', unit: '개', keys: kingKeys('mineking') },
 };
 export const FISH_KING = KINGS.fish;
 export const kingNext = (K, hats) => K.keys.find(k => !hats.includes(k));
 export const kingNeed = (K, key) => (K.keys.indexOf(key) + 1) * K.every;
+const fcSum = (c, f) => FISH_LIST.filter(f).reduce((a, x) => a + (c['fc_' + x.id] || 0), 0);
+// 부위 하나의 목표: { t 설명, u 단위, need, now 지금 값, ok 이룸 }
+export const kingGoal = (K, key, cnt = {}) => { const i = K.keys.indexOf(key), G = K.goals?.[i];
+  if (G) { const now = G.v(cnt); return { t: G.t, u: G.u, need: G.need, now, ok: now >= G.need }; }
+  const need = kingNeed(K, key), now = cnt[K.cnt] || 0; return { t: `${K.what} ${need}${K.unit}`, u: K.unit, need, now, ok: now >= need }; };
+// 지금 받을 수 있는 부위 (목표형은 아무 순서, 예전 방식은 순서대로 다음 것만)
+export const kingReady = (K, hats, cnt = {}) => K.goals ? K.keys.filter(k => !hats.includes(k) && kingGoal(K, k, cnt).ok) : (k => (k && kingGoal(K, k, cnt).ok ? [k] : []))(kingNext(K, hats));
 export const fkItem = key => key.startsWith('suit:') ? SUITS.find(x => 'suit:' + x.id === key) : key.startsWith('eye:') ? EYE_SKINS.find(x => 'eye:' + x.id === key) : key.startsWith('wsk:') ? WSKINS.find(x => wskKey(x) === key) : HATS.find(x => x.id === key);
 export const wskKey = w => `wsk:${w.t}:${w.id}`;
 // 레이드 전용 스킨 한 벌 (가진 것 키 목록): 머리·눈·의상·검·활·지팡이
@@ -321,18 +336,20 @@ const byWater = sea => Object.fromEntries(FG_KEYS.map(g => [g, FISH_LIST.filter(
 export const FISH_RIVER = byWater(false), FISH_SEA = byWater(true);
 export const fishByName = (n, g) => FISH_LIST.find(f => f.n === n && (!g || f.grade === g));
 export const FISH_PRICE_MAX = 10e6, FISH_LEGEND_MIN = 10e3, FISH_BAG = 50;
-// 낚싯대 10단계: [이름, 가장 큰 크기 cm, 낚을 확률, 그 단계로 올리는 값(골드)]
-export const RODS = [['낡은 낚싯대', 30, .6, 0], ['대나무 낚싯대', 60, .65, 300], ['튼튼한 낚싯대', 120, .7, 1000], ['강철 낚싯대', 250, .75, 4000], ['강화 낚싯대', 500, .8, 15000],
-  ['합금 낚싯대', 1000, .85, 27000], ['티타늄 낚싯대', 2000, .9, 72000], ['장인의 낚싯대', 5000, .93, 210000], ['전설의 낚싯대', 15000, .96, 900000], ['신화의 낚싯대', 30000, .99, 3000000]];
-// 미끼 10단계: [이름, 일반, 희귀, 전설 확률(합 1), 그 단계로 올리는 값(골드)]
-export const BAITS = [['평범한 미끼', 1, 0, 0, 0], ['향기로운 미끼', .98, .02, 0, 200], ['신선한 미끼', .96, .04, 0, 800], ['특제 미끼', .94, .06, 0, 3000], ['고급 미끼', .92, .08, 0, 12000],
-  ['황금 미끼', .905, .094, .001, 18000], ['마력 미끼', .895, .102, .003, 48000], ['신비한 미끼', .888, .107, .005, 140000], ['전설의 미끼', .883, .109, .008, 600000], ['신화의 미끼', .88, .11, .01, 2000000]];
+// 낚싯대 10단계: [이름, 가장 큰 크기 cm, 낚을 확률, 그 단계로 올리는 값(골드), 필요한 낚시 횟수]
+export const RODS = [['낡은 낚싯대', 30, .6, 0, 0], ['대나무 낚싯대', 60, .65, 300, 20], ['튼튼한 낚싯대', 120, .7, 1000, 70], ['강철 낚싯대', 250, .75, 4000, 180], ['강화 낚싯대', 500, .8, 15000, 400],
+  ['합금 낚싯대', 1000, .85, 25000, 700], ['티타늄 낚싯대', 2000, .9, 70000, 1200], ['장인의 낚싯대', 5000, .93, 200000, 2000], ['전설의 낚싯대', 15000, .96, 900000, 3500], ['신화의 낚싯대', 30000, .99, 3000000, 6000]];
+// 미끼 10단계: [이름, 일반, 희귀, 전설 확률(합 1), 그 단계로 올리는 값(골드), 필요한 낚시 횟수]
+export const BAITS = [['평범한 미끼', 1, 0, 0, 0, 0], ['향기로운 미끼', .98, .02, 0, 200, 15], ['신선한 미끼', .96, .04, 0, 800, 50], ['특제 미끼', .94, .06, 0, 3000, 140], ['고급 미끼', .92, .08, 0, 12000, 300],
+  ['황금 미끼', .905, .094, .001, 20000, 550], ['마력 미끼', .895, .102, .003, 50000, 950], ['신비한 미끼', .888, .107, .005, 150000, 1600], ['전설의 미끼', .883, .109, .008, 600000, 2800], ['신화의 미끼', .88, .11, .01, 2000000, 5000]];
 // 낚시점 (저장: life.fish.rod / bait = 0~9, 화면에는 Lv 1~10). cost[l] = 지금(l)에서 다음 단계로 올리는 값
 export const FISH_SHOP = {
-  rod: { n: '낚싯대', i: '🎣', names: RODS.map(r => r[0]), cost: RODS.slice(1).map(r => r[3]), d: '낚을 확률 ↑ · 더 큰 물고기 · 전설 물고기는 낚싯대 Lv6부터' },
-  bait: { n: '미끼', i: '🪱', names: BAITS.map(b => b[0]), cost: BAITS.slice(1).map(b => b[4]), d: '희귀 · 전설을 만날 확률 ↑ (전설은 미끼 Lv6부터)' },
+  rod: { n: '낚싯대', i: '🎣', names: RODS.map(r => r[0]), cost: RODS.slice(1).map(r => r[3]), need: RODS.slice(1).map(r => r[4]), d: '낚을 확률 ↑ · 더 큰 물고기 · 전설 물고기는 낚싯대 Lv6부터' },
+  bait: { n: '미끼', i: '🪱', names: BAITS.map(b => b[0]), cost: BAITS.slice(1).map(b => b[4]), need: BAITS.slice(1).map(b => b[5]), d: '희귀 · 전설을 만날 확률 ↑ (전설은 미끼 Lv6부터)' },
 };
-export const FISHING = { cooldown: 2e3, waitMin: 3000, waitMax: 8000, dayFull: 400 };   // wait: 던지고 입질까지(ms), fishWait로 무작위. dayFull: 하루에 이만큼 넘게 낚으면 값 절반
+export const FISHING = { cooldown: 3e3, waitMin: 4000, waitMax: 9000, dayFull: 400 };   // 2026-11-20 입질 +1초 · 쿨타임 +1초
+// 낚시 횟수 (던져서 당긴 횟수, 놓친 것도 셈) = cnt.cast. 예전 계정은 낚은 수(cnt.fish)부터 시작
+export const fishCasts = cnt => cnt?.cast ?? cnt?.fish ?? 0;   // wait: 던지고 입질까지(ms), fishWait로 무작위. dayFull: 하루에 이만큼 넘게 낚으면 값 절반
 // 낚을 확률: 낚싯대 단계 확률 + 칭호·스킨·마을 효과(fishZ, %p). 최대 99%
 export const fishHit = (rod = 0, fx = {}) => Math.min(.99, RODS[Math.max(0, Math.min(9, rod))][2] + (fx.fishZ || 0) / 100);
 // 입질까지 기다리는 시간: 3~8초 사이 무작위. 가끔(15%) 금방 물거나 오래 걸려서 매번 다르게 느껴지게
@@ -436,7 +453,7 @@ export const RES = { wood: { n: '목재', i: '🪵' }, stone: { n: '석재', i: 
 const hireGold = k => Math.round(1500 * 2.4 ** (k - 1) / 100) * 100;
 export const WORK = {
   lumber: { n: '벌목소', res: 'wood', rate: 11, cap: 10, max: 5, hire: k => ({ gold: hireGold(k), wood: 20 * k * k }) },
-  quarry: { n: '채광소', res: 'stone', rate: 8, cap: 10, max: 5, hire: k => ({ gold: hireGold(k), stone: 15 * k * k }) },
+  quarry: { n: '채석장', res: 'stone', rate: 8, cap: 10, max: 5, hire: k => ({ gold: hireGold(k), stone: 15 * k * k }) },
 };
 export function workSettle(w, kind, now) {
   const W = WORK[kind], cap = w.n * W.rate * W.cap;
@@ -517,7 +534,7 @@ export const TITLES = [
   tt('gold1', '황금 배추를 키운', '텃밭', 'goldCrop', 1, { goldP: 2 }, '황금 배추 수확'),
   tt('wd100', '나무를 베는', '채집', 'wood', 100, { gather: 1 }, '목재 100개'), tt('wd1000', '숲을 아는', '채집', 'wood', 1000, { gather: 1, hpP: 1 }, '목재 1,000개'),
   tt('st100', '돌을 캐는', '채집', 'stone', 100, { gather: 1 }, '석재 100개'), tt('st1000', '바위를 부수는', '채집', 'stone', 1000, { gather: 1, defP: 1 }, '석재 1,000개'),
-  tt('hire1', '알바를 고용한', '채집', 'hire', 1, { goldP: 1 }, '알바 1명 고용'), tt('hire10', '사장님 소리를 듣는', '채집', 'hire', 10, { goldP: 3 }, '알바 10명 고용 (벌목소+채광소)'),
+  tt('hire1', '알바를 고용한', '채집', 'hire', 1, { goldP: 1 }, '알바 1명 고용'), tt('hire10', '사장님 소리를 듣는', '채집', 'hire', 10, { goldP: 3 }, '알바 10명 고용 (벌목소+채석장)'),
   tt('home', '내 집을 마련한', '마을', 'house', 1, { hpP: 2 }, '집 짓기'),
   tt('g100', '뽑기를 좋아하는', '장비', 'gacha', 100, { goldP: 1 }, '뽑기 100번'), tt('g1000', '뽑기에 진심인', '장비', 'gacha', 1000, { goldP: 2, crit: 1 }, '뽑기 1,000번'),
   tt('gl', '전설을 뽑은', '장비', 'gotLegend', 1, { crit: 1 }, '전설 등급 장비 뽑기'), tt('gm', '신화를 손에 넣은', '장비', 'gotMyth', 1, { atkP: 2 }, '신화 등급 장비 뽑기'),
@@ -551,11 +568,42 @@ export function skinFx(c) {
   for (const w of WSKINS) add(w, wskKey(w));
   return fx;
 }
+// ───────── 📚 도감 센터 (2026-11-20): 물고기 · 스킨 도감은 모은 수 5개마다 효과, 뱃지(이름 왼쪽, 효과 없음) ─────────
+export const DEX_STEP = 5;
+// 단계마다 더해지는 효과 (5개 → 첫 번째, 10개 → 두 번째까지 …). 각 13단계 (물고기 69종 · 스킨 65개)
+export const DEX_FX = {
+  fish: [{ fishP: 2 }, { fishZ: 1 }, { goldP: 1 }, { fishP: 3 }, { expP: 1 }, { fishZ: 1 }, { fishP: 3 }, { goldP: 2 }, { fishZ: 2 }, { fishP: 4 }, { expP: 2 }, { goldP: 3 }, { fishP: 5, fishZ: 2 }],
+  skin: [{ hpP: 1 }, { atkP: 1 }, { goldP: 1 }, { defP: 1 }, { expP: 1 }, { atkP: 1 }, { hpP: 2 }, { crit: 1 }, { goldP: 2 }, { atkP: 2 }, { expP: 2 }, { defP: 2 }, { atkP: 3, crit: 1 }],
+};
+// 도감에 들어가는 스킨 (처음부터 가진 것 · 투명 모자는 빼고)
+export const DEX_SKINS = () => [...HATS.filter(h => h.id !== 'none' && !h.free).map(h => h.id), ...EYE_SKINS.filter(e => e.id !== 'dot').map(e => 'eye:' + e.id), ...SUITS.map(x => 'suit:' + x.id), ...WSKINS.map(wskKey)];
+export const dexFishGot = c => FISH_LIST.filter(f => c.life?.cnt?.['fc_' + f.id] || c.life?.cnt?.['lf_' + f.id]);
+export const dexSkinGot = c => { const own = Array.isArray(c.hats) ? c.hats : []; return DEX_SKINS().filter(k => own.includes(k)); };
+export const dexN = (c, k) => (k === 'fish' ? dexFishGot(c) : dexSkinGot(c)).length;
+export function dexFx(c) {
+  const fx = {};
+  for (const k of ['fish', 'skin']) { const st = Math.floor(dexN(c, k) / DEX_STEP); DEX_FX[k].slice(0, st).forEach(o => addFx(fx, o)); }
+  return fx;
+}
+// 뱃지: 이름 왼쪽에 다는 작은 그림 (효과 없음). life.badge = 단 뱃지 id
+export const BADGES = [
+  { id: 'leaf', n: '새내기 뱃지', g: '기본', d: '치복 타운 주민이라면 누구나' },
+  { id: 'rdragon', n: '레드 드래곤 뱃지', g: '레이드', d: '레드 드래곤 레이드 스킨 6개를 모두 모으기', raid: 'rdragon' },
+  { id: 'ogre', n: '오우거 뱃지', g: '레이드', d: '오우거 레이드 스킨 6개를 모두 모으기', raid: 'ogre' },
+  ...FISH_LIST.map(f => ({ id: 'f_' + f.id, n: `${f.n} 뱃지`, g: f.sea ? '바다 물고기' : '민물 물고기', d: `${f.n} 낚기`, fish: f.id })),
+];
+export const BADGE_GROUPS = ['기본', '레이드', '민물 물고기', '바다 물고기'];
+export const badgeOf = id => BADGES.find(b => b.id === id);
+export const hasBadge = (c, id) => { const b = badgeOf(id); if (!b) return false;
+  if (b.raid) return raidSet(b.raid).every(k => (c.hats || []).includes(k));
+  if (b.fish) return !!(c.life?.cnt?.['fc_' + b.fish] || c.life?.cnt?.['lf_' + b.fish]);
+  return true; };
 export function titleFx(c) { const fx = {}; for (const id of c.life?.titles || []) addFx(fx, titleOf(id)?.fx || {}); return fx; }
 // 효과 합계: 가진 칭호 전부 + 지금 버프 + 장비 옵션(방어구 3칸 + 지금 클래스 무기)
 export function statFx(c) {
   const fx = titleFx(c), b = c.life?.buff;
   addFx(fx, skinFx(c));   // 스킨 보유 효과
+  addFx(fx, dexFx(c));    // 도감 효과 (물고기 · 스킨 5개마다)
   if (c.gfx) addFx(fx, c.gfx);   // 마을 전체 효과 (사건 · 방송 · 공동 건설)
   if (b && b.until > Date.now() && BUFFS[b.k]) addFx(fx, BUFFS[b.k].fx);
   for (const s of [...ARMOR_SLOTS, CLASSES[c.cls] ? c.cls : 'sword']) addFx(fx, Object.fromEntries(c.equip?.[s]?.o || []));
@@ -792,9 +840,14 @@ export const raidDps = D => {
 export function raidPattern(start, boss) {
   let sd = (start / 1000) % 2147483647 | 0; const rnd = () => ((sd = (sd * 16807) % 2147483647) - 1) / 2147483646;
   const out = []; let t = 4;
-  if (boss === 'ogre') {   // 오우거: 몽둥이 내려찍기(원) · 바위 던지기 · 몽둥이 휘두르기(앞쪽 부채꼴) · 포효
+  // 오우거 (2026-11-20 드래곤과 다르게 개편): 몽둥이 내려찍기(원) · 바위 던지기 · 지진 고리(도넛 2번: 가운데 → 바깥, 사이 틈이 안전)
+  //   · 돌진(세로 줄: 그 줄로 달려 내려옴) · 몽둥이 대회전(맵 전체, 초록 안전 원만 안전)
+  if (boss === 'ogre') {
     while (t < RAID.max / 1000) {
-      const k = ['slam', 'rock', 'swing', 'slam', 'rock', 'roar'][Math.floor(rnd() * 6)];
+      const k = ['slam', 'rock', 'quake', 'charge', 'spin', 'slam', 'charge', 'quake'][Math.floor(rnd() * 8)];
+      if (k === 'quake') { out.push({ at: t, k, r0: 0, r1: 4.2, warn: 1.5 }); out.push({ at: t + 1.4, k, r0: 6.6, r1: 12, warn: 1.4 }); t += 1.4; }
+      if (k === 'charge') { const n = 1 + Math.floor(rnd() * 2); for (let i = 0; i < n; i++) out.push({ at: t + i * 1.3, k, x: 3 + rnd() * (RAID.W - 6), w: 1.7, warn: 1.5 }); t += (n - 1) * 1.3; }
+      if (k === 'spin') { const n = 2 + Math.floor(rnd() * 2), s = []; for (let i = 0; i < n; i++) s.push([3 + rnd() * (RAID.W - 6), 11 + rnd() * (RAID.H - 13)]); out.push({ at: t, k, s, r: 1.9, warn: 2.4 }); t += .6; }
       if (k === 'slam') { const n = 1 + Math.floor(rnd() * 2); for (let i = 0; i < n; i++) out.push({ at: t + i * .9, k, x: 3 + rnd() * (RAID.W - 6), y: 11 + rnd() * (RAID.H - 14), r: 2.6, warn: 1.4 }); }
       if (k === 'rock') { const n = 3 + Math.floor(rnd() * 3); for (let i = 0; i < n; i++) out.push({ at: t + i * .35, k, x: 2 + rnd() * (RAID.W - 4), y: 10 + rnd() * (RAID.H - 12), r: 1.5, warn: 1.3 }); }
       if (k === 'swing') out.push({ at: t, k, a: (rnd() - .5) * 1.2, warn: 1.5 });   // a = 방향 (아래쪽 기준)
@@ -814,7 +867,7 @@ export function raidPattern(start, boss) {
   return out;
 }
 // 보스 공격 피해 (최대 체력 비율): 3번 맞으면 쓰러짐
-export const RAID_HIT = { breath: .36, meteor: .3, tail: .4, roar: .12, slam: .4, rock: .28, swing: .36 };
+export const RAID_HIT = { breath: .36, meteor: .3, tail: .4, roar: .12, slam: .4, rock: .28, swing: .36, quake: .34, charge: .45, spin: .32 };
 export const OGRE_SWING = { r: 9, half: .7 };   // 몽둥이 휘두르기: 반지름(칸) · 반쪽 각도
 
 // ───────── 생활 경험치 (2026-11-16): 생활 놀거리로도 레벨이 오름 ─────────

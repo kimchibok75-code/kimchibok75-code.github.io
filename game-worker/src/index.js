@@ -1,10 +1,10 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { KINGS, kingNext, kingNeed, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
+import { KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
-  offlineLife, offlineHuntAway, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait } from '../../assets/js/game-rules.js';
+  offlineLife, offlineHuntAway, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait, fishCasts } from '../../assets/js/game-rules.js';
 import { isSolid, NODES, BACK, tileAt, WATER, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
 import { canHouseD } from '../../assets/js/game-dong.js';
 import { scanBad } from './filter.js';
@@ -232,7 +232,7 @@ function toChar(r) {
   for (const h of HATS) if (h.free && !c.hats.includes(h.id)) c.hats.push(h.id);   // 처음부터 가지는 모자 (투명 모자)
   if ('weapon' in c.equip || 'acc' in c.equip) oldGear(c);
   if (!titleOf(c.title) || !c.life.titles.includes(c.title)) c.title = 'new';   // 예전 칭호 글자 → 새 칭호
-  if (isSolid(Math.floor(c.x / T), Math.floor(c.y / T))) { c.x = START.x; c.y = START.y; }   // 지도가 바뀌어서 막힌 곳에 있으면 광장으로
+  if (walkSolid(Math.floor(c.x / T), Math.floor(c.y / T))) { c.x = START.x; c.y = START.y; }   // 지도가 바뀌어서 막힌 곳에 있으면 광장으로
   return c;
 }
 const jp = (s, d) => { try { return s ? JSON.parse(s) : d; } catch { return d; } };
@@ -334,13 +334,12 @@ const notWorking = c => { if (c.jobAt) fail(400, '카페 알바 중이에요. �
 // 2단계 기능들: (캐릭터, 보낸 내용, 지금 시각, 사냥 정산 결과) → 캐릭터를 바꾸고, 화면에 알려 줄 것을 돌려줌
 const AWAY_MIN = 300;   // 화면이 켜져 있으면 2분마다 /api/seen 신호가 옴
 // '왕' 세트 보상 받기: 아직 없는 첫 부위를 찾아 (순서 + 1) × every 만큼 셌으면 hats에 넣음
-function kingClaim(c, kind) {
-  const K = KINGS[kind], n = c.life.cnt?.[K.cnt] || 0, next = kingNext(K, c.hats);
-  if (!next) fail(400, `${K.n} 보상을 모두 받았어요`);
-  const need = kingNeed(K, next);
-  if (n < need) fail(400, `${K.what} ${need}${K.unit}가 되어야 받을 수 있어요 (지금 ${n}${K.unit})`);
+function kingClaim(c, kind, b) {
+  const K = KINGS[kind]; if (!kingNext(K, c.hats)) fail(400, `${K.n} 보상을 모두 받았어요`);
+  const ready = kingReady(K, c.hats, c.life.cnt || {}), next = typeof b?.k === 'string' && ready.includes(b.k) ? b.k : ready[0];
+  if (!next) { const k = typeof b?.k === 'string' && K.keys.includes(b.k) ? b.k : kingNext(K, c.hats), g = kingGoal(K, k, c.life.cnt || {}); fail(400, `아직이에요: ${g.t} (지금 ${g.now}${g.u})`); }
   c.hats.push(next);
-  return { fk: next, log: [kind + '-king', next], chron: next === K.keys[K.keys.length - 1] ? [kind, `${K.n} 세트를 모두 모았어요!`] : null };
+  return { fk: next, log: [kind + '-king', next], chron: !kingNext(K, c.hats) ? [kind, `${K.n} 세트를 모두 모았어요!`] : null };
 }
 const GAME = {
   '/api/seen'() {},   // 화면이 켜져 있다는 신호 (자리 비움 계산용)
@@ -608,13 +607,16 @@ const GAME = {
     delete st.q[i];
   },
   // 낚시왕 보상 (2026-11-19): 물고기 50마리마다 다음 부위 하나. 받은 것은 hats에 들어감 (순서대로라서 '몇 개 받았나'는 hats로 셈)
-  '/api/fish/king'(c) { return kingClaim(c, 'fish'); },
-  '/api/mine/king'(c) { return kingClaim(c, 'mine'); },   // 채굴왕 (2026-11-19): 손으로 캔 석재 100개마다
+  '/api/fish/king'(c, b) { return kingClaim(c, 'fish', b); },
+  '/api/mine/king'(c, b) { return kingClaim(c, 'mine', b); },   // 채굴왕 (2026-11-19): 손으로 캔 석재 100개마다
   '/api/title'(c, b) { const id = String(b.id || ''); if (!c.life.titles.includes(id)) fail(400, '아직 없는 칭호예요'); c.title = id; },
+  // 뱃지 달기 (2026-11-20 도감 센터). id = '' 이면 떼기
+  '/api/badge'(c, b) { const id = String(b.id || ''); if (id && !hasBadge(c, id)) fail(400, '아직 없는 뱃지예요'); c.life.badge = id; },
   // 낚시점: 낚싯대 · 미끼 올리기 (2026-11-20부터 골드, 한 단계씩)
   '/api/fish/shop'(c, b) {
     const k = b.k; if (!own(FISH_SHOP, k)) fail(400, '없는 물건이에요'); const S = FISH_SHOP[k];
     const l = c.life.fish[k] || 0; if (l >= S.cost.length) fail(400, '이미 최고 단계예요');
+    const n = fishCasts(c.life.cnt); if (n < S.need[l]) fail(400, `낚시를 ${S.need[l] - n}번 더 해야 해요 (낚시 ${S.need[l]}번 필요)`);   // 2026-11-20 낚시 횟수 조건
     spend(c, S.cost[l]); c.life.fish[k] = l + 1;
     return { log: ['fish-shop', `${k} Lv${l + 2}`] };
   },
@@ -693,7 +695,7 @@ const GAME = {
     const lexp = lifeExp(c, 'gather'); addExp(c, lexp);
     return { res: G.res, amt, until: L.nodes[n.i], lexp };
   },
-  // 벌목소·채광소 알바: 고용 · 모인 것 받기
+  // 벌목소·채석장 알바: 고용 · 모인 것 받기
   '/api/work/hire'(c, b, at) {
     const k = b.kind; if (!own(WORK, k)) fail(400, '없는 곳이에요'); const W = WORK[k];
     const w = c.life.work[k]; if (w.n >= W.max) fail(400, `알바는 ${W.max}명까지예요`);
@@ -803,11 +805,13 @@ async function saveLook(req, env, user) {
     .bind(face, body, eyes, hat, hair, hairC, hh, suit, wsk, intro, now(), user.id).run();
   return json({ me: await loadMe(env, user) });
 }
+// 나무·바위 자리는 캐고 나면(그루터기·돌 흔적) 지나갈 수 있음 (2026-11-20) → 위치 저장은 그 칸도 허락
+const NODE_T = new Set(NODES.map(n => n.y * MW + n.x)), walkSolid = (x, y) => isSolid(x, y) && !NODE_T.has(y * MW + x);
 async function saveMove(req, env, user) {
   const b = await readBody(req), x = Number(b.x), y = Number(b.y);
   if (!Number.isFinite(x) || !Number.isFinite(y)) fail(400, '위치가 이상해요');
   const cx = Math.max(T / 2, Math.min(MW * T - T / 2, x)), cy = Math.max(T / 2, Math.min(MH * T - T / 2, y));
-  if (isSolid(Math.floor(cx / T), Math.floor(cy / T))) return json({ ok: false });
+  if (walkSolid(Math.floor(cx / T), Math.floor(cy / T))) return json({ ok: false });
   // 사냥 중에는 마을 위치를 바꾸지 않음
   await env.DB.prepare("UPDATE characters SET x = ?, y = ?, ver = ver + 1, updated_at = ? WHERE user_id = ? AND hunt = ''").bind(cx, cy, now(), user.id).run();
   return json({ ok: true });
@@ -874,6 +878,7 @@ async function fishReel(c, now, env, user) {
   const fc = c.life.fcast; if (!fc) fail(400, '던진 낚싯대가 없어요');
   if (now < fc.at + fc.wait - 1500) fail(400, '아직 입질이 없어요');
   delete c.life.fcast;
+  const cn = c.life.cnt || (c.life.cnt = {}); cn.cast = fishCasts(cn) + 1;   // 낚시 횟수 (낚든 놓치든 당기면 1번)
   if (now > fc.at + fc.wait + 30e3) return { caught: false, gone: 1, cooldown: FISHING.cooldown, fish: { i: '💨', n: '물고기', grade: 'common' } };
   return fishOnce(c, fc, fc.at, env, user, now);
 }
@@ -1006,7 +1011,7 @@ function cheat(c, k, b, at, env, user) {
   if (k === 'farm') { for (const p of L.farm.plots) if (p) p.g = 1e9; L.farm.wetAt = 0; return { msg: '텃밭 다 자람 + 물 주기 쿨 초기화' }; }
   if (k === 'work') {
     for (const [w, W] of Object.entries(WORK)) { const x = L.work[w]; if (!x.n) x.n = 1; x.acc = x.n * W.rate * W.cap; x.at = at; }
-    return { msg: '벌목소·채광소 창고 가득' };
+    return { msg: '벌목소·채석장 창고 가득' };
   }
   if (k === 'cool') {   // 분수·채집·나무·바위·낚시 기다리는 시간 없애기
     L.wishAt = 0; L.gatherAt = 0; L.nodes = {}; L.farm.wetAt = 0; if (c.jobAt) c.jobAt = 1;

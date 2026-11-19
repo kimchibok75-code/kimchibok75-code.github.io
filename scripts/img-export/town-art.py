@@ -159,7 +159,7 @@ def keep_rgba(name):
 # 1) 가게 건물 (한 장에 하나). 2026-11-19 새 그림은 배경이 투명 → keep_rgba
 for src, key in [('건물_가챠센터', 'gacha'), ('건물_카페', 'cafe'), ('건물_스킨샵', 'skin'), ('건물_마을회관', 'hall'), ('건물_대장간', 'smith'),
                  ('건물_낚시점', 'fishshop'), ('건물_벌목소', 'lumber'), ('건물_채석장', 'quarry'), ('건물_텃밭 창고', 'farmshed'),
-                 ('건물_무한의탑', 'tower'), ('건물_김치볶음밥 전문점', 'kfr')]:   # 2026-11-19 무한의 탑 · 김치볶음밥 전문점
+                 ('건물_무한의탑', 'tower'), ('건물_김치볶음밥 전문점', 'kfr'), ('건물_도감센터', 'dex')]:   # 2026-11-19 무한의 탑 · 김치볶음밥 전문점
     r = keep_rgba(src)
     b = bbox(r[:, :, 3]); save('b-' + key, r[b[1]:b[3], b[0]:b[2]], width=720)
 
@@ -313,6 +313,9 @@ im = im.resize((max(1, round(im.width * sc)), max(1, round(im.height * sc))), Im
 H, W = t.shape[:2]
 META['dportal'] = {'hole': [round(hb[0] / W, 4), round(hb[1] / H, 4), round((hb[2] - hb[0]) / W, 4), round((hb[3] - hb[1]) / H, 4)]}
 print('dportal hole', hb, t.shape)
+
+# 13) 벤치 (2026-11-20 새 그림, 배경 투명)
+r = keep_rgba('벤치'); b = bbox(r[:, :, 3]); save('bench', r[b[1]:b[3], b[0]:b[2]], width=240)
 
 json.dump(META, open(os.path.join(OUT, 'meta.json'), 'w'), ensure_ascii=False, indent=1)
 print(json.dumps(META, ensure_ascii=False))

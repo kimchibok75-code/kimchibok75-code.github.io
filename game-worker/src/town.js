@@ -22,7 +22,8 @@ async function sha256(s) {   // index.js 와 같은 방식 (base64url)
 }
 
 // 다른 사람에게 보이는 겉모습
-export const lookRow = r => ({ lv: r.lv, title: r.title, intro: r.intro, face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, hair: r.hair || 'none', hairC: r.hair_c, hatHair: r.hat_hair !== 0, suit: r.suit || '', wsk: JSON.parse(r.wsk || '{}'), cls: r.cls || 'sword', enh: JSON.parse(r.enh || '{}'), equip: (e => ('weapon' in e ? {} : e))(JSON.parse(r.equip || '{}')) });
+const badgeOfRow = r => { try { const b = JSON.parse(r.life || '{}').badge; return typeof b === 'string' ? b.slice(0, 24) : ''; } catch { return ''; } };
+export const lookRow = r => ({ lv: r.lv, title: r.title, badge: badgeOfRow(r), intro: r.intro, face: r.face, body: r.body, eyes: r.eyes, hat: r.hat, hair: r.hair || 'none', hairC: r.hair_c, hatHair: r.hat_hair !== 0, suit: r.suit || '', wsk: JSON.parse(r.wsk || '{}'), cls: r.cls || 'sword', enh: JSON.parse(r.enh || '{}'), equip: (e => ('weapon' in e ? {} : e))(JSON.parse(r.equip || '{}')) });
 // 모든 채널에 알리기 (관리자: 공지·내보내기·채팅 금지 등). skip = 지금 방(자기 자신은 부르지 않음)
 export async function toRooms(env, body, skip) {
   await Promise.all(Array.from({ length: MAX_CH }, (_, i) => i + 1).filter(ch => ch !== skip).map(ch =>
@@ -130,9 +131,9 @@ export class Town extends DurableObject {
     // 자랑 글은 서버가 확인한 물고기 이름·길이만 (아무 글이나 못 보냄)
     if (m.t === 'fish') {
       if (t - (a.fishAt || 0) < 400) return; a.fishAt = t; this.save(ws, a);
-      const o = { t: 'fish', id: a.id, s: [0, 1, 2, 3].includes(m.s) ? m.s : 0 };
+      const o = { t: 'fish', id: a.id, s: [0, 1, 2, 3, 4].includes(m.s) ? m.s : 0 };   // 4 = 가방에서 꺼내 자랑하기 (2026-11-20)
       if (o.s === 1) { if (!num(m.bx, MW * T) || !num(m.by, MH * T)) return; Object.assign(o, { bx: Math.round(m.bx), by: Math.round(m.by), r: Number.isInteger(m.r) && m.r >= 0 && m.r <= 9 ? m.r : 0 }); }
-      if (o.s === 2) { const d = (typeof m.id === 'string' && Object.hasOwn(FISH_BY, m.id) ? FISH_BY[m.id] : null) || fishByName(m.n, m.g); if (!d || !num(m.len, d.max + 1)) return; Object.assign(o, { g: d.grade, n: d.n, i: d.i, fid: d.id, len: Math.round(m.len * 10) / 10, big: !!m.big, sh: Number.isInteger(m.sh) && m.sh > 0 ? m.sh : 0 }); }
+      if (o.s === 2 || o.s === 4) { const d = (typeof m.id === 'string' && Object.hasOwn(FISH_BY, m.id) ? FISH_BY[m.id] : null) || fishByName(m.n, m.g); if (!d || !num(m.len, d.max + 1)) return; Object.assign(o, { g: d.grade, n: d.n, i: d.i, fid: d.id, len: Math.round(m.len * 10) / 10, big: !!m.big, sh: Number.isInteger(m.sh) && m.sh > 0 ? m.sh : 0 }); }
       return this.all(o, ws);
     }
     if (m.t === 'look') {   // 겉모습·레벨이 바뀜 → 저장된 값을 다시 읽어서 알림
