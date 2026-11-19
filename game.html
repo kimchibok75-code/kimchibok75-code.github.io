@@ -713,7 +713,8 @@ body.hunting .side { display: none; }
 .cmp-big .up { color: #2f8f45; } .cmp-big .down { color: #d0502f; }
 /* 클래스 · 프리셋 */
 .clsbar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin: 8px 0; }
-.clsbar button { border: 1.5px solid var(--line); background: #fff; border-radius: 10px; padding: 6px 2px; font-weight: 700; font-size: calc(14px * var(--fs)); display: grid; gap: 1px; cursor: pointer; }
+.clsbar button .cn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; } .clsbar button .cn .ico { width: 1.15em; height: 1.15em; }
+.clsbar button { border: 1.5px solid var(--line); background: #fff; border-radius: 10px; padding: 4px 2px; font-weight: 700; font-size: calc(14px * var(--fs)); display: grid; gap: 1px; cursor: pointer; }
 .clsbar button small { font-weight: 500; font-size: calc(11px * var(--fs)); color: var(--ink-soft); }
 .clsbar button[aria-pressed="true"] { border-color: var(--ink); background: #fff7d6; box-shadow: 0 2px 0 var(--ink); }
 .presets { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) 34px; gap: 4px; margin-bottom: 6px; }
@@ -996,6 +997,61 @@ body.hunting .chat-log { height: 64px; }
   .banner { top: 56px; font-size: calc(13px * var(--fs)); }
   .modal { place-items: end center; padding: 0; }
   .sheet { width: 100%; border-radius: 20px 20px 0 0; border-width: 2px 0 0; box-shadow: none; padding-bottom: max(18px, env(safe-area-inset-bottom, 0px)); }
+}
+/* ───── 2026-11-20 휴대폰 화면 정리 (760px 이하만) ───── */
+.menuBtn, .menuPop { display: none; }
+@media (max-width: 760px) {
+  /* 위쪽: 위치 표시 없앰 · 홈·설정은 ☰ 메뉴 안으로 → 왼쪽 위는 돈 · 가이드 · 임무만 */
+  .hud #placeChip, .hud #homeBtn, .hud #setBtn { display: none; }
+  .hud { padding-right: 60px; }
+  /* 오른쪽: ☰ 메뉴(누르면 펼쳐짐) · 바로가기 · 자동. 확대 +/- 없앰 (두 손가락으로 확대) */
+  .rcol { top: 8px; }
+  .zoom { display: none; }
+  .side > #admBtn, .side > #newsBtn, .side > #guideBtn, .side > #rankBtn { display: none; }
+  .menuBtn { display: grid; position: relative; }
+  .menuBtn .dot { position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; border-radius: 50%; background: var(--kimchi); border: 2px solid #fff; }
+  .menuBtn[aria-expanded="true"] { background: #fff1c9; }
+  .menuPop:not([hidden]) { display: grid; gap: 6px; padding: 6px; margin: -2px 0 2px; border-radius: 14px; background: rgba(31, 42, 58, .14); }
+  .menuPop .iconbtn { position: relative; }
+  .menuPop .iconbtn .dot, .menuPop .iconbtn[data-n]::after { position: absolute; top: -6px; right: -6px; }
+  .menuPop .iconbtn .dot { width: 11px; height: 11px; border-radius: 50%; background: var(--kimchi); border: 2px solid #fff; }
+  .menuPop .iconbtn[data-n]::after { content: attr(data-n); min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--kimchi); color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center; border: 2px solid #fff; }
+  /* 가이드 임무 · 임무: 평소엔 작은 단추, 누르면 펼침 */
+  .qbox.mob { background: none; border: 0; box-shadow: none; padding: 0; width: min(230px, calc(100vw - 86px)); gap: 5px; justify-items: start; }
+  .qbox.mob .qb-chip { display: inline-flex; align-items: center; gap: 5px; border: 2px solid var(--ink); border-radius: 999px; background: rgba(251, 252, 247, .94); padding: 4px 10px; font: inherit; font-weight: 800; font-size: calc(13px * var(--fs)); color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .qbox.mob .qb-chip.g { background: #e7f0ff; border-color: #5b86e0; }
+  .qbox.mob .qb-chip.g.ok { background: #fff1c9; border-color: #f2a516; animation: gqPulse 1.4s ease-in-out infinite; }
+  .qbox.mob .qb-chip .car { font-size: 10px; transition: transform .2s; } .qbox.mob .qb-chip[aria-expanded="true"] .car { transform: rotate(180deg); }
+  .qbox.mob .qb-chip small { font-weight: 600; color: #6b7480; }
+  .qbox.mob .qb-card { width: 100%; background: rgba(251, 252, 247, .95); border: 2px solid var(--ink); border-radius: var(--r); box-shadow: var(--shadow); padding: 6px 8px; display: grid; gap: 5px; }
+  /* 점프 · 공격만 (이용 버튼 없앰). 공격은 오른쪽 아래 구석, 점프는 그 왼쪽 위 (엄지 둥근 길) */
+  .actpad { right: 14px; bottom: calc(var(--padb, 130px) + 14px); gap: 14px; }
+  .actpad .ap-use { display: none !important; }
+  .ap-jump { width: 58px; height: 58px; margin-bottom: 44px; }
+  .ap-atk { width: 74px; height: 74px; }
+  body.panel-open .actpad { display: none !important; }
+  /* 아래 캐릭터창: 접힌 상태는 'Lv 이름 | 체력·경험치 막대(세로로 두 줄)' 한 줄 */
+  .panel { height: 46px; }
+  .peek { height: 46px; padding: 9px 14px 3px; gap: 8px; }
+  .peek .grip { top: 4px; }
+  .peek .grow { display: flex; align-items: center; gap: 10px; }
+  .peek .grow strong { flex: none; white-space: nowrap; }
+  .peek .minibars { flex: 1; margin-top: 0; width: auto; max-width: 190px; gap: 3px; }
+  /* 펼친 캐릭터창: 'Lv 이름' 오른쪽에 뱃지·칭호 + 체력·경험치. 여백 줄임 */
+  .panel-body { padding: 10px 12px; gap: 8px; grid-template-columns: auto minmax(0, 1fr); column-gap: 12px; }
+  .panel-body > * { grid-column: 1 / -1; }
+  .panel-body > .me { display: contents; }
+  .me h2 { grid-column: 1; grid-row: 1 / span 2; align-self: center; font-size: calc(20px * var(--fs)); display: grid; justify-items: start; text-align: left; line-height: 1.15; }
+  .me h2 .lv { font-size: .8em; }
+  .me .meTitleRow { grid-column: 2; grid-row: 1; justify-content: flex-start; margin: 0; min-width: 0; }
+  .me .meTitleRow .tbtn { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .me .meBadge { width: 26px; height: 26px; }
+  .panel-body > .bars { grid-column: 2; grid-row: 2; gap: 4px; }
+  .panel-body > .bars .bar { height: 18px; } .panel-body > .bars .bar span { font-size: calc(11px * var(--fs)); }
+  .me .intro { grid-column: 1 / -1; grid-row: 3; margin: 0; text-align: left; font-size: calc(13px * var(--fs)); }
+  .me .intro:empty { display: none; }
+  .mepow { margin: 0; padding: 4px 10px; }
+  .clsbar { margin: 0; }
 }
 @media (min-width: 761px) { .feed { display: none; } .chatexp { display: none; }
   .app { grid-template-columns: calc(300px * var(--ui)) minmax(0, 1fr); }
@@ -1305,7 +1361,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
       <button class="iconbtn" id="fsBtn" aria-label="전체화면" title="전체화면 (Esc로 나가기)">⛶</button>
       <button class="iconbtn" id="setBtn" aria-label="설정">⚙️</button>
     </div>
-    <div class="rcol"><div class="side"><button class="iconbtn adm" id="admBtn" hidden aria-label="관리자 화면" title="관리자 화면 (관리자만 보여요)">🛡️</button><button class="iconbtn" id="newsBtn" aria-label="오늘 의뢰" title="오늘 의뢰 (공동 건설 · 마을 소식은 마을회관)">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn lb" id="townBtn" aria-label="바로가기" title="바로가기: 누르면 그 자리로 바로 이동">🏘️<small>바로가기</small></button><button class="iconbtn lb" id="autoBtn" aria-label="자동" title="자동: 벌목·채광·알바·낚시·농사 + 산책하며 인사까지 알아서 해요 (효율은 낮아요)" aria-pressed="false">🧺<small>자동</small></button><button class="iconbtn lb" id="guideBtn" aria-label="가이드" title="가이드: 모든 놀거리 설명">📖<small>가이드</small></button><button class="iconbtn lb" id="rankBtn" aria-label="랭킹" title="랭킹: 레벨 · 번 돈 · 물고기 · 강화">🏆<small>랭킹</small></button></div>
+    <div class="rcol"><div class="side"><button class="iconbtn lb menuBtn" id="menuBtn" type="button" aria-label="메뉴" aria-expanded="false">☰<small>메뉴</small><i class="dot" id="menuDot" hidden></i></button><div class="menuPop" id="menuPop" hidden></div><button class="iconbtn adm" id="admBtn" hidden aria-label="관리자 화면" title="관리자 화면 (관리자만 보여요)">🛡️</button><button class="iconbtn" id="newsBtn" aria-label="오늘 의뢰" title="오늘 의뢰 (공동 건설 · 마을 소식은 마을회관)">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn lb" id="townBtn" aria-label="바로가기" title="바로가기: 누르면 그 자리로 바로 이동">🏘️<small>바로가기</small></button><button class="iconbtn lb" id="autoBtn" aria-label="자동" title="자동: 벌목·채광·알바·낚시·농사 + 산책하며 인사까지 알아서 해요 (효율은 낮아요)" aria-pressed="false">🧺<small>자동</small></button><button class="iconbtn lb" id="guideBtn" aria-label="가이드" title="가이드: 모든 놀거리 설명">📖<small>가이드</small></button><button class="iconbtn lb" id="rankBtn" aria-label="랭킹" title="랭킹: 레벨 · 번 돈 · 물고기 · 강화">🏆<small>랭킹</small></button></div>
     <div class="zoom"><button class="iconbtn" id="zIn" aria-label="크게 보기">＋</button><button class="iconbtn" id="zOut" aria-label="작게 보기">－</button></div></div>
     <div class="banner" id="liveBanner" hidden>🔴 김치복 생방송 중!</div>
     <button class="roombtn" id="roomBtn" type="button" hidden>🚪 집에서 나가기</button>
@@ -5286,9 +5342,19 @@ function renderQuests() {
   if (G && !G.ok && G.q[4] === 'gMove') { if (!GQ.mv) GQ.mv = { x: me.x, y: me.y }; else if (Math.hypot(me.x - GQ.mv.x, me.y - GQ.mv.y) > 3 * T) guideMark('gMove'); }   // 3칸 넘게 걸으면
   if (G?.ok && GQ.toastI !== me.life.gq.i) { GQ.toastI = me.life.gq.i; toast(`📘 가이드 「${G.q[2]}」 완료! 왼쪽 위 가이드를 눌러 보상을 받으세요`); sfx('levelup'); }
   const gHtml = G ? `<div class="qb-guide${G.ok ? ' ok' : ''}" data-gq role="button" tabindex="0"><span class="ic">${G.q[1]}</span><span><b>📘 가이드 ${me.life.gq.i + 1}/${GUIDE_Q.length} · ${esc(G.q[2])}</b><small>${G.ok ? '✅ 눌러서 보상 받기' : G.q[5] > 1 ? `${G.n} / ${G.v}` : '눌러서 자세히 보기'}</small></span></div>` : '';
-  const sig = JSON.stringify([on, NPC.blk, rows, avail, lt, gHtml]); if (sig === NPC.sig) return; NPC.sig = sig;
+  const MQ = innerWidth <= 760;   // 2026-11-20 휴대폰: 가이드·임무는 작은 단추. 가이드는 누르면 가이드 창, 임무는 누르면 목록이 펼쳐짐
+  const sig = JSON.stringify([on, NPC.blk, rows, avail, lt, gHtml, MQ, MQ && S.qOpen]); if (sig === NPC.sig) return; NPC.sig = sig;
   box.hidden = !gHtml && (!on || (!mine.length && !avail));
+  box.classList.toggle('mob', MQ);
   if (box.hidden) return;
+  if (MQ) {
+    const ok = rows.some(r => r[0]);
+    box.innerHTML = (G ? `<button type="button" class="qb-chip g${G.ok ? ' ok' : ''}" data-gq>📘 가이드 ${me.life.gq.i + 1}/${GUIDE_Q.length}${G.ok ? ' ✅' : ''}</button>` : '')
+      + (on ? `<button type="button" class="qb-chip${ok ? ' g ok' : ''}" data-qt aria-expanded="${!!S.qOpen}">📜 임무 ${mine.length}/${NPC_MAX} <span class="car">▼</span></button>
+      ${S.qOpen ? `<div class="qb-card"><small style="color:#6b7480">⏳ 새 주민까지 ${lt}</small>${rows.length ? `<ul>${rows.map(([ok, ic, n, sub, gi]) => `<li class="${ok ? 'ok' : ''}" data-go="${gi}"><span class="ic">${ic}</span><span><b>${esc(n)}</b><small>${esc(sub)}</small></span></li>`).join('')}</ul>` : ''}
+        ${avail && mine.length < NPC_MAX ? `<p class="qhint">❗ 주민을 누르면 임무를 받아요 (${avail}명)</p>` : ''}</div>` : ''}` : '');
+    iconize(box); return;
+  }
   if (!on) { box.innerHTML = gHtml; iconize(box); return; }
   box.innerHTML = gHtml + `<div class="qb-top"><b>📜 임무 ${mine.length}/${NPC_MAX}</b><span title="새 주민이 오면 받은 임무는 사라져요">⏳ ${lt}</span><button class="qbmin" type="button" aria-label="임무창 접기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-7 7 7"/></svg></button></div>
     ${rows.length ? `<ul>${rows.map(([ok, ic, n, sub, gi]) => `<li class="${ok ? 'ok' : ''}" data-go="${gi}"><span class="ic">${ic}</span><span><b>${esc(n)}</b><small>${esc(sub)}</small></span></li>`).join('')}</ul>` : ''}
@@ -5335,6 +5401,7 @@ function openGuideQ() {
 document.addEventListener('click', e => {
   const box = $('#questBox'); if (!box || !box.contains(e.target)) return;
   if (e.target.closest('[data-gq]')) return openGuideQ();
+  if (e.target.closest('[data-qt]')) { S.qOpen = !S.qOpen; NPC.sig = ''; return renderQuests(); }
   if (e.target.closest('.qbmin')) { box.classList.toggle('min'); try { localStorage.setItem('cbt-qmin', box.classList.contains('min') ? '1' : '0'); } catch {} return; }
   const li = e.target.closest('[data-go]'); if (!li) return;
   const p = NPC.list[+li.dataset.go]; if (!p) return;
@@ -6155,9 +6222,20 @@ function meBadgeSync() {
 // 자주 바뀌는 숫자 (체력·경험치·골드·사냥 상황)
 // ───────── 휴대폰 점프·공격 버튼 (2026-11-19) ─────────
 // 점프 = C (공중에서 한 번 더 = 더블 점프), 공격 = Z (사냥터에서는 꾹 누르면 계속). 레이드에서는 공격 버튼 숨김
+// ───── 2026-11-20 휴대폰 ☰ 메뉴: 관리자 · 오늘 의뢰 · 가이드 · 랭킹 · 홈페이지 · 설정 (누르면 바로가기·자동 위로 펼쳐짐) ─────
+const MENU = [['admBtn', '🛡️', '관리자'], ['newsBtn', '📋', '의뢰'], ['guideBtn', '📖', '가이드'], ['rankBtn', '🏆', '랭킹'], ['homeBtn', '🏠', '홈페이지'], ['setBtn', '⚙️', '설정']];
+function menuRender() {
+  $('#menuPop').innerHTML = MENU.filter(([id]) => !$('#' + id).hidden).map(([id, i, n]) => { const o = $('#' + id);
+    return `<button type="button" class="iconbtn lb" data-m="${id}"${o.dataset.n ? ` data-n="${o.dataset.n}"` : ''}>${i}<small>${n}</small>${id === 'newsBtn' && !$('#newsDot').hidden ? '<i class="dot"></i>' : ''}</button>`; }).join('');
+  iconize($('#menuPop'));
+}
+function menuOpen(on) { $('#menuPop').hidden = !on; $('#menuBtn').setAttribute('aria-expanded', String(on)); if (on) menuRender(); }
+$('#menuBtn').onclick = () => menuOpen($('#menuPop').hidden);
+$('#menuPop').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; menuOpen(false); $('#' + b.dataset.m).click(); };
+function menuDotSync() { const a = $('#admBtn'), on = (!a.hidden && !!a.dataset.n) || !$('#newsDot').hidden; if ($('#menuDot').hidden === on) $('#menuDot').hidden = !on; }
 function padPos() { const p = $('#panel'); if (!p) return; const r = p.getBoundingClientRect(), b = r.height ? Math.max(0, innerHeight - r.top) : 0; document.documentElement.style.setProperty('--padb', Math.round(b) + 'px'); }
 addEventListener('resize', padPos); try { new ResizeObserver(padPos).observe($('#panel')); } catch {}
-setInterval(() => { padPos(); try { document.body.classList.toggle('raiding', !!RD); document.body.classList.toggle('ingame', !$('#app').hidden && !S.away); document.body.classList.toggle('modal-open', !modal.hidden); padIcon(); $('#apUse').classList.toggle('off', !spaceTarget()); auSync(); } catch {} }, 250);
+setInterval(() => { padPos(); try { document.body.classList.toggle('panel-open', $('#panel').classList.contains('open')); menuDotSync(); document.body.classList.toggle('raiding', !!RD); document.body.classList.toggle('ingame', !$('#app').hidden && !S.away); document.body.classList.toggle('modal-open', !modal.hidden); padIcon(); $('#apUse').classList.toggle('off', !spaceTarget()); auSync(); } catch {} }, 250);
 {
   const J = $('#apJump'), A = $('#apAtk'), U = $('#apUse'); let held = null;
   for (const el of [J, A, U]) el.addEventListener('touchstart', e => e.preventDefault(), { passive: false });   // 빠르게 두 번 눌러도 화면이 확대·이동되지 않게 (채팅창이 올라가 보이던 문제)
@@ -6216,7 +6294,7 @@ function renderEquip() {
     return it ? row(gIcon(it), itemTag(it), `${tag} · ${itemDesc(it, l)}`, '') : row(sl.i, '<span class="muted">비어 있음</span>', `${tag} · 가챠센터에서 뽑아요`, '', true); }).join('');
 }
 function renderCls() {
-  $('#clsBar').innerHTML = Object.entries(CLASSES).map(([k, c]) => { const it = me.equip[k]; return `<button type="button" data-cls="${k}" aria-pressed="${me.cls === k}">${c.i} ${c.n}<small>${STATS[c.st].n}${it ? ` · ${pwrTxt(it)}` : ''}</small></button>`; }).join('');
+  $('#clsBar').innerHTML = Object.entries(CLASSES).map(([k, c]) => { const it = me.equip[k]; return `<button type="button" data-cls="${k}" aria-pressed="${me.cls === k}"><span class="cn">${c.i}${c.n}</span><small>${STATS[c.st].n}${it ? ` · ${pwrTxt(it)}` : ''}</small></button>`; }).join('');
 }
 $('#clsBar').addEventListener('click', async e => {
   const k = e.target.closest('[data-cls]')?.dataset.cls; if (!k || k === me.cls) return;
@@ -7973,7 +8051,7 @@ function admBadge(c) {
   if (c) ADM.cnt = c; const b = $('#admBtn'); if (!b) return;
   const n = (ADM.cnt.flags || 0) + (ADM.cnt.reports || 0); if (n) b.dataset.n = n > 99 ? '99+' : n; else delete b.dataset.n;
 }
-$('#admBtn').onclick = () => openAdmin(ADM.cnt.flags ? 'flags' : ADM.cnt.reports ? 'reports' : ADM.tab);
+$('#admBtn').onclick = () => openAdmin(ADM.cnt.flags ? 'flags' : ADM.cnt.reports ? 'reports' : ADM.tab === 'cheat' && me.name !== TEST_NICK ? 'ops' : ADM.tab);
 async function admLoad(tab) {   // 탭마다 필요한 것을 서버에서 읽음
   if (!ADM.ov || tab === 'ops' || tab === 'flags' || tab === 'reports') ADM.ov = await api('/api/admin/overview').catch(() => ADM.ov);
   if (ADM.ov) admBadge({ reports: ADM.ov.reports, flags: ADM.ov.flags });
@@ -7988,7 +8066,8 @@ async function openAdmin(tab = ADM.tab, keep) {
   if (!keep) { openModal(bsWrap(ADM_B, { tag: '불러오는 중…', body: '<p class="muted" style="text-align:center;padding:24px 0">불러오는 중…</p>' })); try { await admLoad(tab); } catch (x) { toast(x.message); } }
   reopen = () => openAdmin(S.btab.admin);   // 탭을 바꾸면 그 탭 내용을 새로 읽음
   const o = ADM.ov, c = ADM.cnt;
-  const tabs = [['flags', '🚨 의심', c.flags], ['reports', '📮 신고', c.reports], ['user', '👤 사람'], ['chat', '💬 채팅'], ['ops', o?.maint?.on ? '🔒 운영' : '🛠️ 운영'], ['cheat', '🧪 치트']];
+  const tabs = [['flags', '🚨 의심', c.flags], ['reports', '📮 신고', c.reports], ['user', '👤 사람'], ['chat', '💬 채팅'], ['ops', o?.maint?.on ? '🔒 운영' : '🛠️ 운영'], ...(me.name === TEST_NICK ? [['cheat', '🧪 치트']] : [])];   // 2026-11-20 치트는 테스트 계정에서만
+  if (tab === 'cheat' && me.name !== TEST_NICK) tab = ADM.tab = S.btab.admin = 'ops';
   const tag = o ? `전체 ${fmtN(o.users)}명 · 오늘 가입 ${o.signups} · 하루 접속 ${o.active}${o.maint?.on ? ' · 🔒 점검 중 (관리자만 접속)' : ''}` : '';
   const V = ADM_VIEW[tab](), isTest = me.name === TEST_NICK;
   const sw = `<div class="adm-sw"><span>지금 계정: <b>${esc(me.name)}</b>${isTest ? ' (테스트)' : ' · 랭킹에 나와요'}</span><button class="mini main" data-x="switch">${isTest ? `↩️ ${esc(store.get('cbt-token-main') ? '김치복' : '김치복 (다시 로그인)')}으로 돌아가기` : '🧪 테스트 계정으로 전환'}</button></div>`;
@@ -8101,6 +8180,7 @@ const ADM_VIEW = {
         <div class="adm-card"><h4 class="adm-h">📢 공지 ${itip('모든 마을 채널에 떠요 (100글자).\n채팅창에서 /공지 내용 · /조용 닉네임 10분 · /내보내기 닉네임 도 돼요.')}</h4>
           <div class="admform"><input id="aNotice" maxlength="100" placeholder="공지 내용"><button class="mini main" data-x="notice">보내기</button></div></div>
         <div class="adm-cols"><div class="adm-card"><h4 class="adm-h">📺 방송 보너스 ${itip('방송 연결이 안 될 때나 이벤트용.\n켜는 동안 마을 모두 경험치·골드 2배.')}</h4><div class="adm-acts"><button class="mini" data-x="live:60">1시간</button><button class="mini" data-x="live:180">3시간</button><button class="mini" data-x="live:0">끄기</button></div></div>
+          <div class="adm-card"><h4 class="adm-h">⚔️ 레이드 지금 열기 ${itip('이벤트용. 2분 모집 창이 마을 모두에게 떠요.')}</h4><div class="adm-acts"><button class="mini" data-x="raid:0">🐉 드래곤</button><button class="mini" data-x="raid:1">👹 오우거</button></div></div>
           <div class="adm-card"><h4 class="adm-h">📸 캐릭터 사본 ${itip('매일 새벽 4시에 저절로 만들어요 (7일 보관).\n큰 패치 전에 한 번 더 만들어 두면 좋아요.\n한 사람만 되돌리기: 👤 사람 탭에서.')}</h4><div class="adm-acts"><button class="mini" data-x="snap">지금 모두 사본 만들기</button></div></div></div>`,
       async on(x, btn, el) {
         if (x === 'maint') {
@@ -8111,13 +8191,14 @@ const ADM_VIEW = {
         if (x === 'notice') { const text = el.querySelector('#aNotice').value.trim(); if (!text) return; await api('/api/admin/notice', { text }); toast('공지를 보냈어요'); el.querySelector('#aNotice').value = ''; return; }
         if (x.startsWith('live:')) { const min = +x.slice(5); await api('/api/admin/live', { min }); return toast(min ? `방송 보너스를 ${min}분 동안 켰어요 (30초 안에 반영)` : '방송 보너스를 껐어요'); }
         if (x === 'snap') { await api('/api/admin/snap-now', {}); toast('모두 사본을 만들었어요'); }
+        if (x.startsWith('raid:')) { const og = x === 'raid:1'; await api('/api/admin/raid', { boss: og ? 'ogre' : 'rdragon' }); closeModal(); toast(`${og ? '👹 오우거' : '🐉 드래곤'} 레이드 모집을 열었어요 (2분, 모두에게 창이 떠요)`); RAIDQ.asked = 0; setTimeout(raidCheck, 300); }
       },
     };
   },
   cheat() {   // 관리자 시험용 치트 (내 캐릭터만 바뀜, 서버 기록에 남음)
     const god = !!me.life?.god, B = (k, n, label) => `<button class="mini" data-x="${k}:${n}">${label}</button>`;
     return {
-      body: `<div class="adm-info${me.name === TEST_NICK ? '' : ' warn'}">시험용이에요. <b>내 캐릭터만</b> 바뀌고, 쓴 기록은 서버에 남아요.${me.name === TEST_NICK ? '' : ' <b>김치복 캐릭터는 랭킹에 나오니 치트는 테스트 계정에서 써 주세요.</b>'}</div>
+      body: `<div class="adm-info">테스트 계정 전용이에요. <b>내 캐릭터만</b> 바뀌고, 쓴 기록은 서버에 남아요.</div>
         <div class="btns cheat">${B('raid', 0, '🐉 드래곤 레이드 지금 열기')}${B('raid', 1, '👹 오우거 레이드 지금 열기')}${B('god', 0, god ? '😇 갓모드 끄기' : '😇 갓모드 켜기')}</div>
         <div class="btns cheat">${B('gold', 1e6, '🪙 골드 +100만')}${B('gold', 1e8, '🪙 골드 +1억')}${B('lv', 55, '🌟 55레벨')}${B('lv', 1, '🌱 1레벨로')}${B('pots', 0, '🥤 물약·체력 가득')}</div>
         <div class="btns cheat">${B('gear', 0, '🗡️ 최고 장비 + 최고 강화')}${B('titles', 0, '🏷️ 칭호 모두')}${B('skins', 0, '👕 모든 스킨')}${B('rskmax', 0, '⭐ 레이드 스킨 최고')}${B('skmax', 0, '⚡ 스킬 최고')}</div>

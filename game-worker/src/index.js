@@ -1212,6 +1212,7 @@ async function admin(p, m, req, env, user, url) {
     return json({ ok: true, start: j.start });
   }
   if (m === 'POST' && p === '/api/admin/cheat') {
+    if (user.nick !== TEST_NICK) fail(403, '치트는 테스트 계정에서만 쓸 수 있어요 (관리자 화면 → 테스트 계정으로 전환)');   // 2026-11-20 김치복은 플레이어 캐릭터
     const k = String(body.k || ''); await done('cheat', `${k} ${body.n ?? ''}`.trim());
     return play(env, user, (c, at) => cheat(c, k, body, at, env, user));
   }
