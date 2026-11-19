@@ -250,7 +250,7 @@
 
 ### 할 이유 · 아이콘 · 밸런스 · 보안 — 2026-11-16 배포, 테스트 통과
 - 기획서 **4-8**에 정리. 숫자는 game-rules.js 맨 아래 (`DAILY_POOL, dailyGold, weekBox, EVENTS, LIVE_FX, liveGift, VILLAGE, giveScore, worldFx`)
-- **마을 소식판** (`openNews`, 오른쪽 📋 버튼): 오늘 의뢰 · 공동 건설 · 마을 소식. 상단 `#evChip`에 지금 사건/방송 보너스
+- **마을 소식판** (`openNews`, 오른쪽 📋 버튼): 2026-11-19부터 **오늘 의뢰만**. 공동 건설 · 마을 소식은 🏛️ **마을회관 탭**으로 옮김 (`hallSheet` 탭 village/news, `openHall(tab)`, 기부 `villageAct`). 상단 `#evChip`을 누르면 마을회관 → 마을 소식
   - 매일 의뢰는 `life.daily`(그날 시작할 때의 `cnt` 값을 base로 저장) · `life.stamp`. 서버 `play()`가 매번 `checkDaily` → 응답 `daily`
   - 마을 사건은 시간으로 정해짐 (`eventAt`, 저장 없음). 방송 보너스·공동 건설 효과는 서버가 `c.gfx = worldFx(...)`로 넣고 `statFx`가 더함
   - 서버: `GET /api/news`(20초 기억), `/api/village/give`, `/api/live/checkin`, 관리자 `/api/admin/live {min}`. 표는 `migrations/0010_village.sql` (village, village_give, chronicle)
@@ -597,7 +597,7 @@
 - **Z 공격**: 마을은 바라보는 방향(`me.fdir`, 화살표·걷는 방향. `me.face`는 얼굴색이라 쓰면 안 됨)으로 검 베기 자국 · 화살 · 마법 구슬 (`townAtk`, `TATK`, `drawTownAtk`, 보여 주기만). 실시간 `{t:'atk', a}` (0.28초에 1번)
   - 사냥터(`huntZ`): 가장 가까운 몬스터를 목표로 → 쿨타임 찬 스킬이 있으면 스킬 칸 순서대로 → 없으면 바로 기본 공격 (공격 간격의 55%가 지나야), 멀면 다가감. 꾹 누르면 계속. 레이드에서는 안 씀
   - 서버 사냥 계산은 그대로 (화면 전투는 보여 주기)
-- 휴대폰(터치 화면)은 오른쪽 아래 **점프·공격 버튼** (`#actPad`, 2026-11-19): 아래 창 바로 위(`--padb`, `padPos`), 공격 아이콘은 클래스 무기(`padIcon`), 사냥터에서는 공격 꾹 누르면 계속, 레이드에서는 공격 버튼 숨김, 창이 열리면 숨김. PC(마우스)에는 안 보임
+- 휴대폰(터치 화면)은 오른쪽 아래 **점프·공격 버튼** (touchstart preventDefault로 두 번 눌러 확대 막음, html·body `overscroll-behavior: none`) (`#actPad`, 2026-11-19): 아래 창 바로 위(`--padb`, `padPos`), 공격 아이콘은 클래스 무기(`padIcon`), 사냥터에서는 공격 꾹 누르면 계속, 레이드에서는 공격 버튼 숨김, 창이 열리면 숨김. PC(마우스)에는 안 보임
 - **벌목·채광 손맛** (2026-11-18): 0.5초 박자(`CHOP`, 첫 타 0.35초)에 맞춰 천천히 들었다 팍 내려찍음 (`chopPose` → `me.toolW`). 타격 순간(`chopHit`): 소리 · 아주 작은 화면 흔들림(`S.tshake`, render의 `tk`) · 맞은 자리 번쩍 + 나무 부스러기·잎 / 돌가루·불꽃 (`TP`, `drawTP`) · 나무/바위가 툭 흔들림(`n.hitAt`)
 - **움직임 기록 · 재생** (2026-11-18, 예측 방식은 순간이동이 생겨서 버림): 마을에서 내 실제 자리 + 점프 높이 + 건물 위 여부를 0.1초마다 적어 0.25초마다 `{t:'mv', p:[[시각ms, x, y, 높이, 1/0], …]}`로 보냄 (`netTrack`, 바닥 누르기·화살표·점프 모두). 걸어가기 시작할 때의 'go'는 더 안 보냄 (순간 이동 `netGo`만)
   - 다른 화면은 `netRecv`로 상대 시계를 맞춰 `p.buf`에 쌓고 `netPlay`가 **`NET_DELAY` 450ms 늦게** 기록 사이를 이어 그림 (예측 없음, 기록이 끊기면 그 자리에서 기다림). 점프도 기록된 높이 그대로 (`jmp` 메시지는 더 안 보냄)

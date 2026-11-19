@@ -242,7 +242,7 @@ button.gd-row { width: 100%; text-align: left; font: inherit; color: inherit; cu
   .rk-list { gap: 4px; } .rk-list li, .rk-me { min-height: 40px; padding: 4px 10px 4px 4px; } .rk-list li.top .rk-n { font-size: 19px; }
   .bs .swatches button { width: 32px; height: 32px; }
 }
-html, body { height: 100%; }
+html, body { height: 100%; overscroll-behavior: none; }
 body { margin: 0; background: var(--sky); color: var(--ink); font-family: var(--font-body); font-size: calc(15px * var(--fs)); overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; -webkit-tap-highlight-color: transparent; }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
@@ -1122,7 +1122,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
       <button class="iconbtn" id="fsBtn" aria-label="전체화면" title="전체화면 (Esc로 나가기)">⛶</button>
       <button class="iconbtn" id="setBtn" aria-label="설정">⚙️</button>
     </div>
-    <div class="rcol"><div class="side"><button class="iconbtn adm" id="admBtn" hidden aria-label="관리자 화면" title="관리자 화면 (관리자만 보여요)">🛡️</button><button class="iconbtn" id="newsBtn" aria-label="마을 소식판" title="마을 소식판: 오늘 의뢰 · 공동 건설 · 마을 소식">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn lb" id="townBtn" aria-label="바로가기" title="바로가기: 누르면 그 자리로 바로 이동">🏘️<small>바로가기</small></button><button class="iconbtn lb" id="autoBtn" aria-label="자동" title="자동: 벌목·채광·알바·낚시·농사 + 산책하며 인사까지 알아서 해요 (효율은 낮아요)" aria-pressed="false">🧺<small>자동</small></button><button class="iconbtn lb" id="guideBtn" aria-label="가이드" title="가이드: 모든 놀거리 설명">📖<small>가이드</small></button><button class="iconbtn lb" id="rankBtn" aria-label="랭킹" title="랭킹: 레벨 · 번 돈 · 물고기 · 강화">🏆<small>랭킹</small></button></div>
+    <div class="rcol"><div class="side"><button class="iconbtn adm" id="admBtn" hidden aria-label="관리자 화면" title="관리자 화면 (관리자만 보여요)">🛡️</button><button class="iconbtn" id="newsBtn" aria-label="오늘 의뢰" title="오늘 의뢰 (공동 건설 · 마을 소식은 마을회관)">📋<i class="dot" id="newsDot" hidden></i></button><button class="iconbtn lb" id="townBtn" aria-label="바로가기" title="바로가기: 누르면 그 자리로 바로 이동">🏘️<small>바로가기</small></button><button class="iconbtn lb" id="autoBtn" aria-label="자동" title="자동: 벌목·채광·알바·낚시·농사 + 산책하며 인사까지 알아서 해요 (효율은 낮아요)" aria-pressed="false">🧺<small>자동</small></button><button class="iconbtn lb" id="guideBtn" aria-label="가이드" title="가이드: 모든 놀거리 설명">📖<small>가이드</small></button><button class="iconbtn lb" id="rankBtn" aria-label="랭킹" title="랭킹: 레벨 · 번 돈 · 물고기 · 강화">🏆<small>랭킹</small></button></div>
     <div class="zoom"><button class="iconbtn" id="zIn" aria-label="크게 보기">＋</button><button class="iconbtn" id="zOut" aria-label="작게 보기">－</button></div></div>
     <div class="banner" id="liveBanner" hidden>🔴 김치복 생방송 중!</div>
     <button class="roombtn" id="roomBtn" type="button" hidden>🚪 집에서 나가기</button>
@@ -5284,6 +5284,7 @@ addEventListener('resize', padPos); try { new ResizeObserver(padPos).observe($('
 setInterval(() => { padPos(); try { document.body.classList.toggle('raiding', !!RD); document.body.classList.toggle('ingame', !$('#app').hidden && !S.away); document.body.classList.toggle('modal-open', !modal.hidden); padIcon(); } catch {} }, 250);
 {
   const J = $('#apJump'), A = $('#apAtk'); let held = null;
+  for (const el of [J, A]) el.addEventListener('touchstart', e => e.preventDefault(), { passive: false });   // 빠르게 두 번 눌러도 화면이 확대·이동되지 않게 (채팅창이 올라가 보이던 문제)
   const press = (el, f) => { el.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); el.classList.add('on'); f(); }); };
   const up = el => () => { el.classList.remove('on'); if (el === A) { clearInterval(held); held = null; } };
   press(J, () => { if (!S.away) myJump(); });
@@ -6371,10 +6372,14 @@ function hallSheet(b, keep) {
   reopen = () => hallSheet(b, true);
   const L = LIFE(), h = L.house, free = h && !h.d, cost = !h ? HOUSE.cost : free ? { gold: 0, wood: 0, stone: 0 } : HOUSE.move, can = canPay(cost);
   if (S.roof == null) S.roof = h ? h.roof : 0;
-  const tab = btab('hall', 'my', ['my', 'town']);
+  const tab = btab('hall', 'my', ['my', 'town', 'village', 'news']);
+  // 2026-11-19: 공동 건설 · 마을 소식은 소식판에서 마을회관으로 옮김
+  if ((tab === 'village' || tab === 'news') && Date.now() - NEWS.at > 15e3 && !NEWS.loading) { NEWS.loading = 1; api('/api/news').then(d => { NEWS.data = d; NEWS.at = Date.now(); }).catch(() => {}).finally(() => { NEWS.loading = 0; if (!modal.hidden && btab('hall', 'my', ['village', 'news']) === tab) reopen?.(); }); }
   const sw = (pre, sel) => `<div class="swatches roofs">${HOUSE.roofs.map((c, i) => `<button type="button" style="background:${c}" data-x="${pre}:${i}" aria-pressed="${sel === i}" aria-label="지붕 색 ${i + 1}"></button>`).join('')}</div>`;
   let body = '', foot = '';
-  if (tab === 'town') {
+  if (tab === 'village') body = `<div class="newsb">${villageView()}</div>`;
+  else if (tab === 'news') body = `<div class="newsb">${newsView()}</div>`;
+  else if (tab === 'town') {
     const list = [...HOUSES].sort((a, c) => (c.id === me.uid) - (a.id === me.uid) || a.nick.localeCompare(c.nick));
     body = list.length ? `<ul class="bs-list">${list.map(x => `<li class="bs-row${x.id === me.uid ? ' cur' : ''}"><span class="bs-ri"><span class="roofdot" style="background:${HOUSE.roofs[x.roof] || HOUSE.roofs[0]}"></span></span><div><b class="t">${esc(x.nick)}님의 집${x.id === me.uid ? chip('내 집', 'up') : ''}</b><div class="cs">${chip(HOUSE_TIERS[x.lv || 0]?.n || '일반 집')}</div></div><div class="bs-act">${bbtn(`visit:${x.id}`, '구경 가기')}</div></li>`).join('')}</ul>`
       : '<p class="muted">아직 집이 없어요. 첫 번째 주인이 되어 보세요!</p>';
@@ -6392,10 +6397,12 @@ function hallSheet(b, keep) {
         : `<div class="bs-card"><h4>🚚 이사하기</h4><div class="cs">${costChips(cost)}</div>${bbtn('place', '새 자리 고르기', '', { wide: true, dis: !can })}</div>`}`;
     foot = free ? '' : bbtn(`visit:${me.uid}`, '🚪 내 집에 들어가기', '', { wide: true, main: true });
   }
-  bsOpen(b, { tag: '집 짓기 · 키우기 · 이웃 집 구경', wal: ['gold', 'wood', 'stone'], tabs: [['my', '🏠 내 집'], ['town', '🏘️ 이웃 집', HOUSES.length || '']], tab, body, foot,
+  bsOpen(b, { tag: '집 짓기 · 키우기 · 이웃 집 구경', wal: ['gold', 'wood', 'stone'], tabs: [['my', '🏠 내 집'], ['town', '🏘️ 이웃 집', HOUSES.length || ''], ['village', '🏗️ 공동 건설'], ['news', '📰 마을 소식']], tab, body, foot,
+    ready: el => el.querySelectorAll('[data-g]').forEach(inp => inp.oninput = () => { NEWS.give[inp.dataset.g] = Math.max(0, Math.floor(+inp.value || 0)); }),
     help: `<p>집은 ${DONG_NAME}에 지어요. 타운 아래쪽 🏡 치복동 포탈로 오갈 수 있어요.</p><p>호수 공원 · 길 · 물가 · 포탈 앞마당만 빼고 어디든 지을 수 있어요. 다른 집 옆에 붙여 지어도 되고, 나무 위에 지으면 그 나무는 없어져요.</p><p>목재·석재는 마을의 🌳 나무와 🪨 바위를 눌러 모으거나, 벌목소·채광소 알바를 고용해서 모아요.</p><p>집은 언제나 모두에게 공개라서 누구나 구경 올 수 있어요. 가구는 곧 들어와요.</p>` },
     async x => {
       const [a, v] = x.split(':');
+      if (a === 'q' || a === 'give') return villageAct(x);
       if (a === 'roof') { S.roof = +v; return reopen?.(); }
       if (a === 'reroof') { const j = await act('/api/house/roof', { roof: +v }); if (j) { await loadHouses(); toast('🎨 지붕 색을 바꿨어요'); reopen?.(); } return; }
       if (a === 'visit') { const t = HOUSES.find(k => k.id === +v); if (t) visitHouse(t); return; }
@@ -7027,9 +7034,10 @@ const GUIDE = () => [
     ['오우거', '몽둥이로 바닥 내려찍기(빨간 원) · 바위 던지기(작은 원 여러 개) · 앞쪽 크게 휘두르기(부채꼴). 빨간 곳에서 벗어나요.'],
     ['보상', '골드·경험치 + 레이드 전용 스킨 1개 확정(30% 확률로 2개). 같은 스킨을 또 얻으면 스킨 레벨이 올라 효과가 커져요.'],
   ]],
-  ['📋', '마을 소식판', [
-    ['오늘 의뢰', `매일 ${DAILY_N}개. 다 하면 도장 1개, 이번 주 도장 ${STAMP_GOAL}개면 큰 상자!`],
-    ['공동 건설', '목재·석재·골드를 기부해서 마을 건물을 지어요. 다 지으면 모두에게 효과가 붙어요.'],
+  ['📋', '오늘 의뢰 · 마을회관', [
+    ['오늘 의뢰', `오른쪽 📋 버튼. 매일 ${DAILY_N}개. 다 하면 도장 1개, 이번 주 도장 ${STAMP_GOAL}개면 큰 상자!`],
+    ['공동 건설', '🏛️ 마을회관 → 공동 건설 탭. 목재·석재·골드를 기부해서 마을 건물을 지어요. 다 지으면 모두에게 효과가 붙어요.'],
+    ['마을 소식', '🏛️ 마을회관 → 마을 소식 탭. 지금 마을 사건 · 방송 보너스 · 마을 연대기.'],
     ['마을 사건', '시간마다 특별한 사건(황금 물때 등)이 열려요. 위쪽 꼬리표에 보여요.'],
   ]],
   ['📺', '방송 · 광장', [
@@ -7153,26 +7161,27 @@ function newsView() {
     <ul class="chron">${(NEWS.data?.chron || []).map(c => `<li><small>${fmtT(c.at)}</small> ${esc(c.text)}</li>`).join('') || '<li class="muted">아직 큰일이 없었어요. 첫 기록의 주인공이 되어 보세요!</li>'}</ul>
     <p class="muted">마을 사건은 2시간마다 40분씩 열려요: ${EVENTS.map(x => `${x.i} ${x.n}`).join(' · ')}</p>`;
 }
-async function openNews(tab = NEWS.tab, again) {
-  NEWS.tab = tab;
+// 2026-11-19: 소식판은 오늘 의뢰만. 공동 건설 · 마을 소식은 마을회관 탭 (openHall)
+function openHall(tab) { S.btab.hall = tab; NEWS.at = 0; openBuilding(BUILDINGS.find(b => b.id === 'hall')); }
+async function villageAct(x) {
+  const [a, k, v] = x.split(':');
+  if (a === 'q') { const have = k === 'gold' ? me.gold : me.life.res[k]; NEWS.give[k] = Math.floor(have * +v); return reopen?.(); }
+  if (a === 'give') {
+    const g = NEWS.give; if (!g.wood && !g.stone && !g.gold) return toast('보낼 양을 적어 주세요');
+    const j = await act('/api/village/give', g); if (!j) return;
+    NEWS.give = { wood: 0, stone: 0, gold: 0 }; NEWS.at = 0;
+    const t = [j.gave.wood && `🪵 ${j.gave.wood.toLocaleString()}`, j.gave.stone && `🪨 ${j.gave.stone.toLocaleString()}`, j.gave.gold && `🪙 ${j.gave.gold.toLocaleString()}`].filter(Boolean).join(' · ');
+    toast(`🏗️ 고마워요! ${t} 보냈어요`); sysMsg(`🏗️ 공동 건설에 ${t} 보냈어요`); logAct(`공동 건설 기부 ${t}`); emote(me, '🎉');
+    return openHall('village');
+  }
+}
+async function openNews(tab = 'daily', again) {
+  if (tab === 'village' || tab === 'news') return openHall(tab);
   if (!again && Date.now() - NEWS.at > 15e3) { try { NEWS.data = await api('/api/news'); NEWS.at = Date.now(); } catch {} }
-  const tabs = [['daily', '📋 오늘 의뢰'], ['village', '🏗️ 공동 건설'], ['news', '📰 마을 소식']];
-  const body = tab === 'daily' ? dailyView() : tab === 'village' ? villageView() : newsView();
-  openModal(`<h3>📋 마을 소식판</h3><div class="rtabs">${tabs.map(([k, n]) => `<button type="button" data-t="${k}" aria-pressed="${k === tab}">${n}</button>`).join('')}</div><div class="newsb">${body}</div>`, el => {
-    el.querySelector('.rtabs').onclick = e => { const t = e.target.closest('[data-t]')?.dataset.t; if (t) openNews(t, true); };
-    el.querySelectorAll('[data-g]').forEach(inp => inp.oninput = () => { NEWS.give[inp.dataset.g] = Math.max(0, Math.floor(+inp.value || 0)); });
-    wire(el.querySelector('.newsb'), async x => {
-      const [a, k, v] = x.split(':');
-      if (a === 'q') { const have = k === 'gold' ? me.gold : me.life.res[k]; NEWS.give[k] = Math.floor(have * +v); return openNews('village', true); }
-      if (a === 'give') {
-        const g = NEWS.give; if (!g.wood && !g.stone && !g.gold) return toast('보낼 양을 적어 주세요');
-        const j = await act('/api/village/give', g); if (!j) return;
-        NEWS.give = { wood: 0, stone: 0, gold: 0 }; NEWS.at = 0;
-        const t = [j.gave.wood && `🪵 ${j.gave.wood.toLocaleString()}`, j.gave.stone && `🪨 ${j.gave.stone.toLocaleString()}`, j.gave.gold && `🪙 ${j.gave.gold.toLocaleString()}`].filter(Boolean).join(' · ');
-        toast(`🏗️ 고마워요! ${t} 보냈어요`); sysMsg(`🏗️ 공동 건설에 ${t} 보냈어요`); logAct(`공동 건설 기부 ${t}`); emote(me, '🎉');
-        return openNews('village');
-      }
-    });
+  openModal(`<h3>📋 오늘 의뢰</h3><div class="newsb">${dailyView()}</div>
+    <p class="muted" style="margin-top:10px">🏗️ 공동 건설 · 📰 마을 소식은 🏛️ 마을회관으로 옮겼어요</p>
+    <div class="actions"><button class="btn" data-x="hv">🏗️ 공동 건설</button><button class="btn" data-x="hn">📰 마을 소식</button></div>`, el => {
+    wire(el, x => { if (x === 'hv') return openHall('village'); if (x === 'hn') return openHall('news'); });
   }, again);
 }
 // 매일 의뢰·도장 보상 알림 (서버 응답의 daily)
@@ -7200,7 +7209,7 @@ async function liveCheckin() {
   if (!liveOn() || !token || $('#app').hidden || me.life?.liveDay === dayKey(Date.now()) || S.checkin) return;
   S.checkin = true; try { const j = await api('/api/live/checkin', {}); took(j); } catch {} finally { S.checkin = false; }
 }
-$('#newsBtn').onclick = () => openNews(); $('#evChip').onclick = () => openNews('news');
+$('#newsBtn').onclick = () => openNews(); $('#evChip').onclick = () => openHall('news');
 
 let toastT; function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2600); }
 // 이모지 → 직접 그린 그림 (화면 글자는 자동, 캔버스는 fillTextIco)
