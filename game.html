@@ -1587,16 +1587,22 @@ function drawEyes(g, c, ey, t) {
     else { g.beginPath(); g.ellipse(ex, ey, 2.4, 3.2, 0, 0, Math.PI * 2); g.fill(); }
   }
 }
-// ───── 레드 드래곤 세트 이펙트 (2026-11-20): 모자·눈·의상·검·활·지팡이 모두 레드 드래곤이면 등 뒤에 은은하게 빛나는 붉은 문양 (그림 fx-dragon, 흰 그림을 붉게 물들임)
-const dragonFull = c => c.hat === 'rdragon' && c.eyes === 'rdragon' && c.suit === 'rdragon' && c.wsk?.sword === 'rdragon' && c.wsk?.bow === 'rdragon' && c.wsk?.staff === 'rdragon';
-let FXD = null;
-function dragonAura(g, t) {
-  const im = ART['fx-dragon']; if (!im) return;
-  if (!FXD) { const W = 256, H = Math.round(W * im.height / im.width), cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d');
-    x.drawImage(im, 0, 0, W, H); x.globalCompositeOperation = 'source-in'; const gr = x.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#ff6a3a'); gr.addColorStop(.55, '#e8202a'); gr.addColorStop(1, '#a30d1e'); x.fillStyle = gr; x.fillRect(0, 0, W, H); FXD = cv; }
-  const p = .5 + .5 * Math.sin(t * 1.8), w = 104 * (1 + p * .04), h = w * FXD.height / FXD.width;
-  g.save(); g.globalAlpha = .45 + p * .25; g.shadowColor = 'rgba(255,40,30,.9)'; g.shadowBlur = 10 + p * 8;
-  g.drawImage(FXD, -w / 2, -33 - h / 2, w, h); g.restore();
+// ───── 레이드 세트 이펙트 (2026-11-20): 모자·눈·의상 + 지금 클래스 무기 스킨이 모두 그 레이드 세트면 등 뒤에 은은하게 빛나는 문양
+// 그림 fx-<세트>: 정사각 판 그대로, 판 가운데 아래 고리(세로 86%)가 발 자리. 흰 그림을 세트 색으로 물들임
+const RAID_FX = {
+  rdragon: { img: 'fx-dragon', c: ['#ff7a45', '#e8202a', '#a30d1e'], glow: 'rgba(255,40,30,.9)' },
+  ogre: { img: 'fx-ogre', c: ['#b8f06a', '#4fbf2e', '#1f7a1e'], glow: 'rgba(80,230,60,.9)' },
+};
+const raidFxOf = c => { for (const k in RAID_FX) if (c.hat === k && c.eyes === k && c.suit === k && c.wsk?.[c.cls || 'sword'] === k) return k; return null; };
+const AURA_C = {};
+function setAura(g, k, t) {
+  const R = RAID_FX[k], im = ART[R.img]; if (!im) return;
+  let cv = AURA_C[k];
+  if (!cv) { const W = 320, H = Math.round(W * im.height / im.width); cv = AURA_C[k] = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d');
+    x.drawImage(im, 0, 0, W, H); x.globalCompositeOperation = 'source-in'; const gr = x.createLinearGradient(0, H * .4, 0, H * .92); gr.addColorStop(0, R.c[0]); gr.addColorStop(.55, R.c[1]); gr.addColorStop(1, R.c[2]); x.fillStyle = gr; x.fillRect(0, 0, W, H); }
+  const p = .5 + .5 * Math.sin(t * 1.8), w = 128 * (1 + p * .03), h = w * cv.height / cv.width;
+  g.save(); g.globalAlpha = .5 + p * .25; g.shadowColor = R.glow; g.shadowBlur = 8 + p * 8;
+  g.drawImage(cv, -w / 2, -h * .86, w, h); g.restore();
 }
 function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   // (x, y) = 발 위치
@@ -1605,7 +1611,7 @@ function drawChar(ctx, x, y, c, t = 0, scale = 1) {
   const walk = c.moving && !sit ? Math.sin(t * 14) : 0;
   const bob = c.moving && !sit ? Math.abs(Math.sin(t * 14)) * 2 : Math.sin(t * 2.2 + (c.seed || 0)) * .6;
   if (!sit) { const rb = c.still ? 0 : c === me ? (me.roof?.h || 0) : (c.rz || 0), dz = Math.max(0, jz - rb), k = Math.max(.45, 1 - dz / 160); ctx.fillStyle = `rgba(31,42,58,${.18 * k})`; ctx.beginPath(); ctx.ellipse(0, dz, 11 * k, 3.5 * k, 0, 0, Math.PI * 2); ctx.fill(); }   // 지붕 위면 그림자도 지붕에
-  if (dragonFull(c)) dragonAura(ctx, t + (c.seed || 0));   // 2026-11-20 레드 드래곤 세트 6부위를 다 입으면 캐릭터 뒤에 붉은 드래곤 문양
+  { const fk = raidFxOf(c); if (fk) setAura(ctx, fk, t + (c.seed || 0)); }   // 2026-11-20 레이드 세트를 다 입으면 캐릭터 뒤에 문양 (드래곤 붉게 · 오우거 초록)
   const eq = c.equip || {}, hy = -45 - bob, P = [];
   // 뒷머리(긴 머리·묶은 머리)는 몸·팔보다 먼저 그려서 몸 뒤로
   const hp = hairParts(c.hair, c.hairC || HAIR_COLORS[0], hy);
@@ -1745,7 +1751,7 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 // ───── 사용자가 그린 그림 (텍스쳐 템플릿/내 디자인 → scripts/img-export/town-art.py → assets/img/town) ─────
 // 다 불러온 뒤에 마을을 시작함 (artReady). 못 불러온 그림은 예전 코드 그림을 그대로 씀
 const ART = {};
-const ART_N = ['fx-dragon', 'b-farmrank', 'b-suggest', 'b-beginner', 'b-dex', 'bench', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
+const ART_N = ['fx-dragon', 'fx-ogre', 'b-farmrank', 'b-suggest', 'b-beginner', 'b-dex', 'bench', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
   ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
   ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].flatMap(n => ['mg-' + n, 'fk-' + n, 'mk-' + n, 'fa-' + n]), 'ogre-bg'];
@@ -6212,12 +6218,12 @@ function smTag(now) {
   if (p.bubble && p.bubble.until > now) bubbleAt(p.x, p.y - 68, p.bubble.text);
 }
 // 바로가기: [아이콘, 이름, x, y]. 2026-11-17 이름만 짧게 (한 화면에 다 들어오게)
-const PLACES = [['⛲', '광장', START.x, START.y], ['🏛️', '마을회관', ...door('hall')], ['🌀', '사냥', BACK.x, BACK.y],
+const PLACES = [['⛲', '광장', START.x, START.y], ['🏛️', '회관', ...door('hall')], ['🌀', '사냥', BACK.x, BACK.y],
   ['🎰', '가챠', ...door('gacha')], ['🔨', '강화', ...door('smith')], ['👕', '스킨', ...door('skin')], ['☕', '카페', ...door('cafe')], ['🪝', '낚시', ...door('fishshop')], ['📖', '도감', ...door('dex')],
   ['🎣', '강', FISH_AT.x, FISH_AT.y], ['🐚', '바다', SEA_AT.x, SEA_AT.y], ['🌾', '텃밭', ...door('farmshed')], ['🪓', '벌목', ...door('lumber')], ['⛏️', '채석', ...door('quarry')]];
 // 바로가기로 가면 그 시설 창도 바로 열기
 function placeOpen(n) {
-  const bid = { '가챠': 'gacha', '카페': 'cafe', '스킨': 'skin', '강화': 'smith', '마을회관': 'hall', '낚시': 'fishshop', '도감': 'dex', '벌목': 'lumber', '채석': 'quarry' }[n];
+  const bid = { '가챠': 'gacha', '카페': 'cafe', '스킨': 'skin', '강화': 'smith', '회관': 'hall', '낚시': 'fishshop', '도감': 'dex', '벌목': 'lumber', '채석': 'quarry' }[n];
   if (bid) return openBuilding(BUILDINGS.find(b => b.id === bid));
   if (n === '광장') return openWish();
   if (n === '강') return openFishing();
@@ -7391,6 +7397,7 @@ async function openAdmin(tab = ADM.tab) {
       <div class="btns cheat">${B('gear', 0, '🗡️ 최고 장비 + 최고 강화')}${B('titles', 0, '🏷️ 칭호 모두')}${B('skins', 0, '👕 모든 스킨 받기')}${B('rskmax', 0, '⭐ 레이드 스킨 최고 레벨')}${B('skmax', 0, '⚡ 모든 스킬 최고 레벨')}${B('pots', 0, '🥤 물약·체력 가득')}</div>
       <div class="btns cheat">${B('wood', 1000, '🪵 목재 +1000')}${B('stone', 1000, '🪨 석재 +1000')}${B('fishmax', 1, '🎣 낚싯대·미끼 최고')}${B('farmmax', 1, '🧺 호미·비료 최고')}</div>
       <label class="ck" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" data-x="lgonly:0" ${me.life?.lgOnly ? 'checked' : ''}> 🐟 전설 물고기만 낚이기 (던지면 늘 낚임)</label>
+      <label class="ck" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" data-x="lgcrop:0" ${me.life?.lgCrop ? 'checked' : ''}> 🌾 전설 작물만 수확하기 (지금부터 심는 씨앗)</label>
       <div class="btns cheat">${B('farm', 0, '🌾 텃밭 다 자람')}${B('work', 0, '🪓 알바 창고 가득')}${B('cool', 0, '⏱️ 기다리는 시간 없애기')}</div>
       <p class="muted" style="margin-bottom:4px">직접 숫자 넣기 (빼려면 -를 붙여요)</p>
       <div class="admform"><input id="cN" type="number" placeholder="숫자" value="1000"><select id="cK"><option value="gold">골드 더하기</option><option value="exp">경험치 더하기</option><option value="lv">레벨 정하기</option><option value="wood">목재 더하기</option><option value="stone">석재 더하기</option></select><button class="mini main" data-x="custom">적용</button></div>`,
@@ -7400,7 +7407,7 @@ async function openAdmin(tab = ADM.tab) {
         if (k === 'custom') { k = el.querySelector('#cK').value; n = el.querySelector('#cN').value; }
         if (k === 'lv' && !(await ask('능력치가 다시 계산돼요.', { title: `${n}레벨로 바꿀까요?` }))) return;
         const j = await act('/api/admin/cheat', { k, n: Number(n) }); if (!j) return;
-        toast('🧪 ' + j.msg); sysMsg('🧪 치트: ' + j.msg); if (k === 'god' || k === 'skins' || k === 'rskmax' || k === 'skmax' || k === 'lgonly') openAdmin('cheat');
+        toast('🧪 ' + j.msg); sysMsg('🧪 치트: ' + j.msg); if (k === 'god' || k === 'skins' || k === 'rskmax' || k === 'skmax' || k === 'lgonly' || k === 'lgcrop') openAdmin('cheat');
       });
   }
   if (tab === 'notice') {

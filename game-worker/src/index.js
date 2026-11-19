@@ -659,7 +659,9 @@ const GAME = {
     let idx;
     if (b.all) { idx = []; for (let i = 0; i < n; i++) if (!f.plots[i]) idx.push(i); if (!idx.length) fail(400, '빈 밭이 없어요'); }
     else { const i = Number(b.i); if (!Number.isInteger(i) || i < 0 || i >= FARM.maxPlots) fail(400, '없는 밭이에요'); if (i >= n) fail(400, '아직 잠긴 밭이에요. 호미를 올리면 열려요'); if (f.plots[i]) fail(400, '이미 심은 밭이에요'); idx = [i]; }
-    for (const i of idx) { const r = rollCrop(f.hoe, f.fert); if (!r) fail(500, '씨앗을 심을 수 없어요 (설정 오류)'); f.plots[i] = { at, r: at + r.sec * 1000, id: r.id, g: r.g, p: r.p }; }
+    for (const i of idx) { let r = rollCrop(f.hoe, f.fert); if (!r) fail(500, '씨앗을 심을 수 없어요 (설정 오류)');
+      if (c.life.lgCrop) for (let k = 0; k < 400 && CROP_BY[r.id]?.grade !== 'legend'; k++) r = rollCrop(9, 9) || r;   /* 관리자 치트: 전설 작물만 */
+      f.plots[i] = { at, r: at + r.sec * 1000, id: r.id, g: r.g, p: r.p }; }
     cntAdd(c, 'plant', idx.length);
     return { planted: idx.length, log: ['plant', `${idx.length}칸`] };
   },
@@ -1081,6 +1083,7 @@ function cheat(c, k, b, at, env, user) {
   }
   if (k === 'farm') { for (const p of L.farm.plots) if (p) p.r = at; return { msg: '텃밭 다 자람' }; }
   if (k === 'fishmax') { L.fish.rod = RODS.length - 1; L.fish.bait = BAITS.length - 1; return { msg: '낚싯대 · 미끼 최고 단계' }; }   // 2026-11-20
+  if (k === 'lgcrop') { L.lgCrop = !L.lgCrop; return { msg: L.lgCrop ? '전설 작물만 심기 켬 (지금부터 심는 씨앗)' : '전설 작물만 심기 끔' }; }
   if (k === 'lgonly') { L.lgOnly = !L.lgOnly; return { msg: L.lgOnly ? '전설 물고기만 낚이기 켬' : '전설 물고기만 낚이기 끔' }; }
   if (k === 'farmmax') { L.farm.hoe = 9; L.farm.fert = 9; return { msg: '호미 · 비료 최고 단계' }; }
   if (k === 'work') {

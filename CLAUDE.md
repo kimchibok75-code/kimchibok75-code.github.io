@@ -495,7 +495,7 @@
 - 음료: 작은 20% · 큰 50% · 특대 100% (최대 체력 비율). 고르는 규칙 `potPick` 하나를 화면·서버가 같이 씀
 - 생활 경험치 줄임: `LIFE_EXP_DIV` 250·60·55·40 → 1000·300·120·150
 - 카페 '창가 자리에서 쉬기' 삭제 (`/api/rest`도 없앰). 첫 집 골드 3,000 → 10,000. 레이드 모집 30초 → **2분** (`RAID.recruit`)
-- 건물 창 촘촘하게: `@media (pointer: fine), (max-height: 820px)` 블록 (style 맨 위 `.bs` 부분 끝). 바로가기는 이름만 13칸(광장·마을회관·사냥·가챠·강화·스킨·카페·낚시·강·바다·텃밭·벌목·채광)
+- 건물 창 촘촘하게: `@media (pointer: fine), (max-height: 820px)` 블록 (style 맨 위 `.bs` 부분 끝). 바로가기는 이름만 13칸(광장·회관·사냥·가챠·강화·스킨·카페·낚시·강·바다·텃밭·벌목·채광)
 - 자동 생활 텃밭: 빈 칸은 `farmTap(i, true)` → `/api/farm/plantall`로 한 번에
 - ~~손 낚시: 한 번 누르면 계속~~ → 2026-11-18 다시 클릭형: 한 번 누르면 한 번만 던지고, 결과가 나온 뒤 2초(`FISHING.cooldown`) 쉬어야 다시 던짐 (`F.loop` 없앰)
 - **화면 맞춤** (2026-11-17): PC 배율 = 설정값 × `uiFit()` (창 높이 940·너비 1700 기준으로 줄임, 최소 0.8). 1280×720이면 약 0.9
@@ -569,7 +569,7 @@
 - 오우거 공격 (`raidPattern(start, 'ogre')`): 💥 내려찍기 slam(큰 원 1~2개) · 🪨 바위 던지기 rock(작은 원 3~5개, 손에서 포물선으로 날아옴) · 몽둥이 휘두르기 swing(앞쪽 부채꼴 `OGRE_SWING`) · 포효. 피해 `RAID_HIT`
 - 그림: `내 디자인/오우거_다리·몸통·오른팔·왼팔·머리.png` + `배경_오우거.png` → town-art.py 9번 → `og-leg/body/rarm/larm/head.webp`(절반 크기), `ogre-bg.webp`, meta `ogre`(판 좌표). game.html `drawOgre` (`OPART`, 오른팔은 어깨 `OSHOULDER` 기준으로 공격 예고 동안 치켜들고 칠 때 내려침, 예고 중 눈이 붉게). 배경 화로 불빛·불티는 `ogreAmbient`
 - 오우거 스킨 (템플릿 `char/hat_guide_오우거.png`, `char/suit-front_guide_오우거.png`, `weapon/*_guide_오우거.png`) → `og-hat/suit/sword/bow/staff.webp`, meta `og` → game.html `OGS`. id는 모두 `ogre` (HATS·SUITS·WSKINS, `raid: 'ogre'`)
-- **레드 드래곤 세트 이펙트** (2026-11-20): 모자·눈·의상·검·활·지팡이 6부위를 모두 레드 드래곤으로 입으면 캐릭터 뒤에 붉게 은은히 빛나는 드래곤 문양 (`dragonFull`, `dragonAura`, drawChar 맨 앞). 그림 `내 디자인/이펙트_드래곤 세트.png`(검은 바탕 흰 그림) → town-art.py 14번 → `fx-dragon.webp`(흰 그림, 화면이 붉게 물들임)
+- **레이드 세트 이펙트** (2026-11-20): 모자·눈·의상 + **지금 클래스 무기** 스킨이 모두 그 레이드 세트면 캐릭터 뒤에 은은히 빛나는 문양 — 드래곤 붉게 · 오우거 초록 (`RAID_FX`, `raidFxOf`, `setAura`, drawChar 맨 앞). 그림 `내 디자인/이펙트_드래곤 세트.png`·`이펙트_오우거 세트.png`(검은 바탕 흰 그림, 정사각 판 그대로 · 아래 고리 = 발, 세로 86%) → town-art.py 14번 → `fx-dragon/fx-ogre.webp`
 - 오우거 눈 스킨 `eye:ogre` 추가 (레이드 세트 6부위)
 - 스킨샵 레이드 탭은 보스별로 나눠 보임. 치트 탭: '👕 모든 스킨 받기' + '⭐ 레이드 스킨 최고 레벨'(`rskmax`: 모든 레이드 스킨 Lv10)
 
@@ -731,6 +731,7 @@
 - 자동 생활: 물고기 가방이 꽉 차면(`bagFull`) 낚시 차례를 건너뛰고, 작물 가방이 꽉 차면(`cropFull`) 텃밭 일을 쉼
 - **사냥 중 경험치 막대는 실시간**: `syncBars`가 서버 값 + 화면에서 잡은 만큼(`HT.loc.exp`)을 보여 주고, 레벨이 오를 만큼 모이면 바로 `huntSync`(8초에 한 번까지) → 서버가 진짜 레벨업
 - 🏆 랭킹 창(오른쪽 버튼)에서 물고기 탭 3개 뺌 (물고기 순위는 낚시 랭킹판에서). 서버 `fishp/fishl/fishn`은 그대로
+- 치트 `lgcrop`(체크: 전설 작물만, 켠 뒤 심는 씨앗부터, `life.lgCrop`)
 - 치트 추가: `skmax`(모든 스킬 Lv10) · `fishmax`(낚싯대·미끼 최고) · `lgonly`(체크: 전설 물고기만 + 늘 낚임, `life.lgOnly`)
 
 ### 다음: 4-2단계
