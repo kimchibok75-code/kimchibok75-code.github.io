@@ -712,13 +712,13 @@
   - 예전 텃밭(`farm.v !== 2`)은 `fixLife`가 새 텃밭으로 바꿈. **텃밭 코인(🌻) 없앰**: 남은 코인은 `play()`가 1개 = 100골드(응답 `farmCoin` → 토스트). 도장(600골드)·주간 상자·자리 비움·주민 임무(골드 +150)·분수(골드 300)도 코인 대신 골드
 - 서버 index.js: `/api/farm/plant {i | all}`, `/api/farm/harvest {i | all}`(응답 `got`), `/api/farm/sell {ks, want}`, `/api/farm/shop {k: hoe|fert}`, `/api/farm/king`, `GET /api/farm/rank`. 치트 `farm`(다 자람) · `farmmax`(호미·비료 최고)
 - **텃밭 창고 창** (`openFarm`, 탭 `fmTabs`): 🌱 밭(전체 심기 · 전체 수확) / 💰 팔기(`farmSell`, 고르기 · 등급 · `ask` 확인) / 🛒 호미·비료(`farmShop`) / 👑 농사왕(`kingSheet` + `KINGS.farm`)
-  - 지도 두둑을 누르면: 빈 밭 → 빈 밭 **모두** 심기, 다 자람 → 다 자란 것 **모두** 수확 (`farmTap`). 자동 생활도 같은 방식 (`auFarm`)
+  - 지도 두둑을 직접 누르면 **그 칸 하나씩** 심기 · 수확 (`farmTap`, 사용자 결정 2026-11-20). 창의 빈 칸 · 전체 심기 버튼은 빈 밭 모두. 자동 생활도 두둑을 하나씩 누름 (`auFarm`)
   - 수확하면 제일 비싼 작물을 머리 위에 들고 있음 (`me.brag.crop`, `drawBrag`), 전설이면 축하 창 `legendCropPop`
   - 그림 도우미: `cropPic`(창), `cropImgC`(캔버스)
 - **도감 센터 🌾 작물 탭** (`dexHero('crop')`, 5종마다 `DEX_FX.crop`) · **작물 뱃지** `c_작물id` (한 번 수확하면, `badgeCanvas`가 작물 그림). 수확 수 `cnt.cc_작물id`, 최고 무게 `life.cbest`
 - **농사왕 세트** (id `farmking`, `fk: 1`, 스킨샵에서 안 팖): 템플릿 `*_guide_농사왕.png` → town-art.py `tpl_set('농사왕', 'fa')` → `fa-*.webp`, game.html `FAS` (TSK의 `farmking`). 목표 6개(작물 100 · 씨앗 600번 · 희귀 15 · 도감 25종 · 큰 작물 30 · 전설 1)
 - **🌾 농사왕 심어라** `SM`: 텃밭 창고 문 왼쪽에 서 있는 주민 (김참치처럼 말 걸기 없음, 농사왕 세트, 9칸 안이면 7~15초마다 `SM_LINES`). `smTick`, `smTag`
-- 심기는 따로 없음: 빈 칸을 눌러도 언제나 빈 밭 **모두** 심기 (사용자 결정)
+- 텃밭 창고 창의 빈 칸을 누르면 빈 밭 모두 심기, 지도 두둑은 하나씩 (사용자 결정)
 - 템플릿 세트 의상은 `suitParts`의 case 목록에도 id를 넣어야 몸통이 그려짐 (농사왕을 빠뜨려 몸통이 안 보였던 적 있음)
 - 마을 소식의 레이드: `raidGroup`이 같은 보스·같은 30분을 한 줄로 묶음 ('○○님 외 N명이 … 레이드에 성공했어요!')
 - 스페이스바 낚시: 4.5칸 안에 물고기 그림자가 있으면 그쪽으로 던짐. 휴대폰은 오른쪽 아래 ✋ **이용** 버튼(`#apUse`) = 스페이스바

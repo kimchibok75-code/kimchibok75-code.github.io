@@ -2610,15 +2610,15 @@ function drawPlots(now) {
 // 그 칸을 여는 호미 단계 (화면 Lv)
 const plotNeed = i => HOES.findIndex(h => h[2] > i) + 1;
 const plotLeftS = p => Math.max(0, Math.ceil((p.r - Date.now()) / 1000));
-// 지도에서 두둑을 누르면: 빈 밭 → 빈 밭 모두 심기 · 다 자람 → 다 자란 것 모두 수확 · 자라는 중 → 남은 시간
+// 지도에서 두둑을 누르면 (2026-11-20 사용자 요청: 하나씩): 빈 밭 → 그 칸 심기 · 다 자람 → 그 칸 수확 · 자라는 중 → 남은 시간
 function plotAt(wx, wy) { const f = me.life?.farm; if (!f || me.room) return -1; return PLOTS.findIndex(P => Math.abs(wx - P.x) < BED_W / 2 && Math.abs(wy - P.y) < BED_H / 2 + 2); }
 function farmTap(i) {
   const P = PLOTS[i];
   const doIt = async () => {
     const f = LIFE().farm, p = f.plots[i], st = plotStage(p, Date.now());
     if (i >= farmPlots(f.hoe)) return toast(`🔒 호미를 Lv${plotNeed(i)}로 올리면 열리는 밭이에요 (텃밭 창고)`);
-    if (st === 'empty') return farmPlant(null);
-    if (st === 'ready') return farmHarvest(null);
+    if (st === 'empty') return farmPlant(i);
+    if (st === 'ready') return farmHarvest(i);
     toast(`🌱 무엇이 자랄까요? ${fmtLeft(plotLeftS(p))} 뒤에 다 자라요`);
   };
   if (i >= farmPlots(LIFE().farm.hoe)) return doIt();
@@ -6500,7 +6500,7 @@ function openFarm(keep) {
       <div class="plots">${cells}</div>
       <p class="muted" style="text-align:center;margin:4px 0 0">무엇이 자랄지는 수확할 때 알 수 있어요!</p>`,
     help: `<p>씨앗은 <b>수수께끼 씨앗 하나</b>뿐이에요. 무료로 얼마든지 심어요.</p><p>심는 순간 무엇이 자랄지 정해지지만, <b>수확할 때까지 비밀</b>이에요. 1~2분이면 자라요 (호미가 좋을수록 빨리).</p>
-      <p>수확한 작물은 🎒 작물 가방(최대 ${FARM.bag}개)에 들어가요. <b>💰 팔기</b> 탭에서 팔아야 골드가 돼요.</p><p><b>호미</b>: 밭 칸 · 큰 작물 · 빨리 자람 / <b>비료</b>: 희귀 · 전설 작물이 잘 나옴.</p><p>마을 텃밭 두둑을 눌러도 빈 밭 모두 심기 · 다 자란 것 모두 수확이 돼요.</p>`,
+      <p>수확한 작물은 🎒 작물 가방(최대 ${FARM.bag}개)에 들어가요. <b>💰 팔기</b> 탭에서 팔아야 골드가 돼요.</p><p><b>호미</b>: 밭 칸 · 큰 작물 · 빨리 자람 / <b>비료</b>: 희귀 · 전설 작물이 잘 나옴.</p><p>마을 텃밭 두둑을 직접 누르면 그 칸 하나씩 심고 · 수확해요.</p>`,
     foot: `<div class="bs-two">${bbtn('plantall', '🌱 전체 심기', `빈 밭 ${empty}칸`, { main: !ready && !!empty, dis: !empty })}${bbtn('harvestall', '🧺 전체 수확', full ? '가방이 꽉 찼어요' : `${ready}칸`, { main: !!ready, dis: !ready || full })}</div>` },
     async x => {
       const [a, v] = x.split(':');
