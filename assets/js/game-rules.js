@@ -451,7 +451,7 @@ export const jobTips = (jobAt, lv, upTo = Infinity) => jobGuests(jobAt, lv).filt
 const HOUR = 3600e3, MIN = 60e3;
 // 캐릭터의 생활 정보 (DB characters.life 한 칸에 JSON으로)
 export const newLife = () => ({ coins: { fish: 0, farm: 0 }, res: { wood: 0, stone: 0 }, fish: { rod: 0, bait: 0, pack: 0 },
-  farm: newFarm(), cnt: {}, titles: ['new'], buff: null, wishAt: 0,
+  farm: newFarm(), cnt: {}, titles: ['new'], badge: 'leaf', buff: null, wishAt: 0,   // 2026-11-20 처음부터 새내기 뱃지를 달고 시작 (뱃지를 직접 뺀 사람은 '' 그대로)
   sk: {}, skg: 0, nodes: {}, gatherAt: 0, work: { lumber: { n: 0, at: 0, acc: 0 }, quarry: { n: 0, at: 0, acc: 0 } } });
 export function fixLife(l) {
   const d = newLife(); if (!l || typeof l !== 'object') return d;

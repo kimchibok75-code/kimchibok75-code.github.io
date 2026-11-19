@@ -210,6 +210,7 @@ async function resetAccount(req, env, user) {
     env.DB.prepare('DELETE FROM village_give WHERE user_id = ?').bind(user.id),
     env.DB.prepare('INSERT INTO activity (user_id, kind, detail, at) VALUES (?, ?, ?, ?)').bind(user.id, 'reset', '계정 초기화', t),
   ]);
+  RANK_MEM_CLEAR();   // 2026-11-20 초기화하면 랭킹 기록도 바로 사라지게 (레벨·번 돈·강화는 캐릭터와 같이, 낚시·농사·기여도는 위에서 지움)
   return json({ ok: true });
 }
 async function login(req, env) {
@@ -382,6 +383,7 @@ const GAME = {
     if (c.hunt) fail(400, '이미 사냥 중이에요');
     notWorking(c);
     const fi = Number(b.f); if (!Number.isInteger(fi) || !FIELDS[fi]) fail(400, '없는 사냥터예요');
+    if (c.lv < FIELDS[fi].min) fail(400, `Lv.${FIELDS[fi].min}부터 들어갈 수 있어요`);   // 2026-11-20 최소 레벨
     if (c.hp < 1) fail(400, '체력이 없어요. 잠깐 쉬었다 가세요');
     cntAdd(c, 'huntGo');   // 가이드용
     startHunt(c, fi, at);
@@ -1006,7 +1008,7 @@ const RANK_MEM = {};
 const rankFish = s => { try { return s ? JSON.parse(s) : null; } catch { return null; } };
 // 랭킹에 안 나오는 계정 (2026-11-17 사용자 요청: 김치복 · 테스트, 그리고 시험용 zz 계정)
 const RANK_MEM_CLEAR = () => { for (const k in RANK_MEM) delete RANK_MEM[k]; };
-const RANK_HIDE = "u.nick NOT IN ('김치복', '테스트') AND u.nick NOT LIKE 'zz%'";
+const RANK_HIDE = "u.nick <> '테스트' AND u.nick NOT LIKE 'zz%'";   // 2026-11-20 김치복도 랭킹에 들어감
 async function rankList(env, user, k) {
   if (!own(RANK, k)) fail(400, '잘못된 요청이에요');
   // 2026-11-20 그 종목에 필요한 표만 이어 붙이고, 순위 전체(최대 3000명)를 1분 기억 → 내 순위도 기억한 목록에서 찾음 (예전엔 열 때마다 모든 계정을 다시 셌음)
