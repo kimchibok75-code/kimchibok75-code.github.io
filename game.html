@@ -723,6 +723,7 @@ body.hunting .qbox { display: none; }
 .hb-top span { font-family: var(--font-body); font-size: calc(13px * var(--fs)); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
 .hb-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; font-variant-numeric: tabular-nums; }
 .hb-stats span { display: flex; justify-content: space-between; gap: 4px; }
+.hb-row.man label { display: inline-flex; align-items: center; gap: 5px; font-weight: 800; cursor: pointer; } .hb-row.man input { width: 17px; height: 17px; accent-color: #e8553a; margin: 0; } .hb-row.man small { color: var(--muted, #6b7280); }
 .hb-row { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: calc(13px * var(--fs)); flex-wrap: wrap; }
 .huntbox .btn { padding: 9px 12px; }
 body.hunting .zoom { display: none; }
@@ -1129,6 +1130,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
       </div>
       <div class="hb-sk" id="hbSk" aria-label="스킬 쿨타임"></div>
       <div class="hb-row"><span id="hbBoss">👑 보스까지 30:00</span></div>
+      <div class="hb-row man"><label><input type="checkbox" id="hbMan"> 🎮 수동 전투</label><small id="hbManT">자동 전투 중</small></div>
       <div class="hb-row pot"><label>🥤 자동 <select id="hbPot"><option>30</option><option selected>40</option><option>50</option><option>60</option><option>70</option></select>%</label><span id="hbPots">물약 5개</span></div>
       <button class="btn main" id="hbBack" type="button">🏠 마을로 돌아가기</button>
     </section>
@@ -3661,6 +3663,7 @@ function enterHunt(h) {
   const f = FIELDS[h.f]; paintHunt(f);
   HT = { f, mons: [], floats: [], parts: [], fx: [], shots: [], shake: 0, freeze: 0, loc: { kills: 0, exp: 0, gold: 0 }, t0: h.start, srv: h, bossAt: performance.now() + (h.boss - h.t) * 1000, atkT: .4, potCD: 0, target: null, cd: { ...(h.cd || {}) }, q: [], sh: 0, bt: 0, batk: 0, bcrit: 0 };
   setHbMin(false);   // 현황판은 펼친 채로 시작
+  $('#hbMan').checked = false; $('#hbManT').textContent = '자동 전투 중'; document.body.classList.remove('hunt-man');   // 들어갈 때는 늘 자동 전투
   loadZoom();   // 사냥터 확대 값
   me.sit = -1; me.x = HW * T / 2; me.y = HH * T / 2; me.path = []; me.moving = false; cam = { x: me.x, y: me.y };
   for (let i = 0; i < 8; i++) spawnMon(false);
@@ -3672,7 +3675,7 @@ function enterHunt(h) {
 function exitHuntView() {
   bgm('town');
   clearInterval(syncT); syncT = null;
-  document.body.classList.remove('hunting'); $('#huntBox').hidden = true;
+  document.body.classList.remove('hunting', 'hunt-man'); $('#huntBox').hidden = true;
   HT = null; loadZoom(); me.path = []; me.moving = false; me.swing = 0; cam = { x: me.x, y: me.y }; syncBars();
   netSend({ t: 'hunt', on: false }); netGo();
 }
@@ -3750,7 +3753,9 @@ function updateHunt(dt) {
   HT.skT = (HT.skT || 0) - dt; if (HT.skT <= 0) { HT.skT = .2; renderHbSk(D); }
   HT.atkT = Math.max(0, HT.atkT - dt); HT.back = Math.max(0, (HT.back || 0) - dt); HT.backCD = Math.max(0, (HT.backCD || 0) - dt);
   if (!HT.dying && me.hp > 0) me.hp = Math.min(D.maxHp, me.hp + D.maxHp * D.regen * dt);   // 사냥 중 회복 (서버와 같게)
-  if (tg) {
+  if (HT.manual) manualHunt(dt, D);
+  else if (tg) {
+    if (steerDir()) autoHint();
     // 떨림 방지: 확실히 닿는 거리(want)까지 다가간 뒤, 공격 거리(ok)를 벗어나야 다시 쫓아감. 넉백으로 조금 밀려도 그 자리에서 계속 공격
     const dx = tg.x - me.x, dy = tg.y - me.y, d = Math.hypot(dx, dy) || 1, melee = 22 + tg.d.s * 10;
     const want = D.far ? 3.4 * T : melee, ok = D.far ? 4.8 * T : melee + 16, sp = 125 * D.spd * dt;
@@ -4095,7 +4100,7 @@ const pts = new Map();
 cv.addEventListener('pointerdown', e => { try { cv.setPointerCapture(e.pointerId); } catch {} pts.set(e.pointerId, { x: e.offsetX, y: e.offsetY }); if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: S.zoom }; down = null; } else down = { x: e.offsetX, y: e.offsetY, t: performance.now() }; });
 cv.addEventListener('pointermove', e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.offsetX, y: e.offsetY }); if (pinch && pts.size === 2) { const [a, b] = [...pts.values()]; setZoom(pinch.z * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d); return; }
   // 한 손가락(또는 마우스)으로 끌면 그 방향으로 계속 걷기
-  if (down && !HT && pts.size === 1) { const dx = e.offsetX - down.x, dy = e.offsetY - down.y; if (down.drag || Math.hypot(dx, dy) > 14) { down.drag = true; down.cx = e.offsetX; down.cy = e.offsetY; const l = Math.hypot(dx, dy); STEER.drag = l > 14 ? [dx / l, dy / l] : null; } } });
+  if (down && (!HT || HT.manual) && pts.size === 1) { const dx = e.offsetX - down.x, dy = e.offsetY - down.y; if (down.drag || Math.hypot(dx, dy) > 14) { down.drag = true; down.cx = e.offsetX; down.cy = e.offsetY; const l = Math.hypot(dx, dy); STEER.drag = l > 14 ? [dx / l, dy / l] : null; } } });
 cv.addEventListener('pointerup', e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!down) return; if (down.drag) { STEER.drag = null; down = null; return; } const moved = Math.hypot(e.offsetX - down.x, e.offsetY - down.y); if (moved < 10) tap(e.offsetX, e.offsetY); down = null; });
 cv.addEventListener('pointercancel', e => { pts.delete(e.pointerId); pinch = null; down = null; STEER.drag = null; });
 cv.addEventListener('wheel', e => { e.preventDefault(); setZoom(S.zoom * (e.deltaY < 0 ? 1.1 : .9)); }, { passive: false });
@@ -4155,6 +4160,8 @@ function jumpGo(ch, n) {
 }
 function myJump() {
   if (S.away || (me.jn || 0) >= 2) return;
+  if (HT && !HT.manual) return autoHint();   // 자동 전투 중에는 점프 안 됨
+  manInput();
   if (!HT && !RD && me.sit >= 0) { standUp(me); netSend({ t: 'sit', b: -1 }); }
   const n = (me.jn || 0) + 1; jumpGo(me, n); sfx(n === 1 ? 'pop' : 'warp');
   const x = me.x, y = me.y + 4; if (HT) { fxBurst(x, y, n === 1 ? '#d8c9ac' : '#bfefff', n === 1 ? 6 : 12, 90, 2.4, 0); if (n === 2) fxRing(x, me.y - me.jz, '#bfefff', 24, .3); }
@@ -4337,8 +4344,53 @@ function drawTownAtk() {
   }
   ctx.restore();
 }
+// ───────── 수동 전투 (2026-11-19) ─────────
+// 현황판 '🎮 수동 전투'를 켜면 내가 직접: PC 화살표(WASD) 이동 · Z 공격(스킬 먼저) · C 점프 / 휴대폰 끌어서 이동 · 몬스터 누르면 그 몬스터 공격 · 바닥 누르면 그리로
+// 1분(MAN_IDLE) 동안 아무 조작이 없으면 자동 전투로 돌아감. 자동 전투 중에는 이동·점프·공격을 못 함 (보기만)
+// 화면 전투는 보여 주기용이라 보상(서버 hunt.js 계산)은 수동·자동 똑같음
+const MAN_IDLE = 60;
+function setManual(on, why) {
+  if (!HT) return;
+  HT.manual = !!on; HT.mIn = performance.now(); HT.mt = null; HT.mgo = null; HT.chase = false; HT.back = 0;
+  STEER.key.clear(); STEER.drag = null; me.moving = false;
+  $('#hbMan').checked = HT.manual; $('#hbMan').blur();
+  $('#hbManT').textContent = HT.manual ? '' : '자동 전투 중';
+  document.body.classList.toggle('hunt-man', HT.manual);
+  if (why === 'idle') toast('🤖 1분 동안 조작이 없어서 자동 전투로 바꿨어요');
+  else toast(HT.manual ? (PC_KEYS ? '🎮 수동 전투: 화살표 이동 · Z 공격 · C 점프' : '🎮 수동 전투: 끌어서 이동 · 몬스터를 눌러 공격') : '🤖 자동 전투로 바꿨어요');
+}
+const manInput = () => { if (HT?.manual) HT.mIn = performance.now(); };
+let autoHintAt = 0;
+function autoHint() { const t = performance.now(); if (t - autoHintAt < 4000) return; autoHintAt = t; toast('🤖 자동 전투 중이에요 · 직접 싸우려면 현황판의 🎮 수동 전투를 켜세요'); }
+function manualHunt(dt, D) {
+  const left = MAN_IDLE - (performance.now() - HT.mIn) / 1000;
+  if (left <= 0) return setManual(false, 'idle');
+  HT.manT = (HT.manT || 0) - dt; if (HT.manT <= 0) { HT.manT = .25; $('#hbManT').textContent = left < 15 ? `${Math.ceil(left)}초 뒤 자동 전투` : '직접 조작 중'; }
+  if (HT.dash) return;
+  const sp = 125 * D.spd * dt * (me.jn === 2 ? JUMP.air2 : me.jn ? JUMP.air : 1), inX = x => Math.max(1.2 * T, Math.min((HW - 1.2) * T, x)), inY = y => Math.max(1.8 * T, Math.min((HH - 1) * T, y));
+  const go = (dx, dy, st) => { const l = Math.hypot(dx, dy) || 1; me.x = inX(me.x + dx / l * st); me.y = inY(me.y + dy / l * st); me.moving = true; if (Math.abs(dx) > .15 * l) me.dir = dx < 0 ? -1 : 1; };
+  const d = steerDir();
+  if (d) { manInput(); HT.mt = null; HT.mgo = null; go(d[0], d[1], sp); return; }
+  const m = HT.mt;
+  if (m && !m.dead) {   // 누른 몬스터: 다가가서 공격 (휴대폰용)
+    HT.target = m; m.aggro = true;
+    const dx = m.x - me.x, dy = m.y - me.y, dd = Math.hypot(dx, dy) || 1, ok = D.far ? 4.8 * T : 22 + m.d.s * 10 + 16, want = D.far ? 3.4 * T : 22 + m.d.s * 10;
+    if (Math.abs(dx) > 6) me.dir = dx < 0 ? -1 : 1;
+    if (dd > ok || (HT.chase && dd > want)) { HT.chase = true; go(dx, dy, Math.min(sp, dd - want + 1)); }
+    else { HT.chase = false; me.moving = false; if (HT.atkT <= 0) { HT.atkT = D.gap; if (D.far) shoot(m, D); else hitMon(m, D); } }
+    if (dd < 6 * T && !HT.dying) { const k = D.skills.find(k => HT.cd[k.s.id] <= 0 && (dd <= ok || k.p.dash)); if (k) castSkill(k, m, D); }
+    return;
+  }
+  HT.mt = null;
+  const g = HT.mgo;
+  if (g) { const dx = g.x - me.x, dy = g.y - me.y, dd = Math.hypot(dx, dy); if (dd < 3) { HT.mgo = null; me.moving = false; } else go(dx, dy, Math.min(sp, dd)); return; }
+  me.moving = false;
+}
+$('#hbMan').onchange = e => setManual(e.target.checked);
 function huntZ() {
   if (HT.dying || me.hp <= 0) return;
+  if (!HT.manual) return autoHint();
+  manInput(); HT.mt = null; HT.mgo = null;
   const D = derive(), alive = HT.mons.filter(m => !m.dead); if (!alive.length) return;
   const tg = alive.reduce((a, m) => (Math.hypot(m.x - me.x, m.y - me.y) < Math.hypot(a.x - me.x, a.y - me.y) ? m : a));
   HT.target = tg; tg.aggro = true;
@@ -4346,7 +4398,7 @@ function huntZ() {
   if (Math.abs(tg.x - me.x) > 6) me.dir = tg.x < me.x ? -1 : 1;
   // 쿨타임이 찬 스킬이 있으면 순서대로 (스킬 칸 왼쪽부터)
   if (!HT.dash && d < 6 * T) { const k = D.skills.find(k => HT.cd[k.s.id] <= 0 && (d <= ok || k.p.dash)); if (k) return castSkill(k, tg, D); }
-  if (d > ok) { HT.chase = true; return; }   // 멀면 다가감 (닿으면 자동으로 공격)
+  if (d > ok) { if (HT.atkT <= 0) { HT.atkT = D.gap * .6; me.swing = .18; if (!D.far) me.lunge = .12; } return; }   // 멀면 허공에 휘두르기만 (직접 다가가야 함)
   if (HT.atkT > D.gap * .45) return;   // 너무 빠른 연타는 막음 (서버 계산과 크게 다르지 않게)
   HT.atkT = D.gap; if (D.far) shoot(tg, D); else hitMon(tg, D);
 }
@@ -4354,7 +4406,7 @@ addEventListener('keyup', e => STEER.key.delete(e.code));
 addEventListener('blur', () => { STEER.key.clear(); STEER.drag = null; });
 // 끄는 중이면 손가락 자리에 작은 방향 표시
 function drawStick() {
-  if (!down?.drag || HT) return;
+  if (!down?.drag || (HT && !HT.manual)) return;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.fillStyle = 'rgba(255,255,255,.28)'; ctx.strokeStyle = 'rgba(31,42,58,.35)'; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.arc(down.x, down.y, 34, 0, 7); ctx.fill(); ctx.stroke();
@@ -4367,7 +4419,13 @@ function tap(sx, sy, wIn) {
   const w = wIn || toWorld(sx, sy);
   if (RD) { if (!RD.dead) RD.goal = { x: w.x, y: w.y }; return; }   // 레이드: 누른 곳으로 피하기
   // 사냥 중: 몬스터를 누르면 그 몬스터부터 공격
-  if (HT) { const m = HT.mons.filter(m => !m.dead).find(m => Math.abs(w.x - m.x) < 20 * m.d.s && w.y > m.y - 40 * m.d.s && w.y < m.y + 8); if (m) HT.target = m; return; }
+  if (HT) {
+    if (!HT.manual) return autoHint();
+    manInput();
+    const m = HT.mons.filter(m => !m.dead).find(m => Math.abs(w.x - m.x) < 20 * m.d.s && w.y > m.y - 40 * m.d.s && w.y < m.y + 8);
+    if (m) { HT.mt = m; HT.mgo = null; HT.target = m; } else { HT.mt = null; HT.mgo = { x: w.x, y: w.y }; }
+    return;
+  }
   if (me.roof && !wIn) { const r = me.roof, fy = w.y + r.h; if (inRoof(r, w.x, fy)) { me.path = [{ x: w.x, y: fy }]; me.then = null; return; } }   // 지붕 위를 걷기
   const hitP = !wIn && people.filter(shown).find(p => Math.abs(w.x - p.x) < 16 && w.y > p.y - 66 && w.y < p.y + 10), onMe = !wIn && Math.abs(w.x - me.x) < 14 && w.y > me.y - 56 && w.y < me.y + 8;
   if (me.room === DONG) {   // 치복동
