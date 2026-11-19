@@ -48,6 +48,8 @@ export class Town extends DurableObject {
   pub(a) { return { id: a.id, n: a.n, adm: a.adm, ...a.look, x: a.x, y: a.y, tx: a.tx, ty: a.ty, hunt: a.hunt, au: a.au || 0, sit: a.sit ?? -1, room: a.room2 || 0 }; }
   send(ws, o) { try { ws.send(JSON.stringify(o)); } catch {} }
   all(o, except) { const s = JSON.stringify(o); for (const w of this.members(except)) try { w.send(s); } catch {} }
+  // 2026-11-20 움직임처럼 자주 오는 것은 같은 방(마을 0 · 치복동 -1 · 집)에 있고 사냥 중이 아닌 사람에게만
+  room(o, except, r) { const s = JSON.stringify(o); for (const w of this.members(except)) { const b = this.info(w); if ((b.room2 || 0) !== (r || 0) || b.hunt) continue; try { w.send(s); } catch {} } }
 
   async fetch(req) {
     const url = new URL(req.url);
@@ -122,12 +124,15 @@ export class Town extends DurableObject {
       if (!Array.isArray(m.p) || !m.p.length || m.p.length > 8) return;
       const p = [];
       for (const s of m.p) { if (!Array.isArray(s) || s.length !== 5 || !Number.isFinite(s[0]) || !num(s[1], MW * T) || !num(s[2], MH * T) || !num(s[3], 400)) return; p.push([Math.round(s[0]), Math.round(s[1]), Math.round(s[2]), Math.round(s[3]), s[4] ? Math.max(1, Math.min(400, Math.round(+s[4]) || 1)) : 0]); }
-      const z = p[p.length - 1]; Object.assign(a, { x: z[1], y: z[2], tx: z[1], ty: z[2], sit: -1 }); this.save(ws, a);
-      return this.all({ t: 'mv', id: a.id, p }, ws);
+      if (t - (a.mvAt || 0) < 200) return;   // 2026-11-20 0.2초에 한 번까지
+      const z = p[p.length - 1]; Object.assign(a, { x: z[1], y: z[2], tx: z[1], ty: z[2], sit: -1, mvAt: t });
+      if (t - (a.mvSave || 0) > 5000) { a.mvSave = t; this.save(ws, a); } else this.cache.set(ws, a);   // 깨어날 때 쓸 저장은 5초에 한 번만
+      if (a.hunt) return;
+      return this.room({ t: 'mv', id: a.id, p }, ws, a.room2);
     }
     // 점프 (n: 1 점프 · 2 더블 점프) · Z 공격 (a = 바라보는 방향 각도). 보여 주기만
     if (m.t === 'jmp') { if ((m.n !== 1 && m.n !== 2) || t - (a.jmpAt || 0) < 120) return; a.jmpAt = t; a.sit = -1; this.save(ws, a); return this.all({ t: 'jmp', id: a.id, n: m.n }, ws); }
-    if (m.t === 'atk') { if (!Number.isFinite(m.a) || Math.abs(m.a) > 4 || t - (a.atkAt || 0) < 280) return; a.atkAt = t; return this.all({ t: 'atk', id: a.id, a: m.a }, ws); }
+    if (m.t === 'atk') { if (!Number.isFinite(m.a) || Math.abs(m.a) > 4 || t - (a.atkAt || 0) < 280) return; a.atkAt = t; return this.room({ t: 'atk', id: a.id, a: m.a }, ws, a.room2); }
     if (m.t === 'emo') { if (!EMOTES.includes(m.e) || t - a.emoAt < 800) return; a.emoAt = t; this.save(ws, a); return this.all({ t: 'emo', id: a.id, e: m.e }, ws); }
     // 낚시 모습 (다른 사람 화면에 낚싯대·찌·자랑 보여 주기). s: 1 던짐(bx,by = 찌 자리, r = 낚싯대 단계) · 2 낚음(g,n,len) · 3 놓침 · 0 낚싯대 넣음
     // 자랑 글은 서버가 확인한 물고기 이름·길이만 (아무 글이나 못 보냄)
@@ -224,7 +229,8 @@ export class Town extends DurableObject {
   async chzzk(list) {
     if (!Array.isArray(list)) return new Response('bad', { status: 400 });
     const byNick = new Map(); for (const w of this.members()) { const a = this.info(w); if (a.n) byNick.set(a.n, a); }
-    if (!byNick.size) return new Response('ok');
+    const nicks = Response.json({ nicks: [...byNick.keys()] });   // 2026-11-20 접속한 닉네임 목록을 돌려줌 → 치지직 쪽이 상관없는 채널은 건너뜀
+    if (!byNick.size) return nicks;
     const t = now(), rows = [];
     for (const m of list.slice(0, 200)) {
       const a = byNick.get(String(m.n)); if (!a) continue;
@@ -235,7 +241,7 @@ export class Town extends DurableObject {
       rows.push([a.id, a.n, r.text]);
     }
     if (rows.length) await this.env.DB.batch(rows.map(([id, n, text]) => this.env.DB.prepare("INSERT INTO chat_log (user_id, nick, ch, text, at) VALUES (?, ?, 'chzzk', ?, ?)").bind(id, n, text, t))).catch(() => {});
-    return new Response('ok');
+    return nicks;
   }
   // 다른 채널에 같은 사람이 접속해 있는지 (있으면 {dev, kind})
   async elsewhere(id, skip) {

@@ -316,8 +316,11 @@ function walk(root) {
   while ((n = w.nextNode())) list.push(n);
   for (const t of list) fixText(t);
 }
+// 2026-11-20 감시는 화면 전체(body)에 딱 하나만. 예전엔 부를 때마다 새 감시를 만들어서 1초마다 다시 그리는 창이 있으면 감시가 끝없이 쌓였음
+let WATCH = null;
 export function iconize(root = document.body) {
   walk(root);
-  new MutationObserver(ms => { for (const m of ms) { if (m.type === 'characterData') fixText(m.target); else for (const n of m.addedNodes) walk(n); } })
-    .observe(root, { childList: true, subtree: true, characterData: true });
+  if (WATCH || root !== document.body) return;
+  WATCH = new MutationObserver(ms => { for (const m of ms) { if (m.type === 'characterData') fixText(m.target); else for (const n of m.addedNodes) walk(n); } });
+  WATCH.observe(root, { childList: true, subtree: true, characterData: true });
 }

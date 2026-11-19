@@ -29,7 +29,7 @@ export class Chzzk extends DurableObject {
       if (this.ws) try { this.ws.send(JSON.stringify({ ver: '2', cmd: 0 })); } catch {}   // 연결 유지
     } finally {
       this.busy = false;
-      await this.ctx.storage.setAlarm(now() + (this.ws ? 20e3 : 60e3));   // 방송 중 20초, 아니면 1분마다
+      await this.ctx.storage.setAlarm(now() + (this.ws ? 20e3 : 120e3));   // 방송 중 20초, 아니면 2분마다 (2026-11-20 1분 → 2분)
     }
   }
 
@@ -63,13 +63,16 @@ export class Chzzk extends DurableObject {
       this.buf.push({ n: nick, text: text.slice(0, 120) });
     }
     if (this.buf.length > 200) this.buf = this.buf.slice(-200);
-    if (this.buf.length && !this.flushT) this.flushT = setTimeout(() => this.flush(), 1000);
+    if (this.buf.length && !this.flushT) this.flushT = setTimeout(() => this.flush(), 3000);   // 2026-11-20 1초 → 3초씩 모아서
   }
 
   async flush() {
     this.flushT = null; const list = this.buf; this.buf = []; if (!list.length) return;
-    const body = JSON.stringify(list);
-    await Promise.all(Array.from({ length: MAX_CH }, (_, i) => i + 1).map(ch =>
-      this.env.TOWN.get(this.env.TOWN.idFromName('town-' + ch)).fetch('https://town/chzzk', { method: 'POST', body }).catch(() => {})));
+    // 2026-11-20 채널마다 접속한 닉네임을 기억(30초) → 그 채널에 말한 사람이 없으면 안 깨움
+    const body = JSON.stringify(list), t = Date.now(), K = this.nk || (this.nk = {});
+    await Promise.all(Array.from({ length: MAX_CH }, (_, i) => i + 1).map(async ch => {
+      const k = K[ch]; if (k && t - k.at < 30e3 && !list.some(m => k.set.has(m.n))) return;
+      try { const r = await this.env.TOWN.get(this.env.TOWN.idFromName('town-' + ch)).fetch('https://town/chzzk', { method: 'POST', body }); const j = await r.json(); K[ch] = { at: t, set: new Set(j.nicks || []) }; } catch {}
+    }));
   }
 }

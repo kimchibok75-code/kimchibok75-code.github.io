@@ -53,8 +53,7 @@ export class Raid extends DurableObject {
       if (!r || r.start !== st) return J({ error: '레이드 기록이 없어요' }, 404);
       if (!r.done) return J({ error: '레이드가 아직 끝나지 않았어요' }, 400);
       const me = r.players[uid]; if (!me) return J({ error: '이 레이드에 참여하지 않았어요' }, 404);
-      if (me.claimed) return J({ error: '이미 보상을 받았어요' }, 400);
-      me.claimed = true; await this.keep();
+      // 2026-11-20 여기서 '받음'을 적지 않음: 캐릭터 저장이 겹쳐 다시 시도하면 '이미 받았어요'로 보상이 사라졌음. 한 번만 받기는 캐릭터의 life.raidGot(저장할 때 ver 확인)이 지킴
       const list = Object.values(r.players), total = list.reduce((a, b) => a + b.dmg, 0) || 1;
       return J({ dead: me.dead, dmg: Math.round(me.dmg), share: me.dmg / total, n: list.length, rank: 1 + list.filter(o => o.dmg > me.dmg).length, boss: r.boss });
     }
@@ -88,8 +87,10 @@ export class Raid extends DurableObject {
     if (m.t === 'p') {   // 내 위치 + 지난번 뒤로 준 피해 + 쓰러짐
       if (Number.isFinite(m.x) && Number.isFinite(m.y)) { P.x = Math.max(0, Math.min(RAID.W * 32, m.x)); P.y = Math.max(0, Math.min(RAID.H * 32, m.y)); }
       if (m.dead) P.dead = true;
+      // 2026-11-20 화면은 1초마다 보고. 0.7초 안에 또 온 보고는 피해를 안 셈 (예전엔 메시지마다 최소 0.2초어치 한도를 줘서 빨리 보내면 피해가 부풀었음)
+      if (P.at && t - P.at < 700) return;
       if (t >= R.start && !P.dead && Number.isFinite(m.d) && m.d > 0) {
-        const sec = Math.min(3, Math.max(.2, (t - (P.at || R.start)) / 1000));
+        const sec = Math.min(3, Math.max(0, (t - (P.at || R.start)) / 1000));
         // 스킬은 한 번에 크게 들어가니까, 안 쓴 한도를 8초어치까지 모아 둠
         const allow = P.dps * 2.5 * sec + (P.spare || 0), d = Math.min(m.d, allow); P.spare = Math.min(P.dps * 8, allow - d); P.dmg += d; R.hp -= d;
       }

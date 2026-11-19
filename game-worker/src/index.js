@@ -30,7 +30,19 @@ const json = (o, status = 200) => new Response(JSON.stringify(o), { status, head
 
 export default {
   // 5분마다: 치지직 채팅 연결 담당(Chzzk)을 깨움. 그 뒤로는 Chzzk가 알아서 1분(방송 중 20초)마다 확인
-  async scheduled(ev, env, ctx) { ctx.waitUntil(env.CHZZK.get(env.CHZZK.idFromName('main')).fetch('https://chzzk/tick').catch(() => {})); },
+  async scheduled(ev, env, ctx) {
+    ctx.waitUntil(env.CHZZK.get(env.CHZZK.idFromName('main')).fetch('https://chzzk/tick').catch(() => {}));
+    // 2026-11-20 한 시간에 한 번 (정각 뒤 첫 5분): 오래된 기록 지우기 (활동 90일 · 연대기 60일 · 끝난 로그인 · 가입 기록 3일)
+    if (new Date(ev.scheduledTime || Date.now()).getUTCMinutes() < 5) {
+      const t = Date.now(), d = 864e5;
+      ctx.waitUntil(env.DB.batch([
+        env.DB.prepare('DELETE FROM activity WHERE at < ?').bind(t - 90 * d),
+        env.DB.prepare('DELETE FROM chronicle WHERE at < ?').bind(t - 60 * d),
+        env.DB.prepare('DELETE FROM sessions WHERE expires_at < ?').bind(t),
+        env.DB.prepare('DELETE FROM signups WHERE at < ?').bind(t - 3 * d),
+      ]).catch(() => {}));
+    }
+  },
   async fetch(req, env) {
     const origin = req.headers.get('Origin') || '';
     const cors = { 'Access-Control-Allow-Origin': ORIGINS.includes(origin) ? origin : ORIGINS[0], 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Max-Age': '86400', Vary: 'Origin' };
@@ -856,7 +868,9 @@ async function saveMove(req, env, user) {
   const cx = Math.max(T / 2, Math.min(MW * T - T / 2, x)), cy = Math.max(T / 2, Math.min(MH * T - T / 2, y));
   if (walkSolid(Math.floor(cx / T), Math.floor(cy / T))) return json({ ok: false });
   // 사냥 중에는 마을 위치를 바꾸지 않음
-  await env.DB.prepare("UPDATE characters SET x = ?, y = ?, ver = ver + 1, updated_at = ? WHERE user_id = ? AND hunt = ''").bind(cx, cy, now(), user.id).run();
+  // 2026-11-20 위치 저장이 '화면 켜짐' 신호도 겸함 (life.seen). ver는 안 올림 → 다른 저장과 부딪혀 다시 하는 일이 줄어듦
+  const t = now();
+  await env.DB.prepare("UPDATE characters SET x = ?, y = ?, life = CASE WHEN json_valid(life) THEN json_set(life, '$.seen', ?) ELSE life END, updated_at = ? WHERE user_id = ? AND hunt = ''").bind(cx, cy, t, t, user.id).run();
   return json({ ok: true });
 }
 // 닉네임 바꾸기 (2026-11-18): 일주일에 한 번. 로그인 아이디도 새 닉네임으로 바뀜
@@ -906,14 +920,16 @@ async function newRecovery(req, env, user) {
 // 던지기: 쿨타임 확인 후 던진 자리·시각만 기억 (life.fcast). 결과는 당길 때 정함
 async function fishCast(c, b, at, env, user) {
   townOnly(c); notWorking(c);
-  const row = await env.DB.prepare('SELECT last_cast FROM fishing WHERE user_id = ?').bind(user.id).first();
-  const left = Math.ceil(((row?.last_cast || 0) + FISHING.cooldown - at) / 1000);
+  // 2026-11-20 마지막으로 던진 시각은 캐릭터(life.fcAt)에 같이 저장 → 낚시 기록표를 읽고 쓰지 않음 (DB 쓰기 줄이기)
+  const left = Math.ceil(((c.life.fcAt || 0) + FISHING.cooldown - at) / 1000);
   if (left > 0) fail(429, `${left}초 뒤에 다시 던질 수 있어요`);
   if (fishBag(c).length >= FISH_BAG && !FG_KEYS.every(g => c.life.fsell?.[g])) fail(400, `물고기 가방이 꽉 찼어요 (${FISH_BAG}마리). 낚시점에서 팔아 주세요`);
-  const w = Array.isArray(b.w) && b.w.length === 2 && b.w.every(Number.isInteger) ? b.w : null, p = Array.isArray(b.p) && b.p.length === 2 && b.p.every(Number.isFinite) ? b.p : null;
+  const w = Array.isArray(b.w) && b.w.length === 2 && b.w.every(Number.isInteger) ? b.w : null;
+  // 찌 자리는 던진 물 칸에서 2칸 안이어야 함 (멀리서 물고기 그림자만 노리지 못하게)
+  const p = w && Array.isArray(b.p) && b.p.length === 2 && b.p.every(Number.isFinite) && Math.hypot(b.p[0] - (w[0] + .5) * T, b.p[1] - (w[1] + .5) * T) < 2 * T ? b.p : null;
   const q = Array.isArray(b?.q) && b.q.length === 2 && Number.isFinite(+b.q[0]) && Number.isFinite(+b.q[1]) ? [+b.q[0], +b.q[1]] : null, wait = fishWait();
-  c.life.fcast = { at, wait, w, p, q };
-  return { wait, cooldown: FISHING.cooldown, cast: 1, after: () => env.DB.prepare("INSERT INTO fishing (user_id, bait, last_cast) VALUES (?, '', ?) ON CONFLICT(user_id) DO UPDATE SET bait = '', last_cast = excluded.last_cast").bind(user.id, at).run() };
+  c.life.fcast = { at, wait, w, p, q }; c.life.fcAt = at;
+  return { wait, cooldown: FISHING.cooldown, cast: 1 };
 }
 // 당기기: 던진 지 wait가 지났을 때만 (조금 일찍은 봐줌). 너무 오래 지나면 놓침
 async function fishReel(c, now, env, user) {
@@ -927,7 +943,7 @@ async function fishReel(c, now, env, user) {
 }
 const fishBag = c => (Array.isArray(c.life.fbag) ? c.life.fbag : (c.life.fbag = []));
 async function fishOnce(c, b, at, env, user, now) {
-  const row = await env.DB.prepare('SELECT day, day_n FROM fishing WHERE user_id = ?').bind(user.id).first();
+  const fd = Array.isArray(c.life.fday) ? c.life.fday : [];   // [날짜, 그날 낚은 수] (2026-11-20 기록표 대신 캐릭터에)
   const w = Array.isArray(b.w) && b.w.length === 2 && b.w.every(Number.isInteger) ? b.w : null, sea = !!w && tileAt(w[0], w[1]) === WATER && seaAt(w[0], w[1]);
   // 물고기 그림자 근처에 던지면 좋은 물고기 (미끼 +3단계로 두 번 굴려 비싼 것, 낚을 확률 +12%p)
   const gone = Array.isArray(c.life.fsh) ? c.life.fsh : (c.life.fsh = []), p = Array.isArray(b.p) && b.p.length === 2 && b.p.every(Number.isFinite) ? b.p : null;
@@ -942,7 +958,7 @@ async function fishOnce(c, b, at, env, user, now) {
   if (lgOnly) for (let i = 0; i < 400 && fish.grade !== 'legend'; i++) fish = rollFish(RODS.length - 1, BAITS.length - 1, sea);
   const base = { wait, cooldown: FISHING.cooldown, sea, sh: sh ? sh.id : 0 };
   if (!lgOnly && Math.random() >= Math.min(.99, fishHit(F.rod, D.fx) + (sh ? FSHADOW.hit : 0))) return { ...base, caught: false, fish: { i: fish.i, n: fish.n, grade: fish.grade, id: fish.id } };
-  const day = dayKey(now), dayN = row?.day === day ? row.day_n + 1 : 1, tired = dayN > FISHING.dayFull ? .5 : 1;   // 하루에 너무 많이 낚으면 값이 절반
+  const day = dayKey(now), dayN = fd[0] === day ? fd[1] + 1 : 1; c.life.fday = [day, dayN]; const tired = dayN > FISHING.dayFull ? .5 : 1;   // 하루에 너무 많이 낚으면 값이 절반
   const big = isBigFish(fish), price = Math.round(fish.price * tired), info = JSON.stringify({ id: fish.id, i: fish.i, n: fish.n, grade: fish.grade, len: fish.len, price });
   const sell = Math.min(FISH_PRICE_MAX, Math.round(price * (1 + ((D.fx.fishP || 0) + (D.fx.fishC || 0)) / 100)));
   // 물고기 가방에 넣음 (최대 50). 그 등급을 '낚자마자 팔기'로 해 두었거나 가방이 꽉 찼으면 바로 팔림
@@ -953,10 +969,11 @@ async function fishOnce(c, b, at, env, user, now) {
   const lexp = lifeExp(c, 'fish'); addExp(c, lexp);
   if (big) cntAdd(c, 'perfect'); if (fish.grade === 'legend') cntAdd(c, 'legendFish'); if (fish.n === '낡은 장화') cntAdd(c, 'boot');
   return { ...base, caught: true, big, lexp, fish: { ...fish, price: sell }, sold: auto ? 1 : 0, bagN: bag.length, tired: tired < 1, chron: fish.grade === 'legend' ? ['fish', `전설 물고기 ${fish.n} ${fish.len}cm를 낚았어요!`] : null,
-    after: async () => { await env.DB.prepare(`UPDATE fishing SET count = count + 1, gold = gold + ?, day = ?, day_n = ?,
-        best_price_fish = CASE WHEN ? > best_price THEN ? ELSE best_price_fish END, best_price = MAX(best_price, ?),
-        best_len_fish = CASE WHEN ? > best_len THEN ? ELSE best_len_fish END, best_len = MAX(best_len, ?) WHERE user_id = ?`)
-      .bind(price, day, dayN, price, info, price, fish.len, info, fish.len, user.id).run(); } };
+    after: async () => { await env.DB.prepare(`INSERT INTO fishing (user_id, bait, count, gold, day, day_n, best_price, best_price_fish, best_len, best_len_fish) VALUES (?, '', 1, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(user_id) DO UPDATE SET count = count + 1, gold = gold + excluded.gold, day = excluded.day, day_n = excluded.day_n,
+        best_price_fish = CASE WHEN excluded.best_price > best_price THEN excluded.best_price_fish ELSE best_price_fish END, best_price = MAX(best_price, excluded.best_price),
+        best_len_fish = CASE WHEN excluded.best_len > best_len THEN excluded.best_len_fish ELSE best_len_fish END, best_len = MAX(best_len, excluded.best_len)`)
+      .bind(user.id, price, day, dayN, price, info, fish.len, info).run(); } };   // 낚았을 때만 한 번 씀 (없으면 새로)
 }
 
 // ───────── 랭킹 (2026-11-17): 레벨 · 번 돈 · 낚시 · 강화 합 · 기여도. 상위 50명 + 내 순위. 1분 동안 기억 ─────────
@@ -979,21 +996,21 @@ const RANK_MEM_CLEAR = () => { for (const k in RANK_MEM) delete RANK_MEM[k]; };
 const RANK_HIDE = "u.nick NOT IN ('김치복', '테스트') AND u.nick NOT LIKE 'zz%'";
 async function rankList(env, user, k) {
   if (!own(RANK, k)) fail(400, '잘못된 요청이에요');
-  const R = RANK[k], from = 'FROM characters c JOIN users u ON u.id = c.user_id LEFT JOIN fishing f ON f.user_id = c.user_id LEFT JOIN village_give g ON g.user_id = c.user_id WHERE u.banned = 0 AND ' + RANK_HIDE;
+  // 2026-11-20 그 종목에 필요한 표만 이어 붙이고, 순위 전체(최대 3000명)를 1분 기억 → 내 순위도 기억한 목록에서 찾음 (예전엔 열 때마다 모든 계정을 다시 셌음)
+  const R = RANK[k], from = 'FROM characters c JOIN users u ON u.id = c.user_id' + (k.startsWith('fish') ? ' LEFT JOIN fishing f ON f.user_id = c.user_id' : '') + (k === 'give' ? ' LEFT JOIN village_give g ON g.user_id = c.user_id' : '') + ' WHERE u.banned = 0 AND ' + RANK_HIDE;
   let M = RANK_MEM[k];
   if (!M || now() - M.at > 60e3) {
-    const r = await env.DB.prepare(`SELECT u.id, u.nick, c.lv, c.cls, c.title, ${R.v} AS v, ${R.t} AS t, ${R.i || 'NULL'} AS i ${from} AND ${R.v} > 0 ORDER BY v DESC, t DESC, u.id LIMIT 50`).all();
-    M = RANK_MEM[k] = { at: now(), list: r.results.map(x => ({ id: x.id, nick: x.nick, lv: x.lv, cls: x.cls, title: x.title, v: x.v, f: rankFish(x.i) })) };
+    const r = await env.DB.prepare(`SELECT u.id, u.nick, c.lv, c.cls, c.title, ${R.v} AS v, ${R.t} AS t, ${R.i || 'NULL'} AS i ${from} AND ${R.v} > 0 ORDER BY v DESC, t DESC, u.id LIMIT 3000`).all();
+    const all = r.results; M = RANK_MEM[k] = { at: now(), all, pos: new Map(all.map((x, i) => [x.id, i])), list: all.slice(0, 50).map(x => ({ id: x.id, nick: x.nick, lv: x.lv, cls: x.cls, title: x.title, v: x.v, f: rankFish(x.i) })) };
   }
-  const me = await env.DB.prepare(`SELECT ${R.v} AS v, ${R.t} AS t, ${R.i || 'NULL'} AS i ${from} AND u.id = ?`).bind(user.id).first();
-  const rank = me && me.v > 0 ? (await env.DB.prepare(`SELECT COUNT(*) AS n ${from} AND (${R.v} > ? OR (${R.v} = ? AND ${R.t} > ?))`).bind(me.v, me.v, me.t).first()).n + 1 : 0;
-  return json({ k, list: M.list, me: { v: me?.v || 0, rank, f: rankFish(me?.i) }, at: M.at });
+  const i = M.pos.get(user.id), mine = i === undefined ? null : M.all[i];
+  return json({ k, list: M.list, me: { v: mine?.v || 0, rank: mine ? i + 1 : 0, f: rankFish(mine?.i) }, at: M.at });
 }
 
 async function fishRank(env, user) {
   const q = (order, where) => env.DB.prepare(`SELECT u.nick, f.count, f.best_price_fish, f.best_len_fish FROM fishing f JOIN users u ON u.id = f.user_id WHERE ${where} AND u.banned = 0 AND ${RANK_HIDE} ORDER BY ${order} DESC LIMIT 10`);
-  const [price, len, count, mine] = await env.DB.batch([q('f.best_price', 'f.best_price > 0'), q('f.best_len', 'f.best_len > 0'), q('f.count', 'f.count > 0'),
-    env.DB.prepare('SELECT count, gold, best_price_fish, best_len_fish FROM fishing WHERE user_id = ?').bind(user.id)]);
+  let B = RANK_MEM._fish; if (!B || now() - B.at > 30e3) { const [a, b2, c2] = await env.DB.batch([q('f.best_price', 'f.best_price > 0'), q('f.best_len', 'f.best_len > 0'), q('f.count', 'f.count > 0')]); B = RANK_MEM._fish = { at: now(), r: [a, b2, c2] }; }   // 2026-11-20 30초 기억
+  const [price, len, count] = B.r, mine = await env.DB.prepare('SELECT count, gold, best_price_fish, best_len_fish FROM fishing WHERE user_id = ?').bind(user.id).all();
   const fish = s => (s ? JSON.parse(s) : null);
   const rows = r => r.results.map(x => ({ nick: x.nick, count: x.count, price: fish(x.best_price_fish), len: fish(x.best_len_fish) }));
   const m = mine.results[0];
@@ -1003,7 +1020,8 @@ async function fishRank(env, user) {
 // 농사 랭킹판 (2026-11-20): 제일 비싼 작물 · 제일 무거운 작물 · 수확 수, 상위 10명
 async function farmRank(env, user) {
   const q = order => env.DB.prepare(`SELECT u.nick, f.count, f.best_price_crop, f.best_w_crop FROM farming f JOIN users u ON u.id = f.user_id WHERE ${order} > 0 AND u.banned = 0 AND ${RANK_HIDE} ORDER BY ${order} DESC LIMIT 10`);
-  const [price, w, count, mine] = await env.DB.batch([q('f.best_price'), q('f.best_w'), q('f.count'), env.DB.prepare('SELECT count, best_price_crop, best_w_crop FROM farming WHERE user_id = ?').bind(user.id)]);
+  let B = RANK_MEM._farm; if (!B || now() - B.at > 30e3) B = RANK_MEM._farm = { at: now(), r: await env.DB.batch([q('f.best_price'), q('f.best_w'), q('f.count')]) };   // 2026-11-20 30초 기억
+  const [price, w, count] = B.r, mine = await env.DB.prepare('SELECT count, best_price_crop, best_w_crop FROM farming WHERE user_id = ?').bind(user.id).all();
   const cr = s => { try { return s ? JSON.parse(s) : null; } catch { return null; } };
   const rows = r => r.results.map(x => ({ nick: x.nick, count: x.count, price: cr(x.best_price_crop), w: cr(x.best_w_crop) }));
   const m = mine.results[0];
@@ -1102,7 +1120,7 @@ function cheat(c, k, b, at, env, user) {
   }
   if (k === 'cool') {   // 분수·채집·나무·바위·낚시 기다리는 시간 없애기
     L.wishAt = 0; L.gatherAt = 0; L.nodes = {}; for (const p of L.farm.plots) if (p) p.r = at; if (c.jobAt) c.jobAt = 1;
-    return { msg: '기다리는 시간 모두 없앰', after: () => env.DB.prepare('UPDATE fishing SET last_cast = 0 WHERE user_id = ?').bind(user.id).run() };
+    L.fcAt = 0; return { msg: '기다리는 시간 모두 없앰' };
   }
   if (k === 'god') { L.god = !L.god; if (L.god) c.hp = derive(c).maxHp; return { msg: L.god ? '갓모드 켬: 안 맞고 공격력 10배' : '갓모드 끔' }; }
   fail(400, '없는 치트예요');
