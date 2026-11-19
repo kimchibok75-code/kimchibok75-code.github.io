@@ -10,7 +10,11 @@
 
 ## 사이트 개요
 - 유튜버 **김치복**(림월드) 공식 홈페이지. 정적 사이트, GitHub Pages로 배포됨.
-- 주소: https://kimchibok75-code.github.io
+- 주소: **https://kimchibok.com** (2026-11-19 연결. 예전 https://kimchibok75-code.github.io 는 자동으로 새 주소로 넘어감)
+  - 도메인은 후이즈(whois.co.kr)에서 삼. DNS는 후이즈 → 네임서버 고급설정 → A 레코드 4개(185.199.108~111.153) + CNAME `www` → kimchibok75-code.github.io
+  - 깃허브 Pages 설정의 사용자 도메인 = kimchibok.com (`gh api repos/…/pages`의 `cname`). 배포가 Actions 방식이라 CNAME 파일은 없음
+  - 주소를 바꿀 때 같이 바꿀 곳: `config/site.json`의 `siteUrl`, `worker/wrangler.toml`의 `SITE_URL`, `game-worker/src/index.js`의 `ORIGINS`, `windows-app/Launcher.cs`의 `URL`(다시 만들기), OneSignal 대시보드의 Site URL
+  - `build.bat`은 한글 폴더라 cmd에서 안 돌 때가 있음 → PowerShell에서 csc.exe를 직접 실행
 - 저장소: https://github.com/kimchibok75-code/kimchibok75-code.github.io
 - 페이지: `index.html`(홈), `schedule.html`(방송 일정 달력), `mods.html`(모드 추천), `weekly.html`(주간 모드 순위), `community.html`(팬 카페·디스코드·카페 새 글), `game.html`(치복 타운 — 아직 숨김)
 - 새 페이지를 만들면 `.github/workflows/update.yml`의 `sed -i "s/__BUILD__/..."` 줄에 파일 이름을 꼭 추가
