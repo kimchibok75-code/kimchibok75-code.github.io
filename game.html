@@ -1175,7 +1175,8 @@ import { jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SL
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
 import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico, icoImgFlat } from './assets/js/game-icons.js?v=__BUILD__';
 import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSolid, noise2, inCore, BUILDINGS as MAP_BUILDINGS, SPOTS, PORTAL, BACK, FISH_AT, PLOTS, BENCHES, NODES, DECO,
-  HOUSE_W, HOUSE_H, canHouse, underHouse, ROOM_W, ROOM_H, ROOM_DOOR, soft, PLAZA_C, PLAZA_R, nearWater, shoreNear, seaAt, coastY, SEA_AT, fishShadows, FSHADOW } from './assets/js/game-map.js?v=__BUILD__';
+  HOUSE_W, HOUSE_H, DPORTAL, ROOM_W, ROOM_H, ROOM_DOOR, soft, PLAZA_C, PLAZA_R, nearWater, shoreNear, seaAt, coastY, SEA_AT, fishShadows, FSHADOW } from './assets/js/game-map.js?v=__BUILD__';
+import { DW, DH, DONG_NAME, dTileAt, dSolid, dSoft, DTREES, DBENCH, DGATE, DSPAWN, canHouseD, treeUnderHouse, LAKE } from './assets/js/game-dong.js?v=__BUILD__';
 const API = (location.hostname === 'localhost' && new URLSearchParams(location.search).get('api')) || 'https://kimchibok-game.kimchibok.workers.dev';   // 시험용: localhost에서만 ?api=http://localhost:8787 로 바꿀 수 있음
 const LIVE_API = 'https://kimchibok-live.kimchibok.workers.dev/live';
 const $ = s => document.querySelector(s);
@@ -1599,15 +1600,17 @@ const itemTag = it => `<span style="color:${GRADES[it.g].c}">${itemName(it)}</sp
 
 // ───────── 지도 (모양은 assets/js/game-map.js — 서버와 같이 씀) ─────────
 // 칸에 묶이지 않고 좌표로 자유롭게 걸어요: 길은 칸으로 찾고, 지나는 점을 줄여 곧게 걷고, 누른 자리에 정확히 섬
-const HB = new Uint8Array(MW * MH);        // 집이 차지한 칸
+const HB = new Uint8Array(DW * DH);        // 집이 차지한 칸 (집은 치복동에, 2026-11-19)
+const DONG = -1;                           // me.room: 0 타운 · -1 치복동 · 그 밖(양수) = 그 사람 집 안
 let HOUSES = [];                           // 모든 집 [{id, nick, x, y, roof}]
-const TOWN = { w: MW, h: MH, bad: (x, y) => isSolid(x, y) || HB[y * MW + x] === 1 };
+const TOWN = { w: MW, h: MH, bad: (x, y) => isSolid(x, y) };
+const DONGS = { w: DW, h: DH, bad: (x, y) => dSolid(x, y) || HB[y * DW + x] === 1 };
 const ROOM = { w: ROOM_W, h: ROOM_H, bad: (x, y) => x < 0 || y < 0 || x >= ROOM_W || y >= ROOM_H || y < 2 };
-const sceneOf = ch => (ch.room ? ROOM : TOWN);
+const sceneOf = ch => (ch.room === DONG ? DONGS : ch.room ? ROOM : TOWN);
 function setHouses(list) {
   HOUSES = list; HB.fill(0);
-  for (const h of list) for (let y = h.y; y < h.y + HOUSE_H; y++) for (let x = h.x; x < h.x + HOUSE_W; x++) HB[y * MW + x] = 1;
-  for (const n of NODES) { n.off0 ??= !!n.off; n.off = n.off0 || underHouse(n, list); }   // 집 밑에 깔린 나무·바위는 없어짐 (집을 옮기면 다시 나옴)
+  for (const h of list) for (let y = h.y; y < h.y + HOUSE_H; y++) for (let x = h.x; x < h.x + HOUSE_W; x++) if (x >= 0 && y >= 0 && x < DW && y < DH) HB[y * DW + x] = 1;
+  for (const t of DTREES) t.off = treeUnderHouse(t, list);   // 집 밑에 깔린 나무는 없어짐 (집을 옮기면 다시 나옴)
 }
 async function loadHouses() { try { const j = await api('/api/houses'); setHouses(j.houses); } catch {} }
 const myHouse = () => HOUSES.find(h => h.id === me.uid) || null;
@@ -1643,7 +1646,7 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 // ───── 사용자가 그린 그림 (텍스쳐 템플릿/내 디자인 → scripts/img-export/town-art.py → assets/img/town) ─────
 // 다 불러온 뒤에 마을을 시작함 (artReady). 못 불러온 그림은 예전 코드 그림을 그대로 씀
 const ART = {};
-const ART_N = ['b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
+const ART_N = ['b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
   ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
   ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'mg-' + n), 'ogre-bg'];
@@ -1665,15 +1668,17 @@ const imgPart = (n, x, y, w, h, rot) => {
   return { flat: 1, path: () => {}, ink: (g, O) => at2(g, (im, a, b) => inkSil(g, im, a, b, w, h, O)), after: g => at2(g, (im, a, b) => g.drawImage(im, a, b, w, h)) };
 };
 const GCOL = { [G]: ['#93cf74', '#8bc96c'], [PATH]: ['#ead6a6', '#e4cf9b'], [WATER]: ['#5db5dc', '#57aed6'], [STONE]: ['#ddd7ca', '#d4cdbf'], [SOIL]: ['#9b6b43', '#916340'], [DOCK]: ['#bb8752', '#b07c49'], [SAND]: ['#f0e2b6', '#eadaa9'], [GRAVEL]: ['#c9bfa9', '#c1b7a0'], [FOREST]: ['#72b05e', '#6aa857'] };
-async function paintGround(step) {
-  const cv = document.createElement('canvas'); cv.width = Math.round(MW * T * GK); cv.height = Math.round(MH * T * GK);
+const MAP_T = { W: MW, H: MH, soft, tileAt, town: true };
+const MAP_D = { W: DW, H: DH, soft: dSoft, tileAt: dTileAt, town: false };
+async function paintGround(step, M = MAP_T) {   // M: 어떤 지도를 그릴지 (타운 MAP_T · 치복동 MAP_D, 2026-11-19)
+  const cv = document.createElement('canvas'); cv.width = Math.round(M.W * T * GK); cv.height = Math.round(M.H * T * GK);
   const SOFT = PHONE ? { willReadFrequently: true } : undefined;   // 휴대폰은 GPU 말고 보통 캔버스 (GPU가 멈추며 화면이 번쩍이던 문제)
   const g = cv.getContext('2d', SOFT); if (!g) { cv.width = cv.height = 0; throw new Error('캔버스를 못 만듦'); }
-  const WP = MW * T, HP = MH * T; seed = 11; g.scale(GK, GK);
+  const WP = M.W * T, HP = M.H * T, AK = (M.W * M.H) / (MW * MH); seed = 11; g.scale(GK, GK);   // AK: 무늬 개수를 지도 넓이에 맞춤 (치복동은 작아서 그대로 쓰면 빽빽하고 지저분했음)
   const r = (a, b) => a + rnd() * (b - a), pick = l => l[Math.floor(rnd() * l.length)];
-  // 바닥 모양: soft(종류) 값을 4px 격자로 재고, 경계선을 선(벡터)으로 따서 칠함 → 확대해도 가장자리가 또렷함
+  // 바닥 모양: M.soft(종류) 값을 4px 격자로 재고, 경계선을 선(벡터)으로 따서 칠함 → 확대해도 가장자리가 또렷함
   const ST = 4, NX = WP / ST + 1, NY = HP / ST + 1;
-  const field = t => { const f = new Float32Array(NX * NY); for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) f[j * NX + i] = soft(t, i * ST / T, j * ST / T); return f; };
+  const field = t => { const f = new Float32Array(NX * NY); for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) f[j * NX + i] = M.soft(t, i * ST / T, j * ST / T); return f; };
   function shape(f, th) {   // th 보다 큰 곳을 덮는 Path2D (마칭 스퀘어)
     const P = new Path2D();
     for (let j = 0; j < NY - 1; j++) {
@@ -1704,15 +1709,15 @@ async function paintGround(step) {
     q.globalAlpha = 1; q.globalCompositeOperation = 'destination-in'; q.fillStyle = '#000'; q.fill(P); q.globalCompositeOperation = 'source-over';
     g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.drawImage(LY, 0, 0); g.restore();
   };
-  const blobs = (P, n, cols, rx, ry, al) => inside(P, q => { for (let i = 0; i < n; i++) { q.globalAlpha = r(al[0], al[1]); q.fillStyle = pick(cols); q.beginPath(); q.ellipse(r(0, WP), r(0, HP), r(rx[0], rx[1]), r(ry[0], ry[1]), r(0, 3), 0, 7); q.fill(); } });
+  const blobs = (P, n, cols, rx, ry, al) => inside(P, q => { for (let i = 0; i < n * AK; i++) { q.globalAlpha = r(al[0], al[1]); q.fillStyle = pick(cols); q.beginPath(); q.ellipse(r(0, WP), r(0, HP), r(rx[0], rx[1]), r(ry[0], ry[1]), r(0, 3), 0, 7); q.fill(); } });
 
   await step(1);
   // 1) 풀밭: 큰 얼룩 → 작은 얼룩 → 풀잎
   g.fillStyle = '#8fcb70'; g.fillRect(0, 0, WP, HP);
-  for (let i = 0; i < 260; i++) { g.globalAlpha = r(.12, .26); g.fillStyle = pick(['#a7db86', '#7fbd62', '#9ad37b', '#86c468']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(120, 260), r(70, 150), r(0, 3), 0, 7); g.fill(); }
-  for (let i = 0; i < 900; i++) { g.globalAlpha = r(.15, .35); g.fillStyle = pick(['#a2d982', '#84c266', '#97d079', '#8cc86d', '#aadd8b']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(14, 46), r(8, 24), r(0, 3), 0, 7); g.fill(); }
+  for (let i = 0; i < Math.round(260 * AK); i++) { g.globalAlpha = r(.12, .26); g.fillStyle = pick(['#a7db86', '#7fbd62', '#9ad37b', '#86c468']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(120, 260), r(70, 150), r(0, 3), 0, 7); g.fill(); }
+  for (let i = 0; i < Math.round(900 * AK); i++) { g.globalAlpha = r(.15, .35); g.fillStyle = pick(['#a2d982', '#84c266', '#97d079', '#8cc86d', '#aadd8b']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(14, 46), r(8, 24), r(0, 3), 0, 7); g.fill(); }
   g.globalAlpha = 1; g.lineCap = 'round';
-  for (let i = 0; i < 9000; i++) {   // 풀잎 (짧은 획 두세 개)
+  for (let i = 0; i < Math.round(9000 * AK); i++) {   // 풀잎 (짧은 획 두세 개)
     if (i && i % 3000 === 0) await new Promise(res => setTimeout(res));
     const x = r(0, WP), y = r(0, HP), dk = rnd() < .7; g.strokeStyle = dk ? 'rgba(52,120,48,.32)' : 'rgba(225,250,200,.35)'; g.lineWidth = r(1, 1.6);
     g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x - 1, y - 3, x - 2.5, y - r(4, 7)); g.moveTo(x + 2, y); g.quadraticCurveTo(x + 2.5, y - 3, x + 3.5, y - r(3, 6)); g.stroke();
@@ -1721,35 +1726,36 @@ async function paintGround(step) {
   // 2) 숲 바닥 (진한 풀, 가장자리는 서서히)
   { const f = field(FOREST); for (const [th, al] of [[.36, .3], [.46, .35], [.56, .4]]) { g.globalAlpha = al; g.fillStyle = '#5f9e4f'; g.fill(shape(f, th)); }
     g.globalAlpha = 1; const P = shape(f, .5); blobs(P, 260, ['#4f8d45', '#6eaa5c', '#578f48'], [10, 40], [6, 22], [.2, .4]);
-    inside(P, q => { for (let i = 0; i < 500; i++) { const x = r(0, WP), y = r(0, HP); q.fillStyle = pick(['rgba(140,95,45,.35)', 'rgba(200,140,60,.3)', 'rgba(60,110,50,.5)']); q.beginPath(); q.ellipse(x, y, r(1.5, 3), r(1, 1.8), r(0, 3), 0, 7); q.fill(); } }); }
+    inside(P, q => { for (let i = 0; i < Math.round(500 * AK); i++) { const x = r(0, WP), y = r(0, HP); q.fillStyle = pick(['rgba(140,95,45,.35)', 'rgba(200,140,60,.3)', 'rgba(60,110,50,.5)']); q.beginPath(); q.ellipse(x, y, r(1.5, 3), r(1, 1.8), r(0, 3), 0, 7); q.fill(); } }); }
   await step(3);
   // 3) 자갈 언덕
   { const f = field(GRAVEL), O = shape(f, .5), I = shape(f, .56);
     g.fillStyle = '#ad9f84'; g.fill(O); g.fillStyle = '#c8bda5'; g.fill(I);
     blobs(I, 260, ['#d3c9b2', '#bcb096', '#c2b69c'], [12, 40], [8, 24], [.3, .55]);
-    inside(I, q => { for (let i = 0; i < 1400; i++) { const x = r(0, WP), y = r(0, HP), rr = r(1.2, 3.2); q.fillStyle = rnd() < .55 ? 'rgba(95,82,62,.35)' : 'rgba(255,255,255,.4)'; q.beginPath(); q.ellipse(x, y, rr, rr * .7, 0, 0, 7); q.fill(); } }); }
+    inside(I, q => { for (let i = 0; i < Math.round(1400 * AK); i++) { const x = r(0, WP), y = r(0, HP), rr = r(1.2, 3.2); q.fillStyle = rnd() < .55 ? 'rgba(95,82,62,.35)' : 'rgba(255,255,255,.4)'; q.beginPath(); q.ellipse(x, y, rr, rr * .7, 0, 0, 7); q.fill(); } }); }
   await step(4);
   // 4) 모래 (물가)
   { const f = field(SAND), O = shape(f, .5), I = shape(f, .55);
     g.fillStyle = '#d9c086'; g.fill(O); g.fillStyle = '#f1e2b4'; g.fill(I);
     blobs(I, 140, ['#f7ecc8', '#e8d6a0'], [10, 34], [6, 18], [.35, .6]);
-    inside(I, q => { for (let i = 0; i < 900; i++) { q.fillStyle = rnd() < .5 ? 'rgba(170,135,80,.35)' : 'rgba(255,255,255,.5)'; q.beginPath(); q.arc(r(0, WP), r(0, HP), r(.7, 1.4), 0, 7); q.fill(); } }); }
+    inside(I, q => { for (let i = 0; i < Math.round(900 * AK); i++) { q.fillStyle = rnd() < .5 ? 'rgba(170,135,80,.35)' : 'rgba(255,255,255,.5)'; q.beginPath(); q.arc(r(0, WP), r(0, HP), r(.7, 1.4), 0, 7); q.fill(); } }); }
   await step(5);
   // 5) 물: 물가 거품 → 얕은 물 → 깊은 물 → 물결
   { const f = field(WATER), O = shape(f, .5), I = shape(f, .56), D = shape(f, .85);
     g.fillStyle = '#eaf7fb'; g.fill(O); g.fillStyle = '#62b9de'; g.fill(I); g.fillStyle = '#4aa6d2'; g.fill(D);
     blobs(I, 120, ['#76c4e4', '#57afd8'], [20, 60], [8, 20], [.25, .45]);
     inside(D, q => { q.strokeStyle = 'rgba(255,255,255,.55)'; q.lineWidth = 2;
-      for (let i = 0; i < 520; i++) { const x = r(0, WP), y = r(0, HP), w = r(6, 12); q.beginPath(); q.moveTo(x, y); q.quadraticCurveTo(x + w / 2, y - 3, x + w, y); q.stroke(); } }); }
+      for (let i = 0; i < Math.round(520 * AK); i++) { const x = r(0, WP), y = r(0, HP), w = r(6, 12); q.beginPath(); q.moveTo(x, y); q.quadraticCurveTo(x + w / 2, y - 3, x + w, y); q.stroke(); } }); }
+  if (M.town) // 5-2) 바다 (타운만)
   // 5-2) 바다: 해안에서 멀어질수록 진한 파랑 + 해안선을 따라 하얀 파도 거품 (강·연못은 그대로)
   { const fieldF = fn => { const f = new Float32Array(NX * NY).fill(-1); for (let j = 0; j < NY; j++) { const fy = j * ST / T; if (fy < 57) continue; for (let i = 0; i < NX; i++) f[j * NX + i] = fn(i * ST / T, fy); } return f; };
-    const sv = k => (fx, fy) => Math.min(soft(WATER, fx, fy) - .5, (fy - coastY(fx) - k) / 2) + .1 * noise2(fx * .7, fy * .7, 60 + k);
+    const sv = k => (fx, fy) => Math.min(M.soft(WATER, fx, fy) - .5, (fy - coastY(fx) - k) / 2) + .1 * noise2(fx * .7, fy * .7, 60 + k);
     for (const [k, col] of [[1.1, '#47a7d4'], [3, '#3b97c9'], [5.8, '#2f88bd']]) { g.fillStyle = col; g.fill(shape(fieldF(sv(k)), 0)); }
     g.lineCap = 'round';
     for (const [off, al, lw] of [[.3, .8, 2.4], [.95, .45, 1.8], [1.7, .25, 1.4]]) {
       g.globalAlpha = al; g.strokeStyle = '#fff'; g.lineWidth = lw; g.beginPath(); let on = false;
-      for (let fx = 0; fx <= MW; fx += .15) {
-        const fy = coastY(fx) + off + .18 * Math.sin(fx * 2.1 + off * 7), ok = soft(WATER, fx, fy) > .75 && (on || rnd() < .5);
+      for (let fx = 0; fx <= M.W; fx += .15) {
+        const fy = coastY(fx) + off + .18 * Math.sin(fx * 2.1 + off * 7), ok = M.soft(WATER, fx, fy) > .75 && (on || rnd() < .5);
         if (ok && on) g.lineTo(fx * T, fy * T); else if (ok) g.moveTo(fx * T, fy * T);
         on = ok && rnd() > .04;   // 가끔 끊어서 자연스럽게
       }
@@ -1762,10 +1768,10 @@ async function paintGround(step) {
     g.fillStyle = 'rgba(60,45,25,.12)'; g.save(); g.translate(0, 2); g.fill(O); g.restore();   // 살짝 그림자
     g.fillStyle = '#c9a96f'; g.fill(O); g.fillStyle = '#e6d09c'; g.fill(I);
     blobs(I, 420, ['#efdcae', '#dcc28a', '#e9d4a2', '#d8bd84'], [10, 34], [6, 16], [.35, .6]);
-    inside(I, q => { for (let i = 0; i < 2600; i++) { const x = r(0, WP), y = r(0, HP), rr = r(.9, 2.4); q.fillStyle = pick(['rgba(140,105,60,.35)', 'rgba(255,248,225,.55)', 'rgba(170,130,80,.3)']); q.beginPath(); q.ellipse(x, y, rr, rr * .75, 0, 0, 7); q.fill(); } }); }
+    inside(I, q => { for (let i = 0; i < Math.round(2600 * AK); i++) { const x = r(0, WP), y = r(0, HP), rr = r(.9, 2.4); q.fillStyle = pick(['rgba(140,105,60,.35)', 'rgba(255,248,225,.55)', 'rgba(170,130,80,.3)']); q.beginPath(); q.ellipse(x, y, rr, rr * .75, 0, 0, 7); q.fill(); } }); }
   await step(7);
   // 7) 둥근 광장 (분수가 정가운데)
-  { const X = PLAZA_C.x * T, Y = PLAZA_C.y * T, RR = (PLAZA_R + .45) * T;
+  if (M.town) { const X = PLAZA_C.x * T, Y = PLAZA_C.y * T, RR = (PLAZA_R + .45) * T;
     g.fillStyle = 'rgba(60,50,35,.18)'; g.beginPath(); g.arc(X, Y + 3, RR + 2, 0, 7); g.fill();
     g.fillStyle = '#a99f8b'; g.beginPath(); g.arc(X, Y, RR, 0, 7); g.fill();
     g.fillStyle = '#ddd6c8'; g.beginPath(); g.arc(X, Y, RR - 6, 0, 7); g.fill();
@@ -1784,15 +1790,15 @@ async function paintGround(step) {
     g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 2; g.beginPath(); g.arc(X, Y, RR - 8, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); }
   await step(8);
   // 8) 선착장 다리 (칸 그대로)
-  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (tileAt(x, y) === DOCK) {
+  if (M.town) for (let y = 0; y < M.H; y++) for (let x = 0; x < M.W; x++) if (M.tileAt(x, y) === DOCK) {
     const X = x * T, Y = y * T; g.fillStyle = GCOL[DOCK][(x + y) % 2]; g.fillRect(X, Y, T, T);
     g.fillStyle = 'rgba(70,40,20,.35)'; for (let k = 7; k < T; k += 8) g.fillRect(X, Y + k, T, 1.5); if (x % 2 === 0) { g.fillStyle = 'rgba(70,40,20,.5)'; g.fillRect(X + 3, Y + 3, 2, 2); }
   }
   await step(9);
   // 9) 꽃 (풀밭에만, 무리 지어)
-  const bare = (x, y) => soft(PATH, x / T, y / T) < .35 && soft(SAND, x / T, y / T) < .35 && soft(GRAVEL, x / T, y / T) < .4 && Math.hypot(x / T - PLAZA_C.x, y / T - PLAZA_C.y) > PLAZA_R + .8;
-  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
-    if (tileAt(x, y) !== G) continue;
+  const bare = (x, y) => M.soft(PATH, x / T, y / T) < .35 && M.soft(SAND, x / T, y / T) < .35 && M.soft(GRAVEL, x / T, y / T) < .4 && (!M.town || Math.hypot(x / T - PLAZA_C.x, y / T - PLAZA_C.y) > PLAZA_R + .8);
+  for (let y = 0; y < M.H; y++) for (let x = 0; x < M.W; x++) {
+    if (M.tileAt(x, y) !== G) continue;
     const fl = noise2(x / 4, y / 4, 31) > .45, n = fl ? 2 : rnd() < .06 ? 1 : 0;
     for (let k = 0; k < n; k++) {
       const col = pick(['#ffffff', '#ffd166', '#ff8fab', '#b9a6ff']), fx = x * T + r(5, 27), fy = y * T + r(5, 27); if (!bare(fx, fy)) continue;
@@ -1803,8 +1809,9 @@ async function paintGround(step) {
   }
   await step(10);
   // 10) 텃밭: 사용자 그림 (FARM_IMG) — 없으면 귀퉁이가 둥근 밭 하나
-  if (ART.farm) { const F = FARM_IMG(); g.fillStyle = 'rgba(60,35,15,.22)'; g.beginPath(); g.ellipse(F.x + F.w / 2, F.y + F.h - 4, F.w / 2 + 4, 10, 0, 0, 7); g.fill(); g.drawImage(ART.farm, F.x, F.y, F.w, F.h); }
-  else { let x0 = MW, y0 = MH, x1 = 0, y1 = 0; for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (tileAt(x, y) === SOIL) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+  if (!M.town) {}
+  else if (ART.farm) { const F = FARM_IMG(); g.fillStyle = 'rgba(60,35,15,.22)'; g.beginPath(); g.ellipse(F.x + F.w / 2, F.y + F.h - 4, F.w / 2 + 4, 10, 0, 0, 7); g.fill(); g.drawImage(ART.farm, F.x, F.y, F.w, F.h); }
+  else { let x0 = M.W, y0 = M.H, x1 = 0, y1 = 0; for (let y = 0; y < M.H; y++) for (let x = 0; x < M.W; x++) if (M.tileAt(x, y) === SOIL) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
     if (x1 >= x0) {
       const X = x0 * T + 3, Y = y0 * T + 3, Wd = (x1 - x0 + 1) * T - 6, Hh = (y1 - y0 + 1) * T - 6;
       flatInk(g, [{ path: R(X, Y + 6, Wd, Hh, 22), c: '#8a5f3a' }, { path: R(X, Y, Wd, Hh, 22), c: '#a9774b', after: q => {
@@ -2052,10 +2059,10 @@ const BLD = {
       { path: R(W - 32, b.fr - 16, 26, 14, 4), c: '#f2d06b' }, { path: R(W - 32, b.fr - 2, 26, 6, [0, 0, 3, 3]), c: '#c9a24a' }, { path: R(W - 32, b.fr - 10, 26, 1.6, 0), c: 'rgba(150,110,30,.4)' }];
   },
 };
-const LAB = { cafe: 62, gacha: 100, skin: 66, hall: 86, smith: 72, fishshop: 50, lumber: 66, quarry: 50, farmshed: 46 };
+const LAB = { tower: 60, kfr: 60, cafe: 62, gacha: 100, skin: 66, hall: 86, smith: 72, fishshop: 50, lumber: 66, quarry: 50, farmshed: 46 };
 // 그림 건물: 차지하는 칸보다 조금 넓게(비율 그대로), 아래쪽이 칸 아래 + 6px
 const BP = 4;   // 그림 테두리 여백
-const BSC = { farmshed: 1.3, fishshop: 1.35 };   // 2026-11-18 사용자 요청: 작아 보이던 텃밭 창고 · 낚시점만 크게
+const BSC = { farmshed: 1.3, fishshop: 1.35, tower: .62 };   // 2026-11-18 사용자 요청: 작아 보이던 텃밭 창고 · 낚시점만 크게 / 2026-11-19 무한의 탑은 작게
 // 그림 건물이 실제로 놓이는 자리 (bSprite와 같은 계산)
 // 마을회관: 집 모든 단계 금액 (i 아이콘 설명)
 function houseTierTip(lv) {
@@ -2369,8 +2376,8 @@ function drawScreen(s, now) {
 const PORTAL_W = 92, PORTAL_FOOT = .97, PORTAL_HOLE = [.3102, .3988, .3795, .3683];   // 소용돌이 칸 (그림 안 비율, town-art.py 8번 meta.portal.hole)
 const portalBox = () => { const im = ART.portal, w = PORTAL_W, h = im ? w * im.height / im.width : 74; return { x: PORTAL.x - w / 2, y: PORTAL.y - h * PORTAL_FOOT, w, h }; };
 const PH = [document.createElement('canvas'), document.createElement('canvas')];
-function portalSwirl(tt, Wd, Hd) {
-  const hole = ART['portal-hole'], k = 4, cw = Math.ceil(Wd * k), ch = Math.ceil(Hd * k), [A, B] = PH;
+function portalSwirl(tt, Wd, Hd, holeName = 'portal-hole') {
+  const hole = ART[holeName], k = 4, cw = Math.ceil(Wd * k), ch = Math.ceil(Hd * k), [A, B] = PH;
   for (const c of PH) if (c.width !== cw || c.height !== ch) { c.width = cw; c.height = ch; }
   const q = A.getContext('2d'), r = B.getContext('2d'), cx = cw * .5, cy = ch * .54, R = Math.min(cw, ch) * .5;
   q.setTransform(1, 0, 0, 1, 0, 0); q.globalCompositeOperation = 'source-over'; q.globalAlpha = 1; q.clearRect(0, 0, cw, ch);
@@ -2415,6 +2422,32 @@ function drawPortal0(now) {
   for (let i = 0; i < 6; i++) { const u = (tt * .35 + i / 6) % 1, px = gx + Math.sin(i * 2.1 + tt * 1.3) * Wd * .4, py = Y + Hd * (.95 - u * 1.1); ctx.fillStyle = `rgba(170,230,255,${(1 - u) * .8})`; ctx.beginPath(); ctx.arc(px, py, 1.1 + (1 - u), 0, 7); ctx.fill(); }
   ctx.restore();
   plaque('⚔️ 사냥터 포탈', PORTAL.x, b.y - 8, '#f3e3c3', 12);
+}
+// ───────── 치복동 포탈 (2026-11-19): 타운 광장 남쪽 ↔ 치복동 포탈 앞 마당. 사냥터 포탈과 같은 소용돌이 ─────────
+const GATE_W = 78, GATE_HOLE = [.2087, .2606, .5825, .5925];   // 소용돌이 칸 (town-art.py 12번 meta.dportal.hole)
+const GATE_T = { x: DPORTAL.x, y: DPORTAL.y, label: '🏡 치복동', key: 'gate-t' };                  // 타운에 있는 문 → 치복동
+const GATE_D = { x: DGATE.x * T, y: DGATE.y * T, label: '🏛️ 타운으로', key: 'gate-d' };            // 치복동에 있는 문 → 타운
+const gateBox = G => { const im = ART.dportal, w = GATE_W, h = im ? w * im.height / im.width : 74; return { x: G.x - w / 2, y: G.y - h * .97, w, h }; };
+const onGate = (G, w) => { const b = gateBox(G); return Math.abs(w.x - G.x) < b.w * .45 && w.y > b.y + 6 && w.y < G.y + 6; };
+function drawGate(G, now) { if (!ART.dportal) return; hoverWrap(G, G.x, G.y, () => drawGate0(G, now)); }
+function drawGate0(G, now) {
+  const b = gateBox(G), tt = now / 1000 + (G === GATE_D ? 1.7 : 0);
+  ctx.fillStyle = 'rgba(31,42,58,.2)'; ctx.beginPath(); ctx.ellipse(G.x, G.y - 1, b.w * .46, 6, 0, 0, 7); ctx.fill();
+  const ps = sprite('dportal', b.w + BP * 2, b.h + BP * 2, b.w / 2 + BP, b.h * .97 + BP, g => inkImage(g, ART.dportal, -b.w / 2, -b.h * .97, b.w, b.h)); glowSp(G, ps, G.x, G.y, 1, now); blit(ps, G.x, G.y);
+  const [hx, hy, hw, hh] = GATE_HOLE, X = b.x + hx * b.w, Y = b.y + hy * b.h, Wd = hw * b.w, Hd = hh * b.h;
+  if (ART['dportal-hole']) ctx.drawImage(portalSwirl(tt, Wd, Hd, 'dportal-hole'), X, Y, Wd, Hd);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const gx = X + Wd / 2, gy = Y + Hd * .55, gl = ctx.createRadialGradient(gx, gy, Wd * .2, gx, gy, Wd * .95);
+  gl.addColorStop(0, `rgba(120,200,255,${.14 + .06 * Math.sin(tt * 2.2)})`); gl.addColorStop(1, 'rgba(120,200,255,0)'); ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(gx, gy, Wd * .95, 0, 7); ctx.fill();
+  ctx.restore();
+  plaque(G.label, G.x, b.y - 8, '#e6f4ff', 12);
+}
+// 치복동 포탈로 걸어가서 들어가기 / 나가기
+function useGate(G) {
+  S.pick = { o: G, t: performance.now() };
+  const go = () => (G === GATE_T ? enterDong() : toTown());
+  if (Math.hypot(me.x - G.x, me.y - G.y) < 1.6 * T) return go();
+  if (!walkNear(me, G.x, G.y + T * .4, go)) go();
 }
 function drawPortalOld(now) {
   const x = PORTAL.x, y = PORTAL.y, tt = now / 1000;
@@ -2532,11 +2565,12 @@ function update(dt, now) {
   if (RD) { updateRaid(dt); follow(dt, RW(), RH()); return; }
   if (HT) { updateHunt(dt, now); follow(dt, HW * T, HH * T); return; }
   steerTick(dt); if (!STEER.on) stepChar(me, dt); roamTick(dt); gatherTick(dt); townAtkTick(dt); netTrack();
-  if (me.room && me.y > (ROOM_H - .55) * T && Math.abs(me.x - (ROOM_DOOR.x + .5) * T) < T * .8) leaveRoom();   // 문으로 걸어 나가기
+  if (me.room > 0 && me.y > (ROOM_H - .55) * T && Math.abs(me.x - (ROOM_DOOR.x + .5) * T) < T * .8) leaveRoom();   // 문으로 걸어 나가기
   const D = derive(); if (me.hp < D.maxHp) me.hp = Math.min(D.maxHp, me.hp + D.maxHp * .02 * dt);
   for (const p of people) if (p.buf?.length) netPlay(p, dt); else if (p.net) netStep(p, dt); else stepChar(p, dt);
   rodTick(now);
   for (const f of TF) f.t += dt; while (TF.length && TF[0].t > 1.4) TF.shift();
+  if (me.room === DONG) { S.zoom = Math.max(S.zoom, W / (DW * T), H / (DH * T)); follow(dt, DW * T, DH * T); setPlace(DONG_NAME); return; }   // 치복동은 작아서 지도 밖이 안 보이게 확대 하한
   if (me.room) { follow(dt, ROOM_W * T, ROOM_H * T); setPlace(`${S.roomNick || ''}님의 집`); return; }
   npcTick(dt);
   follow(dt, MW * T, MH * T);
@@ -2636,6 +2670,7 @@ function drawShadows(now, vx0, vy0, vw, vh) {
 function render(now) {
   if (RD) return renderRaid(now);
   if (HT) return renderHunt(now);
+  if (me.room === DONG) return renderDong(now);
   if (me.room) return renderRoom(now);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.fillStyle = '#5fb3d9'; ctx.fillRect(0, 0, W, H);
@@ -2649,12 +2684,11 @@ function render(now) {
   drawWater(now, vx0, vy0, vw, vh);
   drawShadows(now, vx0, vy0, vw, vh);
   drawPlots(now);
-  if (S.place) drawPlaceGhost();
   if (me.path.length && !STEER.on) { const d = me.path[me.path.length - 1]; ctx.strokeStyle = 'rgba(232,85,58,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(d.x, d.y + 6, 9 + Math.sin(now / 150) * 2, 4, 0, 0, 7); ctx.stroke(); }
   const m = 5 * T, vis = (x, y) => x > vx0 - m && x < vx0 + vw + m && y > vy0 - m && y < vy0 + vh + m * 1.6;
   const list = [];
   for (const b of BUILDINGS) if (vis(b.x * T + b.w * T / 2, (b.y + b.h) * T)) list.push({ y: (b.y + b.h) * T, f: () => drawBuilding(b, now) });
-  for (const h of HOUSES) if (vis(h.x * T, (h.y + HOUSE_H) * T)) list.push({ y: (h.y + HOUSE_H) * T, f: () => drawHouse(h) });
+  if (vis(DPORTAL.x, DPORTAL.y)) list.push({ y: DPORTAL.y, f: () => drawGate(GATE_T, now) });
   for (const d of DECO) if (vis(d.x * T, d.y * T)) list.push({ y: d.y * T + T - 3, f: () => drawDeco(d) });
   for (const n of NODES) if (!n.off && vis(n.x * T, n.y * T)) list.push({ y: n.y * T + T - 3, f: () => drawNode(n, now) });
   for (const s of SPOTS) { if (s.id === 'fountain') list.push({ y: (s.y + 1.6) * T, f: () => drawFountain(s, now) }); if (s.id === 'screen') list.push({ y: (s.y + s.h) * T, f: () => drawScreen(s, now) }); }
@@ -2682,6 +2716,37 @@ const roomGround = (() => {
   g.fillStyle = '#a0714a'; g.fillRect(0, 2 * T - 8, ROOM_W * T, 8);
   return c;
 })();
+let DWATER = null;
+function dongWater(now) {   // 호수 물결 (타운 drawWater와 같은 모양, 흐르지 않음)
+  if (!DWATER) { DWATER = []; for (let y = 1; y < DH - 1; y++) for (let x = 1; x < DW - 1; x++) { if ([[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => dTileAt(x + a, y + b) !== WATER)) continue; const h = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453, r = h - Math.floor(h); DWATER.push({ x, y, ph: r * 6.28, ox: (r * 7.3) % 1 }); } }
+  const t = now / 1000; ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+  for (const w of DWATER) { const a = Math.sin(t * 1.4 + w.ph); if (a <= .15) continue; const cx = (w.x + .2 + w.ox * .6) * T + Math.sin(t * .6 + w.ph) * 3, cy = (w.y + .3) * T; ctx.globalAlpha = (a - .15) * .6; ctx.beginPath(); ctx.moveTo(cx - 4, cy); ctx.quadraticCurveTo(cx, cy - 3, cx + 4, cy); ctx.stroke(); }
+  ctx.restore();
+}
+function renderDong(now) {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = '#4f8a45'; ctx.fillRect(0, 0, W, H);
+  const z = S.zoom, ox = pxR(W / 2 - cam.x * z), oy = pxR(H / 2 - cam.y * z);
+  ctx.setTransform(DPR * z, 0, 0, DPR * z, ox * DPR, oy * DPR); ctx.imageSmoothingEnabled = true;
+  const vx0 = cam.x - W / z / 2, vy0 = cam.y - H / z / 2, vw = W / z, vh = H / z;
+  const sx = Math.max(0, Math.floor(vx0)), sy = Math.max(0, Math.floor(vy0)), sw = Math.min(DW * T - sx, Math.ceil(vw) + 2), sh = Math.min(DH * T - sy, Math.ceil(vh) + 2);
+  if (dongGround && sw > 0 && sh > 0) ctx.drawImage(dongGround, sx * GK, sy * GK, sw * GK, sh * GK, sx, sy, sw, sh);
+  dongWater(now);
+  if (S.place) drawPlaceGhost();
+  if (me.path.length && !STEER.on) { const d = me.path[me.path.length - 1]; ctx.strokeStyle = 'rgba(232,85,58,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(d.x, d.y + 6, 9 + Math.sin(now / 150) * 2, 4, 0, 0, 7); ctx.stroke(); }
+  const m = 5 * T, vis = (x, y) => x > vx0 - m && x < vx0 + vw + m && y > vy0 - m && y < vy0 + vh + m * 1.6, list = [];
+  for (const h of HOUSES) if (vis(h.x * T, (h.y + HOUSE_H) * T)) list.push({ y: (h.y + HOUSE_H) * T, f: () => drawHouse(h) });
+  for (const d of DTREES) if (!d.off && vis(d.x * T, d.y * T)) list.push({ y: d.y * T + T - 3, f: () => drawDeco(d) });
+  for (const b of DBENCH) if (vis(b.x * T, b.y * T)) list.push({ y: b.y * T + 24, f: () => drawBench(b) });
+  list.push({ y: GATE_D.y, f: () => drawGate(GATE_D, now) });
+  const chars = [me, ...people.filter(shown)];
+  for (const c of chars) if (vis(c.x, c.y)) list.push({ y: c.y + (c.jfly ? 600 : 0), f: () => drawChar(ctx, c.x, c.y + 6, c, clock + (c.seed || 0)) });
+  list.sort((a, b) => a.y - b.y).forEach(o => o.f());
+  drawTownAtk();
+  for (const c of chars) if (vis(c.x, c.y)) nameTag(c, now);
+  drawSpaceHint(now);
+  drawTownFloats();
+}
 function renderRoom(now) {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#3a2a20'; ctx.fillRect(0, 0, W, H);
   const z = S.zoom, ox = pxR(W / 2 - cam.x * z), oy = pxR(H / 2 - cam.y * z);
@@ -2707,15 +2772,40 @@ function enterRoom(owner) {
   S.roomFrom = { x: me.x, y: me.y }; S.roomNick = owner.nick; S.roomOwner = owner.id;
   me.room = owner.id; me.sit = -1; me.path = []; me.moving = false; me.x = ROOM_DOOR.x * T + T / 2; me.y = (ROOM_H - 1.6) * T; cam = { x: me.x, y: me.y };
   netSend({ t: 'room', r: owner.id, x: Math.round(me.x), y: Math.round(me.y) }); closeModal(); closePanel();
-  $('#roomBtn').hidden = false; sfx('door'); emote(me, '✨');
+  $('#roomBtn').textContent = '🚪 집에서 나가기'; $('#roomBtn').hidden = false; sfx('door'); emote(me, '✨');
 }
-function leaveRoom() {
-  if (!me.room) return; sfx('door');
-  const h = HOUSES.find(x => x.id === S.roomOwner);
-  me.room = 0; me.path = []; me.moving = false;
-  if (h) { me.x = (h.x + 1) * T + T / 2; me.y = (h.y + HOUSE_H) * T + T / 2; } else if (S.roomFrom) { me.x = S.roomFrom.x; me.y = S.roomFrom.y; }
+// 치복동 들어가기 / 나가기 (2026-11-19). 치복동 바닥 그림은 처음 들어갈 때 한 번 그림
+let dongGround = null, dongBusy = null;
+function dongPaint() { return dongBusy ||= paintGround(() => new Promise(r => setTimeout(r)), MAP_D).then(cv => (dongGround = cv)).catch(x => { dongBusy = null; console.warn('치복동 바닥', x.message); }); }
+async function enterDong(at) {
+  if (HT || RD) return;
+  if (BUSY()) { busyToast(); return false; }
+  standUp(me); GA = null; closeModal(); closePanel();
+  if (!dongGround) { toast(`🏘️ ${DONG_NAME}(으)로 가는 중…`); await dongPaint(); }
+  me.room = DONG; me.sit = -1; me.path = []; me.moving = false;
+  const [x, y] = at || [DSPAWN.x, DSPAWN.y]; me.x = x; me.y = y; cam = { x, y };
+  netSend({ t: 'room', r: DONG, x: Math.round(me.x), y: Math.round(me.y) });
+  $('#roomBtn').textContent = '🏛️ 타운으로'; $('#roomBtn').hidden = false; sfx('door'); emote(me, '✨'); return true;
+}
+// 타운으로 (집 안이면 치복동을 거쳐). at = 타운에서 설 자리 (없으면 치복동 포탈 앞)
+function toTown(at) {
+  if (!me.room) return;
+  if (me.room > 0) sfx('door');
+  me.room = 0; me.sit = -1; me.path = []; me.moving = false; S.place = null; paintPlace();
+  const [x, y] = at || [DPORTAL.x, DPORTAL.y + T * .9]; me.x = x; me.y = y;
   if (TOWN.bad(Math.floor(me.x / T), Math.floor(me.y / T))) { me.x = START.x; me.y = START.y; }
   cam = { x: me.x, y: me.y }; netSend({ t: 'room', r: 0, x: Math.round(me.x), y: Math.round(me.y) }); savePos(true); $('#roomBtn').hidden = true;
+}
+// 한 단계 나가기: 집 안 → 치복동(집 문 앞), 치복동 → 타운
+function leaveRoom() {
+  if (me.room === DONG) return toTown();
+  if (!me.room) return; sfx('door');
+  const h = HOUSES.find(x => x.id === S.roomOwner);
+  me.room = DONG; me.path = []; me.moving = false;
+  if (h) { me.x = (h.x + 1) * T + T / 2; me.y = (h.y + HOUSE_H) * T + T / 2; } else if (S.roomFrom) { me.x = S.roomFrom.x; me.y = S.roomFrom.y; }
+  if (DONGS.bad(Math.floor(me.x / T), Math.floor(me.y / T))) { me.x = DSPAWN.x; me.y = DSPAWN.y; }
+  cam = { x: me.x, y: me.y }; netSend({ t: 'room', r: DONG, x: Math.round(me.x), y: Math.round(me.y) });
+  $('#roomBtn').textContent = '🏛️ 타운으로'; $('#roomBtn').hidden = false;
 }
 
 // ───────── 사냥터 (기획서 4장) ─────────
@@ -2901,7 +2991,7 @@ async function raidJoin(start) {
   try {
     if (HT) { took(await api('/api/hunt/leave', {})); if (HT) exitHuntView(); }
     if (F.auto) autoFishStop();
-    if (me.room) leaveRoom();
+    if (me.room) toTown();
     standUp(me);
     const j = await api('/api/raid/join', { start }); took(j); RAIDQ.open = 0; $('#raidChip').hidden = true; closeModal(); closePanel();
     enterRaid(start, j.raid?.boss || RAIDQ.boss);
@@ -3976,10 +4066,10 @@ const bldAtW = w => BUILDINGS.find(b => w.x > b.x * T && w.x < (b.x + b.w) * T &
 const onPortal = w => Math.abs(w.x - PORTAL.x) < (ART.portal ? PORTAL_W * .45 : 24) && w.y > (ART.portal ? portalBox().y + 6 : PORTAL.y - 74) && w.y < PORTAL.y + 6;
 const onFountain = w => { const fo = SPOTS.find(s => s.id === 'fountain'); return Math.hypot((w.x - (fo.x + 1) * T) / 50, (w.y - (fo.y + 1) * T - 4) / 42) < 1 ? fo : null; };
 // 마우스가 가리키는 것 (누르기와 같은 순서): 포탈 · 분수 · 나무/바위 · 집 · 건물
-const hoverAt = w => (onPortal(w) ? PORTAL : onFountain(w) || nodeAtW(w) || houseAtW(w) || bldAtW(w) || null);
+const hoverAt = w => (me.room === DONG ? (onGate(GATE_D, w) ? GATE_D : houseAtW(w) || null) : onPortal(w) ? PORTAL : onGate(GATE_T, w) ? GATE_T : onFountain(w) || nodeAtW(w) || bldAtW(w) || null);
 cv.addEventListener('pointermove', e => {
   if (e.pointerType !== 'mouse') return;
-  const n = HT || me.room || pts.size ? null : hoverAt(toWorld(e.offsetX, e.offsetY));
+  const n = HT || me.room > 0 || pts.size ? null : hoverAt(toWorld(e.offsetX, e.offsetY));
   if (n !== S.hover) { S.hover = n; cv.style.cursor = n ? 'pointer' : ''; }
 });
 cv.addEventListener('pointerleave', () => { S.hover = null; cv.style.cursor = ''; });
@@ -4082,12 +4172,15 @@ function spaceTarget() {
   const f = me.fdir || [me.dir || 1, 0], fl = Math.hypot(f[0], f[1]) || 1;
   const C = [];   // { d: 거리, x, y: 방향을 잴 자리, lx, ly: 표시 자리, go: 실행 }
   const add = (dist, x, y, lx, ly, go, kind) => C.push({ d: dist, x, y, lx, ly, go, kind });
-  if (me.room) {
+  if (me.room === DONG) {
+    for (const h of HOUSES) add(rect(h.x * T, h.y * T, HOUSE_W * T, HOUSE_H * T), (h.x + HOUSE_W / 2) * T, (h.y + HOUSE_H) * T, (h.x + HOUSE_W / 2) * T, (h.y + HOUSE_H) * T + 4, () => { S.pick = { o: h, t: performance.now() }; openHouse(h); });
+    add(d(GATE_D.x, GATE_D.y) - 20, GATE_D.x, GATE_D.y, GATE_D.x, GATE_D.y + 10, () => useGate(GATE_D));
+  } else if (me.room) {
     const dx = (ROOM_DOOR.x + .5) * T, dy = ROOM_H * T - 10; add(d(dx, dy), dx, dy, dx, dy - 30, () => leaveRoom());
   } else {
+    add(d(GATE_T.x, GATE_T.y) - 20, GATE_T.x, GATE_T.y, GATE_T.x, GATE_T.y + 10, () => useGate(GATE_T));
     for (const p of NPC.list) add(d(p.x, p.y) - 6, p.x, p.y, p.x, p.y + 18, () => openNpc(p), 'npc');
     for (const b of BUILDINGS) add(rect(b.x * T, b.y * T, b.w * T, b.h * T), (b.x + b.w / 2) * T, (b.y + b.h) * T, (b.x + b.w / 2) * T, (b.y + b.h) * T + 4, () => { S.pick = { o: b, t: performance.now() }; openBuilding(b); });
-    for (const h of HOUSES) add(rect(h.x * T, h.y * T, HOUSE_W * T, HOUSE_H * T), (h.x + HOUSE_W / 2) * T, (h.y + HOUSE_H) * T, (h.x + HOUSE_W / 2) * T, (h.y + HOUSE_H) * T + 4, () => { S.pick = { o: h, t: performance.now() }; openHouse(h); });
     for (const n of NODES) if (!n.off) { const cx = (n.x + .5) * T, cy = (n.y + .5) * T; add(d(cx, cy) - 8, cx, cy, cx, n.k === 'tree' ? n.y * T - 46 * (n.s || 1) : n.y * T - 2, () => { S.pick = { o: n, t: performance.now() }; startGather(n); }); }
     const fo = SPOTS.find(s => s.id === 'fountain'), fx = (fo.x + 1) * T, fy = (fo.y + 1) * T; add(d(fx, fy) - 40, fx, fy, fx, fy + 34, () => { S.pick = { o: fo, t: performance.now() }; openWish(); });
     const sc = SPOTS.find(s => s.id === 'screen'); if (sc) add(rect(sc.x * T, sc.y * T, sc.w * T, sc.h * T), (sc.x + sc.w / 2) * T, (sc.y + sc.h) * T, (sc.x + sc.w / 2) * T, (sc.y + sc.h) * T + 4, () => openSpot(sc));
@@ -4223,6 +4316,14 @@ function tap(sx, sy, wIn) {
   // 사냥 중: 몬스터를 누르면 그 몬스터부터 공격
   if (HT) { const m = HT.mons.filter(m => !m.dead).find(m => Math.abs(w.x - m.x) < 20 * m.d.s && w.y > m.y - 40 * m.d.s && w.y < m.y + 8); if (m) HT.target = m; return; }
   const hitP = !wIn && people.filter(shown).find(p => Math.abs(w.x - p.x) < 16 && w.y > p.y - 66 && w.y < p.y + 10), onMe = !wIn && Math.abs(w.x - me.x) < 14 && w.y > me.y - 56 && w.y < me.y + 8;
+  if (me.room === DONG) {   // 치복동
+    if (S.place) return setPlaceAt(w.x, w.y);   // 집 자리 고르는 중
+    if (hitP) return openProfile(hitP);
+    if (onMe) return openPanelTab('stat');
+    if (onGate(GATE_D, w)) return useGate(GATE_D);
+    const hh = houseAtW(w); if (hh) { S.pick = { o: hh, t: performance.now() }; return openHouse(hh); }
+    walkNear(me, w.x, w.y); return;
+  }
   if (me.room) {   // 집 안
     if (hitP) return openProfile(hitP);
     if (onMe) return openPanelTab('stat');
@@ -4230,7 +4331,7 @@ function tap(sx, sy, wIn) {
     walkNear(me, w.x, w.y);
     return;
   }
-  if (S.place) return setPlaceAt(w.x, w.y);   // 집 자리 고르는 중
+  if (onGate(GATE_T, w)) return useGate(GATE_T);   // 치복동 포탈
   const hitN = NPC.list.find(p => Math.abs(w.x - p.x) < 22 && w.y > p.y - 108 && w.y < p.y + 14);
   if (hitN) return openNpc(hitN);   // 주민: 바로 대화 (알바·자동 중에도)
   auHold();   // 자동 생활 중이면 잠깐 쉬고 누른 대로 함
@@ -4262,8 +4363,6 @@ function tap(sx, sy, wIn) {
   // 나무 · 바위: 걸어가서 도끼 · 곡괭이질
   const n = nodeAtW(w);
   if (n) { S.pick = { o: n, t: performance.now() }; return startGather(n); }
-  const h = houseAtW(w);
-  if (h) { S.pick = { o: h, t: performance.now() }; return openHouse(h); }
   // 건물: 누르면 바로 이용 (입구까지 안 걸어감)
   const b = bldAtW(w);
   if (b) { S.pick = { o: b, t: performance.now() }; return openBuilding(b); }
@@ -4552,7 +4651,7 @@ function spend(n) { if (me.gold < n) { toast('골드가 부족해요'); return f
 //  · 점진적 공개 · 밀러의 법칙: 긴 설명은 접은 '도움말'에, 화면에는 한 줄 소개 + 숫자 꼬리표만
 //  · 상태 보이기: 진행 막대, 모자란 재료는 빨간 꼬리표에 '얼마 모자란지'까지
 //  · 일관성(제이콥의 법칙): 모든 건물이 같은 순서 — 머리 → 지갑 → 탭 → 내용 → 도움말 → 주 버튼
-const BC = { raid: '#c0392b', cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a', fountain: '#3f8fd0' };
+const BC = { tower: '#7b6fd6', kfr: '#d9472b', raid: '#c0392b', cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a', fountain: '#3f8fd0' };
 S.btab = {}; S.bhelp = {};
 const WAL = { gold: () => ['🪙', me.gold], wood: () => [RES.wood.i, LIFE().res.wood], stone: () => [RES.stone.i, LIFE().res.stone], fish: () => [COIN.fish[0], LIFE().coins.fish], farm: () => [COIN.farm[0], LIFE().coins.farm] };
 const fmtN = n => Math.floor(n || 0).toLocaleString();
@@ -4596,6 +4695,14 @@ function openBuilding(b, keep) {
   if (id === 'fishshop') return fishShop(b, keep);
   if (id === 'lumber' || id === 'quarry') return workSheet(b, keep);
   if (id === 'farmshed') return openFarm(keep);
+  if (b.soon) return soonSheet(b, keep);
+}
+// 아직 준비 중인 건물 (2026-11-19 무한의 탑 · 김치볶음밥 전문점)
+const SOON = { tower: '끝없이 올라가는 탑이에요. 층마다 더 센 몬스터가 기다려요.', kfr: '김치복이 직접 볶는 김치볶음밥 가게예요. 맛있는 요리로 힘을 얻어요.' };
+function soonSheet(b, keep) {
+  reopen = null;
+  bsOpen(b, { tag: SOON[b.id] || '', body: `<div class="bs-card hero" style="text-align:center"><h4>🚧 준비 중이에요</h4><p class="muted">곧 열려요! 조금만 기다려 주세요.</p></div>`,
+    foot: bbtn('close', '알겠어요', '', { wide: true, main: true }) }, a => { if (a === 'close') closeModal(); }, keep);
 }
 // ───────── 카페: 체력 · 음료 · 알바 ─────────
 function cafeSheet(b, keep) {
@@ -5581,7 +5688,7 @@ function placeOpen(n) {
 function teleport(px, py, quiet) {
   if (!quiet) auHold();
   if (BUSY() && !quiet) { busyToast(); return false; }
-  if (me.room) leaveRoom();
+  if (me.room) toTown([px, py]);
   if (TOWN.bad(Math.floor(px / T), Math.floor(py / T))) return toast('거기는 갈 수 없어요');
   standUp(me); me.x = px; me.y = py; me.path = []; me.moving = false; GA = null; cam = { x: me.x, y: me.y }; savePos(true); netGo(); if (!quiet) emote(me, '✨');
 }
@@ -5689,7 +5796,7 @@ function autoSet(on) {
     if (HT) return toast('사냥 중에는 켤 수 없어요. 마을로 돌아온 뒤에 켜 주세요');
     if (me.job) return toast('카페 알바 중에는 켤 수 없어요');
     if (F.auto) autoFishStop();
-    if (me.room) leaveRoom();
+    if (me.room) toTown();
     if (ROAM.on) setRoam(false);
   }
   AU.on = on; AU.hold = 0; AU.mode = ''; AU.left = 0; AU.wait = .3; AU.bad.clear(); AU.i = Math.floor(Math.random() * AU_SEQ.length) - 1; me.path = []; GA = null;
@@ -6005,7 +6112,7 @@ const optList = it => (it?.o?.length ? `<span class="opts">${it.o.map(o => `<sma
 
 // ───────── 집: 마을회관(짓기 · 이사 · 지붕) · 집 구경 · 자리 고르기 ─────────
 S.place = null;
-const placeWhy = (x, y) => canHouse(x, y, HOUSES.filter(h => h.id !== me.uid));
+const placeWhy = (x, y) => canHouseD(x, y, HOUSES.filter(h => h.id !== me.uid));
 const houseDoor = h => [(h.x + 1.5) * T, (h.y + HOUSE_H + .5) * T];
 // 스킨샵: 정사각형 미리보기 칸. 가진 것은 누르면 바로 쓰기/벗기, 없는 것은 누르면 구매 확인
 function skinShop(b, keep) {
@@ -6086,7 +6193,7 @@ function skinPreview(b, o) {
 }
 function hallSheet(b, keep) {
   reopen = () => hallSheet(b, true);
-  const L = LIFE(), h = L.house, cost = h ? HOUSE.move : HOUSE.cost, can = canPay(cost);
+  const L = LIFE(), h = L.house, free = h && !h.d, cost = !h ? HOUSE.cost : free ? { gold: 0, wood: 0, stone: 0 } : HOUSE.move, can = canPay(cost);
   if (S.roof == null) S.roof = h ? h.roof : 0;
   const tab = btab('hall', 'my', ['my', 'town']);
   const sw = (pre, sel) => `<div class="swatches roofs">${HOUSE.roofs.map((c, i) => `<button type="button" style="background:${c}" data-x="${pre}:${i}" aria-pressed="${sel === i}" aria-label="지붕 색 ${i + 1}"></button>`).join('')}</div>`;
@@ -6096,7 +6203,7 @@ function hallSheet(b, keep) {
     body = list.length ? `<ul class="bs-list">${list.map(x => `<li class="bs-row${x.id === me.uid ? ' cur' : ''}"><span class="bs-ri"><span class="roofdot" style="background:${HOUSE.roofs[x.roof] || HOUSE.roofs[0]}"></span></span><div><b class="t">${esc(x.nick)}님의 집${x.id === me.uid ? chip('내 집', 'up') : ''}</b><div class="cs">${chip(HOUSE_TIERS[x.lv || 0]?.n || '일반 집')}</div></div><div class="bs-act">${bbtn(`visit:${x.id}`, '구경 가기')}</div></li>`).join('')}</ul>`
       : '<p class="muted">아직 집이 없어요. 첫 번째 주인이 되어 보세요!</p>';
   } else if (!h) {
-    body = `<div class="bs-card hero"><h4>🏗️ 아직 내 집이 없어요</h4><p class="muted">광장 주변만 빼고 어디든 지을 수 있어요. 집은 언제나 모두에게 공개예요.</p>
+    body = `<div class="bs-card hero"><h4>🏗️ 아직 내 집이 없어요</h4><p class="muted">집은 타운 아래쪽 🏡 치복동 포탈 너머, <b>${DONG_NAME}</b>에 지어요. 자리를 고르면 ${DONG_NAME} 지도가 열려요.</p>
       <div class="bs-sec">지붕 색</div>${sw('roof', S.roof)}<div class="bs-sec">필요한 재료</div><div class="cs">${costChips(cost)}</div></div>`;
     foot = bbtn('place', '📍 집 지을 자리 고르기', can ? '' : '재료가 모자라요', { wide: true, main: true, dis: !can });
   } else {
@@ -6105,11 +6212,12 @@ function hallSheet(b, keep) {
       ${inc.rate ? `${pbar(inc.have / inc.cap, `💰 ${fmtN(inc.have)} / ${fmtN(inc.cap)}`)}<div class="cs">${chip(`1시간에 🪙 ${fmtN(inc.rate)}`, 'gold')}${chip(`최대 ${HOUSE_INC_CAP}시간`)}</div>${bbtn('collect', '💰 임대 수입 받기', '', { wide: true, main: inc.have >= 1, dis: inc.have < 1 })}` : '<p class="muted">빌라(4단계)부터 임대 수입(골드)이 들어와요.</p>'}</div>
       ${nx ? `<div class="bs-card"><h4>⬆️ 다음 단계: ${nx.n} ${houseTierTip(lv)}</h4><div class="cs">${costChips(nx.cost)}${nx.inc ? chip(`수입 1시간 🪙 ${fmtN(nx.inc)}`, 'up') : ''}</div>${bbtn('up', `${nx.n}(으)로 올리기`, ok ? '' : '재료가 모자라요', { wide: true, dis: !ok })}</div>` : '<div class="bs-card"><h4>🏆 가장 높은 단계예요</h4></div>'}
       <div class="bs-card"><h4>🎨 지붕 색 <small>무료</small></h4>${sw('reroof', h.roof)}</div>
-      <div class="bs-card"><h4>🚚 이사하기</h4><div class="cs">${costChips(cost)}</div>${bbtn('place', '새 자리 고르기', '', { wide: true, dis: !can })}</div>`;
-    foot = bbtn(`visit:${me.uid}`, '🚪 내 집에 들어가기', '', { wide: true, main: true });
+      ${free ? `<div class="bs-card hero"><h4>🏡 ${DONG_NAME}에 자리를 다시 골라 주세요 <small>무료</small></h4><p class="muted">이제 집은 ${DONG_NAME}에 지어요. 집 단계는 그대로예요.</p>${bbtn('place', '📍 자리 고르기 (무료)', '', { wide: true, main: true })}</div>`
+        : `<div class="bs-card"><h4>🚚 이사하기</h4><div class="cs">${costChips(cost)}</div>${bbtn('place', '새 자리 고르기', '', { wide: true, dis: !can })}</div>`}`;
+    foot = free ? '' : bbtn(`visit:${me.uid}`, '🚪 내 집에 들어가기', '', { wide: true, main: true });
   }
   bsOpen(b, { tag: '집 짓기 · 키우기 · 이웃 집 구경', wal: ['gold', 'wood', 'stone'], tabs: [['my', '🏠 내 집'], ['town', '🏘️ 이웃 집', HOUSES.length || '']], tab, body, foot,
-    help: '<p>마을 가운데(광장 주변) · 길 · 물가만 빼고 어디든 집을 지을 수 있어요.</p><p>목재·석재는 마을의 🌳 나무와 🪨 바위를 눌러 모으거나, 벌목소·채광소 알바를 고용해서 모아요.</p><p>집은 언제나 모두에게 공개라서 누구나 구경 올 수 있어요. 가구는 곧 들어와요.</p>' },
+    help: `<p>집은 ${DONG_NAME}에 지어요. 타운 아래쪽 🏡 치복동 포탈로 오갈 수 있어요.</p><p>호수 공원 · 길 · 물가 · 포탈 앞마당만 빼고 어디든 지을 수 있어요. 다른 집 옆에 붙여 지어도 되고, 나무 위에 지으면 그 나무는 없어져요.</p><p>목재·석재는 마을의 🌳 나무와 🪨 바위를 눌러 모으거나, 벌목소·채광소 알바를 고용해서 모아요.</p><p>집은 언제나 모두에게 공개라서 누구나 구경 올 수 있어요. 가구는 곧 들어와요.</p>` },
     async x => {
       const [a, v] = x.split(':');
       if (a === 'roof') { S.roof = +v; return reopen?.(); }
@@ -6120,13 +6228,14 @@ function hallSheet(b, keep) {
       if (a === 'place') startPlace(h ? h.roof : S.roof);
     }, keep);
 }
-function startPlace(roof) {
+async function startPlace(roof) {
   closeModal(); closePanel(); GA = null;
+  if (me.room !== DONG) { if (me.room > 0) leaveRoom(); if (me.room !== DONG && !(await enterDong())) return; }   // 집은 치복동 A동에 지음 (2026-11-19)
   S.place = { roof, x: null, y: null, why: '' };
   const cx = Math.floor(me.x / T), cy = Math.floor(me.y / T);
   out: for (let r = 2; r < 16; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; const x = cx + dx - 1, y = cy + dy - 1; if (!placeWhy(x, y)) { Object.assign(S.place, { x, y }); break out; } }
   paintPlace();
-  toast('지도를 눌러 집 자리를 고르고, 위의 "여기에 짓기"를 눌러 주세요');
+  toast(`🏡 ${DONG_NAME}이에요! 지도를 눌러 집 자리를 고르고, 위의 "여기에 짓기"를 눌러 주세요`);
 }
 function setPlaceAt(wx, wy) { const x = Math.floor(wx / T) - 1, y = Math.floor(wy / T) - 1; Object.assign(S.place, { x, y, why: placeWhy(x, y) }); paintPlace(); }
 function paintPlace() {
@@ -6142,12 +6251,12 @@ function drawPlaceGhost() {
   ctx.strokeStyle = bad ? '#e8553a' : '#2f9e5a'; ctx.lineWidth = 2.5; ctx.setLineDash([7, 5]); ctx.strokeRect(X + 1, Y + 1, w - 2, h - 2); ctx.setLineDash([]);
   ctx.fillStyle = bad ? 'rgba(232,85,58,.4)' : 'rgba(60,190,110,.4)'; ctx.fillRect(X + T, Y + h, T, T);   // 문 앞 칸 (비어 있어야 함)
 }
-$('#placeNo').onclick = () => { S.place = null; paintPlace(); };
+$('#placeNo').onclick = () => { S.place = null; paintPlace(); };   // 치복동에 그대로 있음 (포탈로 타운에 돌아감)
 $('#placeOk').onclick = async () => {
   const p = S.place; if (!p || p.why || p.x == null) return;
   const had = !!LIFE().house, j = await act('/api/house/build', { x: p.x, y: p.y, roof: p.roof }); if (!j) return;
   S.place = null; paintPlace(); await loadHouses();
-  const h = myHouse(); if (h && TOWN.bad(Math.floor(me.x / T), Math.floor(me.y / T))) { [me.x, me.y] = houseDoor(h); me.path = []; cam = { x: me.x, y: me.y }; netGo(); savePos(true); }
+  const h = myHouse(); if (h && DONGS.bad(Math.floor(me.x / T), Math.floor(me.y / T))) { [me.x, me.y] = houseDoor(h); me.path = []; cam = { x: me.x, y: me.y }; netGo(); }
   emote(me, '🎉'); toast(had ? '🚚 이사를 마쳤어요!' : '🎉 내 집이 생겼어요! 집을 누르면 들어갈 수 있어요'); logAct(had ? '집 이사' : '내 집 짓기');
   if (!had) sysMsg(`🏠 ${me.name}님의 집이 생겼어요! 마을회관에서 다른 사람 집도 구경할 수 있어요`);
 };
@@ -6157,11 +6266,16 @@ function openHouse(h) {
     <div class="actions"><button class="btn main" data-x="in">🚪 들어가기</button>${mine ? '<button class="btn" data-x="hall">🏛️ 지붕 색 · 이사 (마을회관)</button>' : ''}</div>`, el => wire(el, x => {
     if (x === 'hall') return openBuilding(BUILDINGS.find(b => b.id === 'hall'));
     closeModal(); const [dx, dy] = houseDoor(h);
-    if (Math.hypot(dx - me.x, dy - me.y) < 10 * T && walkTo(me, dx, dy, () => enterRoom({ id: h.id, nick: h.nick }))) return;
+    if (me.room === DONG && Math.hypot(dx - me.x, dy - me.y) < 10 * T && walkTo(me, dx, dy, () => enterRoom({ id: h.id, nick: h.nick }))) return;
     visitHouse(h);
   }));
 }
-function visitHouse(h) { closeModal(); const [dx, dy] = houseDoor(h); if (me.room) leaveRoom(); teleport(dx, dy, true); enterRoom({ id: h.id, nick: h.nick }); }
+async function visitHouse(h) {
+  closeModal(); const [dx, dy] = houseDoor(h);
+  if (me.room > 0) leaveRoom();
+  if (me.room !== DONG) { if (!(await enterDong([dx, dy]))) return; } else { me.x = dx; me.y = dy; me.path = []; cam = { x: dx, y: dy }; }
+  enterRoom({ id: h.id, nick: h.nick });
+}
 $('#roomBtn').onclick = () => leaveRoom();
 
 // ───────── 몬스터 그림 (캐릭터와 같은 방식: 바깥 테두리만 두꺼운 선) ─────────
@@ -6615,7 +6729,7 @@ function autoFishStart() {
   if (me.job) return toast('☕ 알바 중에는 낚시를 할 수 없어요');
   if (!(me.life.fish.pack > 0)) { toast('자동 낚시용 미끼가 없어요. 먼저 미끼를 사 주세요'); return baitShop(); }
   if (F.busy) return toast('🎣 지금 던진 낚싯대를 먼저 기다려 주세요');
-  if (me.room || !nearWater(...meTile())) { closeModal(); toast('🎣 강가 낚시터로 걸어가요'); if (me.room) leaveRoom(); return walkNear(me, FISH_AT.x, FISH_AT.y, autoFishStart); }
+  if (me.room || !nearWater(...meTile())) { closeModal(); toast('🎣 강가 낚시터로 걸어가요'); if (me.room) toTown(); return walkNear(me, FISH_AT.x, FISH_AT.y, autoFishStart); }
   FSPOT.x = me.x; FSPOT.y = me.y;
   F.auto = true; F.autoN = 0; F.autoG = 0; fishChip(); if ($('#fishSheet')) paintFishing();
   clearTimeout(F.autoT); F.autoT = setTimeout(autoFishTick, Math.max(0, F.nextAt - Date.now()) + 100);

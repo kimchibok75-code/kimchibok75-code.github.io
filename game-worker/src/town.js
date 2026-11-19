@@ -111,7 +111,7 @@ export class Town extends DurableObject {
     // 집 안에 들어감 (r = 집 주인 id, 0 = 마을). 같은 방에 있는 사람끼리만 보임
     if (m.t === 'room') {
       if (!num(m.x, MW * T) || !num(m.y, MH * T)) return;
-      const r = Number.isInteger(m.r) && m.r >= 0 && m.r < 1e9 ? m.r : 0; Object.assign(a, { room2: r, sit: -1, x: m.x | 0, y: m.y | 0, tx: m.x | 0, ty: m.y | 0 }); this.save(ws, a); return this.all({ t: 'room', id: a.id, r, x: a.x, y: a.y }, ws);
+      const r = Number.isInteger(m.r) && m.r >= -1 && m.r < 1e9 ? m.r : 0; Object.assign(a, { room2: r, sit: -1, x: m.x | 0, y: m.y | 0, tx: m.x | 0, ty: m.y | 0 }); this.save(ws, a); return this.all({ t: 'room', id: a.id, r, x: a.x, y: a.y }, ws);
     }
     if (m.t === 'hunt') { a.hunt = !!m.on; a.sit = -1; this.save(ws, a); return this.all({ t: 'hunt', id: a.id, on: a.hunt }, ws); }
     // 움직임 기록 (2026-11-18): p = [[보낸 쪽 시각 ms, x, y, 점프 높이, 건물 위 1/0], …] 최대 8개. 마지막 자리를 기억 (새로 들어온 사람용)

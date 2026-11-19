@@ -158,7 +158,8 @@ def keep_rgba(name):
 
 # 1) 가게 건물 (한 장에 하나). 2026-11-19 새 그림은 배경이 투명 → keep_rgba
 for src, key in [('건물_가챠센터', 'gacha'), ('건물_카페', 'cafe'), ('건물_스킨샵', 'skin'), ('건물_마을회관', 'hall'), ('건물_대장간', 'smith'),
-                 ('건물_낚시점', 'fishshop'), ('건물_벌목소', 'lumber'), ('건물_채석장', 'quarry'), ('건물_텃밭 창고', 'farmshed')]:
+                 ('건물_낚시점', 'fishshop'), ('건물_벌목소', 'lumber'), ('건물_채석장', 'quarry'), ('건물_텃밭 창고', 'farmshed'),
+                 ('건물_무한의탑', 'tower'), ('건물_김치볶음밥 전문점', 'kfr')]:   # 2026-11-19 무한의 탑 · 김치볶음밥 전문점
     r = keep_rgba(src)
     b = bbox(r[:, :, 3]); save('b-' + key, r[b[1]:b[3], b[0]:b[2]], width=720)
 
@@ -284,6 +285,32 @@ for i in range(1, 9):
     b = bbox(a[:, :, 3], pad=1); save('hair-%d' % i, a[b[1]:b[3], b[0]:b[2]], q=92)
     HR['h%d' % i] = [(b[0] - 192) / 4, (b[1] - 336) / 4, (b[2] - b[0]) / 4, (b[3] - b[1]) / 4]
 META['hair'] = HR
+
+# 12) 치복동 포탈 (2026-11-19): 사냥터 포탈처럼 그림 + 가운데 소용돌이 칸(가장 큰 파란 덩어리)
+def _label(m):   # 4방향 덩어리 번호 (scipy 없이)
+    h, w = m.shape; lab = np.zeros((h, w), np.int32); n = 0
+    for y0, x0 in zip(*np.where(m)):
+        if lab[y0, x0]: continue
+        n += 1; q = deque([(y0, x0)]); lab[y0, x0] = n
+        while q:
+            y, x = q.popleft()
+            for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                ny, nx = y + dy, x + dx
+                if 0 <= ny < h and 0 <= nx < w and m[ny, nx] and not lab[ny, nx]: lab[ny, nx] = n; q.append((ny, nx))
+    return lab, n
+r = keep_rgba('A동 포탈'); b = bbox(r[:, :, 3]); t = r[b[1]:b[3], b[0]:b[2]]
+save('dportal', t, width=480)
+c = t[:, :, :3].astype(int); hole = (t[:, :, 3] > 200) & (c[:, :, 2] > c[:, :, 0] + 50) & (c[:, :, 2] > 170)
+hm = np.asarray(Image.fromarray(hole.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))) > 0
+lab, nlab = _label(hm); big = np.argmax(np.bincount(lab.ravel())[1:]) + 1; bl = lab == big
+ol, _ = _label(~bl); edge = set(np.unique(np.concatenate([ol[0], ol[-1], ol[:, 0], ol[:, -1]]))) - {0}; ha = bl | ~np.isin(ol, list(edge)) & (ol > 0)
+ys, xs = np.where(ha); hb = [int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1]
+hole_img = t.copy(); hole_img[:, :, 3] = np.where(ha, 255, 0); hole_img = hole_img[hb[1]:hb[3], hb[0]:hb[2]]
+im = Image.fromarray(hole_img, 'RGBA'); sc = 480 / t.shape[1]
+im = im.resize((max(1, round(im.width * sc)), max(1, round(im.height * sc))), Image.LANCZOS); im.save(os.path.join(OUT, 'dportal-hole.webp'), 'WEBP', quality=92, method=6)
+H, W = t.shape[:2]
+META['dportal'] = {'hole': [round(hb[0] / W, 4), round(hb[1] / H, 4), round((hb[2] - hb[0]) / W, 4), round((hb[3] - hb[1]) / H, 4)]}
+print('dportal hole', hb, t.shape)
 
 json.dump(META, open(os.path.join(OUT, 'meta.json'), 'w'), ensure_ascii=False, indent=1)
 print(json.dumps(META, ensure_ascii=False))

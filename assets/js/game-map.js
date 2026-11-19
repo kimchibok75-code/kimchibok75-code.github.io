@@ -242,6 +242,33 @@ export const SEA = new Uint8Array(MW * MH);   // 1 = 바다 (강·연못과 다�
 }
 // 10) 2026-11-18 텃밭 그림이 가로로 길어서 밭 칸을 4줄(46~49)로 줄임. 맨 위·아래 줄은 풀밭
 for (let x = 51; x <= 60; x++) { set(x, 45, G); set(x, 50, G); }
+// 11) 2026-11-19: 무한의 탑(사냥터 포탈 위) · 김치볶음밥 전문점(스킨샵과 대장간 사이) 추가, 사냥터 포탈은 남쪽으로, 치복동 포탈(광장 남쪽)
+//     맨 마지막에 놓아서 나무·돌 번호 그대로. 새 자리(둘레 1칸 포함)의 꾸밈 나무는 빼고, 캘 수 있는 자원은 off
+{
+  const clearAt = (x0, y0, x1, y1) => {
+    for (let k = DECO.length - 1; k >= 0; k--) { const d = DECO[k]; if (d.x >= x0 && d.x <= x1 && d.y >= y0 && d.y <= y1) { if (tileAt(d.x, d.y) !== WATER) solid[d.y * MW + d.x] = 0; DECO.splice(k, 1); } }
+    for (const n of NODES) if (!n.off && n.x >= x0 && n.x <= x1 && n.y >= y0 && n.y <= y1) { n.off = true; if (tileAt(n.x, n.y) !== WATER) solid[n.y * MW + n.x] = 0; }
+  };
+  const add = b => {
+    clearAt(b.x - 1, b.y - 1, b.x + b.w, b.y + b.h);
+    b.door = { x: b.x + Math.floor(b.w / 2), y: b.y + b.h }; BUILDINGS.push(b);
+    for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) block(x, y);
+    set(b.door.x, b.door.y, PATH);
+  };
+  add({ id: 'tower', name: '무한의 탑', icon: '🗼', x: 69, y: 24, w: 4, h: 3, soon: 1 });
+  add({ id: 'kfr', name: '김치볶음밥 전문점', icon: '🍳', x: 52, y: 29, w: 6, h: 4, soon: 1 });
+  road([[71, 27.5], [71.5, 30], [72.5, 32.6]], .8, 30);                // 탑 문 → 동쪽 길
+  // 사냥터 포탈: (76, 32.6) → (74, 37.6)
+  PORTAL.x = 74 * T; PORTAL.y = 37.6 * T; BACK.x = 71.6 * T; BACK.y = 37.9 * T;
+  clearAt(71, 35, 76, 39);
+  road([[71, 34], [71.6, 36.6], [74, 38.3]], .95, 31);                 // 동쪽 길 → 새 포탈
+  for (let y = 35; y <= 39; y++) for (let x = 70; x <= 76; x++) if (tileAt(x, y) !== WATER) solid[y * MW + x] = 0;
+  clearAt(39, 45, 43, 48);
+  for (let y = 45; y <= 48; y++) for (let x = 39; x <= 43; x++) if (tileAt(x, y) !== WATER) solid[y * MW + x] = 0;
+}
+// 치복동 포탈 (집 동네로 가는 문, 발 위치 픽셀) — 광장 남쪽 길 옆
+export const DPORTAL = { x: 41.4 * T, y: 47.4 * T };
+
 // 바다인지 (칸). 강·연못 물은 0
 export const seaAt = (tx, ty) => tx >= 0 && ty >= 0 && tx < MW && ty < MH && SEA[ty * MW + tx] === 1;
 // 바다 낚시하기 좋은 자리 (만 안쪽 모래사장, 발 위치 픽셀)
@@ -258,37 +285,8 @@ export function soft(t, fx, fy) {
   return (a(i, j) * (1 - u) + a(i + 1, j) * u) * (1 - v) + (a(i, j + 1) * (1 - u) + a(i + 1, j + 1) * u) * v + NOISE[t] * n2(fx * .9, fy * .9, 40 + t);
 }
 
-// ───── 집 (언제나 모두 공개, 핵심 구역 밖 빈 풀밭 어디든) ─────
+// ───── 집: 2026-11-19부터 치복동 A동에 지음 (자리 규칙은 game-dong.js canHouseD). 문은 아래쪽 가운데 (x+1, y+2) ─────
 export const HOUSE_W = 3, HOUSE_H = 2;
-// 집 자리 검사. houses = [{x, y}] (다른 사람 집). 문은 아래쪽 가운데 (x+1, y+2)
-// 2026-11-19 규칙: 다른 집·건물 바로 옆에 붙여 지어도 됨(겹치기만 X). 나무·바위 위에도 지을 수 있음(그 자리 나무·바위는 없어짐)
-//   벌목소 통나무 더미 · 채광소 돌 무더기(건물 그림 양옆·위 1칸)에는 못 지음
-const NODE_AT = new Map(); for (const n of NODES) NODE_AT.set(n.y * MW + n.x, n);
-export const nodeAt = (x, y) => NODE_AT.get(y * MW + x) || null;
-const PILES = BUILDINGS.filter(b => b.id === 'lumber' || b.id === 'quarry').map(b => ({ x: b.x - 1, y: b.y - 1, w: b.w + 2, h: b.h + 1, n: b.id === 'lumber' ? '벌목소 통나무 더미' : '채광소 돌 무더기' }));
-const inRect = (x, y, r) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
-const inHouse = (x, y, h) => x >= h.x && x < h.x + HOUSE_W && y >= h.y && y < h.y + HOUSE_H;
-// 이 나무·바위가 집 밑에 깔렸는지 (깔리면 없어짐)
-export const underHouse = (n, houses) => houses.some(h => inHouse(n.x, n.y, h));
-export function canHouse(x, y, houses = []) {
-  if (!Number.isInteger(x) || !Number.isInteger(y) || x < 2 || y < 3 || x + HOUSE_W > MW - 2 || y + HOUSE_H > MH - 3) return '지도 가장자리에는 지을 수 없어요';
-  for (let ty = y; ty < y + HOUSE_H; ty++) for (let tx = x; tx < x + HOUSE_W; tx++) {
-    if (inCore(tx, ty)) return '마을 가운데(핵심 구역)에는 집을 지을 수 없어요';
-    for (const p of PILES) if (inRect(tx, ty, p)) return `${p.n}에는 집을 지을 수 없어요`;
-    if (![G, FOREST, GRAVEL].includes(tileAt(tx, ty))) return '풀밭·숲에만 지을 수 있어요 (길·물·밭 X)';
-    if (isSolid(tx, ty) && !nodeAt(tx, ty)) return '건물이 있어서 지을 수 없어요';
-    for (const h of houses) if (inHouse(tx, ty, h)) return '다른 집과 겹쳐요';
-  }
-  // 그림으로 보이는 길·물·광장이 집 자리에 조금이라도 걸치면 안 됨
-  for (let fy = y + .1; fy < y + HOUSE_H; fy += .2) for (let fx = x + .1; fx < x + HOUSE_W; fx += .2) {
-    if (soft(PATH, fx, fy) > .45) return '길 위에는 집을 지을 수 없어요';
-    if (soft(SAND, fx, fy) > .45) return '물가에는 집을 지을 수 없어요';
-  }
-  const dx = x + 1, dy = y + HOUSE_H;   // 내 집 문 앞
-  if (isSolid(dx, dy) || tileAt(dx, dy) === WATER || houses.some(h => inHouse(dx, dy, h))) return '문 앞이 막혀 있어요';
-  for (const h of houses) if (inHouse(h.x + 1, h.y + HOUSE_H, { x, y })) return '다른 집 문 앞을 막아요';
-  return '';
-}
 // 집 안 (방 하나). 위쪽 2줄은 벽
 export const ROOM_W = 11, ROOM_H = 8, ROOM_DOOR = { x: 5, y: 7 };
 // 물가: 이 칸 둘레(8방향)에 물이 있으면 낚시할 수 있음

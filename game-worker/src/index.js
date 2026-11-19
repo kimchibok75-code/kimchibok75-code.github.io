@@ -5,7 +5,8 @@ import { OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive,
   fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, AUTO_FISH, FISH_SHOP, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
   offlineLife, offlineHuntAway, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait } from '../../assets/js/game-rules.js';
-import { canHouse, HOUSE_W, HOUSE_H, isSolid, NODES, BACK, tileAt, WATER, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
+import { isSolid, NODES, BACK, tileAt, WATER, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
+import { canHouseD } from '../../assets/js/game-dong.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
 import { Town, MAX_CH, toRooms, lookRow } from './town.js';
@@ -16,7 +17,7 @@ import { Raid } from './raid.js';
 export { Raid };
 const raidDO = env => env.RAID.get(env.RAID.idFromName('main'));   // 레이드 방은 하나
 
-const ORIGINS = ['https://kimchibok75-code.github.io', 'http://localhost:5173', 'http://127.0.0.1:5173'];
+const ORIGINS = ['https://kimchibok75-code.github.io', 'https://kimchibok.com', 'https://www.kimchibok.com', 'http://localhost:5173', 'http://127.0.0.1:5173'];
 const TERMS_VER = '2026-11-18';   // 가입 안내(개인 팬 게임·수익 없음·언제든 바뀜·운영 미흡) 판. 화면 game.html의 TERMS_VER와 같게
 const PBKDF2_ITER = 30000;            // 비밀번호 해시 반복 횟수 (무료 요금제 CPU 한도 안에서)
 const DAY = 864e5;
@@ -652,7 +653,6 @@ const GAME = {
   async '/api/gather'(c, b, at, out, env) {
     townOnly(c); notWorking(c);
     const n = NODES[Number(b.node)]; if (!n || n.off) fail(400, '없는 자원이에요');
-    if (await env.DB.prepare('SELECT 1 FROM houses WHERE x <= ? AND x + ? > ? AND y <= ? AND y + ? > ? LIMIT 1').bind(n.x, HOUSE_W, n.x, n.y, HOUSE_H, n.y).first()) fail(400, '집이 지어져서 없어진 자원이에요');
     const L = c.life, G = GATHER[n.k];
     if (at - L.gatherAt < GATHER.gap) fail(429, '너무 빨라요');
     if ((L.nodes[n.i] || 0) > at) fail(400, `아직 자라는 중이에요 (${Math.ceil((L.nodes[n.i] - at) / 60e3)}분)`);
@@ -703,14 +703,15 @@ const GAME = {
     const x = Number(b.x), y = Number(b.y), roof = Math.max(0, Math.min(HOUSE.roofs.length - 1, Math.trunc(Number(b.roof)) || 0)), had = !!c.life.house;
     if (!Number.isInteger(x) || !Number.isInteger(y)) fail(400, '집을 지을 수 없는 자리예요');
     const others = (await env.DB.prepare('SELECT x, y FROM houses WHERE user_id != ?').bind(user.id).all()).results;
-    const why = canHouse(x, y, others); if (why) fail(400, why);
-    const cost = had ? HOUSE.move : HOUSE.cost;
+    const why = canHouseD(x, y, others); if (why) fail(400, why);
+    // 집은 치복동 A동에 (2026-11-19). 타운에 있던 집(d 없음)은 처음 한 번 무료로 다시 놓음
+    const cost = !had ? HOUSE.cost : c.life.house.d ? HOUSE.move : { gold: 0, wood: 0, stone: 0 };
     if (c.gold < cost.gold) fail(400, '골드가 부족해요');
     for (const r of ['wood', 'stone']) if (c.life.res[r] < cost[r]) fail(400, `${r === 'wood' ? '목재' : '석재'}가 부족해요`);
     c.gold -= cost.gold; c.life.res.wood -= cost.wood; c.life.res.stone -= cost.stone;
-    c.life.house = { ...(had ? c.life.house : { lv: 0 }), x, y, roof: had ? c.life.house.roof : roof }; if (!had) cntAdd(c, 'house');
+    c.life.house = { ...(had ? c.life.house : { lv: 0 }), x, y, d: 1, roof: had ? c.life.house.roof : roof }; if (!had) cntAdd(c, 'house');
     const h = c.life.house;
-    return { moved: had, log: ['house', `${x},${y}`], chron: had ? null : ['house', '마을에 집을 지었어요'],
+    return { moved: had, log: ['house', `${x},${y}`], chron: had ? null : ['house', '치복동에 집을 지었어요'],
       after: async () => { await env.DB.prepare('INSERT INTO houses (user_id, x, y, roof, at, lv) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET x = excluded.x, y = excluded.y, roof = excluded.roof, at = excluded.at, lv = excluded.lv').bind(user.id, h.x, h.y, h.roof, at, h.lv || 0).run(); await toRooms(env, { act: 'house', h: { id: user.id, nick: user.nick, ...h } }); } };
   },
   // 집 업그레이드 (한 단계씩, 점점 비쌈). 수입이 바뀌기 전에 먼저 정산
