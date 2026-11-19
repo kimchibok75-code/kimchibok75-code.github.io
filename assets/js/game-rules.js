@@ -459,7 +459,7 @@ export const CROP_LIST = CROP_TABLE.map(([id, grade, i, n, min, max, base, hoe, 
 export const CROP_BY = Object.fromEntries(CROP_LIST.map(x => [x.id, x]));
 // 호미 [이름, 최대 무게 g, 밭 칸 수, 자라는 시간 줄임, 값, 필요 누적 수확] · 비료 [이름, 일반 %, 희귀 %, 전설 %, 값, 필요 누적 수확] (둘 다 10단계, 저장은 0~9)
 export const HOES = HOE_TABLE, FERTS = FERT_TABLE;
-export const FARM = { growMin: 60, growMax: 120, maxPlots: 9, priceMin: 2, priceMax: 1e7, bag: 200, big: .7 };
+export const FARM = { growMin: 180, growMax: 180, maxPlots: 9, priceMin: 2, priceMax: 1e7, bag: 200, big: .7 };
 const lv9 = v => Math.max(0, Math.min(9, v | 0));
 export const farmPlots = hoe => HOES[lv9(hoe)][2];
 export const newFarm = () => ({ v: 2, hoe: 0, fert: 0, plots: Array(9).fill(null), bag: [] });
@@ -768,7 +768,7 @@ export const GUIDE_Q = [
   ['fish', '🎣', '물고기 3마리 낚기', '강이나 바다를 누르면 물가로 가서 낚싯대를 던져요. 물고기 그림자 근처가 좋아요.', 'fish', 3, '강', 0, { gold: 500 }],
   ['fishSold', '🪝', '낚시점에서 물고기 팔기', '낚은 물고기는 가방에 모여요. 낚시점 → 팔기 탭에서 골드로 바꿔요.', 'fishSold', 1, '낚시', 1, { gold: 300 }],
   ['plant', '🌱', '텃밭에 씨앗 심기', '텃밭 두둑을 누르면 수수께끼 씨앗을 심어요. 무엇이 자랄지는 수확해 봐야 알아요.', 'plant', 1, '텃밭', 0, { gold: 300 }],
-  ['crops', '🧺', '작물 수확하기', '1~2분이면 다 자라요. 다 자란 두둑을 누르면 수확해요.', 'crops', 1, '텃밭', 0, { gold: 300 }],
+  ['crops', '🧺', '작물 수확하기', '3분이면 다 자라요. 다 자란 두둑을 누르면 수확해요.', 'crops', 1, '텃밭', 0, { gold: 300 }],
   ['cropSold', '💰', '텃밭 창고에서 작물 팔기', '텃밭 창고 → 팔기 탭에서 작물을 골드로 바꿔요.', 'cropSold', 1, '텃밭', 1, { gold: 300 }],
   ['job', '☕', '카페 알바 하기', '카페에서 1분 알바를 하면 알바비와 손님 팁을 받아요.', 'job', 1, '카페', 1, { gold: 500 }],
   ['npc', '❗', '주민 임무 하나 끝내기', '머리 위에 ❗가 있는 주민을 누르면 임무를 받아요. 다 하면 ❓ 주민에게 보상을 받아요.', 'npc', 1, '광장', 0, { gold: 800 }],

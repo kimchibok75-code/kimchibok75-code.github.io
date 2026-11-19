@@ -570,7 +570,7 @@
 - 그림: `내 디자인/오우거_다리·몸통·오른팔·왼팔·머리.png` + `배경_오우거.png` → town-art.py 9번 → `og-leg/body/rarm/larm/head.webp`(절반 크기), `ogre-bg.webp`, meta `ogre`(판 좌표). game.html `drawOgre` (`OPART`, 오른팔은 어깨 `OSHOULDER` 기준으로 공격 예고 동안 치켜들고 칠 때 내려침, 예고 중 눈이 붉게). 배경 화로 불빛·불티는 `ogreAmbient`
 - 오우거 스킨 (템플릿 `char/hat_guide_오우거.png`, `char/suit-front_guide_오우거.png`, `weapon/*_guide_오우거.png`) → `og-hat/suit/sword/bow/staff.webp`, meta `og` → game.html `OGS`. id는 모두 `ogre` (HATS·SUITS·WSKINS, `raid: 'ogre'`)
 - 수확한 작물 자랑도 다른 사람에게 보임: 실시간 `{t:'crop', id, g, big}` (town.js가 `CROP_BY`로 확인 → `cid`). 머리 위 크기는 작물 최대 64px · 물고기 최대 300px (`drawBrag`)
-- **이름표** (2026-11-20): 8px 위로 (`nameTag`의 oy +8, 큰 모자가 안 가리게). **배경색 고르기**: 캐릭터창 → 스킨 → 이름표 색 (`TAG_COLORS` 15색, '' = 기본, 저장 `life.tagc`, 서버 `/api/tagc`, town.js `lookRow`의 `tagc` → 다른 사람에게도 보임)
+- **이름표** (2026-11-20): 8px 위로 (`nameTag`의 oy +8, 큰 모자가 안 가리게). **배경색 고르기**: 닉네임 창(✏️) → 이름표 색 (`TAG_COLORS` 15색, '' = 기본, 저장 `life.tagc`, 서버 `/api/tagc`, town.js `lookRow`의 `tagc` → 다른 사람에게도 보임)
 - **레이드 세트 이펙트** (2026-11-20): 모자·눈·의상 + **지금 클래스 무기** 스킨이 모두 그 레이드 세트면 캐릭터 뒤에 은은히 빛나는 문양 — 드래곤 붉게 · 오우거 초록 (`RAID_FX`, `raidFxOf`, `setAura`, drawChar 맨 앞). 그림 `내 디자인/이펙트_드래곤 세트.png`·`이펙트_오우거 세트.png`(검은 바탕 흰 그림, 정사각 판 그대로 · 아래 고리 = 발, 세로 86%) → town-art.py 14번 → `fx-dragon/fx-ogre.webp`
 - 오우거 눈 스킨 `eye:ogre` 추가 (레이드 세트 6부위)
 - 스킨샵 레이드 탭은 보스별로 나눠 보임. 치트 탭: '👕 모든 스킨 받기' + '⭐ 레이드 스킨 최고 레벨'(`rskmax`: 모든 레이드 스킨 Lv10)
@@ -708,7 +708,7 @@
 - 작물 40종(일반 24 · 희귀 10 · 전설 6) · 호미 10단계 · 비료 10단계 표는 **`assets/js/game-crop.js`** — `PYTHONUTF8=1 python scripts/img-export/crop-art.py`가 엑셀에서 자동으로 만듦 (손으로 고치지 말 것). 같은 스크립트가 작물 그림 → `assets/img/crop/c번호.webp`, 농사 랭킹판 그림 → `assets/img/town/b-farmrank.webp`
   - 그림 없는 작물: 거대 호박(c33) · 산삼(c34) → 아이콘으로 보임. `작물/작물_NN_이름.png`로 넣고 스크립트를 다시 돌리면 됨
 - game-rules.js: `CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, newFarm, cropPool, cropOdds, cropPrice, rollCrop, isBigCrop, cropW, plotStage, FARM_COIN_GOLD`
-  - 씨앗은 **수수께끼 씨앗 하나**(무료·무한). 심는 순간 서버가 작물·무게(삼각분포)·값·다 자라는 시각을 정해 `life.farm.plots[i] = {at, r, id, g, p}`에 저장. 자라는 시간 60~120초 × (1 − 호미 줄임)
+  - 씨앗은 **수수께끼 씨앗 하나**(무료·무한). 심는 순간 서버가 작물·무게(삼각분포)·값·다 자라는 시각을 정해 `life.farm.plots[i] = {at, r, id, g, p}`에 저장. 자라는 시간 180초(3분, 2026-11-20 사용자 요청) × (1 − 호미 줄임)
   - **수확 전까지 작물은 비밀**: 서버 `meOut`의 `lifeOut`이 칸을 `{at, r}`만 보냄. 화면은 새싹(0~39%) · 자라는 중 · 수확 가능 세 모습만 (`plotStage`, `cropPlant`)
   - 밭 칸: 처음 6칸, 호미 Lv4 7칸 · Lv7 8칸 · Lv9 9칸 (`farmPlots`). 잠긴 칸은 지도·창에 🔒 호미 LvN
   - 수확 → **작물 가방** `life.farm.bag = [{k, id, g, p, at}]` 최대 200 (`FARM.bag`). 따로 팔아야 골드. 자동 판매·자동 다시 심기 없음
@@ -735,6 +735,14 @@
 - 🏆 랭킹 창(오른쪽 버튼)에서 물고기 탭 3개 뺌 (물고기 순위는 낚시 랭킹판에서). 서버 `fishp/fishl/fishn`은 그대로
 - 치트 `lgcrop`(체크: 전설 작물만, 켠 뒤 심는 씨앗부터, `life.lgCrop`)
 - 치트 추가: `skmax`(모든 스킬 Lv10) · `fishmax`(낚싯대·미끼 최고) · `lgonly`(체크: 전설 물고기만 + 늘 낚임, `life.lgOnly`)
+
+### 몬스터 그림 · 이름표 색 자리 · 외곽선 — 2026-11-20
+- **몬스터 16종 사용자 그림**: `내 디자인/몬스터_풀쥐, … .png`, `몬스터_바위 골렘, … .png` (4칸 × 2줄 한 판, 배경 투명) → `python scripts/img-export/mon-art.py`(PYTHONUTF8=1)가 이어진 덩어리를 찾아 칸별로 잘라 `assets/img/town/mon-<종류>.webp`
+  - 순서: rat hen boar wolf / shroom vine eagle turtle · golem drone guard fixbot / kingboar bear lord boss
+  - game.html `MON_IMG`(ART_N에 붙음), `monSprite`가 그림이 있으면 그림(긴 쪽 `MON_SZ` 50, 아래 끝 = 발), 없으면 예전 코드 그림(`MON_ART`). 맞을 때 하얗게 번쩍은 그림 위에 흰색을 덮음. 그림 몬스터는 화난 눈썹(`BROW_Y`)·보스 왕관 안 그림
+- **그림 외곽선**: 실루엣(`silOf`)에서 알파 90 아래(옅은 빛·번짐)는 빼고 그림. 창 안 물고기·작물 그림(`.fpic`)은 SVG 필터 `#fink`(같은 규칙)
+- 이름표 색 고르기는 **닉네임 창**(✏️, `openNick` → '닉네임 · 이름표')으로 옮김. `renderTagSw(box)`, `pickTagc`
+- 작물 자라는 시간 3분 고정 (`FARM.growMin/growMax` 180), 머리 위 작물 자랑 30~64px
 
 ### 가이드 퀘스트 · 배경 음악 — 2026-11-20
 - **📘 가이드 퀘스트**: 마을의 놀거리를 차례대로 한 번씩 (20단계). 표는 game-rules.js `GUIDE_Q` = [id, 아이콘, 이름, 설명, cnt 키(또는 '@badge'), 목표, 가는 곳(PLACES 이름, ''면 레이드 시간 안내), 도착하면 창 열기, 보상 {gold, wood, stone}]

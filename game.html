@@ -682,6 +682,7 @@ body.hunting .side { display: none; }
 .arrows { display: grid; gap: 6px; }
 .arow { display: grid; grid-template-columns: minmax(64px, auto) 32px minmax(0, 1fr) 32px; gap: 6px; align-items: center; }
 .arow > b { font-size: calc(14px * var(--fs)); white-space: nowrap; }
+.tagpv { display: inline-block; margin-left: 8px; padding: 1px 9px; border-radius: 999px; color: #fff; font-size: 12px; font-weight: 800; vertical-align: middle; }
 .tagsw { display: flex; flex-wrap: wrap; gap: 6px; } .tagsw .tsw { min-width: 30px; height: 30px; border-radius: 15px; border: 2px solid rgba(31,42,58,.25); background: var(--tc); color: #fff; font-size: 11px; font-weight: 800; padding: 0 8px; cursor: pointer; } .tagsw .tsw.on { border-color: var(--ink); box-shadow: 0 0 0 2px #fff inset; }
 .arow > button { width: 32px; height: 32px; border-radius: 9px; border: 2px solid var(--ink); background: #fff; font-weight: 700; font-size: calc(15px * min(var(--fs), 1.15)); line-height: 1; padding: 0; display: grid; place-items: center; }
 .arow > button:hover { background: var(--paper-2); }
@@ -1158,7 +1159,6 @@ a.iconbtn { color: inherit; text-decoration: none; }
           <div class="arow" id="hairSw2"></div>
         </div>
         <p class="skfxsum" id="skinFxSum"></p>
-        <div class="field"><label>이름표 색</label><div class="tagsw" id="tagSw"></div></div>
         <div class="field"><label>모자</label><label class="check hathair"><input type="checkbox" id="hatHair" checked> 모자를 써도 헤어 보이기</label><div class="skgrid" id="hatList"></div></div>
         <div class="field"><label>눈 모양</label><div class="skgrid" id="eyeList"></div></div>
         <div class="field"><label>의상</label><div class="skgrid" id="suitList"></div></div>
@@ -1759,7 +1759,8 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 // ───── 사용자가 그린 그림 (텍스쳐 템플릿/내 디자인 → scripts/img-export/town-art.py → assets/img/town) ─────
 // 다 불러온 뒤에 마을을 시작함 (artReady). 못 불러온 그림은 예전 코드 그림을 그대로 씀
 const ART = {};
-const ART_N = ['fx-dragon', 'fx-ogre', 'b-farmrank', 'b-suggest', 'b-beginner', 'b-dex', 'bench', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
+const MON_IMG = ['rat', 'hen', 'boar', 'wolf', 'shroom', 'vine', 'eagle', 'turtle', 'golem', 'drone', 'guard', 'fixbot', 'kingboar', 'bear', 'lord', 'boss'];   // 2026-11-20 사용자 몬스터 그림 (mon-art.py)
+const ART_N = [...MON_IMG.map(k => 'mon-' + k), 'fx-dragon', 'fx-ogre', 'b-farmrank', 'b-suggest', 'b-beginner', 'b-dex', 'bench', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
   ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
   ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].flatMap(n => ['mg-' + n, 'fk-' + n, 'mk-' + n, 'fa-' + n]), 'ogre-bg'];
@@ -4914,13 +4915,15 @@ function openModal(html, onReady, keep) { if (!keep) { modalAt = performance.now
 const NICK_GAP = 7 * 864e5;
 function openNick() {
   const left = me.nickAt ? me.nickAt + NICK_GAP - Date.now() : 0, wait = left > 0;
-  openModal(`<h3>✏️ 닉네임 바꾸기</h3>
+  openModal(`<h3>✏️ 닉네임 · 이름표</h3>
     <p class="sub">지금 닉네임: <b>${esc(me.name)}</b></p>
+    <div class="field"><label>🎨 이름표 색 <span class="tagpv">${esc(me.name)}</span></label><div class="tagsw" id="tagSw"></div></div>
     ${wait ? `<p class="nk-wait">⏳ 닉네임은 <b>일주일에 한 번</b>만 바꿀 수 있어요.<br>다음에 바꿀 수 있는 날: <b>${new Date(me.nickAt + NICK_GAP).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</b> (${Math.ceil(left / 864e5)}일 남음)</p>`
     : `<div class="field"><label for="nkIn">새 닉네임</label><input id="nkIn" maxlength="10" placeholder="2~10글자" autocomplete="off"><ul class="rules chips" id="nkRules"><li data-r="len">2~10글자 (띄어쓰기 포함)</li><li data-r="chars">한글·영문·숫자·띄어쓰기</li><li data-r="name">김치복·관리자 같은 이름 X</li></ul></div>
       <ul class="nk-note"><li>바꾸면 <b>일주일 동안 다시 못 바꿔요.</b></li><li><b>로그인할 때도 새 닉네임</b>을 써야 해요. (비밀번호는 그대로)</li></ul>
       <p class="err" id="nkErr" role="alert"></p>`}
-    <div class="actions">${wait ? '' : '<button class="btn main" data-x="go" id="nkGo" disabled>바꾸기</button>'}</div>`, el => {
+    <div class="actions">${wait ? '' : '<button class="btn main" data-x="go" id="nkGo" disabled>닉네임 바꾸기</button>'}</div>`, el => {
+    const sw = el.querySelector('#tagSw'); renderTagSw(sw); sw.addEventListener('click', pickTagc);
     const inp = el.querySelector('#nkIn'); if (!inp) return;
     const check = () => { const n = inp.value.trim(), r = nickChecks(n); paintRules(el.querySelector('#nkRules'), r, n.length > 0); el.querySelector('#nkGo').disabled = !(Object.values(r).every(Boolean) && n !== me.name); };
     inp.addEventListener('input', check); setTimeout(() => inp.focus(), 50);
@@ -5713,7 +5716,7 @@ function skinTile(cv, look, mode) {
   drawChar(g, w / 2 - (mode === 'weapon' ? 7 * sc : 0), fy, { equip: {}, cls: '', ...look, moving: false, still: true }, 0, sc);
 }
 function renderSkins() {
-  $('#hatHair').checked = me.hatHair !== false; renderTagSw();
+  $('#hatHair').checked = me.hatHair !== false;
   const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
   const hats = HATS.filter(h => me.hats.includes(h.id)), eyes = EYE_SKINS.filter(e => e.id === 'dot' || me.hats.includes('eye:' + e.id));
   const suits = SUITS.filter(s => me.hats.includes('suit:' + s.id)), wsks = WSKINS.filter(w => me.hats.includes(wskKey(w)));
@@ -5740,14 +5743,16 @@ function arrowPick(el, label, list, key, show, after) {
   ARROWS.push(draw); draw();
 }
 // 이름표 배경색 고르기 (2026-11-20): 첫 칸 = 기본
-function renderTagSw() {
-  const cur = LIFE()?.tagc || '';
-  $('#tagSw').innerHTML = TAG_COLORS.map(v => `<button type="button" class="tsw${v === cur ? ' on' : ''}" data-tc="${v}" aria-label="${v || '기본'}" style="--tc:${v || 'rgba(232,85,58,.94)'}">${v ? '' : '기본'}</button>`).join('');
+// 이름표 색 (2026-11-20: 닉네임 창으로 옮김)
+function renderTagSw(box) {
+  if (!box) return; const cur = LIFE()?.tagc || '';
+  const pv = box.parentElement.querySelector('.tagpv'); if (pv) pv.style.background = cur || 'rgba(232,85,58,.94)';
+  box.innerHTML = TAG_COLORS.map(v => `<button type="button" class="tsw${v === cur ? ' on' : ''}" data-tc="${v}" aria-label="${v || '기본'}" style="--tc:${v || 'rgba(232,85,58,.94)'}">${v ? '' : '기본'}</button>`).join('');
 }
-$('#tagSw').addEventListener('click', async e => {
-  const b = e.target.closest('[data-tc]'); if (!b) return; const v = b.dataset.tc; if (v === (LIFE()?.tagc || '')) return;
-  const j = await act('/api/tagc', { c: v }); if (j) { renderTagSw(); lookChanged(); toast(v ? '🎨 이름표 색을 바꿨어요' : '🎨 이름표 색을 기본으로'); }
-});
+async function pickTagc(e) {
+  const box = e.currentTarget, b = e.target.closest('[data-tc]'); if (!b) return; const v = b.dataset.tc; if (v === (LIFE()?.tagc || '')) return;
+  const j = await act('/api/tagc', { c: v }); if (j) { renderTagSw(box); lookChanged(); toast(v ? '🎨 이름표 색을 바꿨어요' : '🎨 이름표 색을 기본으로'); }
+}
 $('#hatHair').addEventListener('change', e => { me.hatHair = e.target.checked; syncMe(); saveLook(); });
 $('#eyeList').addEventListener('click', e => { const y = e.target.closest('[data-y]')?.dataset.y; if (y) { me.eyes = y; syncMe(); saveLook(); } });
 $('#suitList').addEventListener('click', e => { const s = e.target.closest('[data-s]')?.dataset.s; if (s) { me.suit = me.suit === s ? '' : s; syncMe(); saveLook(); } });
@@ -6590,7 +6595,7 @@ function openFarm(keep) {
     body: `<div class="bs-card hero"><div class="cs">${chip(`🌱 수수께끼 씨앗 · 무료`, 'up')}${chip(`⛏️ ${HOES[f.hoe][0]} Lv${f.hoe + 1}`)}${chip(`🧪 ${FERTS[f.fert][0]} Lv${f.fert + 1}`)}${chip(`🎒 작물 가방 ${bag.length}/${FARM.bag}`, full ? 'bad' : '')}${chip(`🌾 누적 수확 ${fmtN(L.cnt.crops || 0)}번`)}</div></div>
       <div class="plots">${cells}</div>
       <p class="muted" style="text-align:center;margin:4px 0 0">무엇이 자랄지는 수확할 때 알 수 있어요!</p>`,
-    help: `<p>씨앗은 <b>수수께끼 씨앗 하나</b>뿐이에요. 무료로 얼마든지 심어요.</p><p>심는 순간 무엇이 자랄지 정해지지만, <b>수확할 때까지 비밀</b>이에요. 1~2분이면 자라요 (호미가 좋을수록 빨리).</p>
+    help: `<p>씨앗은 <b>수수께끼 씨앗 하나</b>뿐이에요. 무료로 얼마든지 심어요.</p><p>심는 순간 무엇이 자랄지 정해지지만, <b>수확할 때까지 비밀</b>이에요. 3분이면 자라요 (호미가 좋을수록 빨리).</p>
       <p>수확한 작물은 🎒 작물 가방(최대 ${FARM.bag}개)에 들어가요. <b>💰 팔기</b> 탭에서 팔아야 골드가 돼요.</p><p><b>호미</b>: 밭 칸 · 큰 작물 · 빨리 자람 / <b>비료</b>: 희귀 · 전설 작물이 잘 나옴.</p><p>마을 텃밭 두둑을 직접 누르면 그 칸 하나씩 심고 · 수확해요.</p>`,
   },   // 2026-11-20 전체 심기 · 전체 수확 버튼 없앰 (사용자 요청)
     async x => {
@@ -7212,8 +7217,17 @@ const MON_ART = {
     { path: R(-12, -7, 7, 7, 3), c: shade(c, .8) }, { path: R(5, -7, 7, 7, 3), c: shade(c, .8) }, { path: E(0, -17, 17, 15), c }, { path: E(0, -11, 7, 5.5), c: '#e7c9a0' }, { flat: 1, path: E(0, -13.5, 2.6, 2), c: INK }, ...EYE2(-20, 6)],
 };
 const MON_BASE = { kingboar: 'boar', lord: 'golem', boss: 'guard' };
+const MON_SZ = 50;   // 그림 몬스터: 긴 쪽이 이 크기 (크기 배율 d.s를 곱하기 전)
 function monSprite(d, white) {
-  const k = d.k, key = `m:${k}${white ? ':w' : ''}`;
+  const k = d.k, im = ART['mon-' + k];
+  if (im) return sprite(`mi:${k}${white ? ':w' : ''}`, 90, 80, 45, 70, g => {   // 그림 아래 끝 = 발 (+2)
+    const sc = MON_SZ / Math.max(im.width, im.height), w = im.width * sc, h = im.height * sc, x = -w / 2, y = 2 - h;
+    if (!white) return inkImage(g, im, x, y, w, h, 1.6);
+    const t = document.createElement('canvas'); t.width = im.width; t.height = im.height; const q = t.getContext('2d');
+    q.drawImage(im, 0, 0); q.globalCompositeOperation = 'source-atop'; q.fillStyle = 'rgba(255,255,255,.92)'; q.fillRect(0, 0, t.width, t.height);
+    inkSil(g, im, x, y, w, h, 1.6); g.drawImage(t, x, y, w, h);
+  });
+  const key = `m:${k}${white ? ':w' : ''}`;
   return sprite(key, 90, 80, 45, 66, g => {
     const art = MON_ART[k] || MON_ART[MON_BASE[k]] || MON_ART.rat;
     let parts = art(d.c);
@@ -7235,7 +7249,7 @@ function drawMon(m, t) {
   if (me.x < m.x && !['shroom', 'golem', 'drone', 'guard', 'boss', 'lord'].includes(d.k)) ctx.scale(-1, 1);   // 나를 바라봄
   const white = m.hitT > 0 || (m.dead && m.deadT < .08);
   const sp = monSprite(d, white); ctx.drawImage(sp.c, -sp.ox, -sp.oy, sp.w, sp.h);
-  if (m.aggro && !white) { const y = BROW_Y[d.k] ?? -18; ctx.strokeStyle = INK; ctx.lineWidth = 1.8; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-9, y - 6); ctx.lineTo(-3, y - 4); ctx.moveTo(9, y - 6); ctx.lineTo(3, y - 4); ctx.stroke(); }
+  if (m.aggro && !white && !ART['mon-' + d.k]) { const y = BROW_Y[d.k] ?? -18; ctx.strokeStyle = INK; ctx.lineWidth = 1.8; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-9, y - 6); ctx.lineTo(-3, y - 4); ctx.moveTo(9, y - 6); ctx.lineTo(3, y - 4); ctx.stroke(); }
   ctx.restore();
 }
 $('#meTitle').onclick = () => goDex('title');
@@ -7713,7 +7727,7 @@ const GUIDE = () => [
     ['🏆 낚시 랭킹판', '낚시점 옆 랭킹판에서 제일 비싼 · 제일 큰 · 제일 많이 낚은 사람 순위를 봐요. 🏆 랭킹 창에서도 볼 수 있어요.'],
   ]],
   ['🌾', '텃밭 · 채집', [
-    ['텃밭', '두둑을 누르면 수수께끼 씨앗(무료)을 심고, 1~2분 뒤 수확해요. 무엇이 자랄지는 수확할 때 알아요! 작물은 가방에 모였다가 텃밭 창고에서 팔아요. 호미·비료를 올리면 밭 칸·큰 작물·희귀·전설 작물이 늘어요. 옆의 🏆 농사 랭킹판에서 순위도 봐요.'],
+    ['텃밭', '두둑을 누르면 수수께끼 씨앗(무료)을 심고, 3분 뒤 수확해요. 무엇이 자랄지는 수확할 때 알아요! 작물은 가방에 모였다가 텃밭 창고에서 팔아요. 호미·비료를 올리면 밭 칸·큰 작물·희귀·전설 작물이 늘어요. 옆의 🏆 농사 랭킹판에서 순위도 봐요.'],
     ['🌾 농사왕', '텃밭 창고 → 👑 농사왕 탭. 목표(수확 수·희귀·전설·도감 등)를 이룰 때마다 농사왕 스킨을 하나씩 받아요. 창고 앞 농사왕 심어라 아저씨가 팁을 알려 줘요.'],
     ['나무·바위', '마을의 나무·바위를 누르면 캐서 🪵 목재·🪨 석재를 얻어요. 시간이 지나면 다시 자라요.'],
     ['벌목소·채석장', '알바를 고용하면 화면을 꺼도 목재·석재가 쌓여요 (최대 10시간). 가서 받기를 눌러요.'],
