@@ -118,7 +118,7 @@ export class Town extends DurableObject {
     if (m.t === 'mv') {
       if (!Array.isArray(m.p) || !m.p.length || m.p.length > 8) return;
       const p = [];
-      for (const s of m.p) { if (!Array.isArray(s) || s.length !== 5 || !Number.isFinite(s[0]) || !num(s[1], MW * T) || !num(s[2], MH * T) || !num(s[3], 400)) return; p.push([Math.round(s[0]), Math.round(s[1]), Math.round(s[2]), Math.round(s[3]), s[4] ? 1 : 0]); }
+      for (const s of m.p) { if (!Array.isArray(s) || s.length !== 5 || !Number.isFinite(s[0]) || !num(s[1], MW * T) || !num(s[2], MH * T) || !num(s[3], 400)) return; p.push([Math.round(s[0]), Math.round(s[1]), Math.round(s[2]), Math.round(s[3]), s[4] ? Math.max(1, Math.min(400, Math.round(+s[4]) || 1)) : 0]); }
       const z = p[p.length - 1]; Object.assign(a, { x: z[1], y: z[2], tx: z[1], ty: z[2], sit: -1 }); this.save(ws, a);
       return this.all({ t: 'mv', id: a.id, p }, ws);
     }

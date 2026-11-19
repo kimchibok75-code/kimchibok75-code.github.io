@@ -584,6 +584,10 @@
   - 받는 곳: 낚시점 → 👑 낚시왕 탭 (`fishKing`, 탭 `FS_TABS`). 물고기(`life.cnt.fish`) 50마리마다 한 부위, **받기**를 눌러야 받음. 순서 `FISH_KING.keys` = 모자 → 의상 → 눈 → 검 → 활 → 지팡이 (game-rules.js)
   - 서버 `/api/fish/king`: 아직 없는 첫 부위를 찾아 (순서 번호 + 1) × 50마리면 `hats`에 넣음. 따로 저장하는 값 없음
   - 낚아서 50의 배수가 되면 토스트로 알려 줌 (`fishShow`)
+- **채굴왕 세트** (2026-11-19): 같은 방식. 템플릿 `*_guide_채굴왕.png` → `tpl_set('채굴왕', 'mk')` → `mk-*.webp`, game.html `MKS`. id `mineking`
+  - 채광소 창 → ⛏️ 채굴왕 탭 (`workSheet` → `kingSheet`). **손으로 캔 석재(`life.cnt.stone`) 100개마다** (바위 하나에 1~3개, 알바가 모은 건 안 셈)
+  - 두 세트 공통: game-rules.js `KINGS = { fish, mine }`, `kingNext`, `kingNeed` · 서버 `kingClaim(c, kind)` (`/api/fish/king`, `/api/mine/king`) · 화면 `kingSheet(b, keep, K, 탭, 돌아갈 창, 주소, 아래 버튼)`
+  - 새 '왕' 세트를 만들면: KINGS에 한 줄 + 스킨 6개(`fk: 1`) + tpl_set 한 줄 + TSK·ART_N + 그 건물 창에 탭
 
 ### 점프 · Z 공격 (PC 키) — 2026-11-18
 - **C 점프**, 공중에서 C 한 번 더 = **더블 점프**. 화살표를 누른 채 C면 그쪽으로 뜀 (공중 속도 `JUMP.air` 1.3배). 숫자 `JUMP = {v1, v2, g, air}` (game.html)
@@ -633,6 +637,14 @@
   - 서버: `/api/house/build`가 `canHouseD`. 예전 타운 집(`life.house.d` 없음)은 처음 한 번 **무료**로 다시 놓음 → `d: 1`. town.js `room`은 -1 허용
   - 배포 때 원격 `houses` 표에서 김치복 집(타운에 있던 유일한 집)을 지움. 집 단계(`life.house.lv`)는 그대로라 무료로 다시 놓으면 됨
 - 주의: 한 줄에 주석을 붙일 때 그 뒤 코드까지 주석이 되지 않게 (2026-11-19 `g.scale(GK, GK)`가 주석 뒤로 밀려 바닥이 작게 그려진 적 있음)
+
+### 지붕 위에 서기 · 낚시 취소 · 알바 값 — 2026-11-19
+- **지붕 위에 서기**: 더블 점프로 건물(타운)·집(치복동) 위에 내려오면 지붕에 섬 (`roofList`, `roofAt`, `inRoof`, `me.roof = {x0,x1,y0,y1 발 범위, h 지붕 높이 = 그림 높이 40%}`). 지붕 위에서 jz = h, jfly = true
+  - 화살표·지붕 누르기로 지붕 위를 걸음 (tap 맨 앞: 누른 자리 + h = 발 자리). 가장자리 밖으로 나가면 떨어짐(jumpTick). 지붕 밖을 누르거나 walkTo를 부르면 그쪽 땅으로 뛰어내린 뒤 걸어감 (`roofHop`, `me.hop`, `me.afterLand`)
+  - 지붕 위·공중에서는 서버 위치 저장 안 함 (`savePos`). 실시간 mv의 다섯째 값: 0 땅 · 1 공중 · 2 이상 = 지붕 위(2 + 높이) → 다른 화면 `p.rz`(그림자 자리). town.js가 그 값을 그대로 넘김
+  - 주의: 타운에서 `me.room`은 0이 아니라 undefined일 수 있음 → `!me.room`으로 확인
+- **손 낚시 = 던지기 + 당기기**: `/api/fish/hand`는 던진 자리·시각만 `life.fcast`에 기억하고 `wait`를 줌 → 화면이 기다린 뒤 `/api/fish/reel`이 결과를 정함 (`fishCast`, `fishReel`, `fishOnce`). 기다리는 동안 자리를 떠나면(낚싯대가 거둬지면) 화면이 `/api/fish/cancel` → 안 낚임. 30초 넘게 안 당기면 놓침
+- **알바 고용 값**: 골드 `hireGold(k)` = 1,500 × 2.4^(k−1) (1,500 → 3,600 → 8,600 → 20,700 → 49,800), 목재 20×k² · 석재 15×k²
 
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감

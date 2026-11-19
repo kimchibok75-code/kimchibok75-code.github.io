@@ -1,6 +1,6 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { FISH_KING, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
+import { KINGS, kingNext, kingNeed, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, AUTO_FISH, FISH_SHOP, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
@@ -332,6 +332,15 @@ const notWorking = c => { if (c.jobAt) fail(400, '카페 알바 중이에요. �
 
 // 2단계 기능들: (캐릭터, 보낸 내용, 지금 시각, 사냥 정산 결과) → 캐릭터를 바꾸고, 화면에 알려 줄 것을 돌려줌
 const AWAY_MIN = 300;   // 화면이 켜져 있으면 2분마다 /api/seen 신호가 옴
+// '왕' 세트 보상 받기: 아직 없는 첫 부위를 찾아 (순서 + 1) × every 만큼 셌으면 hats에 넣음
+function kingClaim(c, kind) {
+  const K = KINGS[kind], n = c.life.cnt?.[K.cnt] || 0, next = kingNext(K, c.hats);
+  if (!next) fail(400, `${K.n} 보상을 모두 받았어요`);
+  const need = kingNeed(K, next);
+  if (n < need) fail(400, `${K.what} ${need}${K.unit}가 되어야 받을 수 있어요 (지금 ${n}${K.unit})`);
+  c.hats.push(next);
+  return { fk: next, log: [kind + '-king', next], chron: next === K.keys[K.keys.length - 1] ? [kind, `${K.n} 세트를 모두 모았어요!`] : null };
+}
 const GAME = {
   '/api/seen'() {},   // 화면이 켜져 있다는 신호 (자리 비움 계산용)
   // 사냥
@@ -525,7 +534,10 @@ const GAME = {
   // 그만두면 알바비는 없고, 그때까지 온 손님 팁만 받음
   '/api/job/quit'(c, b, at) { const tips = c.jobAt ? jobTips(c.jobAt, c.lv, at) : 0; c.gold += tips; c.jobAt = 0; return { tips }; },
   // 손 낚시: 물을 누르면 바로. 서버가 결과를 정하고, 화면은 wait(ms) 뒤에 입질 → 결과를 보여 줌
-  '/api/fish/hand'(c, b, at, out, env, user) { return fishOnce(c, b, at, env, user, false); },
+  // 손 낚시 (2026-11-19 나눔): 던지기(hand) → 입질 시간(wait) 뒤 당기기(reel). 자리를 떠나면 화면이 cancel → 아무것도 안 낚임
+  '/api/fish/hand'(c, b, at, out, env, user) { return fishCast(c, b, at, env, user); },
+  '/api/fish/reel'(c, b, at, out, env, user) { return fishReel(c, at, env, user); },
+  '/api/fish/cancel'(c) { delete c.life.fcast; },
   // 자동 낚시용 미끼 사기 (골드)
   // 자동 낚시 한 번: 미끼 1개를 씀. 낚을 확률은 손 낚시보다 조금 낮음. 쿨타임은 손 낚시와 같음 (2초, 2026-11-17)
   // ───── 할 이유 (기획서 4-8) ─────
@@ -595,14 +607,8 @@ const GAME = {
     delete st.q[i];
   },
   // 낚시왕 보상 (2026-11-19): 물고기 50마리마다 다음 부위 하나. 받은 것은 hats에 들어감 (순서대로라서 '몇 개 받았나'는 hats로 셈)
-  '/api/fish/king'(c) {
-    const n = c.life.cnt?.fish || 0, next = FISH_KING.keys.find(k => !c.hats.includes(k));
-    if (!next) fail(400, '낚시왕 보상을 모두 받았어요');
-    const need = (FISH_KING.keys.indexOf(next) + 1) * FISH_KING.every;
-    if (n < need) fail(400, `물고기 ${need}마리를 낚아야 받을 수 있어요 (지금 ${n}마리)`);
-    c.hats.push(next);
-    return { fk: next, log: ['fish-king', next], chron: next === FISH_KING.keys[FISH_KING.keys.length - 1] ? ['fish', '낚시왕 세트를 모두 모았어요! 🎣'] : null };
-  },
+  '/api/fish/king'(c) { return kingClaim(c, 'fish'); },
+  '/api/mine/king'(c) { return kingClaim(c, 'mine'); },   // 채굴왕 (2026-11-19): 손으로 캔 석재 100개마다
   '/api/title'(c, b) { const id = String(b.id || ''); if (!c.life.titles.includes(id)) fail(400, '아직 없는 칭호예요'); c.title = id; },
   // 낚시점: 낚싯대 · 미끼 올리기 (낚시 코인)
   '/api/fish/shop'(c, b) {
@@ -839,24 +845,40 @@ async function newRecovery(req, env, user) {
 
 // 낚시 한 번 (손·자동 같이 씀): 쿨타임 확인 → 물고기 정하기 → 낚을 확률로 성공/실패 → 바로 팔아서 골드·낚시 코인
 // b.w = [x, y] 찌를 던진 물 칸 → 바다면 바다 물고기, 아니면(강·연못) 강 물고기
-async function fishOnce(c, b, at, env, user) {
+// 던지기: 쿨타임 확인 후 던진 자리·시각만 기억 (life.fcast). 결과는 당길 때 정함
+async function fishCast(c, b, at, env, user) {
   townOnly(c); notWorking(c);
-  const row = await env.DB.prepare('SELECT last_cast, day, day_n FROM fishing WHERE user_id = ?').bind(user.id).first();
+  const row = await env.DB.prepare('SELECT last_cast FROM fishing WHERE user_id = ?').bind(user.id).first();
   const left = Math.ceil(((row?.last_cast || 0) + FISHING.cooldown - at) / 1000);
   if (left > 0) fail(429, `${left}초 뒤에 다시 던질 수 있어요`);
+  const w = Array.isArray(b.w) && b.w.length === 2 && b.w.every(Number.isInteger) ? b.w : null, p = Array.isArray(b.p) && b.p.length === 2 && b.p.every(Number.isFinite) ? b.p : null;
+  const q = Array.isArray(b?.q) && b.q.length === 2 && Number.isFinite(+b.q[0]) && Number.isFinite(+b.q[1]) ? [+b.q[0], +b.q[1]] : null, wait = fishWait();
+  c.life.fcast = { at, wait, w, p, q };
+  return { wait, cooldown: FISHING.cooldown, cast: 1, after: () => env.DB.prepare("INSERT INTO fishing (user_id, bait, last_cast) VALUES (?, '', ?) ON CONFLICT(user_id) DO UPDATE SET bait = '', last_cast = excluded.last_cast").bind(user.id, at).run() };
+}
+// 당기기: 던진 지 wait가 지났을 때만 (조금 일찍은 봐줌). 너무 오래 지나면 놓침
+async function fishReel(c, now, env, user) {
+  townOnly(c); notWorking(c);
+  const fc = c.life.fcast; if (!fc) fail(400, '던진 낚싯대가 없어요');
+  if (now < fc.at + fc.wait - 1500) fail(400, '아직 입질이 없어요');
+  delete c.life.fcast;
+  if (now > fc.at + fc.wait + 30e3) return { caught: false, gone: 1, cooldown: FISHING.cooldown, fish: { i: '💨', n: '물고기', grade: 'common' } };
+  return fishOnce(c, fc, fc.at, env, user, now);
+}
+async function fishOnce(c, b, at, env, user, now) {
+  const row = await env.DB.prepare('SELECT day, day_n FROM fishing WHERE user_id = ?').bind(user.id).first();
   const w = Array.isArray(b.w) && b.w.length === 2 && b.w.every(Number.isInteger) ? b.w : null, sea = !!w && tileAt(w[0], w[1]) === WATER && seaAt(w[0], w[1]);
   // 물고기 그림자 근처에 던지면 좋은 물고기 (미끼 +3단계로 두 번 굴려 비싼 것, 낚을 확률 +12%p)
   const gone = Array.isArray(c.life.fsh) ? c.life.fsh : (c.life.fsh = []), p = Array.isArray(b.p) && b.p.length === 2 && b.p.every(Number.isFinite) ? b.p : null;
   // 그림자 판정 (2026-11-18 후하게): 찌 자리 또는 누른 자리(찌에서 5칸 안) · 지금/3초 전/6초 전 그림자 위치
   const q = Array.isArray(b?.q) && p && Number.isFinite(+b.q[0]) && Number.isFinite(+b.q[1]) && Math.hypot(b.q[0] - p[0], b.q[1] - p[1]) < 5 * T ? [+b.q[0], +b.q[1]] : null;
   let sh = null; if (p) for (const dt of [0, 3000, 6000]) { sh = shadowAt(at - dt, p[0], p[1], gone) || (q && shadowAt(at - dt, q[0], q[1], gone)); if (sh) break; }
-  const D = derive(c), F = c.life.fish, wait = fishWait();
+  const D = derive(c), F = c.life.fish, wait = 0;
   let fish = rollFish(D.luk, F.rod, F.bait, sea);
   if (sh) { const f2 = rollFish(D.luk, F.rod, F.bait + FSHADOW.bait, sea), f3 = rollFish(D.luk, F.rod, F.bait + FSHADOW.bait, sea); fish = f2.price >= f3.price ? f2 : f3; }
-  const mark = () => env.DB.prepare("INSERT INTO fishing (user_id, bait, last_cast) VALUES (?, '', ?) ON CONFLICT(user_id) DO UPDATE SET bait = '', last_cast = excluded.last_cast").bind(user.id, at).run();
   const base = { wait, cooldown: FISHING.cooldown, sea, sh: sh ? sh.id : 0 };
-  if (Math.random() >= Math.min(.98, fishHit(F.rod, D.fx) + (sh ? FSHADOW.hit : 0))) return { ...base, caught: false, fish: { i: fish.i, n: fish.n, grade: fish.grade }, after: mark };
-  const day = dayKey(at), dayN = row?.day === day ? row.day_n + 1 : 1, tired = dayN > FISHING.dayFull ? .5 : 1;   // 하루에 너무 많이 낚으면 값이 절반
+  if (Math.random() >= Math.min(.98, fishHit(F.rod, D.fx) + (sh ? FSHADOW.hit : 0))) return { ...base, caught: false, fish: { i: fish.i, n: fish.n, grade: fish.grade } };
+  const day = dayKey(now), dayN = row?.day === day ? row.day_n + 1 : 1, tired = dayN > FISHING.dayFull ? .5 : 1;   // 하루에 너무 많이 낚으면 값이 절반
   const big = isBigFish(fish), price = Math.round(fish.price * tired), info = JSON.stringify({ i: fish.i, n: fish.n, grade: fish.grade, len: fish.len, price });
   const sell = Math.round(price * (1 + (D.fx.fishP || 0) / 100)), coin = Math.round(FISH_COIN[fish.grade] * (1 + (D.fx.fishC || 0) / 100) * tired);
   c.gold += sell; c.life.coins.fish += coin; cntAdd(c, 'fish');   // 낚은 물고기는 바로 팔림
@@ -864,7 +886,7 @@ async function fishOnce(c, b, at, env, user) {
   const lexp = lifeExp(c, 'fish'); addExp(c, lexp);
   if (big) cntAdd(c, 'perfect'); if (fish.grade === 'legend') cntAdd(c, 'legendFish'); if (fish.n === '낡은 장화') cntAdd(c, 'boot');
   return { ...base, caught: true, big, lexp, fish: { ...fish, price: sell }, coin, tired: tired < 1, chron: fish.grade === 'legend' ? ['fish', `전설 물고기 ${fish.n} ${fish.len}cm를 낚았어요!`] : null,
-    after: async () => { await mark(); await env.DB.prepare(`UPDATE fishing SET count = count + 1, gold = gold + ?, day = ?, day_n = ?,
+    after: async () => { await env.DB.prepare(`UPDATE fishing SET count = count + 1, gold = gold + ?, day = ?, day_n = ?,
         best_price_fish = CASE WHEN ? > best_price THEN ? ELSE best_price_fish END, best_price = MAX(best_price, ?),
         best_len_fish = CASE WHEN ? > best_len THEN ? ELSE best_len_fish END, best_len = MAX(best_len, ?) WHERE user_id = ?`)
       .bind(price, day, dayN, price, info, price, fish.len, info, fish.len, user.id).run(); } };

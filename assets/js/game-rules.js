@@ -89,13 +89,15 @@ export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'clear', n: '�
   { id: 'rdragon', n: '🐉 용의 뿔', price: 0, raid: 'rdragon', fx: { atkP: 5, crit: 2 } },
   { id: 'ogre', n: '👹 오우거 투구', price: 0, raid: 'ogre', fx: { hpP: 5, defP: 4 } },
   { id: 'magic', n: '💗 마법소녀 왕관', price: 30000, fx: { expP: 4, crit: 2 } },
-  { id: 'fishking', n: '🎣 낚시왕 모자', price: 0, fk: 1, fx: { fishP: 8, fishZ: 2 } }];   // fk = 낚시점 '낚시왕' 보상 (2026-11-19, 상점에 안 팖)   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
+  { id: 'fishking', n: '🎣 낚시왕 모자', price: 0, fk: 1, fx: { fishP: 8, fishZ: 2 } },
+  { id: 'mineking', n: '⛏️ 채굴왕 헬멧', price: 0, fk: 1, fx: { gather: 1, hpP: 3 } }];   // fk = 낚시점 '낚시왕' 보상 (2026-11-19, 상점에 안 팖)   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
 // 눈 모양 스킨 (가진 것은 hats 목록에 'eye:별' 처럼 저장). dot은 기본
 export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 10000, fx: { defP: 3 } }, { id: 'star', n: '⭐ 별 눈', price: 10000, fx: { expP: 3 } }, { id: 'wink', n: '😉 윙크', price: 15000, fx: { crit: 2, atkP: 1 } }, { id: 'heart', n: '💗 하트 눈', price: 15000, fx: { hpP: 4 } }, { id: 'cat', n: '🐱 고양이 눈', price: 15000, fx: { fishC: 8 } }, { id: 'big', n: '✨ 반짝 큰 눈', price: 20000, fx: { goldP: 5 } },
   { id: 'rdragon', n: '🐉 용의 눈', price: 0, raid: 'rdragon', fx: { crit: 3, expP: 5 } },
   { id: 'ogre', n: '👹 오우거 눈', price: 0, raid: 'ogre', fx: { atkP: 3, hpP: 3 } },
   { id: 'magic', n: '💗 반짝 마법 눈', price: 30000, fx: { crit: 2, goldP: 3 } },
-  { id: 'fishking', n: '🎣 낚시왕 눈', price: 0, fk: 1, fx: { crit: 2, fishZ: 2 } }];
+  { id: 'fishking', n: '🎣 낚시왕 눈', price: 0, fk: 1, fx: { crit: 2, fishZ: 2 } },
+  { id: 'mineking', n: '⛏️ 채굴왕 눈', price: 0, fk: 1, fx: { crit: 2, defP: 2 } }];
 // 의상 스킨 (몸 전체 겉모습, 입으면 갑옷 그림 대신 보임). 가진 것은 c.hats 에 'suit:id', 입은 것은 c.suit
 export const SUITS = [
   { id: 'hoodie', n: '🧥 후드티', price: 10000, fx: { spdP: 3 } },
@@ -108,6 +110,7 @@ export const SUITS = [
   { id: 'ogre', n: '👹 오우거 가죽 갑옷', price: 0, raid: 'ogre', fx: { hpP: 6, atkP: 3 } },
   { id: 'magic', n: '💗 마법소녀 드레스', price: 30000, fx: { hpP: 5, expP: 3 } },
   { id: 'fishking', n: '🎣 낚시왕 조끼', price: 0, fk: 1, fx: { hpP: 4, fishC: 10 } },
+  { id: 'mineking', n: '⛏️ 채굴왕 작업복', price: 0, fk: 1, fx: { defP: 5, hpP: 3 } },
 ];
 // 무기 스킨 (그 무기의 겉모습만). 가진 것은 'wsk:무기:id', 쓰는 것은 c.wsk = { sword, bow, staff }
 export const WSKINS = [
@@ -141,9 +144,20 @@ export const WSKINS = [
   { t: 'sword', id: 'fishking', n: '🎣 낚시왕 검', price: 0, fk: 1, fx: { atkP: 4, fishP: 4 } },
   { t: 'bow', id: 'fishking', n: '🎣 낚시왕 활', price: 0, fk: 1, fx: { atkP: 4, fishP: 4 } },
   { t: 'staff', id: 'fishking', n: '🎣 낚시왕 지팡이', price: 0, fk: 1, fx: { atkP: 4, fishP: 4 } },
+  { t: 'sword', id: 'mineking', n: '⛏️ 채굴왕 검', price: 0, fk: 1, fx: { atkP: 4, defP: 3 } },
+  { t: 'bow', id: 'mineking', n: '⛏️ 채굴왕 활', price: 0, fk: 1, fx: { atkP: 4, defP: 3 } },
+  { t: 'staff', id: 'mineking', n: '⛏️ 채굴왕 지팡이', price: 0, fk: 1, fx: { atkP: 4, defP: 3 } },
 ];
 // 낚시왕 보상 (2026-11-19, 낚시점 '낚시왕' 탭): 물고기 50마리마다 한 부위씩, '받기'를 눌러야 받음. 순서 = 모자 · 의상 · 눈 · 검 · 활 · 지팡이
-export const FISH_KING = { every: 50, keys: ['fishking', 'suit:fishking', 'eye:fishking', 'wsk:sword:fishking', 'wsk:bow:fishking', 'wsk:staff:fishking'] };
+// '왕' 세트 (2026-11-19): 낚시왕(낚시점, 물고기 50마리마다) · 채굴왕(채광소, 손으로 캔 석재 100개마다). cnt = life.cnt 의 어느 값으로 셈
+const kingKeys = id => [id, 'suit:' + id, 'eye:' + id, 'wsk:sword:' + id, 'wsk:bow:' + id, 'wsk:staff:' + id];
+export const KINGS = {
+  fish: { id: 'fishking', n: '낚시왕', i: '👑', cnt: 'fish', every: 50, what: '물고기', unit: '마리', keys: kingKeys('fishking') },
+  mine: { id: 'mineking', n: '채굴왕', i: '⛏️', cnt: 'stone', every: 100, what: '캔 석재', unit: '개', keys: kingKeys('mineking') },
+};
+export const FISH_KING = KINGS.fish;
+export const kingNext = (K, hats) => K.keys.find(k => !hats.includes(k));
+export const kingNeed = (K, key) => (K.keys.indexOf(key) + 1) * K.every;
 export const fkItem = key => key.startsWith('suit:') ? SUITS.find(x => 'suit:' + x.id === key) : key.startsWith('eye:') ? EYE_SKINS.find(x => 'eye:' + x.id === key) : key.startsWith('wsk:') ? WSKINS.find(x => wskKey(x) === key) : HATS.find(x => x.id === key);
 export const wskKey = w => `wsk:${w.t}:${w.id}`;
 // 레이드 전용 스킨 한 벌 (가진 것 키 목록): 머리·눈·의상·검·활·지팡이
@@ -416,9 +430,11 @@ export function farmSettle(f, now) { for (const p of f.plots) if (p) { p.g = plo
 export const GATHER = { tree: { n: '나무', res: 'wood', amt: [2, 4], regrow: [3 * MIN, 6 * MIN], sec: 1.6 }, rock: { n: '바위', res: 'stone', amt: [1, 3], regrow: [4 * MIN, 8 * MIN], sec: 2 }, gap: 1200 };
 export const RES = { wood: { n: '목재', i: '🪵' }, stone: { n: '석재', i: '🪨' } };
 // rate: 알바 1명이 1시간에 모으는 양 · cap: 쌓이는 최대 시간 · hire(k): k번째 알바 비용
+// 알바 고용 값 (2026-11-19 사용자 요청: 처음은 싸게, 뒤로 갈수록 크게): 골드 1,500 → 3,600 → 8,600 → 20,700 → 49,800 (2.4배씩), 목재·석재는 고용 번호의 제곱
+const hireGold = k => Math.round(1500 * 2.4 ** (k - 1) / 100) * 100;
 export const WORK = {
-  lumber: { n: '벌목소', res: 'wood', rate: 11, cap: 10, max: 5, hire: k => ({ gold: 1500 * k, wood: 20 * k }) },
-  quarry: { n: '채광소', res: 'stone', rate: 8, cap: 10, max: 5, hire: k => ({ gold: 1500 * k, stone: 15 * k }) },
+  lumber: { n: '벌목소', res: 'wood', rate: 11, cap: 10, max: 5, hire: k => ({ gold: hireGold(k), wood: 20 * k * k }) },
+  quarry: { n: '채광소', res: 'stone', rate: 8, cap: 10, max: 5, hire: k => ({ gold: hireGold(k), stone: 15 * k * k }) },
 };
 export function workSettle(w, kind, now) {
   const W = WORK[kind], cap = w.n * W.rate * W.cap;
