@@ -370,6 +370,17 @@ button.chip { cursor: pointer; font: inherit; font-weight: 700; }
 .placegrid .btn { display: flex; align-items: center; gap: 5px; justify-content: flex-start; padding: 6px 8px; min-height: 0; text-align: left; white-space: nowrap; }
 .placegrid .pi { font-size: 18px; flex: none; } .placegrid .pt { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; } .placegrid .pt small { font-size: 11.5px; font-weight: 500; color: #6b7686; }
 .placeh { margin: 12px 0 2px; font-size: 14px; color: #4a5566; } .placeh:first-of-type { margin-top: 6px; }
+/* 휴대폰 점프·공격 버튼 (2026-11-19): 오른쪽 아래, 아래 창 바로 위 (--padb = 아래 창 높이, padPos가 맞춤) */
+.actpad { display: none; position: fixed; right: 12px; bottom: calc(var(--padb, 130px) + 12px); z-index: 6; align-items: flex-end; gap: 10px; touch-action: none; user-select: none; -webkit-user-select: none; }
+@media (hover: none), (pointer: coarse) { body.ingame .actpad { display: flex; } }
+body.raiding .actpad .ap-atk, body.modal-open .actpad { display: none; }
+.actpad button { border: 3px solid #1f2a3a; border-radius: 50%; display: grid; place-items: center; align-content: center; gap: 0; color: #1f2a3a; font-weight: 900; box-shadow: 0 4px 0 #1f2a3a; -webkit-tap-highlight-color: transparent; padding: 0; }
+.actpad button small { font-size: 10px; line-height: 1; margin-top: 1px; }
+.actpad button.on, .actpad button:active { transform: translateY(3px); box-shadow: 0 1px 0 #1f2a3a; }
+.ap-jump { width: 54px; height: 54px; background: rgba(191, 239, 255, .92); margin-bottom: 26px; }
+.ap-jump svg { width: 24px; height: 24px; }
+.ap-atk { width: 70px; height: 70px; background: rgba(255, 207, 90, .95); font-size: 26px; }
+.ap-atk .ico { width: 30px; height: 30px; }
 .rcol { position: absolute; right: 10px; top: 56px; display: grid; gap: 6px; justify-items: end; }   /* 오른쪽 세로 버튼 + 확대 버튼 (버튼 수가 바뀌어도 안 겹침) */
 .side { display: grid; gap: 6px; }
 .iconbtn.lb { height: 50px; grid-template-rows: 1fr auto; padding: 4px 0 3px; line-height: 1; }
@@ -1022,6 +1033,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <!-- ─────────── 게임 ─────────── -->
 <div class="app" id="app" hidden>
+  <div class="actpad" id="actPad"><button class="ap-jump" id="apJump" type="button" aria-label="점프"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 13l6-6 6 6"/><path d="M6 19l6-6 6 6" opacity=".55"/></svg><small>점프</small></button><button class="ap-atk" id="apAtk" type="button" aria-label="공격"><span id="apAtkI">🗡️</span><small>공격</small></button></div>
   <aside class="panel" id="panel" aria-label="내 캐릭터">
     <button class="peek" id="peek" aria-expanded="false">
       <span class="grip"></span>
@@ -5265,6 +5277,21 @@ function syncMe() {
   renderCls(); renderStats(); renderEquip(); renderSkills(); renderSkins(); renderBag(); syncBars(); lookChanged();
 }
 // 자주 바뀌는 숫자 (체력·경험치·골드·사냥 상황)
+// ───────── 휴대폰 점프·공격 버튼 (2026-11-19) ─────────
+// 점프 = C (공중에서 한 번 더 = 더블 점프), 공격 = Z (사냥터에서는 꾹 누르면 계속). 레이드에서는 공격 버튼 숨김
+function padPos() { const p = $('#panel'); if (!p) return; const r = p.getBoundingClientRect(), b = r.height ? Math.max(0, innerHeight - r.top) : 0; document.documentElement.style.setProperty('--padb', Math.round(b) + 'px'); }
+addEventListener('resize', padPos); try { new ResizeObserver(padPos).observe($('#panel')); } catch {}
+setInterval(() => { padPos(); try { document.body.classList.toggle('raiding', !!RD); document.body.classList.toggle('ingame', !$('#app').hidden && !S.away); document.body.classList.toggle('modal-open', !modal.hidden); padIcon(); } catch {} }, 250);
+{
+  const J = $('#apJump'), A = $('#apAtk'); let held = null;
+  const press = (el, f) => { el.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); el.classList.add('on'); f(); }); };
+  const up = el => () => { el.classList.remove('on'); if (el === A) { clearInterval(held); held = null; } };
+  press(J, () => { if (!S.away) myJump(); });
+  press(A, () => { myAttack(); clearInterval(held); held = setInterval(() => { if (HT) myAttack(); else { clearInterval(held); held = null; } }, 150); });
+  for (const el of [J, A]) { for (const k of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(k, up(el)); el.addEventListener('contextmenu', e => e.preventDefault()); el.addEventListener('click', e => e.stopPropagation()); }
+}
+let apCls = '';
+function padIcon() { const D = derive(), c = D.magic ? 'staff' : D.far ? 'bow' : 'sword'; if (c === apCls) return; apCls = c; $('#apAtkI').textContent = { sword: '🗡️', bow: '🏹', staff: '🪄' }[c]; iconize($('#apAtkI')); }
 function syncBars() {
   const D = derive(), hp = Math.max(0, Math.round(me.hp)), need = needExp(me.lv), pe = Math.min(100, me.exp / need * 100);
   $('#hpFill').style.width = `${hp / D.maxHp * 100}%`; $('#hpText').textContent = `체력 ${hp.toLocaleString()} / ${D.maxHp.toLocaleString()}`;
