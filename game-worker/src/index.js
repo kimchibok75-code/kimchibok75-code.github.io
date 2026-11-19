@@ -1,6 +1,6 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
+import { RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
@@ -664,19 +664,22 @@ const GAME = {
     return { planted: idx.length, log: ['plant', `${idx.length}칸`] };
   },
   '/api/farm/harvest'(c, b, at, out, env, user) {   // i = 칸 번호 · all = 다 자란 칸 모두
-    const f = c.life.farm, mul = 1 + (derive(c).fx.farmP || 0) / 100, cn = c.life.cnt, best = c.life.cbest ||= {}, got = [];
+    const f = c.life.farm, mul = 1 + (derive(c).fx.farmP || 0) / 100, cn = c.life.cnt, best = c.life.cbest ||= {}, got = []; let full = 0;
     const idx = b.all ? f.plots.map((_, i) => i) : [Number(b.i)];
     for (const i of idx) {
       const p = f.plots[i];
       if (!p || at < p.r) { if (!b.all) fail(400, p ? '아직 자라는 중이에요' : '빈 밭이에요'); continue; }
-      if (f.bag.length >= FARM.bag) { if (!got.length) fail(400, `작물 가방이 꽉 찼어요 (${FARM.bag}개). 텃밭 창고에서 팔아 주세요`); break; }
-      f.plots[i] = null; const x = CROP_BY[p.id]; if (!x) continue;
+      const x = CROP_BY[p.id]; if (!x) { f.plots[i] = null; continue; }
+      const sellNow = !!f.sell?.[x.grade];   // 2026-11-20 '수확하자마자 팔기'로 해 둔 등급은 가방에 안 넣고 바로 골드
+      if (!sellNow && f.bag.length >= FARM.bag) { full = 1; continue; }
+      f.plots[i] = null;
       const it = { k: (f.seq = (f.seq || 0) + 1), id: x.id, g: p.g, p: Math.min(FARM.priceMax, Math.round(p.p * mul)), at }, big = isBigCrop(x.id, p.g);
-      f.bag.push(it); got.push({ ...it, i, big, grade: x.grade });
+      if (sellNow) { c.gold += it.p; cntAdd(c, 'cropSold'); } else f.bag.push(it);
+      got.push({ ...it, i, big, grade: x.grade, sold: sellNow ? 1 : 0 });
       cntAdd(c, 'cc_' + x.id); if (!best[x.id] || p.g > best[x.id]) best[x.id] = p.g;
       if (x.grade === 'rare') cntAdd(c, 'rareCrop'); if (x.grade === 'legend') cntAdd(c, 'legendCrop'); if (big) cntAdd(c, 'bigCrop');
     }
-    if (!got.length) fail(400, '다 자란 작물이 없어요');
+    if (!got.length) fail(400, full ? `작물 가방이 꽉 찼어요 (${FARM.bag}개). 텃밭 창고에서 팔아 주세요` : '다 자란 작물이 없어요');
     cntAdd(c, 'crops', got.length); const lexp = lifeExp(c, 'crop', got.length); addExp(c, lexp);
     // 농사 랭킹판 기록 (제일 비싼 · 제일 무거운 · 수확 수)
     const info = x => JSON.stringify({ id: x.id, g: x.g, p: x.p }), bp = got.reduce((a, x) => (x.p > a.p ? x : a)), bw = got.reduce((a, x) => (x.g > a.g ? x : a));
@@ -704,6 +707,7 @@ const GAME = {
     spend(c, nx[4]); f[k] = l + 1;
     return { log: ['farm-shop', `${k} Lv${l + 2}`] };
   },
+  '/api/farm/autosell'(c, b) { const g = b?.g || {}; c.life.farm.sell = Object.fromEntries(FG_KEYS.map(k => [k, g[k] ? 1 : 0])); },   // 수확하자마자 팔기 (등급별)
   '/api/farm/king'(c, b) { return kingClaim(c, 'farm', b); },   // 농사왕 세트 (텃밭 창고 '농사왕' 탭)
   // 채집: 마을의 나무·바위 (사람마다 따로 자람)
   async '/api/gather'(c, b, at, out, env) {
@@ -922,8 +926,10 @@ async function fishOnce(c, b, at, env, user, now) {
   // 2026-11-20 새 규칙: 먼저 낚을 확률(낚싯대) → 낚았으면 물고기 정하기(미끼·낚싯대). 그림자 근처면 미끼 +3단계로 두 번 굴려 비싼 것
   let fish = rollFish(F.rod, F.bait, sea);
   if (sh) { const b2 = Math.min(9, F.bait + FSHADOW.bait), f2 = rollFish(F.rod, b2, sea), f3 = rollFish(F.rod, b2, sea); fish = f2.price >= f3.price ? f2 : f3; }
+  const lgOnly = !!c.life.lgOnly;   // 관리자 치트: 전설만 + 늘 낚임
+  if (lgOnly) for (let i = 0; i < 400 && fish.grade !== 'legend'; i++) fish = rollFish(RODS.length - 1, BAITS.length - 1, sea);
   const base = { wait, cooldown: FISHING.cooldown, sea, sh: sh ? sh.id : 0 };
-  if (Math.random() >= Math.min(.99, fishHit(F.rod, D.fx) + (sh ? FSHADOW.hit : 0))) return { ...base, caught: false, fish: { i: fish.i, n: fish.n, grade: fish.grade, id: fish.id } };
+  if (!lgOnly && Math.random() >= Math.min(.99, fishHit(F.rod, D.fx) + (sh ? FSHADOW.hit : 0))) return { ...base, caught: false, fish: { i: fish.i, n: fish.n, grade: fish.grade, id: fish.id } };
   const day = dayKey(now), dayN = row?.day === day ? row.day_n + 1 : 1, tired = dayN > FISHING.dayFull ? .5 : 1;   // 하루에 너무 많이 낚으면 값이 절반
   const big = isBigFish(fish), price = Math.round(fish.price * tired), info = JSON.stringify({ id: fish.id, i: fish.i, n: fish.n, grade: fish.grade, len: fish.len, price });
   const sell = Math.min(FISH_PRICE_MAX, Math.round(price * (1 + ((D.fx.fishP || 0) + (D.fx.fishC || 0)) / 100)));
@@ -1062,6 +1068,7 @@ function cheat(c, k, b, at, env, user) {
   if (k === 'pots') { for (const p of ['s', 'l', 'xl']) c.pots[p] = (c.pots[p] || 0) + 50; c.hp = derive(c).maxHp; return { msg: '물약 50개씩 + 체력 가득' }; }
   if (k === 'titles') { L.titles = TITLES.map(x => x.id); return { msg: `칭호 ${TITLES.length}개 모두 받음` }; }
   if (k === 'skins') { c.hats = [...new Set([...c.hats, ...HATS.map(h => h.id), ...EYE_SKINS.filter(e => e.id !== 'dot').map(e => 'eye:' + e.id), ...SUITS.map(s => 'suit:' + s.id), ...WSKINS.map(wskKey)])]; return { msg: '스킨 모두 받음' }; }
+  if (k === 'skmax') { L.sk = L.sk || {}; for (const x of SKILLS) L.sk[x.id] = Math.max(L.sk[x.id] || 0, SK_NEED[SK_MAX - 1]); return { msg: `스킬 ${SKILLS.length}개 모두 Lv.${SK_MAX}` }; }   // 2026-11-20 모든 스킬 최고 레벨
   if (k === 'rskmax') {   // 레이드 스킨 모두 + 최고 레벨 (2026-11-18)
     const keys = Object.values(RAID_BOSS).flatMap(b => raidSet(b.set)), need = 2 ** (RSK.max - 1);
     c.hats = [...new Set([...c.hats, ...keys])]; L.rsk = L.rsk || {}; for (const key of keys) L.rsk[key] = Math.max(L.rsk[key] || 0, need);
@@ -1073,6 +1080,8 @@ function cheat(c, k, b, at, env, user) {
     c.bag = []; c.hp = derive(c).maxHp; return { msg: `모든 칸에 ${STAGES}단계 ${GRADES[g].n} + 강화 ${ENH_MAX}` };
   }
   if (k === 'farm') { for (const p of L.farm.plots) if (p) p.r = at; return { msg: '텃밭 다 자람' }; }
+  if (k === 'fishmax') { L.fish.rod = RODS.length - 1; L.fish.bait = BAITS.length - 1; return { msg: '낚싯대 · 미끼 최고 단계' }; }   // 2026-11-20
+  if (k === 'lgonly') { L.lgOnly = !L.lgOnly; return { msg: L.lgOnly ? '전설 물고기만 낚이기 켬' : '전설 물고기만 낚이기 끔' }; }
   if (k === 'farmmax') { L.farm.hoe = 9; L.farm.fert = 9; return { msg: '호미 · 비료 최고 단계' }; }
   if (k === 'work') {
     for (const [w, W] of Object.entries(WORK)) { const x = L.work[w]; if (!x.n) x.n = 1; x.acc = x.n * W.rate * W.cap; x.at = at; }

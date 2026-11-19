@@ -201,7 +201,7 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .legendpop { text-align: center; padding: 6px 0 2px; } .legendpop h3 { font-size: 26px; margin: 4px 0; color: #e0731c; } .legendpop .lp-k { font-weight: 900; color: #e0731c; letter-spacing: 2px; margin: 0; }
 .legendpop .fpic.big { animation: lpBob 1.6s ease-in-out infinite; filter: drop-shadow(0 0 18px rgba(255,190,60,.85)); } @keyframes lpBob { 50% { transform: translateY(-8px) rotate(-3deg); } }
 .legendpop .btn { margin-top: 10px; min-width: 160px; }
-#fbagList { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 5px; } #fbagList .fcard { min-height: 0; cursor: pointer; padding: 6px 2px 4px; } #fbagList .fpic { width: 48px; height: 34px; }
+#fbagList, #cbagList { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 5px; } #fbagList .fcard, #cbagList .fcard { min-height: 0; cursor: pointer; padding: 6px 2px 4px; } #fbagList .fpic, #cbagList .fpic { width: 48px; height: 34px; } #cbagList .fcard { cursor: default; }
 /* 캐릭터창 칭호 줄: 뱃지 + 칭호 가운데 (2026-11-20) */
 .meTitleRow { justify-content: center; align-items: center; gap: 6px; } .meBadge { width: 30px; height: 30px; cursor: pointer; flex: none; } .meBadge[hidden] { display: none; }
 /* 도감 센터 (2026-11-20) */
@@ -1160,6 +1160,8 @@ a.iconbtn { color: inherit; text-decoration: none; }
         <div class="wallet" id="wallet"></div>
         <h3>🎒 물고기 가방 <small id="fbagN"></small></h3>
         <div class="fbag" id="fbagList"></div>
+        <h3>🧺 작물 가방 <small id="cbagN"></small></h3>
+        <div class="fbag" id="cbagList"></div>
         <h3>물약</h3>
         <ul class="ilist" id="potList"></ul>
         <label class="potset">사냥 중 자동으로 마시기: 체력 <select id="potAt"><option>30</option><option selected>40</option><option>50</option><option>60</option><option>70</option></select>% 이하</label>
@@ -5568,9 +5570,15 @@ setInterval(() => { padPos(); try { document.body.classList.toggle('raiding', !!
 let apCls = '';
 function padIcon() { const D = derive(), c = D.magic ? 'staff' : D.far ? 'bow' : 'sword'; if (c === apCls) return; apCls = c; $('#apAtkI').textContent = { sword: '🗡️', bow: '🏹', staff: '🪄' }[c]; iconize($('#apAtkI')); }
 function syncBars() {
-  const D = derive(), hp = Math.max(0, Math.round(me.hp)), need = needExp(me.lv), pe = Math.min(100, me.exp / need * 100);
+  const D = derive(), hp = Math.max(0, Math.round(me.hp));
+  // 2026-11-20 사냥 중 경험치는 잡는 즉시 막대에 반영 (서버 정산 값 + 그 뒤 화면에서 잡은 만큼). 레벨이 오를 만큼 모이면 바로 서버 정산 → 진짜 레벨업
+  let lv = me.lv, ex = me.exp;
+  if (HT?.loc) { ex += HT.loc.exp; while (lv < LV_CAP && ex >= needExp(lv)) { ex -= needExp(lv); lv++; } }
+  if (lv > me.lv && HT && !HT.dying && Date.now() - (HT.lvSyncAt || 0) > 8000) { HT.lvSyncAt = Date.now(); huntSync(); }
+  if (lv > me.lv) { lv = me.lv; ex = needExp(lv) - 1; }   // 서버가 확인해 줄 때까지 막대는 꽉 찬 채로
+  const need = needExp(lv), pe = Math.min(100, ex / need * 100);
   $('#hpFill').style.width = `${hp / D.maxHp * 100}%`; $('#hpText').textContent = `체력 ${hp.toLocaleString()} / ${D.maxHp.toLocaleString()}`;
-  $('#expFill').style.width = `${pe}%`; $('#expText').textContent = `경험치 ${me.exp.toLocaleString()} / ${need.toLocaleString()} (${pe.toFixed(1)}%)`;
+  $('#expFill').style.width = `${pe}%`; $('#expText').textContent = `경험치 ${ex.toLocaleString()} / ${need.toLocaleString()} (${pe.toFixed(1)}%)`;
   $('#peekHp').style.width = `${hp / D.maxHp * 100}%`; $('#peekExp').style.width = `${pe}%`;
   $('#peekPts').hidden = !me.points; $('#peekPts').textContent = `+${me.points}`;
   const pw = raidDps(D).toLocaleString(), pb = $('#mePow b'); if (pb.textContent !== pw) pb.textContent = pw;
@@ -6265,11 +6273,13 @@ function auWater(sea) {   // 강(또는 바다) 낚시터 근처에서 던질 �
 function auFarm(now) {   // 텃밭 할 일이 있는 칸 번호 — 없으면 null (두둑을 누르면 모두 수확 / 모두 심기)
   const f = LIFE()?.farm; if (!f) return null;
   const n = farmPlots(f.hoe), t = Date.now();
-  const ripe = f.plots.findIndex((p, i) => i < n && plotStage(p, t) === 'ready'); if (ripe >= 0 && cropBagL().length < FARM.bag) return ripe;
+  if (cropFull()) return null;   // 2026-11-20 작물 가방이 꽉 차면 텃밭 일은 쉼
+  const ripe = f.plots.findIndex((p, i) => i < n && plotStage(p, t) === 'ready'); if (ripe >= 0) return ripe;
   const empty = f.plots.findIndex((p, i) => i < n && !p); return empty >= 0 ? empty : null;
 }
 function auNext() {
   AU.i = (AU.i + 1) % AU_SEQ.length; AU.mode = AU_SEQ[AU.i];
+  if ((AU.mode === 'fish' || AU.mode === 'sea') && bagFull()) { AU.i = (AU.i + 1) % AU_SEQ.length; AU.mode = AU_SEQ[AU.i]; }   // 물고기 가방이 꽉 차면 낚시는 건너뜀
   AU.left = AU.mode === 'tree' || AU.mode === 'rock' ? 3 + Math.floor(Math.random() * 3) : AU.mode === 'walk' ? 1 : 5 + Math.floor(Math.random() * 4);
   AU.walkT = 12 + Math.random() * 8; AU.water = null; ROAM.next = 0;
   if (Math.random() < .6) say(me, pick(AU_SAY[AU.mode]), 2200);
@@ -6294,6 +6304,7 @@ function autoPace(dt) {
   }
   if (m === 'fish' || m === 'sea') {
     if (now < F.nextAt) return;
+    if (bagFull()) { AU.left = 0; return; }
     AU.water ||= auWater(m === 'sea'); if (!AU.water) { AU.left = 0; return; }
     AU.left--; AU.wait = 1.2;
     const [px, py] = AU.water;
@@ -6370,11 +6381,14 @@ const LIFE = () => me.life;
 let walletSig = '';
 function renderWallet() {
   const L = LIFE(); if (!L) return;
-  const sig = [me.gold, L.coins.farm, L.res.wood, L.res.stone, (L.fbag || []).length, L.fbk || 0].join();
+  const sig = [me.gold, L.coins.farm, L.res.wood, L.res.stone, (L.fbag || []).length, L.fbk || 0, (L.farm?.bag || []).length, L.farm?.bag?.at(-1)?.k || 0].join();
   if (sig === walletSig) return; walletSig = sig;
   const fb = L.fbag || [];   // 2026-11-20 물고기 가방 (팔기는 낚시점에서)
   $('#fbagN').textContent = `${fb.length} / ${FISH_BAG} · 낚시점에서 팔아요`;
   $('#fbagList').innerHTML = fb.length ? [...fb].sort((a, b) => b.p - a.p).map(f => { const d = FISH_BY[f.id] || { n: '?', grade: 'normal' }; return `<button type="button" class="fcard" data-fk="${f.k}" style="--gc:${FISH_GRADES[d.grade].c}">${fishPic(d)}<b>${esc(d.n)}</b><small>${fmtCm(f.len)}</small><em>🪙 ${fmtN(f.p)}</em></button>`; }).join('') : '<p class="muted">비었어요. 물가를 눌러 낚시해 보세요!</p>';
+  const cb = L.farm?.bag || [];   // 2026-11-20 작물 가방 (보기만, 팔기는 텃밭 창고에서)
+  $('#cbagN').textContent = `${cb.length} / ${FARM.bag} · 텃밭 창고에서 팔아요`;
+  $('#cbagList').innerHTML = cb.length ? [...cb].sort((a, b) => b.p - a.p).map(f => { const d = CROP_BY[f.id] || { n: '?', grade: 'normal' }; return `<div class="fcard" style="--gc:${FISH_GRADES[d.grade].c}">${cropPic(d)}<b>${esc(d.n)}</b><small>${cropW(f.g)}</small><em>🪙 ${fmtN(f.p)}</em></div>`; }).join('') : '<p class="muted">비었어요. 텃밭에서 수확해 보세요!</p>';
   $('#wallet').innerHTML = [['🪙', '골드', me.gold], [RES.wood.i, RES.wood.n, L.res.wood], [RES.stone.i, RES.stone.n, L.res.stone]]
     .map(([i, n, v]) => `<div><span class="wi">${i}</span><small>${n}</small><b>${v.toLocaleString()}</b></div>`).join('');
 }
@@ -6517,13 +6531,14 @@ async function farmPlant(i) {
   emote(me, '🌱'); logAct(`🌱 수수께끼 씨앗 ${j.planted}칸 심음`); reopen?.(); return j;
 }
 async function farmHarvest(i) {
-  if (cropBagL().length >= FARM.bag) return toast(`🎒 작물 가방이 꽉 찼어요 (${FARM.bag}개). 텃밭 창고에서 팔아 주세요`);
+  if (cropFull() && !FG_KEYS.some(g => LIFE()?.farm?.sell?.[g])) return toast(`🎒 작물 가방이 꽉 찼어요 (${FARM.bag}개). 텃밭 창고에서 팔아 주세요`);
   const j = await act('/api/farm/harvest', i == null ? { all: 1 } : { i }); if (!j) return null;
   const got = j.got.map(g => ({ ...g, x: CROP_BY[g.id] })).filter(g => g.x), best = got.reduce((a, g) => (!a || g.p > a.p ? g : a), null);
   if (best) {
     me.fz = null; me.brag = { crop: { id: best.id, i: best.x.i, n: best.x.n, grade: best.x.grade }, big: best.big, t0: performance.now() };
     say(me, `${cropText(best.x, best.g, best.big)} 수확!`, 3600);
-    toast(got.length === 1 ? `🧺 ${cropText(best.x, best.g, best.big)} 🪙 ${fmtN(best.p)}` : `🧺 작물 ${got.length}개 수확! 제일 좋은 것: ${best.x.i} ${best.x.n} 🪙 ${fmtN(best.p)}`);
+    const sold = got.filter(g => g.sold), sg = sold.reduce((a, g) => a + g.p, 0);
+    toast((got.length === 1 ? `🧺 ${cropText(best.x, best.g, best.big)} 🪙 ${fmtN(best.p)}` : `🧺 작물 ${got.length}개 수확! 제일 좋은 것: ${best.x.i} ${best.x.n} 🪙 ${fmtN(best.p)}`) + (sold.length ? ` · ⚡ ${sold.length}개 바로 팔아서 ${goldTxt(sg)}` : ''));
     logAct(`🧺 수확 ${got.map(g => g.x.i + g.x.n).join(', ')}`);
     const leg = got.find(g => g.grade === 'legend'); if (leg) legendCropPop(leg);
     else if (got.some(g => g.grade === 'rare')) { emote(me, '😮'); sfx('levelup'); } else emote(me, '🎉');
@@ -6548,9 +6563,15 @@ function farmSell(b, keep) {
   bsOpen(b, { tag: '수확한 작물을 골라서 팔아요', wal: ['gold'], tabs: fmTabs(), tab: 'sell',
     body: `<div class="bs-card hero"><h4>🎒 작물 가방<small>${bag.length} / ${FARM.bag}</small></h4>${thinBar(bag.length / FARM.bag)}<div class="cs">${chip(`다 팔면 ${goldTxt(total)}`, 'up')}</div></div>
       ${bag.length ? `<div class="fsel">${bbtn('all', '전부')}${FG_KEYS.filter(g => n(g)).map(g => bbtn('g:' + g, `<span style="color:${FG[g].c}">${FG[g].n}</span> ${n(g)}`)).join('')}${bbtn('none', '고르기 취소')}</div>` : ''}
-      ${cards}`,
+      ${cards}
+      <div class="bs-card"><h4>⚡ 수확하자마자 바로 팔기</h4><div class="fauto">${FG_KEYS.map(g => `<label><input type="checkbox" data-g="${g}"${LIFE()?.farm?.sell?.[g] ? ' checked' : ''}> <b style="color:${FG[g].c}">${FG[g].n}</b></label>`).join('')}</div>
+        <p class="muted">체크한 등급은 가방에 넣지 않고 수확하는 즉시 골드로 바꿔요. 가방이 꽉 차면 체크 안 한 등급은 수확할 수 없어요.</p></div>`,
     help: `<p>수확한 작물은 🎒 작물 가방(최대 ${FARM.bag}개)에 들어가요. 가방이 꽉 차면 더 수확할 수 없어요.</p><p>작물을 눌러 고르고(여러 개 가능), 아래 <b>팔기</b>를 누르세요. 등급 버튼을 누르면 그 등급을 한꺼번에 골라요.</p><p>값 = 기본 값 × 0.5~1.5배 (무거울수록 비쌈).</p>`,
-    foot: bbtn('sell', FM.sel.size ? `${FM.sel.size}개 팔기` : '팔 작물을 골라 주세요', FM.sel.size ? goldTxt(sum) : '', { main: true, wide: true, dis: !FM.sel.size }) },
+    foot: bbtn('sell', FM.sel.size ? `${FM.sel.size}개 팔기` : '팔 작물을 골라 주세요', FM.sel.size ? goldTxt(sum) : '', { main: true, wide: true, dis: !FM.sel.size }),
+    ready: el => el.querySelectorAll('.fauto input').forEach(c => { c.onchange = async () => {
+      const g = {}; el.querySelectorAll('.fauto input').forEach(i => { g[i.dataset.g] = i.checked ? 1 : 0; });
+      const j = await act('/api/farm/autosell', { g }); if (j) toast(FG_KEYS.some(k => g[k]) ? `⚡ 수확하자마자 팔기: ${FG_KEYS.filter(k => g[k]).map(k => FG[k].n).join(' · ')}` : '⚡ 수확하자마자 팔기를 껐어요');
+    }; }) },
     async x => {
       if (x[0] === 'k') { const k = +x.slice(1); if (FM.sel.has(k)) FM.sel.delete(k); else FM.sel.add(k); return reopen(); }
       if (x === 'all') { bag.forEach(f => FM.sel.add(f.k)); return reopen(); }
@@ -7354,8 +7375,9 @@ async function openAdmin(tab = ADM.tab) {
       <div class="btns cheat">${B('raid', 0, '🐉 드래곤 레이드 지금 열기')}${B('raid', 1, '👹 오우거 레이드 지금 열기')}</div>
       <div class="btns cheat">${B('god', 0, god ? '😇 갓모드 끄기' : '😇 갓모드 켜기 (안 맞음 · 공격력 10배)')}</div>
       <div class="btns cheat">${B('gold', 1e6, '🪙 골드 +100만')}${B('gold', 1e8, '🪙 골드 +1억')}${B('lv', 55, '🌟 55레벨')}${B('lv', 1, '🌱 1레벨로')}</div>
-      <div class="btns cheat">${B('gear', 0, '🗡️ 최고 장비 + 최고 강화')}${B('titles', 0, '🏷️ 칭호 모두')}${B('skins', 0, '👕 모든 스킨 받기')}${B('rskmax', 0, '⭐ 레이드 스킨 최고 레벨')}${B('pots', 0, '🥤 물약·체력 가득')}</div>
-      <div class="btns cheat">${B('wood', 1000, '🪵 목재 +1000')}${B('stone', 1000, '🪨 석재 +1000')}${B('farmmax', 1, '🧺 호미·비료 최고')}</div>
+      <div class="btns cheat">${B('gear', 0, '🗡️ 최고 장비 + 최고 강화')}${B('titles', 0, '🏷️ 칭호 모두')}${B('skins', 0, '👕 모든 스킨 받기')}${B('rskmax', 0, '⭐ 레이드 스킨 최고 레벨')}${B('skmax', 0, '⚡ 모든 스킬 최고 레벨')}${B('pots', 0, '🥤 물약·체력 가득')}</div>
+      <div class="btns cheat">${B('wood', 1000, '🪵 목재 +1000')}${B('stone', 1000, '🪨 석재 +1000')}${B('fishmax', 1, '🎣 낚싯대·미끼 최고')}${B('farmmax', 1, '🧺 호미·비료 최고')}</div>
+      <label class="ck" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" data-x="lgonly:0" ${me.life?.lgOnly ? 'checked' : ''}> 🐟 전설 물고기만 낚이기 (던지면 늘 낚임)</label>
       <div class="btns cheat">${B('farm', 0, '🌾 텃밭 다 자람')}${B('work', 0, '🪓 알바 창고 가득')}${B('cool', 0, '⏱️ 기다리는 시간 없애기')}</div>
       <p class="muted" style="margin-bottom:4px">직접 숫자 넣기 (빼려면 -를 붙여요)</p>
       <div class="admform"><input id="cN" type="number" placeholder="숫자" value="1000"><select id="cK"><option value="gold">골드 더하기</option><option value="exp">경험치 더하기</option><option value="lv">레벨 정하기</option><option value="wood">목재 더하기</option><option value="stone">석재 더하기</option></select><button class="mini main" data-x="custom">적용</button></div>`,
@@ -7365,7 +7387,7 @@ async function openAdmin(tab = ADM.tab) {
         if (k === 'custom') { k = el.querySelector('#cK').value; n = el.querySelector('#cN').value; }
         if (k === 'lv' && !(await ask('능력치가 다시 계산돼요.', { title: `${n}레벨로 바꿀까요?` }))) return;
         const j = await act('/api/admin/cheat', { k, n: Number(n) }); if (!j) return;
-        toast('🧪 ' + j.msg); sysMsg('🧪 치트: ' + j.msg); if (k === 'god' || k === 'skins' || k === 'rskmax') openAdmin('cheat');
+        toast('🧪 ' + j.msg); sysMsg('🧪 치트: ' + j.msg); if (k === 'god' || k === 'skins' || k === 'rskmax' || k === 'skmax' || k === 'lgonly') openAdmin('cheat');
       });
   }
   if (tab === 'notice') {
@@ -7431,6 +7453,7 @@ function bobberAt(px, py) {
   return [px, py];
 }
 const bagFull = () => fishBagL().length >= FISH_BAG && !FG_KEYS.every(g => LIFE()?.fsell?.[g]);
+const cropFull = () => cropBagL().length >= FARM.bag && !FG_KEYS.every(g => LIFE()?.farm?.sell?.[g]);
 // 물을 누르면: 가장 가까운 물가로 걸어가서 바로 던짐
 function fishAtWater(px, py) {
   if (me.job) return toast('☕ 알바 중에는 낚시를 할 수 없어요');
@@ -7659,7 +7682,7 @@ function openGuideBook(open = 0) {
 }
 $('#guideBtn').onclick = () => openGuideBook();
 // ───────── 🏆 랭킹 (2026-11-17, 가이드 밑 버튼): 레벨 · 번 돈 · 낚시 · 강화 합. 서버 /api/rank?k= (상위 50명, 1분마다 새로) ─────────
-const RANKS = [['lv', '⭐ 레벨', x => `Lv.${x}`], ['earn', '💰 번 돈', x => `🪙 ${fmtN(x)}`], ['fishp', '💎 비싼 물고기', x => `🪙 ${fmtN(x)}`], ['fishl', '📏 큰 물고기', x => fmtCm(x)], ['fishn', '🎣 많이 낚은', x => `${fmtN(x)}마리`], ['enh', '🔨 강화', x => `+${fmtN(x)}`], ['give', '🏗️ 기여도', x => `${fmtN(x)}점`]];
+const RANKS = [['lv', '⭐ 레벨', x => `Lv.${x}`], ['earn', '💰 번 돈', x => `🪙 ${fmtN(x)}`], ['enh', '🔨 강화', x => `+${fmtN(x)}`], ['give', '🏗️ 기여도', x => `${fmtN(x)}점`]];
 const RK = { k: 'lv', data: {} };
 async function openRank(k = RK.k) {
   RK.k = k; const R = RANKS.find(r => r[0] === k), d = RK.data[k];
