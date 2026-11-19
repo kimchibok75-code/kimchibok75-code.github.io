@@ -7471,7 +7471,7 @@ function drawBrag(c, top, now) {
   const B = c.brag, k = Math.min(1, Math.max(0, (now - B.t0) / 260)); if (k <= 0) return top;
   // 2026-11-20 크기 = 실제 길이·무게에 맞춤 (작은 건 작게, 고래·거대 작물은 정말 크게). 물고기 1cm~300m, 작물 2g~50t
   const F0 = B.crop || B.fish, im = B.crop ? cropImgC(B.crop.id) : fishImgC(fishDef(B.fish)?.id);
-  const sz = Math.min(300, Math.max(30, B.crop ? (B.crop.g ? 30 * Math.pow(B.crop.g / 100, .2) : 46) : B.fish?.len ? 30 * Math.pow(B.fish.len / 10, .3) : 46));
+  const sz = B.crop ? Math.min(140, Math.max(30, B.crop.g ? 30 * Math.pow(B.crop.g / 100, .14) : 46)) : Math.min(300, Math.max(30, B.fish?.len ? 30 * Math.pow(B.fish.len / 10, .3) : 46));   // 작물은 최대 140 (2026-11-20 너무 커서 줄임)
   const s0 = sz * (.6 + .4 * k), y = top - 6 - s0 / 2 - Math.sin(now / 260) * 2 * (1 + sz / 120);
   ctx.save(); ctx.globalAlpha = k; ctx.translate(c.x, y); ctx.rotate(Math.sin(now / 420) * .12);
   ctx.fillStyle = 'rgba(255,240,170,.35)'; ctx.beginPath(); ctx.ellipse(0, 0, s0 * .62, s0 * .42, 0, 0, 7); ctx.fill();   // 은은한 빛
