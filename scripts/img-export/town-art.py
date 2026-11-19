@@ -318,7 +318,7 @@ print('dportal hole', hb, t.shape)
 # 13) 벤치 (2026-11-20 새 그림, 배경 투명)
 r = keep_rgba('벤치'); b = bbox(r[:, :, 3]); save('bench', r[b[1]:b[3], b[0]:b[2]], width=240)
 # 2026-11-20 사냥터 바닥 그림 (그대로, 크기만)
-for src, key in [('배경 들판', 'plain'), ('배경 깊은 숲', 'forest'), ('배경 황야', 'canyon'), ('배경 공장', 'factory')]:
+for src, key in [('배경 들판', 'plain'), ('배경 깊은 숲', 'forest'), ('배경 황야', 'canyon'), ('배경 공장', 'factory'), ('배경 폐광', 'mine'), ('배경 늪지', 'swamp')]:
     bg = Image.open(os.path.join(SRC, src + '.png')).convert('RGB')
     bg.resize((1536, round(1536 * bg.height / bg.width)), Image.LANCZOS).save(os.path.join(OUT, 'hbg-%s.webp' % key), 'WEBP', quality=85, method=6)
 r = keep_rgba('공사중'); b = bbox(r[:, :, 3]); save('soon-sign', r[b[1]:b[3], b[0]:b[2]], width=200)   # 2026-11-20 공사중 표지판 (준비 중 건물 앞)

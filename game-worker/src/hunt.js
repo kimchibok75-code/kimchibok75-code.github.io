@@ -40,7 +40,7 @@ function fight(st, D, mon, boss) {
     if (nextGim < nextHit && nextGim <= nextBite) {   // 기믹 큰 공격 (막기·회피는 보통 공격과 같음)
       const dt = nextGim; t += dt; nextHit -= dt; nextBite = bite; nextGim = gm.cd; tick(dt); heal();
       if (st.sh > 0) { st.sh--; continue; }
-      if (Math.random() * 100 >= D.eva) st.hp -= gimDmg(mon, D, gm);
+      if (Math.random() * 100 >= D.eva) { st.hp -= gimDmg(mon, D, gm); if (gm.slow) nextHit += gm.slow; }   // 거미줄·점액: 맞으면 내 공격이 늦어짐
       if (st.hp <= D.maxHp * st.potAt / 100) drink(st, D);
       if (st.hp <= D.maxHp * st.potAt / 100) drink(st, D);   // 크게 맞으면 한 번 더 마실 수 있음
       if (st.hp <= 0) return { t, dead: true };

@@ -307,12 +307,17 @@ export const MONS = {
   wolf: M('숲 늑대', 12, 260, 22, 48, 18, '#8d97a6', 1, 'ears', false, 'wolf'), shroom: M('독버섯', 18, 420, 30, 75, 26, '#f3e6cf', .95, 'cap', true, 'shroom'), vine: M('덩굴 괴물', 23, 640, 42, 110, 35, '#5aa04f', 1.1, 'leaf', true, 'vine'),
   eagle: M('협곡 독수리', 27, 900, 55, 150, 45, '#9b6a3d', 1, 'wing', true, 'eagle'), turtle: M('돌 거북', 33, 1500, 60, 210, 60, '#a3b07a', 1.1, 'shell', false, 'turtle'), golem: M('바위 골렘', 38, 2200, 85, 280, 75, '#9a958c', 1.25, 'rock', false, 'golem'),
   drone: M('녹슨 드론', 42, 2800, 110, 360, 95, '#b58a5a', .9, 'bot', true, 'drone'), guard: M('경비 로봇', 48, 4000, 140, 470, 120, '#7f8fa3', 1.15, 'bot', false, 'guard'), fixbot: M('폭주 수리봇', 53, 5500, 170, 600, 150, '#e0a63a', 1.1, 'bot', true, 'fixbot'),
+  // 2026-11-20 폐광 · 늪지 (최고 레벨 뒤의 사냥터: 더 세고 골드가 많음)
+  bat: M('폐광 박쥐', 55, 7000, 195, 700, 175, '#6b5277', .9, 'wing', false, 'bat'), spider: M('폐광 거미', 58, 8500, 225, 820, 205, '#6e4a36', 1, 'ears', false, 'spider'), ogolem: M('광석 골렘', 61, 10500, 255, 950, 235, '#8f8a92', 1.25, 'rock', true, 'ogolem'),
+  snake: M('독 뱀', 63, 12500, 285, 1100, 270, '#6a3f7a', .95, 'ears', true, 'snake'), croc: M('늪지 악어', 66, 15500, 320, 1280, 310, '#5f7a3a', 1.15, 'ears', false, 'croc'), slime: M('독성 슬라임', 69, 18500, 350, 1450, 350, '#9bd13a', 1, 'cap', true, 'slime'),
 };
 export const FIELDS = [
   { id: 'plain', n: '바람 들판', i: '🌾', min: 1, max: 10, tier: 0, mons: ['rat', 'hen', 'boar'], boss: M('왕 멧돼지', 12, 2000, 40, 400, 300, '#7d4f33', 2, 'snout', false, 'kingboar'), g: ['#9ad27f', '#91ca75'], deco: 'flower' },
   { id: 'forest', n: '깊은 숲', i: '🌲', min: 10, max: 25, tier: 1, mons: ['wolf', 'shroom', 'vine'], boss: M('숲의 거대 곰', 27, 12000, 120, 2500, 1500, '#6b4a33', 2.2, 'ears', false, 'bear'), g: ['#5f9e58', '#589651'], deco: 'tree' },
   { id: 'canyon', n: '바위 협곡', i: '⛰️', min: 25, max: 40, tier: 2, mons: ['eagle', 'turtle', 'golem'], boss: M('협곡의 주인', 42, 50000, 260, 9000, 4000, '#7a746b', 2.3, 'rock', true, 'lord'), g: ['#d2b48a', '#c9ab80'], deco: 'rock' },
   { id: 'factory', n: '고장 난 공장', i: '🏚️', min: 40, max: 55, tier: 3, mons: ['drone', 'guard', 'fixbot'], boss: M('공장장 기계', 57, 160000, 520, 25000, 10000, '#5e6b7d', 2.4, 'bot', true, 'boss'), g: ['#a3abb5', '#9aa2ad'], deco: 'pipe' },
+  { id: 'mine', n: '버려진 폐광', i: '⛏️', min: 50, max: 62, tier: 4, mons: ['bat', 'spider', 'ogolem'], boss: M('거대 두더지', 64, 240000, 680, 34000, 14000, '#7a5640', 2.3, 'snout', false, 'mole'), g: ['#6d6359', '#655b52'], deco: 'rock' },
+  { id: 'swamp', n: '독안개 늪지', i: '🐊', min: 55, max: 72, tier: 5, mons: ['snake', 'croc', 'slime'], boss: M('거대 코브라', 72, 380000, 860, 50000, 20000, '#5c3a6e', 2.4, 'ears', true, 'cobra'), g: ['#5d7a4a', '#566f44'], deco: 'tree' },
 ];
 // 내 레벨이 몬스터보다 10 이상 높으면 경험치 줄어듦
 export const expPenalty = (lv, mlv) => { const d = lv - mlv; return d >= 10 ? Math.max(.2, 1 - (d - 9) * .1) : 1; };
@@ -330,9 +335,18 @@ export const GIMMICK = {
   run: { n: '달려들기', i: '💢', cd: 5, m: 1.7, hp: .05, warn: .4 },    // 멀리서도 아주 빠르게 달려와 물기
   fly: { n: '급강하', i: '🪶', cd: 7, m: 2.5, hp: .08, warn: .8 },      // 하늘로 날아올랐다가 내리꽂기
   jump: { n: '내려찍기', i: '💥', cd: 8, m: 2.8, hp: .1, warn: .9 },   // 높이 뛰어 떨어질 자리에 빨간 원 → 쾅 (범위)
+  // 2026-11-20 폐광·늪지 기믹 (예전 4개와 다른 방식). slow: 맞으면 내 공격이 그만큼(초) 늦어짐 (서버 계산), 화면은 느려짐·묶임·독으로 보여 줌
+  sonic: { n: '초음파', i: '🔊', cd: 6, m: 1.8, hp: .06, warn: .6 },          // 몸에서 퍼지는 고리 → 3칸 안이면 맞음
+  web: { n: '거미줄', i: '🕸️', cd: 7, m: 1.4, hp: .05, warn: .7, slow: .6 },   // 내 자리로 거미줄 뭉치 → 맞으면 1.5초 못 움직임
+  shard: { n: '수정 가시', i: '💎', cd: 8, m: 2.6, hp: .09, warn: 1 },        // 내 둘레 바닥 3곳에서 수정이 솟음
+  burrow: { n: '땅굴 올려치기', i: '🕳️', cd: 5, m: 3, hp: .1, warn: .6 },     // 땅속으로 들어가 순식간에 내 밑으로 → 솟아오르며 올려침
+  venom: { n: '독니', i: '🐍', cd: 6, m: 1.6, hp: .06, warn: .45 },          // 빠르게 덤벼 물기 → 4초 동안 독 (피해 일부가 나중에 들어옴)
+  sweep: { n: '꼬리 휘두르기', i: '🌀', cd: 7, m: 2.3, hp: .08, warn: .8 },   // 제자리에서 빙 돌며 꼬리로 둘레 전부
+  goo: { n: '끈적 점액', i: '🟢', cd: 6, m: 1.5, hp: .05, warn: .8, slow: .8 }, // 점액을 던짐 → 맞으면 3초 동안 느려짐
+  spit: { n: '독침 뱉기', i: '💚', cd: 5, m: 2.4, hp: .08, warn: .7 },        // 멀리서 독침 3발을 부채꼴로 → 맞으면 독
   bossCd: 1, bossHp: .4,   // 보스: 쿨타임 그대로, 체력 % 피해는 40%만 (보스는 원래 세서)
 };
-export const MON_GIM = { rat: 'run', hen: 'fly', boar: 'dash', wolf: 'run', shroom: 'jump', vine: 'dash', eagle: 'fly', turtle: 'dash', golem: 'jump', drone: 'fly', guard: 'dash', fixbot: 'jump', kingboar: 'dash', bear: 'jump', lord: 'jump', boss: 'fly' };
+export const MON_GIM = { rat: 'run', hen: 'fly', boar: 'dash', wolf: 'run', shroom: 'jump', vine: 'dash', eagle: 'fly', turtle: 'dash', golem: 'jump', drone: 'fly', guard: 'dash', fixbot: 'jump', kingboar: 'dash', bear: 'jump', lord: 'jump', boss: 'fly', bat: 'sonic', spider: 'web', ogolem: 'shard', mole: 'burrow', snake: 'venom', croc: 'sweep', slime: 'goo', cobra: 'spit' };
 export const gimOf = (mon, boss) => { const k = MON_GIM[mon.k]; if (!k || GIMMICK.off) return null; const G = GIMMICK[k]; return { k, ...G, cd: G.cd * (boss ? GIMMICK.bossCd : 1), hp: G.hp * (boss ? GIMMICK.bossHp : 1) }; };
 // 기믹 한 번의 피해 = 보통 공격 × m + 최대 체력 × hp
 export const gimDmg = (mon, D, gm) => D.god ? 0 : Math.round(biteDmg(mon, D) * gm.m + D.maxHp * gm.hp);

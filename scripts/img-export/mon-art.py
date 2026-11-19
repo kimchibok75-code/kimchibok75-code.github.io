@@ -11,11 +11,15 @@ OUT = os.path.join('assets', 'img', 'town')
 SHEETS = [
     ('몬스터_풀쥐, 성난 닭, 아기 멧돼지, 숲 늑대, 독버섯, 덩굴 괴물, 협곡 독수리, 돌 거북.png', ['rat', 'hen', 'boar', 'wolf', 'shroom', 'vine', 'eagle', 'turtle']),
     ('몬스터_바위 골렘, 녹슨 드론, 경비 로봇, 폭주 수리봇, 왕 멧돼지, 숲의 거대 곰, 협곡의 주인, 공장장 기계.png', ['golem', 'drone', 'guard', 'fixbot', 'kingboar', 'bear', 'lord', 'boss']),
+    # 2026-11-20 폐광·늪지 (한 줄에 4마리)
+    ('몬스터 폐광 박쥐 폐광 거미 광석 골렘 거대 두더지.png', ['bat', 'spider', 'ogolem', 'mole']),
+    ('몬스터 독 뱀 늪지 악어 독성 슬라임 거대 코브라.png', ['snake', 'croc', 'slime', 'cobra']),
 ]
 D = 4   # 덩어리 찾기는 1/4 크기로
 meta = {}
 for fn, ids in SHEETS:
     im = Image.open(os.path.join(SRC, fn)).convert('RGBA'); W, H = im.size
+    W, H = W // D * D, H // D * D; im = im.crop((0, 0, W, H)); ROWS = len(ids) // 4
     A = np.asarray(im)[:, :, 3]
     small = A.reshape(H // D, D, W // D, D).max(axis=(1, 3)) > 24
     h, w = small.shape; lab = np.zeros((h, w), np.int32); comps = []
@@ -33,7 +37,7 @@ for fn, ids in SHEETS:
     cell = {}
     for n, size, cy, cx in comps:
         if size < 6: continue   # 먼지
-        k = int(cy * D // (H / 2)) * 4 + int(cx * D // (W / 4)); cell.setdefault(k, []).append(n)
+        k = int(cy * D // (H / ROWS)) * 4 + int(cx * D // (W / 4)); cell.setdefault(k, []).append(n)
     for k, mid in enumerate(ids):
         m = np.isin(lab, cell.get(k, [])); m = np.kron(m, np.ones((D, D), bool))
         # 경계 한 칸 넓혀서 가장자리 번짐이 안 잘리게
@@ -44,4 +48,6 @@ for fn, ids in SHEETS:
         s = 256 / max(c.size); c = c.resize((round(c.width * s), round(c.height * s)), Image.LANCZOS)
         c.save(os.path.join(OUT, f'mon-{mid}.webp'), 'WEBP', quality=90, method=6)
         meta[mid] = [c.width, c.height]; print(mid, c.size)
+old = json.load(open(os.path.join(OUT, 'mon-meta.json'))) if os.path.exists(os.path.join(OUT, 'mon-meta.json')) else {}
+old.update(meta); meta = old
 json.dump(meta, open(os.path.join(OUT, 'mon-meta.json'), 'w'), ensure_ascii=False)
