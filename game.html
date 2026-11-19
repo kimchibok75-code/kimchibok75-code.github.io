@@ -6566,6 +6566,7 @@ async function farmHarvest(i) {
   const got = j.got.map(g => ({ ...g, x: CROP_BY[g.id] })).filter(g => g.x), best = got.reduce((a, g) => (!a || g.p > a.p ? g : a), null);
   if (best) {
     me.fz = null; me.brag = { crop: { id: best.id, i: best.x.i, n: best.x.n, grade: best.x.grade, g: best.g }, big: best.big, t0: performance.now() };
+    netSend({ t: 'crop', id: best.id, g: best.g, big: !!best.big });   // 다른 사람 화면에도 자랑
     say(me, `${cropText(best.x, best.g, best.big)} 수확!`, 3600);
     const sold = got.filter(g => g.sold), sg = sold.reduce((a, g) => a + g.p, 0);
     toast((got.length === 1 ? `🧺 ${cropText(best.x, best.g, best.big)} 🪙 ${fmtN(best.p)}` : `🧺 작물 ${got.length}개 수확! 제일 좋은 것: ${best.x.i} ${best.x.n} 🪙 ${fmtN(best.p)}`) + (sold.length ? ` · ⚡ ${sold.length}개 바로 팔아서 ${goldTxt(sg)}` : ''));
@@ -7311,6 +7312,7 @@ function onNet(m) {
   else if (m.t === 'go') { const p = personOf(m.id); if (p) { standUp(p); netMove(p, m); } }
   else if (m.t === 'au') { const p = personOf(m.id); if (p) p.au = !!m.on; }
   else if (m.t === 'hunt') { const p = personOf(m.id); if (p) { p.hunt = m.on; p.path = []; p.sit = -1; p.buf = null; } }
+  else if (m.t === 'crop') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) { p.fz = null; p.brag = { crop: { id: m.cid, i: m.i, n: m.n, grade: m.grade, g: m.g }, big: m.big, t0: performance.now() }; } }
   else if (m.t === 'fish') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) { if (m.s === 1) rodOut(p, m.bx, m.by, m.r); else if (m.s === 2) { rodEnd(p, { id: m.fid, i: m.i, n: m.n, grade: m.g, len: m.len }, m.big); if (m.sh) SH_GONE.add(m.sh); } else if (m.s === 3) rodEnd(p, null); else if (m.s === 4) bragFish(p, { id: m.fid, i: m.i, n: m.n, grade: m.g, len: m.len }, m.big); else p.fz = null; } }
   else if (m.t === 'emo') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) emote(p, m.e); }
   else if (m.t === 'nick') { const p = personOf(m.id); if (p) p.name = m.n; if (m.id === me.uid) { me.name = m.n; syncMe(); } }

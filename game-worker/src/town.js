@@ -3,7 +3,7 @@
 // - 채팅 규칙(기획서 8-1)은 여기서 검사. 금칙어 목록은 서버에만 있음
 import { DurableObject } from 'cloudflare:workers';
 import { cleanChat } from './chat.js';
-import { T, MW, MH, FISH_BY, fishByName } from '../../assets/js/game-rules.js';
+import { T, MW, MH, FISH_BY, fishByName, CROP_BY } from '../../assets/js/game-rules.js';
 import { SPOTS } from '../../assets/js/game-map.js';
 // 광장: 분수 가운데에서 이 거리 안 (치지직 채팅은 여기 있는 사람 말만 마을에 보임)
 const FOUNT = SPOTS.find(s => s.id === 'fountain'), PLAZA = { x: (FOUNT.x + 1) * T, y: (FOUNT.y + 1) * T, r: 9 * T };
@@ -131,6 +131,11 @@ export class Town extends DurableObject {
     if (m.t === 'emo') { if (!EMOTES.includes(m.e) || t - a.emoAt < 800) return; a.emoAt = t; this.save(ws, a); return this.all({ t: 'emo', id: a.id, e: m.e }, ws); }
     // 낚시 모습 (다른 사람 화면에 낚싯대·찌·자랑 보여 주기). s: 1 던짐(bx,by = 찌 자리, r = 낚싯대 단계) · 2 낚음(g,n,len) · 3 놓침 · 0 낚싯대 넣음
     // 자랑 글은 서버가 확인한 물고기 이름·길이만 (아무 글이나 못 보냄)
+    if (m.t === 'crop') {   // 2026-11-20 수확한 작물 머리 위 자랑 → 다른 사람에게도
+      if (t - (a.fishAt || 0) < 400) return; a.fishAt = t; this.save(ws, a);
+      const d = typeof m.id === 'string' && Object.hasOwn(CROP_BY, m.id) ? CROP_BY[m.id] : null; if (!d || !num(m.g, 1e9)) return;
+      return this.all({ t: 'crop', id: a.id, cid: d.id, i: d.i, n: d.n, grade: d.grade, g: Math.round(m.g), big: !!m.big }, ws);
+    }
     if (m.t === 'fish') {
       if (t - (a.fishAt || 0) < 400) return; a.fishAt = t; this.save(ws, a);
       const o = { t: 'fish', id: a.id, s: [0, 1, 2, 3, 4].includes(m.s) ? m.s : 0 };   // 4 = 가방에서 꺼내 자랑하기 (2026-11-20)
