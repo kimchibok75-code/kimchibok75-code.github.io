@@ -39,7 +39,7 @@ export const allOk = o => Object.values(o).every(Boolean);
 
 // ───────── 성장 (기획서 3장) ─────────
 export const pick = a => a[Math.floor(Math.random() * a.length)];
-export const needExp = L => Math.round(50 * Math.pow(L, 2));
+export const needExp = L => Math.round(100 * Math.pow(L, 2));   // 2026-11-19: 50 → 100 (레벨업 경험치 2배, 사용자 요청)
 // ───────── 장비 (뽑기로만 얻음, 기획서 3-2) ─────────
 // 등급 7개. m: 수치 배율, p: 뽑기 확률(%), d: 분해할 때 골드 배율
 // 단계(1~6)가 등급보다 훨씬 중요함: 한 단계 위의 '빈약'이 아래 단계 '신화'보다 셈
@@ -767,7 +767,7 @@ export const raidBossOf = start => (Math.round((start - RAID.recruit) / RAID.eve
 export const raidSlotStart = t => Math.floor(t / RAID.every) * RAID.every + RAID.recruit;   // 이번 시간 레이드 시작 시각
 export const isHourlyRaid = start => (start - RAID.recruit) % RAID.every === 0;
 // 보상: 사냥 약 25분어치 골드 + 지금 레벨의 30% 경험치
-export const raidReward = lv => ({ gold: Math.round((1500 * lv + 8000) * .4), exp: Math.round(needExp(lv) * .3) });
+export const raidReward = lv => ({ gold: Math.round((1500 * lv + 8000) * .4), exp: Math.round(needExp(lv) * .15) });   // needExp가 2배가 돼서 .3 → .15 (레이드 경험치 양은 그대로)
 // 인원 보너스 (2026-11-18): 많이 모일수록 보스 체력이 커지니 골드·경험치를 더 줌. 1명 0% · 사람마다 +3% · 최대 +60% (21명)
 export const raidCrowd = n => 1 + Math.min(.6, Math.max(0, (n || 1) - 1) * .03);
 // 초당 피해 (서버가 화면이 보낸 피해를 이 값으로 막음)
