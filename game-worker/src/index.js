@@ -1021,6 +1021,7 @@ const RANK_MEM = {};
 const rankFish = s => { try { return s ? JSON.parse(s) : null; } catch { return null; } };
 // 랭킹에 안 나오는 계정 (2026-11-17 사용자 요청: 김치복 · 테스트, 그리고 시험용 zz 계정)
 const RANK_MEM_CLEAR = () => { for (const k in RANK_MEM) delete RANK_MEM[k]; };
+const TEST_NICK = '테스트';   // 관리자 화면 '테스트 계정으로 전환' 계정 (랭킹 · 어뷰징 검사에서 빠짐)
 const RANK_HIDE = "u.nick <> '테스트' AND u.nick NOT LIKE 'zz%'";   // 2026-11-20 김치복도 랭킹에 들어감
 async function rankList(env, user, k) {
   if (!own(RANK, k)) fail(400, '잘못된 요청이에요');
@@ -1273,6 +1274,18 @@ async function admin(p, m, req, env, user, url) {
     if (!(await restore(env, u.id, day, '되돌리기 전 ' + new Date(t + 9 * 3600e3).toISOString().slice(5, 16).replace('T', ' ')))) fail(404, '그 날짜 사본이 없어요');
     await toRooms(env, { act: 'kick', id: u.id, why: '관리자가 계정을 예전 상태로 되돌렸어요. 다시 들어와 주세요' });
     await done('restore', `${u.nick} ${day}`); return json({ ok: true });
+  }
+  if (m === 'POST' && p === '/api/admin/switch') {   // 2026-11-20 김치복 → 테스트 계정으로 바로 전환 (없으면 만듦, 치트를 쓰게 관리자로). 돌아오기는 화면이 김치복 토큰을 기억해 둠
+    if (user.nick === TEST_NICK) fail(400, '이미 테스트 계정이에요');
+    let u = await findUser(env, TEST_NICK);
+    if (!u) {
+      const salt = randB64(16), r = await DB.prepare('INSERT INTO users (nick, nick_key, pw_hash, pw_salt, pw_iter, rec_hash, created_at, last_login, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)')
+        .bind(TEST_NICK, TEST_NICK.toLowerCase(), await pbkdf2(randB64(18), salt, PBKDF2_ITER), salt, PBKDF2_ITER, await sha256(newCode()), t, t).run();
+      await charInsert(env, r.meta.last_row_id, t).run(); u = await findUser(env, TEST_NICK);
+    }
+    if (u.banned) fail(400, '테스트 계정이 차단돼 있어요');
+    await DB.prepare('UPDATE users SET is_admin = 1, last_login = ? WHERE id = ?').bind(t, u.id).run();
+    await done('switch', TEST_NICK); return json({ token: await newSession(env, u.id, true), nick: u.nick });
   }
   if (m === 'POST' && p === '/api/admin/maint') {   // 관리자만 접속 가능 (점검 모드)
     const v = { on: !!body.on, msg: String(body.msg || '').trim().slice(0, 100) };

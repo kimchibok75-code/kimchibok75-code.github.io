@@ -774,6 +774,8 @@ body.hunting .side { display: none; }
 .iconbtn.adm { background: #efe7ff; border-color: #6c4fc2; }
 .iconbtn.adm[data-n]::after { content: attr(data-n); position: absolute; top: -7px; right: -7px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--kimchi); color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center; border: 2px solid #fff; }
 /* 2026-11-20 관리자 화면 */
+.adm-sw { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; font-size: calc(13px * var(--fs)); }
+.adm-info.warn { background: #fff1ec; }
 .adm-info { font-size: calc(13px * var(--fs)); color: var(--ink-soft); background: #f4f1ff; border-radius: 10px; padding: 7px 10px; margin-bottom: 8px; line-height: 1.5; }
 .adm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .adm-card { border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 10px; background: #fff; display: grid; gap: 5px; font-size: calc(13.5px * var(--fs)); }
@@ -7988,8 +7990,25 @@ async function openAdmin(tab = ADM.tab, keep) {
   const o = ADM.ov, c = ADM.cnt;
   const tabs = [['flags', '🚨 의심', c.flags], ['reports', '📮 신고', c.reports], ['user', '👤 사람'], ['chat', '💬 채팅'], ['ops', o?.maint?.on ? '🔒 운영' : '🛠️ 운영'], ['cheat', '🧪 치트']];
   const tag = o ? `전체 ${fmtN(o.users)}명 · 오늘 가입 ${o.signups} · 하루 접속 ${o.active}${o.maint?.on ? ' · 🔒 점검 중 (관리자만 접속)' : ''}` : '';
-  const V = ADM_VIEW[tab]();
-  bsOpen(ADM_B, { tag, tabs, tab, body: V.body, foot: V.foot }, async (x, btn) => { try { await V.on(x, btn, sheet); } catch (err) { toast(err.message); } }, true);
+  const V = ADM_VIEW[tab](), isTest = me.name === TEST_NICK;
+  const sw = `<div class="adm-sw"><span>지금 계정: <b>${esc(me.name)}</b>${isTest ? ' (테스트)' : ' · 랭킹에 나와요'}</span><button class="mini main" data-x="switch">${isTest ? `↩️ ${esc(store.get('cbt-token-main') ? '김치복' : '김치복 (다시 로그인)')}으로 돌아가기` : '🧪 테스트 계정으로 전환'}</button></div>`;
+  bsOpen(ADM_B, { tag, tabs, tab, body: sw + V.body, foot: V.foot }, async (x, btn) => { try { if (x === 'switch') return await admSwitch(); await V.on(x, btn, sheet); } catch (err) { toast(err.message); } }, true);
+}
+// 2026-11-20 김치복 ↔ 테스트 계정 바로 전환 (김치복 로그인은 cbt-token-main에 기억해 두고 돌아올 때 씀)
+const TEST_NICK = '테스트';
+async function admSwitch() {
+  if (me.name === TEST_NICK) {
+    const main = store.get('cbt-token-main');
+    if (!(await ask(main ? '테스트 계정에서 나가고 김치복 캐릭터로 돌아가요.' : '김치복 로그인 기억이 없어서 로그인 화면으로 가요.', { title: '김치복으로 돌아갈까요?', ok: '돌아가기' }))) return;
+    try { await api('/api/logout', {}); } catch {}
+    store.del('cbt-token'); store.del('cbt-token-main'); if (main) store.set('cbt-token', main, true);
+  } else {
+    if (!(await ask('치트·시험은 테스트 계정에서 해 주세요. 김치복 캐릭터는 그대로 남아 있고, 관리자 화면에서 바로 돌아올 수 있어요.', { title: '테스트 계정으로 전환할까요?', ok: '전환' }))) return;
+    const j = await api('/api/admin/switch', {});
+    store.set('cbt-token-main', token, true); store.del('cbt-token'); store.set('cbt-token', j.token, true);
+  }
+  try { localStorage.removeItem('cbt-raid'); localStorage.removeItem('cbt-pull'); } catch {}   // 계정마다 다른 기억
+  location.reload();
 }
 const admUserBtn = (id, nick) => `<button class="adm-nick" data-x="who:${id}">${esc(nick)}</button>`;
 const ADM_VIEW = {
@@ -8098,7 +8117,7 @@ const ADM_VIEW = {
   cheat() {   // 관리자 시험용 치트 (내 캐릭터만 바뀜, 서버 기록에 남음)
     const god = !!me.life?.god, B = (k, n, label) => `<button class="mini" data-x="${k}:${n}">${label}</button>`;
     return {
-      body: `<div class="adm-info">시험용이에요. <b>내 캐릭터만</b> 바뀌고, 쓴 기록은 서버에 남아요.</div>
+      body: `<div class="adm-info${me.name === TEST_NICK ? '' : ' warn'}">시험용이에요. <b>내 캐릭터만</b> 바뀌고, 쓴 기록은 서버에 남아요.${me.name === TEST_NICK ? '' : ' <b>김치복 캐릭터는 랭킹에 나오니 치트는 테스트 계정에서 써 주세요.</b>'}</div>
         <div class="btns cheat">${B('raid', 0, '🐉 드래곤 레이드 지금 열기')}${B('raid', 1, '👹 오우거 레이드 지금 열기')}${B('god', 0, god ? '😇 갓모드 끄기' : '😇 갓모드 켜기')}</div>
         <div class="btns cheat">${B('gold', 1e6, '🪙 골드 +100만')}${B('gold', 1e8, '🪙 골드 +1억')}${B('lv', 55, '🌟 55레벨')}${B('lv', 1, '🌱 1레벨로')}${B('pots', 0, '🥤 물약·체력 가득')}</div>
         <div class="btns cheat">${B('gear', 0, '🗡️ 최고 장비 + 최고 강화')}${B('titles', 0, '🏷️ 칭호 모두')}${B('skins', 0, '👕 모든 스킨')}${B('rskmax', 0, '⭐ 레이드 스킨 최고')}${B('skmax', 0, '⚡ 스킬 최고')}</div>

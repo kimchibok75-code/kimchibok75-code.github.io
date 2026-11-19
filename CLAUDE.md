@@ -836,6 +836,7 @@
 - **관리자 화면 새로** (`openAdmin(tab, keep)`, `ADM_VIEW`, bsWrap 틀 `ADM_B`): 🚨 의심 / 📮 신고 / 👤 사람(같은 IP·기기 계정, 의심, 사본 되돌리기) / 💬 채팅 / 🛠️ 운영(점검 체크박스·공지·방송 보너스·지금 사본) / 🧪 치트. 위에 전체·오늘 가입·하루 접속 요약. 🛡️ 버튼에 의심+신고 수 빨간 숫자 (`/api/me`의 `adm` → `admBadge`)
   - 서버: `/api/admin/overview`, `/flags`, `/flag-ok {id, days}`, `/scan`, `/snap-now`, `/restore {id, day}`, `/maint {on, msg}`, `/user?id=` 또는 `?nick=`
 - **D1 전체 되돌리기 (최후 수단)**: Cloudflare D1 Time Travel (무료 7일). 배포 전에 `game-worker`에서 `npx --yes wrangler@4.45.0 d1 time-travel info kimchibok-game`로 북마크를 적어 둠 → 되돌릴 땐 점검 모드를 켜고 `npx --yes wrangler@4.45.0 d1 time-travel restore kimchibok-game --bookmark=북마크` (그 뒤의 모든 기록이 사라짐, 한 사람만이면 관리자 화면 '되돌리기'로)
+- **김치복 ↔ 테스트 계정 전환** (관리자 화면 맨 위 `.adm-sw`, `admSwitch`): 김치복은 이제 플레이어 캐릭터라 랭킹에 나옴 → 치트·시험은 테스트 계정(닉네임 '테스트', `TEST_NICK`, 랭킹·어뷰징 검사에서 빠짐)에서. 서버 `/api/admin/switch`가 테스트 계정(없으면 만듦)을 관리자로 하고 새 로그인 토큰을 줌. 화면은 김치복 토큰을 localStorage `cbt-token-main`에 기억 → '김치복으로 돌아가기'
 - 대장간 최대 강화 **+20** (`ENH_MAX`), 성공 확률은 +10부터 27→5%, 최소 5% (`enhRate`), 값 `ENH_COST` 20칸
 - 🐉 · 👹 아이콘 = 뱃지와 같은 드래곤·오우거 얼굴 그림 (`setIconOverride`, game.html `artReady` 뒤. `d-head`·`og-head`는 처음부터 불러옴)
 
