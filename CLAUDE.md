@@ -699,6 +699,27 @@
 - 건의 게시판·초보자 가이드 그림 = 사용자 그림 (`내 디자인/건물_게시판_건의.png`, `건물_게시판_초보자 가이드.png` → town-art.py 1번 → `b-suggest`, `b-beginner`). 코드 그림 `boardArt`는 못 불러왔을 때만
 - town-art.py는 프로젝트 폴더에서 `PYTHONUTF8=1 python scripts/img-export/town-art.py`로 실행 (한글 경로)
 
+### 텃밭 대개편 · 농사왕 · 심어라 · 농사 랭킹판 — 2026-11-20
+- 원본 규칙: `텍스쳐 템플릿/내 디자인/작물/텃밭게임_최종개발규칙.txt` + `텃밭게임_최종기획_밸런스.xlsx` (사용자가 만든 것. 숫자를 바꿀 땐 이 두 파일 기준). 위의 예전 텃밭 설명(물 주기·품종·물뿌리개·`cbt-seed`·`S.seed`·`plantall`)은 모두 없어짐
+- 작물 40종(일반 24 · 희귀 10 · 전설 6) · 호미 10단계 · 비료 10단계 표는 **`assets/js/game-crop.js`** — `PYTHONUTF8=1 python scripts/img-export/crop-art.py`가 엑셀에서 자동으로 만듦 (손으로 고치지 말 것). 같은 스크립트가 작물 그림 → `assets/img/crop/c번호.webp`, 농사 랭킹판 그림 → `assets/img/town/b-farmrank.webp`
+  - 그림 없는 작물: 거대 호박(c33) · 산삼(c34) → 아이콘으로 보임. `작물/작물_NN_이름.png`로 넣고 스크립트를 다시 돌리면 됨
+- game-rules.js: `CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, newFarm, cropPool, cropOdds, cropPrice, rollCrop, isBigCrop, cropW, plotStage, FARM_COIN_GOLD`
+  - 씨앗은 **수수께끼 씨앗 하나**(무료·무한). 심는 순간 서버가 작물·무게(삼각분포)·값·다 자라는 시각을 정해 `life.farm.plots[i] = {at, r, id, g, p}`에 저장. 자라는 시간 60~120초 × (1 − 호미 줄임)
+  - **수확 전까지 작물은 비밀**: 서버 `meOut`의 `lifeOut`이 칸을 `{at, r}`만 보냄. 화면은 새싹(0~39%) · 자라는 중 · 수확 가능 세 모습만 (`plotStage`, `cropPlant`)
+  - 밭 칸: 처음 6칸, 호미 Lv4 7칸 · Lv7 8칸 · Lv9 9칸 (`farmPlots`). 잠긴 칸은 지도·창에 🔒 호미 LvN
+  - 수확 → **작물 가방** `life.farm.bag = [{k, id, g, p, at}]` 최대 200 (`FARM.bag`). 따로 팔아야 골드. 자동 판매·자동 다시 심기 없음
+  - 호미·비료는 골드 + **누적 수확 횟수**(`cnt.crops`) 조건, 저장은 `life.farm.hoe/fert` = 0~9 (화면 Lv = +1)
+  - 예전 텃밭(`farm.v !== 2`)은 `fixLife`가 새 텃밭으로 바꿈. **텃밭 코인(🌻) 없앰**: 남은 코인은 `play()`가 1개 = 100골드(응답 `farmCoin` → 토스트). 도장(600골드)·주간 상자·자리 비움·주민 임무(골드 +150)·분수(골드 300)도 코인 대신 골드
+- 서버 index.js: `/api/farm/plant {i | all}`, `/api/farm/harvest {i | all}`(응답 `got`), `/api/farm/sell {ks, want}`, `/api/farm/shop {k: hoe|fert}`, `/api/farm/king`, `GET /api/farm/rank`. 치트 `farm`(다 자람) · `farmmax`(호미·비료 최고)
+- **텃밭 창고 창** (`openFarm`, 탭 `fmTabs`): 🌱 밭(전체 심기 · 전체 수확) / 💰 팔기(`farmSell`, 고르기 · 등급 · `ask` 확인) / 🛒 호미·비료(`farmShop`) / 👑 농사왕(`kingSheet` + `KINGS.farm`)
+  - 지도 두둑을 누르면: 빈 밭 → 빈 밭 **모두** 심기, 다 자람 → 다 자란 것 **모두** 수확 (`farmTap`). 자동 생활도 같은 방식 (`auFarm`)
+  - 수확하면 제일 비싼 작물을 머리 위에 들고 있음 (`me.brag.crop`, `drawBrag`), 전설이면 축하 창 `legendCropPop`
+  - 그림 도우미: `cropPic`(창), `cropImgC`(캔버스)
+- **도감 센터 🌾 작물 탭** (`dexHero('crop')`, 5종마다 `DEX_FX.crop`) · **작물 뱃지** `c_작물id` (한 번 수확하면, `badgeCanvas`가 작물 그림). 수확 수 `cnt.cc_작물id`, 최고 무게 `life.cbest`
+- **농사왕 세트** (id `farmking`, `fk: 1`, 스킨샵에서 안 팖): 템플릿 `*_guide_농사왕.png` → town-art.py `tpl_set('농사왕', 'fa')` → `fa-*.webp`, game.html `FAS` (TSK의 `farmking`). 목표 6개(작물 100 · 씨앗 600번 · 희귀 15 · 도감 25종 · 큰 작물 30 · 전설 1)
+- **🌾 농사왕 심어라** `SM`: 텃밭 창고 문 왼쪽에 서 있는 주민 (김참치처럼 말 걸기 없음, 농사왕 세트, 9칸 안이면 7~15초마다 `SM_LINES`). `smTick`, `smTag`
+- **🏆 농사 랭킹판** `farmrank` (game-map.js **17번**, 텃밭 창고 오른쪽 (67,44) 2×2): 제일 비싼 · 제일 무거운 · 제일 많이 (`farmRankSheet`). D1 `farming` 표 (`migrations/0017_farming.sql`), 수확할 때 `after`로 기록. 계정 초기화 때 같이 지움
+
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감
 - 다 지은 공동 건설(꽃밭·등대 등)을 지도에 그림으로 보여 주기

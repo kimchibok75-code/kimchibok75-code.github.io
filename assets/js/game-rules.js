@@ -2,6 +2,7 @@
 // 숫자는 plan/웹게임-기획서.md 3장·4장과 같아요. 여기를 고치면 화면과 서버가 함께 바뀌어요.
 
 import { FISH_TABLE } from './game-fish.js';
+import { CROP_TABLE, HOE_TABLE, FERT_TABLE } from './game-crop.js';
 
 export const T = 32;                 // 타일 한 칸 크기 (px)
 export const MW = 80, MH = 72;       // 마을 지도 칸 수 (지도 모양은 game-map.js)
@@ -92,14 +93,16 @@ export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'clear', n: '�
   { id: 'ogre', n: '👹 오우거 투구', price: 0, raid: 'ogre', fx: { hpP: 5, defP: 4 } },
   { id: 'magic', n: '💗 마법소녀 왕관', price: 30000, fx: { expP: 4, crit: 2 } },
   { id: 'fishking', n: '🎣 낚시왕 모자', price: 0, fk: 1, fx: { fishP: 8, fishZ: 2 } },
-  { id: 'mineking', n: '⛏️ 채굴왕 헬멧', price: 0, fk: 1, fx: { gather: 1, hpP: 3 } }];   // fk = 낚시점 '낚시왕' 보상 (2026-11-19, 상점에 안 팖)   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
+  { id: 'mineking', n: '⛏️ 채굴왕 헬멧', price: 0, fk: 1, fx: { gather: 1, hpP: 3 } },
+  { id: 'farmking', n: '🌾 농사왕 밀짚모자', price: 0, fk: 1, fx: { farmP: 8, goldP: 2 } }];   // fk = 낚시점 '낚시왕' 보상 (2026-11-19, 상점에 안 팖)   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
 // 눈 모양 스킨 (가진 것은 hats 목록에 'eye:별' 처럼 저장). dot은 기본
 export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 10000, fx: { defP: 3 } }, { id: 'star', n: '⭐ 별 눈', price: 10000, fx: { expP: 3 } }, { id: 'wink', n: '😉 윙크', price: 15000, fx: { crit: 2, atkP: 1 } }, { id: 'heart', n: '💗 하트 눈', price: 15000, fx: { hpP: 4 } }, { id: 'cat', n: '🐱 고양이 눈', price: 15000, fx: { fishC: 8 } }, { id: 'big', n: '✨ 반짝 큰 눈', price: 20000, fx: { goldP: 5 } },
   { id: 'rdragon', n: '🐉 용의 눈', price: 0, raid: 'rdragon', fx: { crit: 3, expP: 5 } },
   { id: 'ogre', n: '👹 오우거 눈', price: 0, raid: 'ogre', fx: { atkP: 3, hpP: 3 } },
   { id: 'magic', n: '💗 반짝 마법 눈', price: 30000, fx: { crit: 2, goldP: 3 } },
   { id: 'fishking', n: '🎣 낚시왕 눈', price: 0, fk: 1, fx: { crit: 2, fishZ: 2 } },
-  { id: 'mineking', n: '⛏️ 채굴왕 눈', price: 0, fk: 1, fx: { crit: 2, defP: 2 } }];
+  { id: 'mineking', n: '⛏️ 채굴왕 눈', price: 0, fk: 1, fx: { crit: 2, defP: 2 } },
+  { id: 'farmking', n: '🌾 농사왕 눈', price: 0, fk: 1, fx: { crit: 2, farmP: 4 } }];
 // 의상 스킨 (몸 전체 겉모습, 입으면 갑옷 그림 대신 보임). 가진 것은 c.hats 에 'suit:id', 입은 것은 c.suit
 export const SUITS = [
   { id: 'hoodie', n: '🧥 후드티', price: 10000, fx: { spdP: 3 } },
@@ -113,6 +116,7 @@ export const SUITS = [
   { id: 'magic', n: '💗 마법소녀 드레스', price: 30000, fx: { hpP: 5, expP: 3 } },
   { id: 'fishking', n: '🎣 낚시왕 조끼', price: 0, fk: 1, fx: { hpP: 4, fishC: 10 } },
   { id: 'mineking', n: '⛏️ 채굴왕 작업복', price: 0, fk: 1, fx: { defP: 5, hpP: 3 } },
+  { id: 'farmking', n: '🌾 농사왕 멜빵바지', price: 0, fk: 1, fx: { hpP: 4, farmP: 10 } },
 ];
 // 무기 스킨 (그 무기의 겉모습만). 가진 것은 'wsk:무기:id', 쓰는 것은 c.wsk = { sword, bow, staff }
 export const WSKINS = [
@@ -149,6 +153,9 @@ export const WSKINS = [
   { t: 'sword', id: 'mineking', n: '⛏️ 채굴왕 검', price: 0, fk: 1, fx: { atkP: 4, defP: 3 } },
   { t: 'bow', id: 'mineking', n: '⛏️ 채굴왕 활', price: 0, fk: 1, fx: { atkP: 4, defP: 3 } },
   { t: 'staff', id: 'mineking', n: '⛏️ 채굴왕 지팡이', price: 0, fk: 1, fx: { atkP: 4, defP: 3 } },
+  { t: 'sword', id: 'farmking', n: '🌾 농사왕 검', price: 0, fk: 1, fx: { atkP: 4, farmP: 4 } },
+  { t: 'bow', id: 'farmking', n: '🌾 농사왕 활', price: 0, fk: 1, fx: { atkP: 4, farmP: 4 } },
+  { t: 'staff', id: 'farmking', n: '🌾 농사왕 지팡이', price: 0, fk: 1, fx: { atkP: 4, farmP: 4 } },
 ];
 // 낚시왕 보상 (2026-11-19, 낚시점 '낚시왕' 탭): 물고기 50마리마다 한 부위씩, '받기'를 눌러야 받음. 순서 = 모자 · 의상 · 눈 · 검 · 활 · 지팡이
 // '왕' 세트 (2026-11-19): 낚시왕(낚시점, 물고기 50마리마다) · 채굴왕(채석장, 손으로 캔 석재 100개마다). cnt = life.cnt 의 어느 값으로 셈
@@ -164,11 +171,21 @@ export const KINGS = {
     { t: '전설 물고기 낚기', u: '마리', need: 1, v: c => c.legendFish || 0 },
   ] },
   mine: { id: 'mineking', n: '채굴왕', i: '⛏️', cnt: 'stone', every: 100, what: '캔 석재', unit: '개', keys: kingKeys('mineking') },
+  // 2026-11-20 농사왕 (텃밭 창고 '농사왕' 탭): 부위마다 다른 목표, 이룬 것부터 받음
+  farm: { id: 'farmking', n: '농사왕', i: '🌾', cnt: 'crops', every: 100, what: '작물', unit: '개', keys: kingKeys('farmking'), goals: [
+    { t: '작물 100개 수확하기', u: '개', need: 100, v: c => c.crops || 0 },
+    { t: '씨앗 600번 심기', u: '번', need: 600, v: c => c.plant || 0 },
+    { t: '희귀 작물 15개 수확하기', u: '개', need: 15, v: c => ccSum(c, x => x.grade === 'rare') },
+    { t: '작물 도감 25종 채우기', u: '종', need: 25, v: c => CROP_LIST.filter(x => c['cc_' + x.id]).length },
+    { t: '큰 작물 30개 수확하기', u: '개', need: 30, v: c => c.bigCrop || 0 },
+    { t: '전설 작물 수확하기', u: '개', need: 1, v: c => c.legendCrop || 0 },
+  ] },
 };
 export const FISH_KING = KINGS.fish;
 export const kingNext = (K, hats) => K.keys.find(k => !hats.includes(k));
 export const kingNeed = (K, key) => (K.keys.indexOf(key) + 1) * K.every;
 const fcSum = (c, f) => FISH_LIST.filter(f).reduce((a, x) => a + (c['fc_' + x.id] || 0), 0);
+const ccSum = (c, f) => CROP_LIST.filter(f).reduce((a, x) => a + (c['cc_' + x.id] || 0), 0);
 // 부위 하나의 목표: { t 설명, u 단위, need, now 지금 값, ok 이룸 }
 export const kingGoal = (K, key, cnt = {}) => { const i = K.keys.indexOf(key), G = K.goals?.[i];
   if (G) { const now = G.v(cnt); return { t: G.t, u: G.u, need: G.need, now, ok: now >= G.need }; }
@@ -408,42 +425,66 @@ export const jobTips = (jobAt, lv, upTo = Infinity) => jobGuests(jobAt, lv).filt
 const HOUR = 3600e3, MIN = 60e3;
 // 캐릭터의 생활 정보 (DB characters.life 한 칸에 JSON으로)
 export const newLife = () => ({ coins: { fish: 0, farm: 0 }, res: { wood: 0, stone: 0 }, fish: { rod: 0, bait: 0, pack: 0 },
-  farm: { plots: [null, null, null, null, null, null], can: 0, seeds: ['lettuce', 'carrot'], wetAt: 0, wetM: 1 }, cnt: {}, titles: ['new'], buff: null, wishAt: 0,
+  farm: newFarm(), cnt: {}, titles: ['new'], buff: null, wishAt: 0,
   sk: {}, skg: 0, nodes: {}, gatherAt: 0, work: { lumber: { n: 0, at: 0, acc: 0 }, quarry: { n: 0, at: 0, acc: 0 } } });
 export function fixLife(l) {
   const d = newLife(); if (!l || typeof l !== 'object') return d;
   for (const k of Object.keys(d)) if (l[k] === undefined || l[k] === null && k !== 'buff') l[k] = d[k];
-  for (const k of ['coins', 'res', 'fish', 'farm']) l[k] = { ...d[k], ...l[k] };
+  for (const k of ['coins', 'res', 'fish']) l[k] = { ...d[k], ...l[k] };
+  if (!l.farm || l.farm.v !== 2) l.farm = newFarm();   // 2026-11-20 예전 텃밭(물 주기·씨앗 품종)은 새 텃밭으로
+  if (!Array.isArray(l.farm.plots) || l.farm.plots.length !== 9) l.farm.plots = Array.from({ length: 9 }, (_, i) => l.farm.plots?.[i] || null);
+  if (!Array.isArray(l.farm.bag)) l.farm.bag = [];
   l.work = { lumber: { ...d.work.lumber, ...l.work?.lumber }, quarry: { ...d.work.quarry, ...l.work?.quarry } };
   if (!Array.isArray(l.titles)) l.titles = ['new']; if (!l.titles.includes('new')) l.titles.unshift('new');
   return l;
 }
 export const cntAdd = (c, k, n = 1) => { const t = c.life.cnt; t[k] = (t[k] || 0) + n; };
 
-// ───────── 텃밭 ─────────
-// sec: 자라는 시간 · cost: 씨앗 값(골드) · sell: 팔면 골드 · coin: 텃밭 코인 · unlock: 품종 여는 데 드는 텃밭 코인
-export const CROPS = [
-  { id: 'lettuce', n: '상추', i: '🥬', sec: 120, cost: 10, sell: 24, coin: 1, unlock: 0 },
-  { id: 'carrot', n: '당근', i: '🥕', sec: 300, cost: 30, sell: 75, coin: 1, unlock: 0 },
-  { id: 'potato', n: '감자', i: '🥔', sec: 900, cost: 80, sell: 210, coin: 2, unlock: 10 },
-  { id: 'corn', n: '옥수수', i: '🌽', sec: 1800, cost: 150, sell: 420, coin: 3, unlock: 30 },
-  { id: 'pepper', n: '고추', i: '🌶️', sec: 3600, cost: 300, sell: 880, coin: 4, unlock: 70 },
-  { id: 'berry', n: '딸기', i: '🍓', sec: 7200, cost: 550, sell: 1700, coin: 6, unlock: 140 },
-  { id: 'melon', n: '수박', i: '🍉', sec: 14400, cost: 1000, sell: 3300, coin: 9, unlock: 260 },
-  { id: 'gold', n: '황금 배추', i: '🌟', sec: 28800, cost: 2000, sell: 7000, coin: 15, unlock: 450 },
-];
-export const cropOf = id => CROPS.find(x => x.id === id);
-// 물뿌리개: 물을 주면 5분 동안 mul배 빨리 자람. 5분에 한 번
-export const CANS = { names: ['낡은 물뿌리개', '양철 물뿌리개', '구리 물뿌리개', '은 물뿌리개', '금 물뿌리개', '무지개 물뿌리개'], mul: [3, 3.5, 4, 4.5, 5, 6], cost: [20, 50, 100, 200, 380] };
-export const FARM = { cd: 5 * MIN, dur: 5 * MIN, maxPlots: 9, plotCost: [40, 120, 300] };   // plotCost: 7·8·9번째 칸 (텃밭 코인)
-// 칸 하나가 지금까지 자란 초 (물 준 5분 동안은 빨리)
-export function plotGrown(p, f, now) {
-  if (!p) return 0;
-  const s = f.wetAt, e = f.wetAt + FARM.dur, ov = Math.max(0, Math.min(now, e) - Math.max(p.t, s));
-  return p.g + ((now - p.t) + (f.wetM - 1) * ov) / 1000;
+// ───────── 🌱 텃밭 (2026-11-20 전면 개편, 원본: 내 디자인/작물/텃밭게임_최종개발규칙.txt · 밸런스.xlsx) ─────────
+// 수수께끼 씨앗 하나(무료·무한). 심는 순간 장비(호미·비료)로 작물·무게·값·자라는 시간을 정해 둠 → 다 자라면 수확해서 작물 가방으로 → 따로 팔기
+// 작물 40종 (일반 24 · 희귀 10 · 전설 6). 표는 game-crop.js (crop-art.py가 엑셀에서 만듦)
+export const CROP_LIST = CROP_TABLE.map(([id, grade, i, n, min, max, base, hoe, w, img]) => ({ id, grade, i, n, min, max, base, hoe, w, img: !!img }));
+export const CROP_BY = Object.fromEntries(CROP_LIST.map(x => [x.id, x]));
+// 호미 [이름, 최대 무게 g, 밭 칸 수, 자라는 시간 줄임, 값, 필요 누적 수확] · 비료 [이름, 일반 %, 희귀 %, 전설 %, 값, 필요 누적 수확] (둘 다 10단계, 저장은 0~9)
+export const HOES = HOE_TABLE, FERTS = FERT_TABLE;
+export const FARM = { growMin: 60, growMax: 120, maxPlots: 9, priceMin: 2, priceMax: 1e7, bag: 200, big: .7 };
+const lv9 = v => Math.max(0, Math.min(9, v | 0));
+export const farmPlots = hoe => HOES[lv9(hoe)][2];
+export const newFarm = () => ({ v: 2, hoe: 0, fert: 0, plots: Array(9).fill(null), bag: [] });
+// 이 장비로 나올 수 있는 작물 (규칙 6): 호미 Lv ≥ 작물 최소 Lv, 호미 최대 무게 ≥ 작물 최소 무게, 비료의 그 등급 확률 > 0
+// 일반·희귀는 등급 안에서 같은 확률, 전설은 엑셀 가중치. 후보 없는 등급의 확률은 남은 등급에 나눠 줌
+export function cropPool(hoe = 0, fert = 0) {
+  const H = HOES[lv9(hoe)], F = FERTS[lv9(fert)], gp = { normal: F[1], rare: F[2], legend: F[3] }, lists = {}, gw = {};
+  for (const g of FG_KEYS) {
+    const l = gp[g] > 0 ? CROP_LIST.filter(x => x.grade === g && lv9(hoe) + 1 >= x.hoe && x.min <= H[1]) : [];
+    if (l.length) { lists[g] = l; gw[g] = gp[g]; }
+  }
+  const sum = Object.values(gw).reduce((a, b) => a + b, 0) || 1;
+  return { lists, grades: Object.fromEntries(Object.entries(gw).map(([g, q]) => [g, q / sum])), maxG: H[1] };
 }
-// 모든 칸을 지금 시각으로 맞춤 (물 주기 전에 꼭)
-export function farmSettle(f, now) { for (const p of f.plots) if (p) { p.g = plotGrown(p, f, now); p.t = now; } }
+export const cropOdds = (hoe = 0, fert = 0) => Object.fromEntries(FG_KEYS.map(g => [g, (cropPool(hoe, fert).grades[g] || 0) * 100]));
+// 값 = 기본가 × (0.5 + 크기 비율) (분모는 작물 원래 무게 범위), 2 ~ 1천만
+export const cropPrice = (x, g) => { const r = (g - x.min) / (x.max - x.min || 1); return Math.min(FARM.priceMax, Math.max(FARM.priceMin, Math.round(x.base * (.5 + r)))); };
+// 무게: [최소, min(최대, 호미 최대)] 안에서 가운데가 가장 잘 나오는 삼각분포, g 정수
+const triG = (lo, hi) => { if (hi <= lo) return lo; const u = Math.random(), c = (lo + hi) / 2; return Math.round(u < .5 ? lo + Math.sqrt(u * (hi - lo) * (c - lo)) : hi - Math.sqrt((1 - u) * (hi - lo) * (hi - c))); };
+// 심을 때 한 번 정함: { id, g 무게, p 값, sec 자라는 시간(초) }. 후보가 하나도 없으면 null
+export function rollCrop(hoe = 0, fert = 0) {
+  const P = cropPool(hoe, fert); if (!Object.keys(P.lists).length) return null;
+  let r = Math.random(), grade = Object.keys(P.grades)[0];
+  for (const [g, q] of Object.entries(P.grades)) { grade = g; if (r < q) break; r -= q; }
+  const l = P.lists[grade], wt = x => (grade === 'legend' ? x.w || 1 : 1), tot = l.reduce((a, x) => a + wt(x), 0); let q = Math.random() * tot, x = l[l.length - 1];
+  for (const y of l) { if (q < wt(y)) { x = y; break; } q -= wt(y); }
+  const g = triG(x.min, Math.min(x.max, P.maxG)), base = FARM.growMin + Math.floor(Math.random() * (FARM.growMax - FARM.growMin + 1));
+  return { id: x.id, g, p: cropPrice(x, g), sec: Math.max(1, Math.ceil(base * (1 - HOES[lv9(hoe)][3]))) };
+}
+// 큰 작물: 그 작물 원래 무게 범위의 위쪽 30%
+export const isBigCrop = (id, g) => { const x = CROP_BY[id]; return !!x && g >= x.min + (x.max - x.min) * FARM.big; };
+// 무게 글자: 1kg 넘으면 kg
+export const cropW = g => (g >= 1000 ? `${(g / 1000).toLocaleString('ko-KR', { maximumFractionDigits: g >= 1e5 ? 0 : 2 })}kg` : `${g}g`);
+// 칸 상태: null 빈칸 · { at 심은 시각, r 다 자라는 시각, id, g, p } (작물·값은 수확 전까지 화면에 안 보여 줌)
+export const plotStage = (p, now) => !p ? 'empty' : now >= p.r ? 'ready' : (now - p.at) / Math.max(1, p.r - p.at) < .4 ? 'sprout' : 'grow';
+// 예전 텃밭 코인(🌻): 2026-11-20 텃밭이 골드로 바뀌어서 쓸 곳이 없음 → 서버가 1개 = 100골드로 바꿔 줌
+export const FARM_COIN_GOLD = 100;
 
 // ───────── 채집 (마을의 나무 · 바위) · 알바 고용 ─────────
 export const GATHER = { tree: { n: '나무', res: 'wood', amt: [2, 4], regrow: [3 * MIN, 6 * MIN], sec: 1.6 }, rock: { n: '바위', res: 'stone', amt: [1, 3], regrow: [4 * MIN, 8 * MIN], sec: 2 }, gap: 1200 };
@@ -501,7 +542,7 @@ export function optScore(it) { return (it?.o || []).reduce((a, [k, v]) => a + v 
 // ───────── 칭호 (도전 과제를 깨면 생김. 갖고만 있어도 효과) ─────────
 // k: 세는 것 (lv·str·dex·int·luk = 캐릭터 값, 나머지 = life.cnt) · v: 목표 · fx: 보유 효과
 export const FX_N = { atkP: ['공격력', '%'], defP: ['방어', '%'], hpP: ['최대 체력', '%'], crit: ['치명타', '%p'], eva: ['회피', '%p'], goldP: ['골드', '%'], expP: ['경험치', '%'], spdP: ['이동 속도', '%'],
-  fishC: ['물고기 값', '%'], fishZ: ['낚을 확률', '%p'], farmP: ['작물 골드', '%'], farmC: ['텃밭 코인', '%'], gather: ['채집량', '개'], fishP: ['물고기 값', '%'], enhB: ['강화 확률', '%p'], bossP: ['보스 피해', '%'], regen: ['사냥 중 회복', '%p/초'] };
+  fishC: ['물고기 값', '%'], fishZ: ['낚을 확률', '%p'], farmP: ['작물 값', '%'], farmC: ['작물 값', '%'], gather: ['채집량', '개'], fishP: ['물고기 값', '%'], enhB: ['강화 확률', '%p'], bossP: ['보스 피해', '%'], regen: ['사냥 중 회복', '%p/초'] };
 const tt = (id, n, g, k, v, fx, d) => ({ id, n, g, k, v, fx, d });
 // 전설 물고기 칭호 이름: '강의 용을 낚은', '은하 고래를 낚은' (받침에 따라 을/를)
 const josa = w => { const c = w.charCodeAt(w.length - 1) - 0xac00; return c >= 0 && c < 11172 && c % 28 ? '을' : '를'; };
@@ -529,8 +570,8 @@ export const TITLES = [
   ...FISH_LIST.filter(f => f.grade === 'legend').sort((a, b) => a.base - b.base).map((f, i) => tt('lf_' + f.id, legendTitle(f.n), '전설 물고기', 'lf_' + f.id, 1,
     i < 4 ? { fishP: 3, fishZ: 1 } : i < 8 ? { fishP: 5, fishZ: 1, goldP: 1 } : i < 11 ? { fishP: 8, fishZ: 2, goldP: 2 } : { fishP: 12, fishZ: 3, goldP: 3, expP: 2 },
     `${f.sea ? '바다' : '민물'} 전설 ${f.n} 낚기 (낚싯대 Lv${f.rod} 이상)`)),
-  tt('c1', '첫 수확을 한', '텃밭', 'crops', 1, { farmP: 2 }, '작물 수확 1번'), tt('c100', '텃밭을 가꾸는', '텃밭', 'crops', 100, { farmP: 5, farmC: 5 }, '작물 수확 100번'),
-  tt('c500', '농사의 달인인', '텃밭', 'crops', 500, { farmP: 10, farmC: 10 }, '작물 수확 500번'), tt('w100', '물 주기를 잊지 않는', '텃밭', 'water', 100, { farmC: 5 }, '물 주기 100번'),
+  tt('c1', '첫 수확을 한', '텃밭', 'crops', 1, { farmP: 2 }, '작물 수확 1번'), tt('c100', '텃밭을 가꾸는', '텃밭', 'crops', 100, { farmP: 5, goldP: 1 }, '작물 수확 100번'),
+  tt('c500', '농사의 달인인', '텃밭', 'crops', 500, { farmP: 10, goldP: 2 }, '작물 수확 500번'), tt('w100', '씨앗을 아끼지 않는', '텃밭', 'plant', 300, { farmP: 5 }, '씨앗 300번 심기'),
   tt('gold1', '황금 배추를 키운', '텃밭', 'goldCrop', 1, { goldP: 2 }, '황금 배추 수확'),
   tt('wd100', '나무를 베는', '채집', 'wood', 100, { gather: 1 }, '목재 100개'), tt('wd1000', '숲을 아는', '채집', 'wood', 1000, { gather: 1, hpP: 1 }, '목재 1,000개'),
   tt('st100', '돌을 캐는', '채집', 'stone', 100, { gather: 1 }, '석재 100개'), tt('st1000', '바위를 부수는', '채집', 'stone', 1000, { gather: 1, defP: 1 }, '석재 1,000개'),
@@ -573,16 +614,18 @@ export const DEX_STEP = 5;
 // 단계마다 더해지는 효과 (5개 → 첫 번째, 10개 → 두 번째까지 …). 각 13단계 (물고기 69종 · 스킨 65개)
 export const DEX_FX = {
   fish: [{ fishP: 2 }, { fishZ: 1 }, { goldP: 1 }, { fishP: 3 }, { expP: 1 }, { fishZ: 1 }, { fishP: 3 }, { goldP: 2 }, { fishZ: 2 }, { fishP: 4 }, { expP: 2 }, { goldP: 3 }, { fishP: 5, fishZ: 2 }],
+  crop: [{ farmP: 2 }, { goldP: 1 }, { farmP: 3 }, { expP: 1 }, { farmP: 3 }, { goldP: 2 }, { farmP: 4 }, { farmP: 5, goldP: 2 }],   // 2026-11-20 작물 40종 → 8단계
   skin: [{ hpP: 1 }, { atkP: 1 }, { goldP: 1 }, { defP: 1 }, { expP: 1 }, { atkP: 1 }, { hpP: 2 }, { crit: 1 }, { goldP: 2 }, { atkP: 2 }, { expP: 2 }, { defP: 2 }, { atkP: 3, crit: 1 }],
 };
 // 도감에 들어가는 스킨 (처음부터 가진 것 · 투명 모자는 빼고)
 export const DEX_SKINS = () => [...HATS.filter(h => h.id !== 'none' && !h.free).map(h => h.id), ...EYE_SKINS.filter(e => e.id !== 'dot').map(e => 'eye:' + e.id), ...SUITS.map(x => 'suit:' + x.id), ...WSKINS.map(wskKey)];
 export const dexFishGot = c => FISH_LIST.filter(f => c.life?.cnt?.['fc_' + f.id] || c.life?.cnt?.['lf_' + f.id]);
 export const dexSkinGot = c => { const own = Array.isArray(c.hats) ? c.hats : []; return DEX_SKINS().filter(k => own.includes(k)); };
-export const dexN = (c, k) => (k === 'fish' ? dexFishGot(c) : dexSkinGot(c)).length;
+export const dexCropGot = c => CROP_LIST.filter(x => c.life?.cnt?.['cc_' + x.id]);
+export const dexN = (c, k) => (k === 'fish' ? dexFishGot(c) : k === 'crop' ? dexCropGot(c) : dexSkinGot(c)).length;
 export function dexFx(c) {
   const fx = {};
-  for (const k of ['fish', 'skin']) { const st = Math.floor(dexN(c, k) / DEX_STEP); DEX_FX[k].slice(0, st).forEach(o => addFx(fx, o)); }
+  for (const k of ['fish', 'crop', 'skin']) { const st = Math.floor(dexN(c, k) / DEX_STEP); DEX_FX[k].slice(0, st).forEach(o => addFx(fx, o)); }
   return fx;
 }
 // 뱃지: 이름 왼쪽에 다는 작은 그림 (효과 없음). life.badge = 단 뱃지 id
@@ -591,12 +634,14 @@ export const BADGES = [
   { id: 'rdragon', n: '레드 드래곤 뱃지', g: '레이드', d: '레드 드래곤 레이드 스킨 6개를 모두 모으기', raid: 'rdragon' },
   { id: 'ogre', n: '오우거 뱃지', g: '레이드', d: '오우거 레이드 스킨 6개를 모두 모으기', raid: 'ogre' },
   ...FISH_LIST.map(f => ({ id: 'f_' + f.id, n: `${f.n} 뱃지`, g: f.sea ? '바다 물고기' : '민물 물고기', d: `${f.n} 낚기`, fish: f.id })),
+  ...CROP_LIST.map(x => ({ id: 'c_' + x.id, n: `${x.n} 뱃지`, g: '작물', d: `${x.n} 수확하기`, crop: x.id })),   // 2026-11-20
 ];
-export const BADGE_GROUPS = ['기본', '레이드', '민물 물고기', '바다 물고기'];
+export const BADGE_GROUPS = ['기본', '레이드', '민물 물고기', '바다 물고기', '작물'];
 export const badgeOf = id => BADGES.find(b => b.id === id);
 export const hasBadge = (c, id) => { const b = badgeOf(id); if (!b) return false;
   if (b.raid) return raidSet(b.raid).every(k => (c.hats || []).includes(k));
   if (b.fish) return !!(c.life?.cnt?.['fc_' + b.fish] || c.life?.cnt?.['lf_' + b.fish]);
+  if (b.crop) return !!c.life?.cnt?.['cc_' + b.crop];
   return true; };
 export function titleFx(c) { const fx = {}; for (const id of c.life?.titles || []) addFx(fx, titleOf(id)?.fx || {}); return fx; }
 // 효과 합계: 가진 칭호 전부 + 지금 버프 + 장비 옵션(방어구 3칸 + 지금 클래스 무기)
@@ -620,13 +665,13 @@ const seeded = s => { let x = hash(s) || 1; return () => { x ^= x << 13; x >>>= 
 // 매일 의뢰: 날마다 4개 (모두 같은 의뢰). k = 세는 기록(cnt), v = 목표
 export const DAILY_POOL = [
   { k: 'kills', n: '몬스터 잡기', v: 80, i: '⚔️' }, { k: 'fish', n: '물고기 낚기', v: 8, i: '🎣' }, { k: 'crops', n: '작물 수확하기', v: 6, i: '🌾' },
-  { k: 'water', n: '텃밭에 물 주기', v: 3, i: '💧' }, { k: 'wood', n: '목재 모으기', v: 20, i: '🪵' }, { k: 'stone', n: '석재 모으기', v: 15, i: '🪨' },
+  { k: 'plant', n: '텃밭에 씨앗 심기', v: 12, i: '🌱' }, { k: 'wood', n: '목재 모으기', v: 20, i: '🪵' }, { k: 'stone', n: '석재 모으기', v: 15, i: '🪨' },
   { k: 'wish', n: '분수에 소원 빌기', v: 2, i: '⛲' }, { k: 'gacha', n: '장비 뽑기', v: 10, i: '🎰' }, { k: 'enhTry', n: '장비 칸 강화하기', v: 3, i: '🔨' },
   { k: 'give', n: '공동 건설에 기부하기', v: 1, i: '🏗️' }, { k: 'job', n: '카페 알바 하기', v: 1, i: '☕' }, { k: 'perfect', n: '완벽하게 낚기', v: 2, i: '🌟' },
 ];
 export const DAILY_N = 4, STAMP_GOAL = 5;
 export const dailyGold = lv => 500 + lv * 100;               // 의뢰 하나 보상 (사냥 약 4분어치)
-export const weekBox = lv => ({ gold: 5000 + lv * 1500 + 1500, fish: 0, farm: 15 });   // 2026-11-20 낚시 코인 15 → 골드 1,500   // 도장 5개 상자 (사냥 약 1시간어치)
+export const weekBox = lv => ({ gold: 5000 + lv * 1500 + 3000, fish: 0, farm: 0 });   // 2026-11-20 텃밭 코인 15 → 골드 1,500   // 2026-11-20 낚시 코인 15 → 골드 1,500   // 도장 5개 상자 (사냥 약 1시간어치)
 export function dailyTasks(day) {
   const r = seeded('daily' + day), pool = [...DAILY_POOL], out = [];
   while (out.length < DAILY_N) out.push(pool.splice(Math.floor(r() * pool.length), 1)[0]);
@@ -648,7 +693,7 @@ export function checkDaily(c, t) {
     d.done.push(i); const g = dailyGold(c.lv); c.gold += g; cntAdd(c, 'daily'); got.push({ n: q.n, i: q.i, gold: g });
   });
   if (got.length && d.done.length >= tasks.length && !d.stamped) {
-    d.stamped = true; const s = c.life.stamp; s.n++; c.gold += 300; c.life.coins.farm += 3; got.push({ stamp: s.n });
+    d.stamped = true; const s = c.life.stamp; s.n++; c.gold += 600; got.push({ stamp: s.n });   // 2026-11-20 텃밭 코인 3 → 골드 300
     if (s.n >= STAMP_GOAL && !s.box) { s.box = true; const b = weekBox(c.lv); c.gold += b.gold; c.life.coins.fish += b.fish; c.life.coins.farm += b.farm; cntAdd(c, 'weekBox'); got.push({ box: b }); }
   }
   return got;
@@ -665,8 +710,8 @@ export const NPC_TASKS = [
   { k: 'fish', n: '물고기 {v}마리 낚기', v: [2, 4], i: '🎣', ask: ['오늘 저녁은 생선구이가 먹고 싶어… 물고기 {v}마리만 낚아 줄래?', '강가에서 물고기 {v}마리만 잡아다 줘요!'], thx: '와, 싱싱하다! 고마워요!' },
   { k: 'wood', n: '목재 {v}개 모으기', v: [8, 16], i: '🪵', ask: ['울타리가 부서졌어요. 목재 {v}개만 모아 줄래요?', '장작이 다 떨어졌네… 나무 좀 베어 줄 수 있어? 목재 {v}개!'], thx: '덕분에 따뜻하게 지내겠어요!' },
   { k: 'stone', n: '석재 {v}개 모으기', v: [6, 12], i: '🪨', ask: ['돌담을 쌓고 싶은데 석재 {v}개만 캐다 줄래요?', '채굴 언덕에서 석재 {v}개만 부탁해요!'], thx: '튼튼한 돌담이 되겠어요!' },
-  { k: 'crops', n: '작물 {v}개 수확하기', v: [2, 4], i: '🌾', ask: ['잔치 음식을 만들 거예요. 텃밭 작물 {v}개만 거둬 줄래요?', '신선한 채소가 필요해! 작물 {v}개만 수확해 줘'], thx: '이걸로 맛있는 걸 만들게요!' },
-  { k: 'water', n: '텃밭에 물 {v}번 주기', v: [1, 2], i: '💧', ask: ['요즘 비가 안 와서 걱정이에요. 텃밭에 물 좀 줄래요?', '텃밭 작물들이 목말라 보여… 물 {v}번만 부탁해!'], thx: '작물들이 좋아하겠어요!' },
+  { k: 'crops', n: '작물 {v}개 수확하기', v: [4, 8], i: '🌾', ask: ['잔치 음식을 만들 거예요. 텃밭 작물 {v}개만 거둬 줄래요?', '신선한 채소가 필요해! 작물 {v}개만 수확해 줘'], thx: '이걸로 맛있는 걸 만들게요!' },
+  { k: 'plant', n: '텃밭에 씨앗 {v}번 심기', v: [4, 8], i: '🌱', ask: ['텃밭이 비어 있으면 쓸쓸하잖아요. 씨앗 {v}번만 심어 줄래요?', '수수께끼 씨앗에서 뭐가 나올지 궁금해! 씨앗 {v}번만 심어 봐 줘'], thx: '무엇이 자랄지 기대돼요!' },
   { k: 'wish', n: '분수에 소원 빌기', v: [1, 1], i: '⛲', ask: ['광장 분수에 소원을 빌면 이루어진대요. 저 대신 한 번 빌어 줄래요?'], thx: '제 소원도 이루어지겠죠? 헤헤' },
   { k: 'job', n: '카페 알바 하기', v: [1, 1], i: '☕', ask: ['카페 사장님이 일손이 모자라대요. 알바 한 번만 도와줄래요?'], thx: '사장님이 엄청 고마워하셨어요!' },
   { k: 'gacha', n: '장비 뽑기 {v}번', v: [1, 3], i: '🎰', ask: ['가챠센터 새 상자가 궁금해! 대신 {v}번만 뽑아 봐 줄래?'], thx: '오, 뭐 나왔어? 다음엔 나도 해 봐야지!' },
@@ -704,7 +749,7 @@ export const npcExp = lv => Math.round(huntIdleExp(lv) / 20);
 export const EVENT_BLOCK = 2 * 3600e3, EVENT_LEN = 40 * 60e3;
 export const EVENTS = [
   { k: 'fish', n: '황금 물때', i: '🐟', d: '물고기 값 +50% · 낚시 코인 +30%', fx: { fishP: 50, fishC: 30 } },
-  { k: 'farm', n: '풍년 잔치', i: '🌾', d: '작물 골드 +50% · 텃밭 코인 +50%', fx: { farmP: 50, farmC: 50 } },
+  { k: 'farm', n: '풍년 잔치', i: '🌾', d: '작물 값 +50%', fx: { farmP: 50 } },
   { k: 'wind', n: '바람 부는 날', i: '🌳', d: '나무·바위 채집량 +2', fx: { gather: 2 } },
   { k: 'mons', n: '몬스터 대이동', i: '⚔️', d: '사냥 경험치 +25%', fx: { expP: 25 } },
   { k: 'market', n: '반짝 장날', i: '💰', d: '골드 +20%', fx: { goldP: 20 } },
@@ -880,13 +925,13 @@ export const LIFE_EXP_RATE = .5;
 export const lifeExpHour = lv => Math.round(huntIdleExp(lv) * LIFE_EXP_RATE);
 // 직접 하는 생활 한 번에 주는 경험치 = 자동 생활 1시간 경험치 ÷ 아래 숫자 (직접 하면 자동과 비슷하거나 조금 많게)
 //   낚시 성공 1마리(10초마다) · 채집 1번 · 카페 알바 1번(1분) · 작물 1포기 수확
-export const LIFE_EXP_DIV = { fish: 1000, gather: 300, job: 120, crop: 150 };   // 2026-11-17 너무 많이 올라서 줄임 (예전 250 · 60 · 55 · 40)
+export const LIFE_EXP_DIV = { fish: 1000, gather: 300, job: 120, crop: 600 };   // 2026-11-20 텃밭 개편: 수확이 훨씬 잦아져서 crop 150 → 600   // 2026-11-17 너무 많이 올라서 줄임 (예전 250 · 60 · 55 · 40)
 export const lifeExp = (c, k, n = 1) => Math.max(1, Math.round(lifeExpHour(c.lv) / LIFE_EXP_DIV[k] * n * (1 + (derive(c).expB || 0) / 100)));
 
 // ───────── 자동 생활 (마을에서 벌목·채광·알바·낚시·농사를 알아서 돌아가며 함) ─────────
 // 직접 하는 것보다 효율이 낮음. 창을 닫아도 최대 8시간까지 계속. life.auto = { on, at, acc(소수점 남은 양) }
 export const AUTO_LIFE = { max: 8 * 3600,
-  perHour: lv => ({ wood: 36, stone: 24, fish: 6, farm: 5, gold: 6 * JOB.pay(lv) + 30 * lv + 300 }) };   // 1시간에 모이는 양
+  perHour: lv => ({ wood: 36, stone: 24, fish: 0, farm: 0, gold: 6 * JOB.pay(lv) + 30 * lv + 1400 }) };   // 1시간에 모이는 양
 // 마지막 정산 뒤 흐른 시간만큼 쌓아 줌. 받은 양(정수)을 돌려줌 (없으면 null)
 export function autoSettle(c, now) {
   const A = c.life.auto; if (!A?.on) return null;
@@ -902,7 +947,7 @@ export function autoSettle(c, now) {
 
 // ───────── 화면을 닫은 동안 (2026-11-17): 효율 50% 중 절반은 사냥(settle), 절반은 마을 일 ─────────
 // 1시간어치(효율 적용 뒤) 마을 일로 받는 것: 경험치·골드는 사냥 1시간과 비슷, 그리고 자원·코인
-export const OFFLINE_LIFE = lv => ({ exp: huntIdleExp(lv) / .7, gold: (1500 * lv + 8000) * .3 + 600, wood: 40, stone: 28, fish: 0, farm: 5 });   // 2026-11-20 낚시 코인 6 → 골드 600
+export const OFFLINE_LIFE = lv => ({ exp: huntIdleExp(lv) / .7, gold: (1500 * lv + 8000) * .3 + 1100, wood: 40, stone: 28, fish: 0, farm: 0 });   // 2026-11-20 텃밭 코인 5 → 골드 500   // 2026-11-20 낚시 코인 6 → 골드 600
 export function offlineLife(c, sec) {
   if (sec < 1) return null;
   const D = derive(c), P = OFFLINE_LIFE(c.lv), h = sec / 3600, L = c.life, got = {};

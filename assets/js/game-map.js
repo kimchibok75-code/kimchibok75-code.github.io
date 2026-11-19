@@ -377,3 +377,12 @@ export function shadowAt(now, px, py, gone = []) {
   for (const s of fishShadows(now)) { if (s.a < .3 || gone.includes(s.id)) continue; const d = Math.hypot(px / T - s.x, py / T - s.y); if (d < bd) { bd = d; best = s; } }
   return best;
 }
+// 17) 2026-11-20: 농사 랭킹판 (텃밭 창고 오른쪽 옆). 맨 마지막에 놓아서 나무·돌 번호 그대로
+{
+  const b = { id: 'farmrank', name: '농사 랭킹판', icon: '🏆', x: 67, y: 44, w: 2, h: 2 };
+  for (let k = DECO.length - 1; k >= 0; k--) { const d = DECO[k]; if (d.x >= b.x - 1 && d.x <= b.x + b.w && d.y >= b.y - 1 && d.y <= b.y + b.h) { if (tileAt(d.x, d.y) !== WATER) solid[d.y * MW + d.x] = 0; DECO.splice(k, 1); } }
+  for (const n of NODES) if (!n.off && n.x >= b.x - 1 && n.x <= b.x + b.w && n.y >= b.y - 1 && n.y <= b.y + b.h) { n.off = true; if (tileAt(n.x, n.y) !== WATER) solid[n.y * MW + n.x] = 0; }
+  b.door = { x: b.x + Math.floor(b.w / 2), y: b.y + b.h }; BUILDINGS.push(b);
+  for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) block(x, y);
+  set(b.door.x, b.door.y, PATH);
+}

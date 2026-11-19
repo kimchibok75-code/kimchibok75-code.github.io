@@ -52,6 +52,7 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .plot span { font-size: calc(28px * var(--fs)); line-height: 1.1; } .plot small { font-size: calc(12px * var(--fs)); font-weight: 700; text-shadow: 0 1px 0 rgba(0,0,0,.35); }
 .plot i { position: absolute; left: 8px; right: 8px; bottom: 5px; height: 5px; border-radius: 3px; background: linear-gradient(90deg, #8af07a var(--k), rgba(0,0,0,.25) var(--k)); }
 .plot.empty { background: #d9b48a; border-style: dashed; color: #6b4426; } .plot.empty small { text-shadow: none; }
+.plot.lock { background: #8c7a68; border-color: #5d4c3c; opacity: .75; } .plot.lock small { font-size: calc(11px * var(--fs)); }
 .plot.ready { background: #a7d86a; border-color: #4f9d3a; box-shadow: 0 0 0 3px #ffe28a; color: #234a14; } .plot.ready small { text-shadow: none; }
 .seeds { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
 .seeds button { display: grid; grid-template-columns: auto 1fr; column-gap: 6px; text-align: left; align-items: center; padding: 7px 8px; border-radius: 12px; border: 1px solid var(--line); background: #fff; font: inherit; cursor: pointer; }
@@ -1243,7 +1244,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 <script type="module">
 'use strict';
 import { FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
-  T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS,
+  T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
@@ -1385,7 +1386,8 @@ const MGS = { hat: [-23.5, -58, 47, 39], suit: [-13.5, -23.5, 27.5, 20.25], eyes
 // 채굴왕 세트 (2026-11-19, 채석장 보상): meta 'mk'
 const MKS = { hat: [-22.5, -57.75, 45.75, 34], suit: [-13.25, -23, 26.75, 18.25], eyes: [-12.5, -33.75, 25, 8.5], sword: [-10.75, -30.375, 21.375, 40.25], bow: [-8.75, -18.125, 16.5, 36.375], staff: [-13.75, -34.125, 27.625, 47] };
 const FKS = { hat: [-24.5, -55, 49.5, 28.75], suit: [-9.75, -22.25, 19.75, 17], eyes: [-12.5, -33.75, 25, 8.25], sword: [-9.5, -33, 18.75, 44.5], bow: [-10, -19.25, 18.625, 38.5], staff: [-13.25, -36, 26.875, 48.125] };
-const TSK = { ogre: ['og', OGS], magic: ['mg', MGS], fishking: ['fk', FKS], mineking: ['mk', MKS] };
+const FAS = { hat: [-23.25, -57, 46.25, 28.75], suit: [-10.25, -20.5, 21.5, 17], eyes: [-11, -35.75, 22, 11.25], sword: [-11.25, -34, 22.625, 44.125], bow: [-9, -18.875, 17.875, 37.875], staff: [-15.875, -30.25, 35.25, 42.5] };   // 2026-11-20 농사왕
+const TSK = { ogre: ['og', OGS], magic: ['mg', MGS], fishking: ['fk', FKS], mineking: ['mk', MKS], farmking: ['fa', FAS] };
 const HAT_NOHAIR = new Set();   // 늘 헤어를 숨길 모자 (2026-11-18: 비움 — 헤어는 '모자를 써도 헤어 보이기' 체크로만 정함)
 function wskParts(type, id) {
   const ts = TSK[id]; if (ts && ART[ts[0] + '-' + type]) return [imgPart(ts[0] + '-' + type, ...ts[1][type])];
@@ -1671,7 +1673,6 @@ const me = { name: '', ...newCharacter(), path: [], moving: false, seed: .3 };
 const LINES = ['안녕하세요~', '오늘 9시 방송 하나요?', '숲 늑대 너무 세요ㅠ', '카페에서 물약 사가세요', 'ㅋㅋㅋㅋ', '방금 희귀 떴다!!', '+6 강화 실패했어요…', '치복님 언제 와요?', '운 몰빵 해봤는데 골드 잘 나와요', '협곡 보스 같이 잡아요', '여기 벤치 명당이네', '굿밤~'];
 const FISH = [['🐟', '붕어'], ['🐠', '열대어'], ['🐡', '복어'], ['🦐', '새우'], ['🦀', '꽃게'], ['🐙', '문어'], ['🐢', '거북이'], ['👢', '낡은 장화']];
 const S = { zoom: 1.6, live: false, sent: [], warns: 0, muteUntil: 0, coolUntil: 0, lastMsgs: [], blocked: new Map(), log: [], barT: 0 };
-try { S.seed = localStorage.getItem('cbt-seed') || undefined; } catch {}   // 텃밭에서 마지막으로 고른 씨앗 기억
 
 // 규칙(숫자·계산식)은 assets/js/game-rules.js 에 있어요 (서버와 같이 씀)
 const derive = (c = me) => deriveOf(c);
@@ -1727,10 +1728,10 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 // ───── 사용자가 그린 그림 (텍스쳐 템플릿/내 디자인 → scripts/img-export/town-art.py → assets/img/town) ─────
 // 다 불러온 뒤에 마을을 시작함 (artReady). 못 불러온 그림은 예전 코드 그림을 그대로 씀
 const ART = {};
-const ART_N = ['b-suggest', 'b-beginner', 'b-dex', 'bench', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
+const ART_N = ['b-farmrank', 'b-suggest', 'b-beginner', 'b-dex', 'bench', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
   ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
-  ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].flatMap(n => ['mg-' + n, 'fk-' + n, 'mk-' + n]), 'ogre-bg'];
+  ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].flatMap(n => ['mg-' + n, 'fk-' + n, 'mk-' + n, 'fa-' + n]), 'ogre-bg'];
 const artReady = Promise.all(ART_N.map(n => new Promise(ok => { const im = new Image(); im.onload = () => { ART[n] = im; ok(); }; im.onerror = () => ok(); im.src = `assets/img/town/${n}.webp?v=__BUILD__`; })));
 // 그림 조각 (캐릭터 스킨용): inkDraw 안에서 테두리 없이 그림을 그림. rot = 돌리기(가운데 기준)
 // 그림 바깥 테두리 (2026-11-18): 그림 모양대로 검게 칠한 판(silOf)을 둘레 16방향으로 O만큼 밀어 그린 뒤 그 위에 그림
@@ -2148,7 +2149,7 @@ const LAB = { tower: 60, kfr: 60, cafe: 62, gacha: 100, skin: 66, hall: 86, smit
 // 그림 건물: 차지하는 칸보다 조금 넓게(비율 그대로), 아래쪽이 칸 아래 + 6px
 const BP = 4;   // 그림 테두리 여백
 const B_ALL = .9;   // 2026-11-20 사용자 요청: 모든 건물 그림 90% (벤치·분수·나무·돌·포탈은 그대로)
-const BSC = { suggest: 1.12, beginner: 1.12, dex: 1.05, farmshed: 1.3, fishshop: 1.35, tower: .62, fishrank: 1.15 };   // 2026-11-20 낚시 랭킹판   // 2026-11-18 사용자 요청: 작아 보이던 텃밭 창고 · 낚시점만 크게 / 2026-11-19 무한의 탑은 작게
+const BSC = { suggest: 1.12, beginner: 1.12, dex: 1.05, farmshed: 1.3, fishshop: 1.35, tower: .62, fishrank: 1.15, farmrank: 1.15 };   // 2026-11-20 낚시 랭킹판   // 2026-11-18 사용자 요청: 작아 보이던 텃밭 창고 · 낚시점만 크게 / 2026-11-19 무한의 탑은 작게
 // 그림 건물이 실제로 놓이는 자리 (bSprite와 같은 계산)
 // 마을회관: 집 모든 단계 금액 (i 아이콘 설명)
 function houseTierTip(lv) {
@@ -2567,48 +2568,58 @@ const BED_W = 92, BED_H = 40;
 // 텃밭 그림 자리 (월드 픽셀): 밭 칸 가운데 (56, 48)
 const FARM_SY = 1.08;   // 2026-11-18 사용자 요청: 텃밭 그림만 세로로 살짝 늘림 (두둑 자리 PLOTS도 같은 비율)
 const FARM_IMG = () => { const im = ART.farm, w = 333, h = (im ? w * im.height / im.width : 157) * FARM_SY; return { x: 56 * T - w / 2, y: 48 * T - h / 2, w, h }; };
-// 2026-11-16: 자라는 중에도 심은 작물 그림 그대로 (작게 → 크게), 선 없는 모양
-function cropPlant(x, y, k, cr, idx, now) {
-  const sway = Math.sin(now / 600 + x * .3) * .8;
-  if (k < .08) { ctx.fillStyle = '#5e3b1f'; ctx.beginPath(); ctx.ellipse(x, y, 4, 2, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#e8d6a6'; ctx.beginPath(); ctx.arc(x, y - .5, 1.2, 0, 7); ctx.fill(); return; }
-  const sz = 6 + Math.min(1, k) * 11, bob = k >= 1 ? Math.sin(now / 300 + idx) : 0;
-  ctx.fillStyle = 'rgba(60,35,15,.28)'; ctx.beginPath(); ctx.ellipse(x, y, sz * .32, sz * .12, 0, 0, 7); ctx.fill();   // 발밑 그림자
-  const im = icoImgFlat(emojiKey(cr.i));
-  if (im) ctx.drawImage(im, x + sway - sz / 2, y - sz + 1 + bob, sz, sz);
-  else { ctx.font = `${Math.round(sz)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText(cr.i, x + sway, y + bob); }
+// 2026-11-20 텃밭 개편: 무엇이 자라는지는 수확 전까지 비밀 → 새싹(0~39%) · 자라는 중 · 수확 가능(봉오리가 반짝) 세 모습만
+function cropPlant(x, y, st, k, idx, now) {
+  const sway = Math.sin(now / 600 + x * .3) * (st === 'sprout' ? .5 : 1.3), h = st === 'sprout' ? 5 + k * 10 : st === 'grow' ? 9 + k * 9 : 19;
+  const leaf = (lx, ly, a, sz, c) => { ctx.save(); ctx.translate(lx, ly); ctx.rotate(a); ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(0, -sz * .5, sz * .3, sz * .55, 0, 0, 7); ctx.fill(); ctx.restore(); };
+  ctx.fillStyle = 'rgba(60,35,15,.28)'; ctx.beginPath(); ctx.ellipse(x, y, 5 + h * .2, 2.2, 0, 0, 7); ctx.fill();   // 발밑 그림자
+  const tx = x + sway, ty = y - h;
+  ctx.strokeStyle = '#3d7d2a'; ctx.lineWidth = st === 'sprout' ? 1.6 : 2.2; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + sway * .4, y - h * .55, tx, ty); ctx.stroke();
+  if (st !== 'sprout') { const my = y - h * .5, mx = x + sway * .5; leaf(mx, my, -1.1, 8 + k * 3, '#4f9d34'); leaf(mx, my, 1.1, 8 + k * 3, '#5aae3c'); }
+  const ls = st === 'sprout' ? 4 + k * 8 : 7 + k * 3;
+  leaf(tx, ty, -.7, ls, '#6cc04a'); leaf(tx, ty, .7, ls, '#79cf55');
+  if (st === 'ready') {   // 수확 가능: 둥근 봉오리 + 반짝
+    const bob = Math.sin(now / 300 + idx) * .8;
+    ctx.fillStyle = 'rgba(255,236,140,.45)'; ctx.beginPath(); ctx.arc(tx, ty - 3 + bob, 7.5, 0, 7); ctx.fill();
+    ctx.fillStyle = '#ffcf4a'; ctx.beginPath(); ctx.arc(tx, ty - 3 + bob, 4.4, 0, 7); ctx.fill();
+    ctx.fillStyle = '#fff6c8'; ctx.beginPath(); ctx.arc(tx - 1.3, ty - 4.4 + bob, 1.4, 0, 7); ctx.fill();
+  }
 }
 function drawPlots(now) {
   const f = me.life?.farm; if (!f || me.room) return;
+  const n = farmPlots(f.hoe), t = Date.now();
   PLOTS.forEach((P, i) => {
-    const own = i < f.plots.length, p = f.plots[i], bx = P.x - BED_W / 2, by = P.y - BED_H / 2;
-    if (!own) {   // 아직 못 쓰는 칸: 흐린 점선 + 자물쇠
+    const bx = P.x - BED_W / 2, by = P.y - BED_H / 2;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (i >= n) {   // 아직 못 쓰는 칸: 흐린 점선 + 자물쇠 (호미를 올리면 열림)
       ctx.fillStyle = 'rgba(40,24,10,.28)'; rr(ctx, bx + 3, by + 6, BED_W - 6, BED_H - 12, 10); ctx.fill();
       ctx.strokeStyle = 'rgba(255,240,210,.45)'; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.6; rr(ctx, bx + 3, by + 6, BED_W - 6, BED_H - 12, 10); ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = 'rgba(255,245,225,.8)'; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; fillTextIco(ctx, '🔒', P.x, P.y + .5); return;
+      ctx.fillStyle = 'rgba(255,245,225,.85)'; ctx.font = '700 10.5px "IBM Plex Sans KR", sans-serif'; fillTextIco(ctx, `🔒 호미 Lv${plotNeed(i)}`, P.x, P.y + .5); return;
     }
-    const wet = f.wetAt + FARM.dur > Date.now();
-    if (wet) { ctx.fillStyle = 'rgba(40,24,10,.3)'; rr(ctx, bx + 3, by + 7, BED_W - 6, BED_H - 14, 10); ctx.fill(); ctx.fillStyle = 'rgba(150,210,255,.7)'; for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.arc(bx + 10 + k * 18, P.y + (k % 2 ? 7 : -7), 1.6, 0, 7); ctx.fill(); } }
-    if (!p) { ctx.fillStyle = 'rgba(255,248,230,.75)'; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('빈 밭', P.x, P.y); return; }
-    const cr = cropOf(p.c), k = Math.min(1, plotGrown(p, f, Date.now()) / cr.sec);
-    [-33, -11, 11, 33].forEach((dx, n) => cropPlant(P.x + dx, P.y + 5, k, cr, n, now));
-    if (k < 1) { ctx.fillStyle = 'rgba(31,42,58,.55)'; rr(ctx, bx + 12, P.y + 10, BED_W - 24, 5, 2.5); ctx.fill(); ctx.fillStyle = '#8af07a'; rr(ctx, bx + 13, P.y + 11, (BED_W - 26) * k, 3, 1.5); ctx.fill(); }
+    const p = f.plots[i], st = plotStage(p, t);
+    if (st === 'empty') { ctx.fillStyle = 'rgba(255,248,230,.75)'; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; ctx.fillText('빈 밭', P.x, P.y); return; }
+    const k = Math.min(1, (t - p.at) / Math.max(1, p.r - p.at));
+    [-33, -11, 11, 33].forEach((dx, m) => cropPlant(P.x + dx, P.y + 5, st, k, m, now));
+    if (st !== 'ready') { ctx.fillStyle = 'rgba(31,42,58,.55)'; rr(ctx, bx + 12, P.y + 10, BED_W - 24, 5, 2.5); ctx.fill(); ctx.fillStyle = '#8af07a'; rr(ctx, bx + 13, P.y + 11, (BED_W - 26) * k, 3, 1.5); ctx.fill(); }
     else if (Math.sin(now / 250 + i) > .6) { ctx.fillStyle = '#fff6b0'; starPath(ctx, P.x + BED_W / 2 - 6, P.y - 14, 4); ctx.fill(); }
   });
 }
-// 지도에서 두둑을 누르면: 빈 밭 → 고른 씨앗 심기 · 다 자람 → 모두 수확 · 자라는 중 → 물 주기(가능하면)
+// 그 칸을 여는 호미 단계 (화면 Lv)
+const plotNeed = i => HOES.findIndex(h => h[2] > i) + 1;
+const plotLeftS = p => Math.max(0, Math.ceil((p.r - Date.now()) / 1000));
+// 지도에서 두둑을 누르면: 빈 밭 → 빈 밭 모두 심기 · 다 자람 → 다 자란 것 모두 수확 · 자라는 중 → 남은 시간
 function plotAt(wx, wy) { const f = me.life?.farm; if (!f || me.room) return -1; return PLOTS.findIndex(P => Math.abs(wx - P.x) < BED_W / 2 && Math.abs(wy - P.y) < BED_H / 2 + 2); }
-function farmTap(i, all) {   // all: 빈 칸이면 빈 칸 모두에 심기 (자동 생활)
-  const f = LIFE().farm, P = PLOTS[i];
-  if (i >= f.plots.length) return openFarm();
+function farmTap(i) {
+  const P = PLOTS[i];
   const doIt = async () => {
-    const now = Date.now(), p = f.plots[i];
-    if (!f.seeds.includes(S.seed)) S.seed = f.seeds[0];
-    if (!p && all) { const cr = cropOf(S.seed); const j = await act('/api/farm/plantall', { crop: S.seed }); if (j) { emote(me, '🌱'); logAct(`${cr.i} ${cr.n} ${j.n}칸 심음`); } return; }
-    if (!p) { const cr = cropOf(S.seed); if (me.gold < cr.cost) return toast('골드가 모자라요'); const j = await act('/api/farm/plant', { i, crop: S.seed }); if (j) { emote(me, '🌱'); logAct(`${cr.i} ${cr.n} 심음 −${cr.cost}`); } return; }
-    if (!plotLeft(p, f, now)) return farmHarvest();
-    if (f.wetAt + FARM.cd <= now) { const j = await act('/api/farm/water', {}); if (j) { toast(`🚿 물을 줬어요! 5분 동안 ${CANS.mul[LIFE().farm.can]}배 빨리 자라요`); emote(me, '❤️'); } return; }
-    toast(`${cropOf(p.c).i} ${cropOf(p.c).n} · ${fmtLeft(plotLeft(p, f, now))} 뒤에 다 자라요`);
+    const f = LIFE().farm, p = f.plots[i], st = plotStage(p, Date.now());
+    if (i >= farmPlots(f.hoe)) return toast(`🔒 호미를 Lv${plotNeed(i)}로 올리면 열리는 밭이에요 (텃밭 창고)`);
+    if (st === 'empty') return farmPlant(null);
+    if (st === 'ready') return farmHarvest(null);
+    toast(`🌱 무엇이 자랄까요? ${fmtLeft(plotLeftS(p))} 뒤에 다 자라요`);
   };
+  if (i >= farmPlots(LIFE().farm.hoe)) return doIt();
   if (Math.hypot(me.x - P.x, me.y - (P.y + BED_H / 2 + 8)) < 60) return doIt();
   walkNear(me, P.x, P.y + BED_H / 2 + 10, doIt);
 }
@@ -2805,11 +2816,13 @@ function render(now) {
   for (const c of chars) if (vis(c.x, c.y)) list.push({ y: c.y + (c.jfly ? 600 : 0), f: () => drawChar(ctx, c.x, c.y + 6, c, clock + (c.seed || 0)) });   // 더블 점프로 건물 위를 나는 중이면 건물보다 앞에
   for (const p of NPC.list) if (vis(p.x, p.y)) list.push({ y: p.y, f: () => drawChar(ctx, p.x, p.y + 6, p, clock + p.seed) });
   if (vis(KC.x, KC.y)) list.push({ y: KC.y, f: () => drawChar(ctx, KC.x, KC.y + 6, KC, clock + KC.seed) });   // 낚시왕 김참치
+  if (vis(SM.x, SM.y)) list.push({ y: SM.y, f: () => drawChar(ctx, SM.x, SM.y + 6, SM, clock + SM.seed) });   // 농사왕 심어라
   list.sort((a, b) => a.y - b.y).forEach(o => o.f());
   drawTownAtk();
   drawTool(); drawRods(chars.filter(c => vis(c.x, c.y)), now);
   for (const p of NPC.list) if (vis(p.x, p.y)) npcTag(p, now);
   if (vis(KC.x, KC.y)) kcTag(now);
+  if (vis(SM.x, SM.y)) smTag(now);
   for (const c of chars) if (vis(c.x, c.y)) nameTag(c, now);
   drawSpaceHint(now);   // 이름표·말풍선보다 위에
   drawTownFloats();
@@ -4700,7 +4713,7 @@ function guestBye(g, now) {   // 손님 돌아감: 원래 자리로
   if (now) { p.path = []; p.moving = false; } walkNear(p, p.hx, p.hy);
 }
 function npcTick(dt) {
-  npcSync(); guestTick(); kcTick(dt);
+  npcSync(); guestTick(); kcTick(dt); smTick(dt);
   for (const p of NPC.list) {
     stepChar(p, dt);
     if (p.guest) continue;   // 카페 손님 노릇 중
@@ -4744,7 +4757,7 @@ async function openNpc(p) {
   }
   npcSheet(p);
 }
-const NPC_WHERE = { fish: '물가를 누르면 낚시해요', wood: '벌목 숲의 나무를 누르세요', stone: '채굴 언덕의 바위를 누르세요', crops: '텃밭에서 다 자란 작물을 거둬요', water: '텃밭에서 물을 줘요', wish: '광장 분수를 누르세요', job: '카페에서 알바를 해요', gacha: '가챠센터에서 장비를 뽑아요', talk: '그 주민을 찾아가서 누르면 돼요 (머리 위 💌)' };
+const NPC_WHERE = { fish: '물가를 누르면 낚시해요', wood: '벌목 숲의 나무를 누르세요', stone: '채굴 언덕의 바위를 누르세요', crops: '텃밭에서 다 자란 작물을 거둬요', water: '텃밭에서 물을 줘요', plant: '텃밭 두둑을 눌러 씨앗을 심어요', wish: '광장 분수를 누르세요', job: '카페에서 알바를 해요', gacha: '가챠센터에서 장비를 뽑아요', talk: '그 주민을 찾아가서 누르면 돼요 (머리 위 💌)' };
 function npcSheet(p, said) {
   const q = npcQ(p.i), t = p.task, st = me.life?.npc, n = st && st.blk === NPC.blk ? npcActive(st) : 0, prog = q ? Math.min(t.v, npcProg(me, q, t)) : 0, done = npcDone(p);
   let line, btns;
@@ -4752,7 +4765,7 @@ function npcSheet(p, said) {
   else if (q.s === 1) { line = `${t.thx} 다음에 또 놀러 와요~`; btns = '<button class="btn main" data-close>잘 있어요!</button>'; }
   else if (done) { line = '벌써 다 했어요? 정말 고마워요! 이건 제 작은 성의예요.'; btns = '<button class="btn main" data-x="done">🎁 보상 받기</button>'; }
   else { line = t.k === 'talk' ? `${NPC.list[t.to]?.name || ''}에게 안부 전하는 거, 잊지 말아 주세요!` : '천천히 해도 괜찮아요~ 기다리고 있을게요.'; btns = '<button class="btn" data-x="drop">포기하기</button><button class="btn main" data-close>알겠어요</button>'; }
-  const rew = `${goldTxt(npcGold(me.lv))} · ✨ ${npcExp(me.lv).toLocaleString()} · 🌻 1~2`;
+  const rew = `${goldTxt(npcGold(me.lv) + 150)} · ✨ ${npcExp(me.lv).toLocaleString()}`;
   openModal(`<div class="npcd"><canvas id="npcPic"></canvas><div><b>${esc(p.name)}</b><p class="npcsay">${esc(said || line)}</p></div></div>
     <div class="npcq"><span class="qn">${t.i} ${esc(t.n)}</span>${q && q.s === 0 ? `<small>진행 ${prog} / ${t.v}</small>${bar(prog, t.v, done ? 'ok' : '')}` : ''}<small>보상: ${rew}</small>${q?.s === 1 ? '' : `<small>💡 ${NPC_WHERE[t.k] || ''}</small>`}</div>
     ${!q && n >= NPC_MAX ? `<p class="muted">임무는 한 번에 ${NPC_MAX}개까지 받을 수 있어요. 하던 임무를 먼저 끝내 주세요.</p>` : ''}
@@ -4766,7 +4779,7 @@ function npcSheet(p, said) {
       if (x === 'done') {
         const j = await act('/api/npc/done', { i: p.i }); if (!j) return;
         const d = j.npcDone; sfx('coin'); emote(me, '🎉'); say(p, t.thx, 4000);
-        toast(`📜 임무 완료! ${goldTxt(d.gold)} · ${d.ck === 'fish' ? '🐚' : '🌻'} +${d.coin}`); sysMsg(`📜 ${p.name}의 임무 완료: ${t.n} (+${d.gold.toLocaleString()} 골드)`); logAct(`임무 완료: ${t.n}`);
+        toast(`📜 임무 완료! ${goldTxt(d.gold)}`); sysMsg(`📜 ${p.name}의 임무 완료: ${t.n} (+${d.gold.toLocaleString()} 골드)`); logAct(`임무 완료: ${t.n}`);
         closeModal(); renderQuests(); return;
       }
       if (x === 'drop') {
@@ -4886,7 +4899,7 @@ function spend(n) { if (me.gold < n) { toast('골드가 부족해요'); return f
 //  · 점진적 공개 · 밀러의 법칙: 긴 설명은 접은 '도움말'에, 화면에는 한 줄 소개 + 숫자 꼬리표만
 //  · 상태 보이기: 진행 막대, 모자란 재료는 빨간 꼬리표에 '얼마 모자란지'까지
 //  · 일관성(제이콥의 법칙): 모든 건물이 같은 순서 — 머리 → 지갑 → 탭 → 내용 → 도움말 → 주 버튼
-const BC = { suggest: '#d0743a', beginner: '#3f9a4a', dex: '#8a5bd0', tower: '#7b6fd6', kfr: '#d9472b', raid: '#c0392b', cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', fishrank: '#1f7fa8', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a', fountain: '#3f8fd0' };
+const BC = { suggest: '#d0743a', beginner: '#3f9a4a', dex: '#8a5bd0', tower: '#7b6fd6', kfr: '#d9472b', raid: '#c0392b', cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', fishrank: '#1f7fa8', farmrank: '#5a9a2e', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a', fountain: '#3f8fd0' };
 S.btab = {}; S.bhelp = {};
 const WAL = { gold: () => ['🪙', me.gold], wood: () => [RES.wood.i, LIFE().res.wood], stone: () => [RES.stone.i, LIFE().res.stone], fish: () => [COIN.fish[0], LIFE().coins.fish], farm: () => [COIN.farm[0], LIFE().coins.farm] };
 const fmtN = n => Math.floor(n || 0).toLocaleString();
@@ -4929,6 +4942,7 @@ function openBuilding(b, keep) {
   if (id === 'hall') return hallSheet(b, keep);
   if (id === 'fishshop') return fishShop(b, keep);
   if (id === 'fishrank') return fishRankSheet(b, keep);
+  if (id === 'farmrank') return farmRankSheet(b, keep);
   if (id === 'dex') return dexSheet(b, keep);
   if (id === 'suggest') return suggestSheet(b, keep);
   if (id === 'beginner') return beginnerSheet(b, keep);
@@ -5365,7 +5379,7 @@ function itipShow(t, on) {
 document.addEventListener('click', e => { const t = e.target.closest?.('.itip'); if (t) { e.stopPropagation(); itipShow(t, !t.classList.contains('on')); } else itipShow(null); }, true);
 document.addEventListener('click', e => { const b = e.target.closest('button, .gcard, [data-x], [data-a]'); if (b && !b.disabled && !b.closest('[data-close], .close')) sfx('click'); }, true);
 // 서버 버튼(act)이 성공했을 때 소리
-const ACT_SND = [[/house\/(build|up)/, 'build'], [/(collect|job\/finish|sell|claim)/, 'coin'], [/(skin|pots|shop|pack|hire|unlock|farm\/can|farm\/plot|title)/, 'buy'], [/farm\/(plant|plantall)/, 'plant'], [/farm\/water/, 'water'], [/farm\/harvest/, 'harvest'], [/village\/give|wish/, 'coin'], [/equip|unequip|preset|stats/, 'pop']];
+const ACT_SND = [[/house\/(build|up)/, 'build'], [/(collect|job\/finish|sell|claim)/, 'coin'], [/(skin|pots|shop|pack|hire|unlock|title)/, 'buy'], [/farm\/plant/, 'plant'], [/farm\/water/, 'water'], [/farm\/harvest/, 'harvest'], [/village\/give|wish/, 'coin'], [/equip|unequip|preset|stats/, 'pop']];
 const actSnd = path => { for (const [re, k] of ACT_SND) if (re.test(path)) return sfx(k); };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 function addChat(m) {
@@ -5737,6 +5751,7 @@ function applyMe(m, keep) {   // keep: 지금 위치 그대로 (서버 저장 �
 // 서버 응답 처리: 내 정보 맞추기 + 사냥 결과 알려 주기
 function took(j) {
   if (j.fishCoin) toast(`🐚 남은 낚시 코인을 골드로 바꿨어요 (+${j.fishCoin.toLocaleString()})`);   // 2026-11-20 낚시 코인 없앰
+  if (j.farmCoin) toast(`🌱 남은 텃밭 코인을 골드로 바꿨어요 (+${j.farmCoin.toLocaleString()})`);   // 2026-11-20 텃밭 개편: 텃밭 코인 없앰
   if (j.auto && !$('#app').hidden) {
     const a = j.auto, parts = [['exp', '✨'], ['wood', '🪵'], ['stone', '🪨'], ['gold', '🪙'], ['fish', '🐚'], ['farm', '🌻']].filter(([k]) => a[k]).map(([k, i]) => `${i} +${a[k].toLocaleString()}`);
     if (parts.length) { townFloat(me.x, me.y - 70, parts.slice(0, 3).join(' '), '#ffe9a8'); if (a.sec >= 600) sysMsg(`🧺 자리 비운 동안 자동 생활: ${parts.join(' · ')}`); else logAct(`자동 생활 ${parts.join(' ')}`); }
@@ -6127,6 +6142,46 @@ function kcTag(now) {
   ctx.fillStyle = '#fff'; ctx.fillText(p.name, p.x, p.y - 57.5);
   if (p.bubble && p.bubble.until > now) bubbleAt(p.x, p.y - 68, p.bubble.text);
 }
+// ───────── 🌾 농사왕 심어라 (2026-11-20): 텃밭 창고 앞(밭 쪽)에 서 있는 주민. 말은 못 걸고 농사 이야기를 혼자 중얼거림. 농사왕 세트를 다 입음 ─────────
+const SM_SINCE = Date.UTC(2026, 10, 20, 9);
+const SM = (() => { const [dx, dy] = door('farmshed');
+  return { kc: true, name: '🌾 농사왕 심어라', x: dx - 1.6 * T, y: dy + .2 * T, dir: -1, seed: 2.9, sit: -1, path: [], moving: false, face: FACES[1], body: BODIES[3], eyes: 'farmking', hat: 'farmking', hatHair: false, hair: 'short', hairC: HAIR_COLORS[2] || HAIR_COLORS[0],
+    suit: 'farmking', wsk: { sword: 'farmking', bow: 'farmking', staff: 'farmking' }, cls: 'staff', equip: {}, enh: {}, lv: 99, next: 5, bubble: null }; })();
+const SM_LINES = () => {
+  const h = Math.max(1, Math.floor((Date.now() - SM_SINCE) / 3600e3)), L = LIFE(), f = L?.farm, hv = L?.cnt?.crops || 0, nh = f && f.hoe < 9 ? HOES[f.hoe + 1] : null, nf = f && f.fert < 9 ? FERTS[f.fert + 1] : null;
+  return [
+    '씨앗은 딱 하나, 수수께끼 씨앗이지. 무엇이 나올지는 뽑아 봐야 안다네!',
+    '심어라, 심어라, 또 심어라! 빈 밭은 농부의 수치야.',
+    '잎만 봐서는 몰라. 무 같아도 황금 당근일 수 있거든. 흐흐.',
+    nh ? `자네 다음 호미는 ${nh[0]}이군. 수확을 ${fmtN(nh[5])}번은 해야 할 걸세. (지금 ${fmtN(hv)}번)` : '전설의 호미라니… 이제 나랑 맞먹는구먼!',
+    nf ? `비료를 ${nf[0]}(으)로 바꾸면 희귀한 녀석들이 더 잘 나오지.` : '최고급 비료라… 자네 밭에선 전설도 심심찮게 나오겠어.',
+    '호미가 좋아야 밭이 넓어지고, 무거운 작물도 캘 수 있어.',
+    '작물은 가방에 모였다가 창고에서 팔아야 돈이 된다네. 가방이 꽉 차면 수확을 못 해!',
+    '무거울수록 값이 나가. 같은 수박이라도 큰 놈이 훨씬 비싸지.',
+    '전설 작물은 호미랑 비료가 둘 다 좋아야 얼굴을 보여 줘.',
+    '세계수의 열매… 평생 한 번 볼까 말까 한 물건이야.',
+    '도감 센터에 가 봤나? 작물을 5종 모을 때마다 힘이 생긴다네.',
+    '수확한 작물은 뱃지로도 달 수 있지. 나는 황금 당근 뱃지가 탐나.',
+    '이 밀짚모자? 농사왕 세트지. 창고 농사왕 탭에서 목표를 이루면 하나씩 준다네.',
+    '옆에 농사 랭킹판 봤나? 내 이름은… 아직 없더군. 허허.',
+    `내가 여기 얼마나 서 있었더라… ${h >= 48 ? `${Math.floor(h / 24)}일` : `${h}시간`}째인가?`,
+    '저 낚시꾼 김참치 영감은 물고기 얘기만 해. 땅을 알아야지, 땅을!',
+  ];
+};
+function smTick(dt) {
+  if (me.room || HT) return;
+  const near = Math.hypot(me.x - SM.x, me.y - SM.y) < 9 * T;
+  if (near && Math.abs(me.x - SM.x) > 8) SM.dir = me.x < SM.x ? -1 : 1;
+  if ((SM.next -= dt) > 0 || !near) return;
+  SM.next = 7 + Math.random() * 8; say(SM, pickOne(SM_LINES()), 4800);
+}
+function smTag(now) {
+  const p = SM; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '700 11.5px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(p.name).width + 12;
+  ctx.fillStyle = 'rgba(78,138,40,.95)'; rr(ctx, p.x - tw / 2, p.y - 66, tw, 17, 8.5); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.fillText(p.name, p.x, p.y - 57.5);
+  if (p.bubble && p.bubble.until > now) bubbleAt(p.x, p.y - 68, p.bubble.text);
+}
 // 바로가기: [아이콘, 이름, x, y]. 2026-11-17 이름만 짧게 (한 화면에 다 들어오게)
 const PLACES = [['⛲', '광장', START.x, START.y], ['🏛️', '마을회관', ...door('hall')], ['🌀', '사냥', BACK.x, BACK.y],
   ['🎰', '가챠', ...door('gacha')], ['🔨', '강화', ...door('smith')], ['👕', '스킨', ...door('skin')], ['☕', '카페', ...door('cafe')], ['🪝', '낚시', ...door('fishshop')], ['📖', '도감', ...door('dex')],
@@ -6180,7 +6235,7 @@ function busyToast() { if (performance.now() - busyT < 1500) return; busyT = per
 const BUSY_PACE = { t: 0 };
 // ───────── 자동 생활 (2026-11-17 새로 만듦): 진짜로 걸어가서 직접 함 ─────────
 // 손으로 하는 것과 똑같은 기능을 그대로 씀 → 서버도 손으로 한 것과 똑같이 셈 (시간으로 계산해 주는 것 없음, 화면을 켜 둔 동안만)
-//   텃밭: 다 자라면 수확 · 빈 칸은 고른 씨앗 심기 · 물 줄 수 있으면 물 주기 (가장 먼저)
+//   텃밭: 다 자라면 모두 수확 · 빈 칸은 모두 심기 (가장 먼저, 씨앗은 무료)
 //   그다음 차례대로: 🌳 나무 베기(3~5그루) → 🪨 바위 캐기(3~5개) → 🎣 강 낚시(5~8번) → 🌊 바다 낚시(5~8번) → 🚶 산책·인사
 const AU = { on: false, mode: '', left: 0, wait: 0, i: -1, bad: new Set(), farmT: 0, water: null, walkT: 0 };
 try { AU.on = localStorage.getItem('cbt-auto') === '1'; } catch {}
@@ -6199,14 +6254,11 @@ function auWater(sea) {   // 강(또는 바다) 낚시터 근처에서 던질 �
   }
   return best;
 }
-function auFarm(now) {   // 텃밭 할 일 (칸 번호와 할 일) — 없으면 null
+function auFarm(now) {   // 텃밭 할 일이 있는 칸 번호 — 없으면 null (두둑을 누르면 모두 수확 / 모두 심기)
   const f = LIFE()?.farm; if (!f) return null;
-  if (!f.seeds.includes(S.seed)) S.seed = f.seeds[0];
-  const ripe = f.plots.findIndex(p => p && !plotLeft(p, f, now)); if (ripe >= 0) return ripe;
-  const cr = cropOf(S.seed), empty = f.plots.findIndex(p => !p);
-  if (empty >= 0 && cr && me.gold >= cr.cost * 3) return empty;   // 씨앗값의 3배는 남겨 둠
-  if (f.wetAt + FARM.cd <= now) { const g = f.plots.findIndex(p => p && plotLeft(p, f, now) > 60); if (g >= 0) return g; }
-  return null;
+  const n = farmPlots(f.hoe), t = Date.now();
+  const ripe = f.plots.findIndex((p, i) => i < n && plotStage(p, t) === 'ready'); if (ripe >= 0 && cropBagL().length < FARM.bag) return ripe;
+  const empty = f.plots.findIndex((p, i) => i < n && !p); return empty >= 0 ? empty : null;
 }
 function auNext() {
   AU.i = (AU.i + 1) % AU_SEQ.length; AU.mode = AU_SEQ[AU.i];
@@ -6221,8 +6273,8 @@ function autoPace(dt) {
   if (AU.walked) { AU.walked = false; AU.wait = 1.2; return; }   // 막 도착: 도착해서 한 일(서버 응답)을 기다림 (같은 일을 두 번 하지 않게)
   const now = Date.now();
   // 1) 텃밭이 먼저: 할 일이 있으면 몰아서 다 함 (같은 칸·같은 일은 6초 안에 다시 안 함)
-  { const i = auFarm(now), f = LIFE()?.farm, key = i === null ? '' : `${i}:${f.plots[i]?.c || '-'}:${f.wetAt}`;
-    if (i !== null && (key !== AU.fk || now >= AU.farmT)) { if (AU.fk === '' || !AU.fk) say(me, pick(AU_SAY.farm), 1800); AU.fk = key; AU.farmT = now + 6000; farmTap(i, true); AU.wait = .6; return; }
+  { const i = auFarm(now), f = LIFE()?.farm, key = i === null ? '' : `${i}:${f.plots[i]?.at || '-'}`;
+    if (i !== null && (key !== AU.fk || now >= AU.farmT)) { if (AU.fk === '' || !AU.fk) say(me, pick(AU_SAY.farm), 1800); AU.fk = key; AU.farmT = now + 6000; farmTap(i); AU.wait = .6; return; }
     if (i === null) AU.fk = ''; }
   if (!AU.mode || AU.left <= 0) auNext();
   const m = AU.mode;
@@ -6315,7 +6367,7 @@ function renderWallet() {
   const fb = L.fbag || [];   // 2026-11-20 물고기 가방 (팔기는 낚시점에서)
   $('#fbagN').textContent = `${fb.length} / ${FISH_BAG} · 낚시점에서 팔아요`;
   $('#fbagList').innerHTML = fb.length ? [...fb].sort((a, b) => b.p - a.p).map(f => { const d = FISH_BY[f.id] || { n: '?', grade: 'normal' }; return `<button type="button" class="fcard" data-fk="${f.k}" style="--gc:${FISH_GRADES[d.grade].c}">${fishPic(d)}<b>${esc(d.n)}</b><small>${fmtCm(f.len)}</small><em>🪙 ${fmtN(f.p)}</em></button>`; }).join('') : '<p class="muted">비었어요. 물가를 눌러 낚시해 보세요!</p>';
-  $('#wallet').innerHTML = [['🪙', '골드', me.gold], [COIN.farm[0], COIN.farm[1], L.coins.farm], [RES.wood.i, RES.wood.n, L.res.wood], [RES.stone.i, RES.stone.n, L.res.stone]]
+  $('#wallet').innerHTML = [['🪙', '골드', me.gold], [RES.wood.i, RES.wood.n, L.res.wood], [RES.stone.i, RES.stone.n, L.res.stone]]
     .map(([i, n, v]) => `<div><span class="wi">${i}</span><small>${n}</small><b>${v.toLocaleString()}</b></div>`).join('');
 }
 
@@ -6405,71 +6457,148 @@ function workSheet(b, keep) {
     }, keep);
 }
 
-// ───────── 텃밭 ─────────
-function plotLeft(p, f, now) {   // 다 자랄 때까지 남은 실제 초 (물 준 효과 포함)
-  const need = cropOf(p.c).sec - plotGrown(p, f, now); if (need <= 0) return 0;
-  const wet = Math.max(0, (f.wetAt + FARM.dur - now) / 1000), fast = Math.min(wet, need / f.wetM);
-  return Math.ceil(fast + (need - fast * f.wetM));
-}
-// 작물 정보: 줄글 대신 작은 꼬리표 (자라는 시간 · 씨앗 값 · 수확 값 · 코인)
 const durTxt = s => (s >= 3600 ? `${Math.floor(s / 3600)}시간${s % 3600 >= 60 ? ` ${Math.floor(s % 3600 / 60)}분` : ''}` : s >= 60 ? `${Math.floor(s / 60)}분${s % 60 ? ` ${s % 60}초` : ''}` : `${s}초`);
-const cropTags = c => `<span class="ctags"><em title="자라는 시간">⏱️ ${durTxt(c.sec)}</em><em title="씨앗 값">씨 🪙 ${c.cost.toLocaleString()}</em><em class="g" title="수확하면 받는 골드">수확 🪙 ${c.sell.toLocaleString()}</em><em class="g" title="수확하면 받는 텃밭 코인">${COIN.farm[0]} ${c.coin}</em></span>`;
+// ───────── 🌱 텃밭 창고 (2026-11-20 개편): 🌱 밭 · 💰 팔기 · 🛒 호미·비료 · 👑 농사왕 ─────────
+const FM = { sel: new Set() };
+const cropBagL = () => LIFE()?.farm?.bag || [];
+const CIMG = {};
+const cropImgC = id => { if (!CROP_BY[id]?.img) return null; let im = CIMG[id]; if (!im) { im = CIMG[id] = new Image(); im.src = `assets/img/crop/${id}.webp?v=__BUILD__`; } return im.complete && im.naturalWidth ? im : null; };
+const cropPic = (x, cls = '') => (x?.img ? `<img class="fpic ${cls}" src="assets/img/crop/${x.id}.webp?v=__BUILD__" alt="">` : `<span class="fpic emo ${cls}">${x?.i || '🌱'}</span>`);
+const cropText = (x, g, big) => `${x.i} ${cropW(g)}짜리 ${x.n}${x.grade !== 'normal' ? `(${fgOf(x.grade).n})` : ''}${big ? ' 왕 큰 것!' : ''}`;
+const fmTabs = () => { const f = LIFE().farm, t = Date.now(), r = f.plots.filter((p, i) => i < farmPlots(f.hoe) && plotStage(p, t) === 'ready').length;
+  return [['field', '🌱 밭', r || ''], ['sell', '💰 팔기', cropBagL().length || ''], ['shop', '🛒 호미·비료'], ['king', '👑 농사왕', kReady(KINGS.farm) ? '!' : '']]; };
+const goFarm = () => { closeModal(); teleport(...door('farmshed')); toast('🌱 텃밭 두둑을 누르면 심고 · 수확해요'); };
 function openFarm(keep) {
   if (HT) return;
+  const b = BUILDINGS.find(x => x.id === 'farmshed') || { id: 'farmshed', icon: '🧺', name: '텃밭 창고' };
   reopen = () => openFarm(true);
-  const b = { id: 'farmshed', icon: '🌾', name: '내 텃밭' };
-  const L = LIFE(), f = L.farm, now = Date.now(), wet = Math.max(0, Math.ceil((f.wetAt + FARM.dur - now) / 1000)), cd = Math.max(0, Math.ceil((f.wetAt + FARM.cd - now) / 1000));
-  if (!f.seeds.includes(S.seed)) S.seed = f.seeds[0];
-  const tab = btab('farmshed', 'field', ['field', 'seed', 'shop']);
-  const ready = f.plots.filter(p => p && !plotLeft(p, f, now)).length, empty = f.plots.filter(p => !p).length, cr = cropOf(S.seed), any = f.plots.some(Boolean);
-  const locked = CROPS.filter(c => !f.seeds.includes(c.id)), nextPlot = f.plots.length < FARM.maxPlots ? FARM.plotCost[f.plots.length - 6] : null, canNext = f.can < CANS.cost.length;
-  let body = '', foot = '';
-  if (tab === 'field') {
-    const cells = f.plots.map((p, i) => {
-      if (!p) return `<button class="plot empty" data-x="p:${i}"><span>➕</span><small>심기</small></button>`;
-      const c = cropOf(p.c), left = plotLeft(p, f, now), k = Math.min(1, plotGrown(p, f, now) / c.sec);
-      return left ? `<button class="plot" data-x="p:${i}"><span style="opacity:${.45 + k * .55}">${k < .3 ? '🌱' : c.i}</span><i style="--k:${k * 100}%"></i><small>${fmtLeft(left)}</small></button>`
-        : `<button class="plot ready" data-x="p:${i}"><span>${c.i}</span><small>수확!</small></button>`;
-    }).join('');
-    body = `<div class="cs" style="margin:0">${wet ? chip(`💧 빨리 자라는 중 · ${fmtLeft(wet)}`, 'up') : chip('💧 물 안 준 상태')}${chip(`🚿 ${CANS.names[f.can]} · ${CANS.mul[f.can]}배`)}</div>
+  const tab = btab('farmshed', 'field', ['field', 'sell', 'shop', 'king']);
+  if (tab === 'king') return kingSheet(b, keep, KINGS.farm, fmTabs(), () => openFarm(true), '/api/farm/king', ['gofarm', '🌱 텃밭으로 가기']);
+  if (tab === 'sell') return farmSell(b, keep);
+  if (tab === 'shop') return farmShop(b, keep);
+  const L = LIFE(), f = L.farm, t = Date.now(), n = farmPlots(f.hoe), bag = cropBagL();
+  let ready = 0, empty = 0;
+  const cells = PLOTS.map((_, i) => {
+    if (i >= n) return `<button class="plot lock" data-x="lk:${i}"><span>🔒</span><small>호미 Lv${plotNeed(i)}</small></button>`;
+    const p = f.plots[i], st = plotStage(p, t);
+    if (st === 'empty') { empty++; return `<button class="plot empty" data-x="p:${i}"><span>➕</span><small>심기</small></button>`; }
+    if (st === 'ready') { ready++; return `<button class="plot ready" data-x="p:${i}"><span>🎁</span><small>수확!</small></button>`; }
+    const k = Math.min(1, (t - p.at) / Math.max(1, p.r - p.at));
+    return `<button class="plot" data-x="p:${i}"><span>${st === 'sprout' ? '🌱' : '🌿'}</span><i style="--k:${k * 100}%"></i><small>${fmtLeft(plotLeftS(p))}</small></button>`;
+  }).join('');
+  const full = bag.length >= FARM.bag;
+  bsOpen(b, { tag: '수수께끼 씨앗을 심고 · 수확해요', wal: ['gold'], tabs: fmTabs(), tab: 'field', live: true,
+    body: `<div class="bs-card hero"><div class="cs">${chip(`🌱 수수께끼 씨앗 · 무료`, 'up')}${chip(`⛏️ ${HOES[f.hoe][0]} Lv${f.hoe + 1}`)}${chip(`🧪 ${FERTS[f.fert][0]} Lv${f.fert + 1}`)}${chip(`🎒 작물 가방 ${bag.length}/${FARM.bag}`, full ? 'bad' : '')}${chip(`🌾 누적 수확 ${fmtN(L.cnt.crops || 0)}번`)}</div></div>
       <div class="plots">${cells}</div>
-      <button class="bs-seedpick" type="button" data-x="tab:seed"><span>${cr.i}</span><div><small>심을 씨앗</small><b>${cr.n}</b></div>${cropTags(cr)}<em>바꾸기 ›</em></button>`;
-    foot = `<div class="bs-three">${bbtn('water', '🚿 물 주기', cd ? `${fmtLeft(cd)} 뒤` : `${CANS.mul[f.can]}배 · 5분`, { main: !cd && !ready && any, dis: cd || !any })}${bbtn('harvest', '🧺 수확', `${ready}칸`, { main: !!ready, dis: !ready })}${bbtn('plantall', `${cr.i} 심기`, `빈 칸 ${empty} · 🪙 ${fmtN(cr.cost * empty)}`, { dis: !(empty && me.gold >= cr.cost) })}</div>`;
-  } else if (tab === 'seed') {
-    body = `<p class="muted">고르면 밭으로 돌아가요. 빈 칸이나 마을 텃밭 두둑을 누르면 이 씨앗을 심어요.</p>
-      <div class="seeds">${f.seeds.map(id => { const c = cropOf(id); return `<button type="button" data-x="seed:${id}" aria-pressed="${S.seed === id}"><span>${c.i}</span><b>${c.n}</b>${cropTags(c)}</button>`; }).join('')}</div>`;
-  } else {
-    const srow = (ic, t, cs, x, cost) => `<li class="bs-row"><span class="bs-ri">${ic}</span><div><b class="t">${t}</b>${cs}</div><div class="bs-act">${bbtn(x, '사기', coinTxt('farm', cost), { main: true, dis: L.coins.farm < cost })}</div></li>`;
-    const rows = [...locked.map(c => srow(c.i, `${c.n} 품종 열기`, cropTags(c), `unlock:${c.id}`, c.unlock)),
-      canNext ? srow('🚿', CANS.names[f.can + 1], `<div class="cs">${chip(`물 효과 ${CANS.mul[f.can]}배 → <b>${CANS.mul[f.can + 1]}배</b>`, 'up')}</div>`, 'can', CANS.cost[f.can]) : '',
-      nextPlot != null ? srow('🟫', '밭 한 칸 늘리기', `<div class="cs">${chip(`${f.plots.length}칸 → <b>${f.plots.length + 1}칸</b>`, 'up')}${chip(`최대 ${FARM.maxPlots}칸`)}</div>`, 'plot', nextPlot) : ''].join('');
-    body = rows ? `<ul class="bs-list">${rows}</ul>` : '<p class="muted">모두 샀어요! 🎉</p>';
-  }
-  bsOpen(b, { tag: '심고 · 물 주고 · 수확해요', wal: ['gold', 'farm'], tabs: [['field', '🌱 밭', ready || ''], ['seed', '🌰 씨앗'], ['shop', `${COIN.farm[0]} 상점`]], tab, live: tab === 'field', body, foot,
-    help: `<p>씨앗을 심으면 시간이 지나 자라요. 화면을 닫아도 계속 자라요.</p><p><b>물을 주면 5분 동안 ${CANS.mul[f.can]}배</b> 빨리 자라요 (물은 5분에 한 번).</p><p>수확하면 골드와 <b>${COIN.farm[1]}</b>을 받아요. 코인으로 새 품종 · 물뿌리개 · 밭 칸을 사요.</p><p>마을 텃밭의 두둑을 직접 눌러도 심기 · 물 주기 · 수확이 돼요.</p>` },
+      <p class="muted" style="text-align:center;margin:4px 0 0">무엇이 자랄지는 수확할 때 알 수 있어요!</p>`,
+    help: `<p>씨앗은 <b>수수께끼 씨앗 하나</b>뿐이에요. 무료로 얼마든지 심어요.</p><p>심는 순간 무엇이 자랄지 정해지지만, <b>수확할 때까지 비밀</b>이에요. 1~2분이면 자라요 (호미가 좋을수록 빨리).</p>
+      <p>수확한 작물은 🎒 작물 가방(최대 ${FARM.bag}개)에 들어가요. <b>💰 팔기</b> 탭에서 팔아야 골드가 돼요.</p><p><b>호미</b>: 밭 칸 · 큰 작물 · 빨리 자람 / <b>비료</b>: 희귀 · 전설 작물이 잘 나옴.</p><p>마을 텃밭 두둑을 눌러도 빈 밭 모두 심기 · 다 자란 것 모두 수확이 돼요.</p>`,
+    foot: `<div class="bs-two">${bbtn('plantall', '🌱 전체 심기', `빈 밭 ${empty}칸`, { main: !ready && !!empty, dis: !empty })}${bbtn('harvestall', '🧺 전체 수확', full ? '가방이 꽉 찼어요' : `${ready}칸`, { main: !!ready, dis: !ready || full })}</div>` },
     async x => {
       const [a, v] = x.split(':');
-      if (a === 'tab') { S.btab.farmshed = v; reopen?.(); sheet.scrollTop = 0; return; }
-      if (a === 'seed') { S.seed = v; try { localStorage.setItem('cbt-seed', v); } catch {} S.btab.farmshed = 'field'; toast(`${cropOf(v).i} ${cropOf(v).n}을(를) 골랐어요`); reopen?.(); sheet.scrollTop = 0; return; }
-      if (a === 'p') {
-        const p = f.plots[+v];
-        if (!p) { const j = await act('/api/farm/plant', { i: +v, crop: S.seed }); if (j) { logAct(`${cr.i} ${cr.n} 심음 −${cr.cost}`); reopen?.(); } return; }
-        if (!plotLeft(p, f, Date.now())) return farmHarvest();
-        return toast(`${cropOf(p.c).i} ${cropOf(p.c).n} · ${fmtLeft(plotLeft(p, f, Date.now()))} 뒤에 다 자라요${cd ? '' : ' (물을 주면 더 빨리!)'}`);
-      }
-      if (a === 'water') { const j = await act('/api/farm/water', {}); if (j) { toast(`🚿 물을 줬어요! 5분 동안 ${CANS.mul[LIFE().farm.can]}배 빨리 자라요`); emote(me, '❤️'); reopen?.(); } }
-      if (a === 'harvest') return farmHarvest();
-      if (a === 'plantall') { const j = await act('/api/farm/plantall', { crop: S.seed }); if (j) { toast(`🌱 ${j.n}칸에 ${cr.n}을(를) 심었어요`); logAct(`${cr.n} ${j.n}칸 심음`); reopen?.(); } }
-      if (a === 'unlock') { const j = await act('/api/farm/unlock', { crop: v }); if (j) { S.seed = v; toast(`${cropOf(v).i} ${cropOf(v).n} 품종을 열었어요!`); reopen?.(); } }
-      if (a === 'can') { const j = await act('/api/farm/can', {}); if (j) { toast(`🚿 ${CANS.names[LIFE().farm.can]}!`); emote(me, '🎉'); reopen?.(); } }
-      if (a === 'plot') { const j = await act('/api/farm/plot', {}); if (j) { toast('🟫 텃밭이 한 칸 늘었어요'); reopen?.(); } }
+      if (a === 'lk') return toast(`🔒 호미를 Lv${plotNeed(+v)}로 올리면 열려요 (🛒 호미·비료 탭)`);
+      if (a === 'p') { const p = LIFE().farm.plots[+v], st = plotStage(p, Date.now());
+        if (st === 'empty') return farmPlant(+v); if (st === 'ready') return farmHarvest(+v);
+        return toast(`🌱 무엇이 자랄까요? ${fmtLeft(plotLeftS(p))} 뒤에 다 자라요`); }
+      if (a === 'plantall') return farmPlant(null);
+      if (a === 'harvestall') return farmHarvest(null);
     }, keep);
 }
-async function farmHarvest() {
-  const j = await act('/api/farm/harvest', {}); if (!j) return;
-  const ic = [...new Set(j.got.map(id => cropOf(id).i))].join('');
-  toast(`🧺 ${ic} ${j.got.length}개 수확! 🪙 +${j.gold.toLocaleString()} ${COIN.farm[0]} +${j.coin}`); emote(me, '🎉'); logAct(`수확 ${j.got.length}개 +${j.gold} +${j.coin}${COIN.farm[0]}`);
-  reopen?.();
+async function farmPlant(i) {
+  const j = await act('/api/farm/plant', i == null ? { all: 1 } : { i }); if (!j) return null;
+  emote(me, '🌱'); logAct(`🌱 수수께끼 씨앗 ${j.planted}칸 심음`); reopen?.(); return j;
+}
+async function farmHarvest(i) {
+  if (cropBagL().length >= FARM.bag) return toast(`🎒 작물 가방이 꽉 찼어요 (${FARM.bag}개). 텃밭 창고에서 팔아 주세요`);
+  const j = await act('/api/farm/harvest', i == null ? { all: 1 } : { i }); if (!j) return null;
+  const got = j.got.map(g => ({ ...g, x: CROP_BY[g.id] })).filter(g => g.x), best = got.reduce((a, g) => (!a || g.p > a.p ? g : a), null);
+  if (best) {
+    me.fz = null; me.brag = { crop: { id: best.id, i: best.x.i, n: best.x.n, grade: best.x.grade }, big: best.big, t0: performance.now() };
+    say(me, `${cropText(best.x, best.g, best.big)} 수확!`, 3600);
+    toast(got.length === 1 ? `🧺 ${cropText(best.x, best.g, best.big)} 🪙 ${fmtN(best.p)}` : `🧺 작물 ${got.length}개 수확! 제일 좋은 것: ${best.x.i} ${best.x.n} 🪙 ${fmtN(best.p)}`);
+    logAct(`🧺 수확 ${got.map(g => g.x.i + g.x.n).join(', ')}`);
+    const leg = got.find(g => g.grade === 'legend'); if (leg) legendCropPop(leg);
+    else if (got.some(g => g.grade === 'rare')) { emote(me, '😮'); sfx('levelup'); } else emote(me, '🎉');
+  }
+  reopen?.(); return j;
+}
+function legendCropPop(g) {
+  sfx('levelup'); emote(me, '🎉'); sysMsg(`🌟 전설 작물! ${g.x.n} ${cropW(g.g)} (${g.p.toLocaleString()} 골드)`);
+  openModal(`<div class="legendpop"><p class="lp-k">🌟 전설 작물 🌟</p>${cropPic(g.x, 'big')}<h3>${esc(g.x.n)}</h3><p><b>${cropW(g.g)}</b> · ${goldTxt(g.p)}</p><p class="muted">🍀 ${esc(g.x.n)} 뱃지가 생겼어요</p><button class="btn main" data-close>멋져요!</button></div>`);
+}
+// 💰 팔기: 작물 가방에서 골라서(여러 개) 팔기 + 등급으로 고르기
+function farmSell(b, keep) {
+  reopen = () => openFarm(true);
+  const bag = cropBagL();
+  for (const k of [...FM.sel]) if (!bag.some(f => f.k === k)) FM.sel.delete(k);
+  const picked = bag.filter(f => FM.sel.has(f.k)), sum = picked.reduce((a, f) => a + f.p, 0), total = bag.reduce((a, f) => a + f.p, 0);
+  const gOf = f => CROP_BY[f.id]?.grade || 'normal', n = g => bag.filter(f => gOf(f) === g).length, order = { legend: 0, rare: 1, normal: 2 };
+  const card = f => { const d = CROP_BY[f.id] || { n: '?', i: '🌱', grade: 'normal' }, on = FM.sel.has(f.k);
+    return `<button type="button" class="fcard${on ? ' on' : ''}" data-x="k${f.k}" style="--gc:${fgOf(d.grade).c}"><span class="fck">${on ? '✔' : ''}</span>${cropPic(d)}<b>${esc(d.n)}</b><small>${cropW(f.g)}</small><em>🪙 ${fmtN(f.p)}</em></button>`; };
+  const cards = bag.length ? `<div class="fbag">${[...bag].sort((a, c) => order[gOf(a)] - order[gOf(c)] || c.p - a.p).map(card).join('')}</div>`
+    : '<p class="muted" style="text-align:center;padding:18px 0">🎒 작물 가방이 비었어요. 텃밭에서 수확해 보세요!</p>';
+  bsOpen(b, { tag: '수확한 작물을 골라서 팔아요', wal: ['gold'], tabs: fmTabs(), tab: 'sell',
+    body: `<div class="bs-card hero"><h4>🎒 작물 가방<small>${bag.length} / ${FARM.bag}</small></h4>${thinBar(bag.length / FARM.bag)}<div class="cs">${chip(`다 팔면 ${goldTxt(total)}`, 'up')}</div></div>
+      ${bag.length ? `<div class="fsel">${bbtn('all', '전부')}${FG_KEYS.filter(g => n(g)).map(g => bbtn('g:' + g, `<span style="color:${FG[g].c}">${FG[g].n}</span> ${n(g)}`)).join('')}${bbtn('none', '고르기 취소')}</div>` : ''}
+      ${cards}`,
+    help: `<p>수확한 작물은 🎒 작물 가방(최대 ${FARM.bag}개)에 들어가요. 가방이 꽉 차면 더 수확할 수 없어요.</p><p>작물을 눌러 고르고(여러 개 가능), 아래 <b>팔기</b>를 누르세요. 등급 버튼을 누르면 그 등급을 한꺼번에 골라요.</p><p>값 = 기본 값 × 0.5~1.5배 (무거울수록 비쌈).</p>`,
+    foot: bbtn('sell', FM.sel.size ? `${FM.sel.size}개 팔기` : '팔 작물을 골라 주세요', FM.sel.size ? goldTxt(sum) : '', { main: true, wide: true, dis: !FM.sel.size }) },
+    async x => {
+      if (x[0] === 'k') { const k = +x.slice(1); if (FM.sel.has(k)) FM.sel.delete(k); else FM.sel.add(k); return reopen(); }
+      if (x === 'all') { bag.forEach(f => FM.sel.add(f.k)); return reopen(); }
+      if (x === 'none') { FM.sel.clear(); return reopen(); }
+      if (x.startsWith('g:')) { const g = x.slice(2), l = bag.filter(f => gOf(f) === g), allOn = l.every(f => FM.sel.has(f.k)); l.forEach(f => (allOn ? FM.sel.delete(f.k) : FM.sel.add(f.k))); return reopen(); }
+      if (x !== 'sell' || !FM.sel.size) return;
+      const leg = picked.filter(f => gOf(f) === 'legend').length;
+      if (!await ask(`작물 ${picked.length}개를 🪙 ${fmtN(sum)}에 파시겠습니까?${leg ? ` (전설 작물 ${leg}개가 들어 있어요!)` : ''}`, { title: '💰 작물 팔기', ok: '팔기', no: '취소', danger: !!leg })) return;
+      const j = await act('/api/farm/sell', { ks: [...FM.sel], want: sum }); if (!j) return;
+      FM.sel.clear(); toast(`💰 작물 ${j.sold}개를 팔아서 ${goldTxt(j.gold)}!`); emote(me, '🎉'); logAct(`작물 ${j.sold}개 판매 +${j.gold}`); reopen();
+    }, keep);
+}
+// 🛒 호미 · 비료: 골드 + 누적 수확 횟수 (한 번 사면 영원히)
+function farmShop(b, keep) {
+  reopen = () => openFarm(true);
+  const L = LIFE(), f = L.farm, have = L.cnt.crops || 0, pc = v => `${v < 1 && v > 0 ? v.toFixed(2) : +v.toFixed(1)}%`;
+  const desc = (k, l) => { const R = (k === 'hoe' ? HOES : FERTS)[l]; return k === 'hoe' ? `최대 ${cropW(R[1])} · 밭 ${R[2]}칸 · 자라는 시간 −${Math.round(R[3] * 100)}%` : `일반 ${pc(R[1])} · 희귀 ${pc(R[2])} · 전설 ${pc(R[3])}`; };
+  const item = (k, ic) => { const T0 = k === 'hoe' ? HOES : FERTS, l = f[k], max = l >= T0.length - 1, nx = max ? null : T0[l + 1], short = !max && have < nx[5];
+    return `<li class="bs-row"><span class="bs-ri">${ic}</span><div><b class="t">${T0[l][0]} <small>Lv${l + 1}</small>${max ? chip('최고', 'gold') : ''}</b><div class="cs">${chip(desc(k, l))}${max ? '' : chip(`다음 ${nx[0]}: ${desc(k, l + 1)}`, 'up')}${max ? '' : chip(`🌾 수확 ${fmtN(Math.min(have, nx[5]))} / ${fmtN(nx[5])}번`, short ? 'no' : 'up')}</div></div>
+      <div class="bs-act">${max ? '' : bbtn(k, short ? `수확 ${fmtN(nx[5] - have)}번 더` : '올리기', goldTxt(nx[4]), { main: !short, dis: short || me.gold < nx[4] })}</div></li>`; };
+  const odds = cropOdds(f.hoe, f.fert), P = cropPool(f.hoe, f.fert);
+  bsOpen(b, { tag: '골드로 호미 · 비료 올리기 (한 번 사면 영원히)', wal: ['gold'], tabs: fmTabs(), tab: 'shop',
+    body: `<div class="bs-sec">🛒 장비 올리기</div><ul class="bs-list fshop">${item('hoe', '⛏️')}${item('fert', '🧪')}</ul>
+      <div class="bs-card"><h4>📊 지금 장비로 나오는 작물</h4><table class="bs-table"><thead><tr><th>등급</th><th>확률</th><th>나올 수 있는 작물</th></tr></thead><tbody>
+        ${FG_KEYS.map(g => `<tr><td style="color:${FG[g].c};font-weight:700">${FG[g].n}</td><td>${pc(odds[g])}</td><td>${(P.lists[g] || []).length}종</td></tr>`).join('')}</tbody></table>
+        <p class="muted">호미가 감당 못 하는 무거운 작물과, 높은 호미가 필요한 작물은 안 나와요.</p></div>`,
+    help: '<p><b>호미</b>: 밭 칸이 늘고(Lv4 7칸 · Lv7 8칸 · Lv9 9칸), 더 무거운 작물이 나오고, 더 빨리 자라요.</p><p><b>비료</b>: 희귀 · 전설 작물이 나올 확률이 올라요.</p><p>둘 다 골드와 함께 <b>누적 수확 횟수</b>가 필요해요. 한 번 사면 닳지 않고 영원히 써요. 한 단계씩 올려요.</p>',
+    foot: `<div class="bs-two">${bbtn('rank', '🏆 농사 랭킹판')}${bbtn('gofarm', '🌱 텃밭으로 가기', '', { main: true })}</div>` },
+    async x => {
+      if (x === 'gofarm') return goFarm();
+      if (x === 'rank') return openBuilding(BUILDINGS.find(q => q.id === 'farmrank'));
+      const j = await act('/api/farm/shop', { k: x }); if (j) { const T0 = x === 'hoe' ? HOES : FERTS, l = LIFE().farm[x]; toast(`${x === 'hoe' ? '⛏️' : '🧪'} ${T0[l][0]} (Lv${l + 1})!`); emote(me, '🎉'); logAct(`${T0[l][0]} 구입`); reopen?.(); }
+    }, keep);
+}
+// 🏆 농사 랭킹판 (텃밭 창고 옆): 제일 비싼 · 제일 무거운 · 제일 많이 수확
+const FMR_TABS = [['price', '💰 제일 비싼'], ['w', '📏 제일 무거운'], ['count', '🌾 제일 많이']];
+const FMR = { rank: null, at: 0 };
+async function farmRankSheet(b, keep) {
+  if (HT) return toast('사냥 중에는 볼 수 없어요');
+  reopen = () => farmRankSheet(b, true);
+  const tab = btab('farmrank', 'price', FMR_TABS.map(t => t[0])), r = FMR.rank, m = r?.mine, f = LIFE().farm;
+  const cr = c => c && CROP_BY[c.id];
+  const list = !r ? '<p class="muted" style="text-align:center;padding:18px 0">순위를 불러오는 중…</p>' : r.error ? `<p class="muted">${esc(r.error)}</p>` : !r[tab].length ? '<p class="muted" style="text-align:center;padding:18px 0">아직 기록이 없어요. 첫 기록의 주인공이 되어 보세요!</p>'
+    : `<ol class="rk-list fr-list">${r[tab].map((x, i) => { const c = tab === 'w' ? x.w : x.price, d = cr(c);
+      return `<li class="${i < 3 ? 'top' : ''}${x.nick === me.nick ? ' mine' : ''}"><span class="rk-n">${['🥇', '🥈', '🥉'][i] || i + 1}</span>${tab !== 'count' && d ? cropPic(d, 's') : '<span></span>'}<span class="rk-who"><b>${esc(x.nick)}</b><small>${tab === 'count' ? '수확한 작물' : d ? `${fgOf(d.grade).n} ${esc(d.n)}` : ''}</small></span><span class="rk-v">${tab === 'count' ? `${fmtN(x.count)}개` : !c ? '' : tab === 'w' ? cropW(c.g) : goldTxt(c.p)}</span></li>`; }).join('')}</ol>`;
+  const mp = cr(m?.price), mw = cr(m?.w);
+  const mine = `<div class="cs">${chip(`⛏️ ${HOES[f.hoe][0]} Lv${f.hoe + 1}`)}${chip(`🧪 ${FERTS[f.fert][0]} Lv${f.fert + 1}`)}${chip(`🎒 가방 ${cropBagL().length}/${FARM.bag}`)}</div>
+    <div class="cs">${chip(`내 기록: ${m ? `${fmtN(m.count)}개` : '아직 없음'}`)}${mp ? chip(`💰 ${esc(mp.n)} ${goldTxt(m.price.p)}`, 'up') : ''}${mw ? chip(`📏 ${esc(mw.n)} ${cropW(m.w.g)}`, 'up') : ''}</div>`;
+  bsOpen(b, { tag: '마을 최고의 농부는 누구?', tabs: FMR_TABS, tab,
+    body: `<div class="bs-card hero">${mine}</div>${list}`,
+    help: '<p>수확한 작물 중 <b>가장 비싼 하나 · 가장 무거운 하나</b>, 그리고 <b>지금까지 수확한 수</b>로 순위를 매겨요 (상위 10명).</p><p>2026-11-20 텃밭 개편 뒤에 수확한 것부터 세요.</p>',
+    foot: `<div class="bs-two">${bbtn('shed', '🧺 텃밭 창고')}${bbtn('gofarm', '🌱 텃밭으로 가기', '', { main: true })}</div>` },
+    x => { if (x === 'gofarm') return goFarm(); if (x === 'shed') return openBuilding(BUILDINGS.find(q => q.id === 'farmshed')); }, keep);
+  if (keep || (r && !r.error && Date.now() - FMR.at < 20e3)) return;
+  try { FMR.rank = await api('/api/farm/rank'); } catch (e) { FMR.rank = { error: e.message }; } FMR.at = Date.now();
+  if (!modal.hidden && sheet.querySelector('.bs-head h3')?.textContent.includes('농사 랭킹판')) farmRankSheet(b, true);
 }
 
 // ───────── 낚시점 (2026-11-20): 💰 물고기 팔기 · 🛒 낚싯대·미끼(골드) · 📖 도감 · 👑 낚시왕 ─────────
@@ -6581,11 +6710,12 @@ function kingSheet(b, keep, K, tabs, back, url, go) {
   const help2 = help + '<p><b>받기</b>를 눌러야 받아요. 받은 스킨은 캐릭터창 → 스킨에서 쓸 수 있고, 가지고만 있어도 보유 효과가 붙어요.</p><p>스킨샵에서는 팔지 않아요.</p>';
   const foot = ready ? bbtn('get:' + rl[0], `🎁 ${fkItem(rl[0]).n} 받기`, '', { main: 1, wide: 1 }) : go ? bbtn(go[0], go[1], '', { main: 1, wide: 1 }) : '';
   const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };
-  bsOpen(b, { tag: K.goals ? `목표를 이룰 때마다 ${K.n} 스킨 하나씩` : `${K.what} ${E}${K.unit}마다 ${K.n} 스킨 하나씩`, wal: K.cnt === 'fish' ? ['gold'] : ['stone'], tabs, tab: 'king', body, help: help2, foot,
+  bsOpen(b, { tag: K.goals ? `목표를 이룰 때마다 ${K.n} 스킨 하나씩` : `${K.what} ${E}${K.unit}마다 ${K.n} 스킨 하나씩`, wal: K.cnt === 'stone' ? ['stone'] : ['gold'], tabs, tab: 'king', body, help: help2, foot,
     ready: el => requestAnimationFrame(() => el.querySelectorAll('.fk-ic canvas').forEach(cv => { const k = cv.dataset.k, [a, x, y] = k.split(':');
       skinTile(cv, a === 'eye' ? { ...look, eyes: x } : a === 'suit' ? { ...look, suit: x } : a === 'wsk' ? wskLook(look, x, y) : { ...look, hat: k }, a === 'eye' ? 'eye' : a === 'suit' ? 'suit' : a === 'wsk' ? 'weapon' : undefined); })) },
     async x => {
       if (x === 'go') { closeModal(); teleport(FISH_AT.x, FISH_AT.y); return toast('🎣 물을 누르면 바로 낚싯대를 던져요'); }
+      if (x === 'gofarm') return goFarm();
       if (x.startsWith('get:')) { const j = await act(url, { k: x.slice(4) }); if (j?.fk) { const it = fkItem(j.fk); toast(`${K.i} ${it.n} 받았어요! 캐릭터창 → 스킨에서 써 보세요`); emote(me, '🎉'); sfx('levelup'); logAct(`${K.n} 보상: ${it.n}`); reopen?.(); } }
     }, keep);
 }
@@ -6658,8 +6788,8 @@ const BADGE_SP = {};
 function badgeCanvas(id) {   // 2026-11-20 사용자 요청: 둥근 바탕 없이 그림만 크게 (검은 테두리)
   if (BADGE_SP[id]) return BADGE_SP[id];
   const b = badgeOf(id); if (!b) return null;
-  const fd = b.fish && FISH_BY[b.fish]; let im = b.raid ? ART[b.raid === 'ogre' ? 'og-head' : 'd-head'] : fd?.img ? fishImgC(b.fish) : null;
-  if ((b.raid || fd?.img) && !im) return null;   // 그림을 아직 불러오는 중 → 다음에 다시
+  const fd = b.fish && FISH_BY[b.fish], cd = b.crop && CROP_BY[b.crop]; let im = b.raid ? ART[b.raid === 'ogre' ? 'og-head' : 'd-head'] : fd?.img ? fishImgC(b.fish) : cd?.img ? cropImgC(b.crop) : null;
+  if ((b.raid || fd?.img || cd?.img) && !im) return null;   // 그림을 아직 불러오는 중 → 다음에 다시
   const cv = document.createElement('canvas'); cv.width = cv.height = 64; const g = cv.getContext('2d');
   if (b.id === 'leaf') {   // 새내기: 초록 나뭇잎 (따로 그린 뒤 테두리)
     const lc = document.createElement('canvas'); lc.width = lc.height = 64; const q = lc.getContext('2d');
@@ -6673,13 +6803,13 @@ function badgeCanvas(id) {   // 2026-11-20 사용자 요청: 둥근 바탕 없�
   } else if (im) {
     const k = 56 / Math.max(im.width, im.height), w = im.width * k, h = im.height * k;
     inkImage(g, im, 32 - w / 2, 32 - h / 2, w, h, 2.4);
-  } else { g.font = '44px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; fillTextIco(g, fd?.i || '🐟', 32, 34); }
+  } else { g.font = '44px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; fillTextIco(g, cd?.i || fd?.i || '🐟', 32, 34); }
   return BADGE_SP[id] = cv;
 }
 function drawBadge(id, cx, cy, size) { const cv = badgeCanvas(id); if (cv) ctx.drawImage(cv, cx - size / 2, cy - size / 2, size, size); }
 const paintBadges = el => { let miss = 0; el.querySelectorAll('canvas[data-bd]').forEach(cv => { if (cv.dataset.ok) return; const sp = badgeCanvas(cv.dataset.bd); if (!sp) { miss++; return; } cv.getContext('2d').drawImage(sp, 0, 0); cv.dataset.ok = 1; }); if (miss) setTimeout(() => el.isConnected && paintBadges(el), 400); };
 const bdCv = (id, cls = '') => `<canvas class="bdg ${cls}" data-bd="${id}" width="64" height="64"></canvas>`;
-const DEX_TABS = [['title', '🏷️ 칭호'], ['badge', '🍀 뱃지'], ['fish', '🐟 물고기'], ['skin', '👕 스킨']];
+const DEX_TABS = [['title', '🏷️ 칭호'], ['badge', '🍀 뱃지'], ['fish', '🐟 물고기'], ['crop', '🌾 작물'], ['skin', '👕 스킨']];
 const DX = { tg: '전체', bg: '전체' };
 // 캐릭터창의 칭호 버튼 → 도감 센터로
 async function goDex(tab) {
@@ -6690,10 +6820,10 @@ async function goDex(tab) {
 }
 // 물고기·스킨 도감 효과 칸 (5개마다)
 function dexHero(k) {
-  const n = dexN(me, k), all = k === 'fish' ? FISH_LIST.length : DEX_SKINS().length, st = Math.floor(n / DEX_STEP), L = DEX_FX[k], fx = {};
+  const n = dexN(me, k), all = k === 'fish' ? FISH_LIST.length : k === 'crop' ? CROP_LIST.length : DEX_SKINS().length, st = Math.floor(n / DEX_STEP), L = DEX_FX[k], fx = {};
   L.slice(0, st).forEach(o => { for (const [a, v] of Object.entries(o)) fx[a] = +((fx[a] || 0) + v).toFixed(2); });
   const nx = st < L.length ? (st + 1) * DEX_STEP : 0;
-  return `<div class="bs-card hero"><h4>${k === 'fish' ? '🐟 물고기 도감' : '👕 스킨 도감'}<small>${n} / ${all}</small></h4>${thinBar(n / all)}
+  return `<div class="bs-card hero"><h4>${k === 'fish' ? '🐟 물고기 도감' : k === 'crop' ? '🌾 작물 도감' : '👕 스킨 도감'}<small>${n} / ${all}</small></h4>${thinBar(n / all)}
     <div class="cs">${chip(`✨ 도감 효과: ${fxText(fx) || '아직 없어요'}`, st ? 'up' : '')}${nx ? chip(`다음 ${nx}개 (${nx - n}개 남음): ${fxText(L[st])}`, 'gold') : chip('🏆 도감 효과를 모두 받았어요', 'gold')}</div>
     <div class="dexms">${L.map((o, i) => `<span class="c ${n >= (i + 1) * DEX_STEP ? 'up' : 'lk'}">${(i + 1) * DEX_STEP}개 · ${fxText(o)}</span>`).join('')}</div></div>`;
 }
@@ -6718,7 +6848,7 @@ function dexSheet(b, keep) {
     tag = '뱃지는 이름 왼쪽에 달아요 (효과는 없어요)';
     body = `<div class="bs-card hero bdhero">${cur ? bdCv(cur, 'big') : '<span class="bdg big none">?</span>'}<div><h4>🍀 내 뱃지<small>${got} / ${BADGES.length}</small></h4><div class="cs">${chip(cur ? `지금: ${esc(badgeOf(cur)?.n || '')}` : '아직 안 달았어요', cur ? 'gold' : '')}</div>${cur ? bbtn('b:', '뱃지 떼기') : ''}</div></div>
       <div class="fsel">${gl.map(t => bbtn('bg:' + t, t, '', { main: DX.bg === t })).join('')}</div><div class="bdgrid">${list.map(card).join('')}</div>`;
-    help = '<p>🍀 새내기 뱃지는 누구나 가져요.</p><p>🐉 레드 드래곤 · 👹 오우거 뱃지: 그 보스의 레이드 스킨 6개(모자·눈·의상·검·활·지팡이)를 모두 모으면 생겨요.</p><p>🐟 물고기 뱃지: 그 물고기를 한 번이라도 낚으면 생겨요 (모든 물고기).</p>';
+    help = '<p>🍀 새내기 뱃지는 누구나 가져요.</p><p>🐉 레드 드래곤 · 👹 오우거 뱃지: 그 보스의 레이드 스킨 6개(모자·눈·의상·검·활·지팡이)를 모두 모으면 생겨요.</p><p>🐟 물고기 뱃지: 그 물고기를 한 번이라도 낚으면 생겨요 (모든 물고기).</p><p>🌾 작물 뱃지: 그 작물을 한 번이라도 수확하면 생겨요 (모든 작물).</p>';
     ready = paintBadges;
   } else if (tab === 'fish') {
     const P = FG_KEYS.map(g => [g, FISH_LIST.filter(f => f.grade === g)]), has = f => cnt['fc_' + f.id] || cnt['lf_' + f.id] || 0;
@@ -6727,6 +6857,13 @@ function dexSheet(b, keep) {
     tag = '물고기를 5종 모을 때마다 도감 효과';
     body = dexHero('fish') + P.map(([g, l]) => `<div class="bs-sec" style="color:${FG[g].c}">${FG[g].n} ${l.filter(has).length} / ${l.length}종</div><div class="fdexg">${l.map(cell).join('')}</div>`).join('');
     help = '<p>물고기를 한 번이라도 낚으면 도감에 올라가요. <b>5종마다</b> 효과가 하나씩 쌓여요.</p><p>낚은 물고기는 🍀 뱃지로도 달 수 있어요.</p><p>2026-11-20 낚시 개편 뒤에 낚은 것부터 세요.</p>';
+  } else if (tab === 'crop') {
+    const P = FG_KEYS.map(g => [g, CROP_LIST.filter(x => x.grade === g)]), has = x => cnt['cc_' + x.id] || 0, best = L.cbest || {};
+    const cell = x => { const c = has(x);
+      return `<div class="fdex${c ? ' got' : ' unk'}" style="--gc:${FG[x.grade].c}">${cropPic(x)}<b>${c ? esc(x.n) : '???'}</b><small>${c && best[x.id] ? `최고 ${cropW(best[x.id])}` : `호미 Lv${x.hoe}부터`}</small>${c ? `<em>${fmtN(c)}개</em>` : '<em>아직 못 거둠</em>'}</div>`; };
+    tag = '작물을 5종 모을 때마다 도감 효과';
+    body = dexHero('crop') + P.map(([g, l]) => `<div class="bs-sec" style="color:${FG[g].c}">${FG[g].n} ${l.filter(has).length} / ${l.length}종</div><div class="fdexg">${l.map(cell).join('')}</div>`).join('');
+    help = '<p>작물을 한 번이라도 수확하면 도감에 올라가요. <b>5종마다</b> 효과가 하나씩 쌓여요.</p><p>수확한 작물은 🍀 뱃지로도 달 수 있어요.</p><p>2026-11-20 텃밭 개편 뒤에 수확한 것부터 세요.</p>';
   } else {
     const own = new Set(dexSkinGot(me)), keys = DEX_SKINS(), grp = [['모자', k => !k.includes(':')], ['눈', k => k.startsWith('eye:')], ['의상', k => k.startsWith('suit:')], ['무기', k => k.startsWith('wsk:')]];
     tag = '스킨을 5개 모을 때마다 도감 효과';
@@ -7207,10 +7344,10 @@ async function openAdmin(tab = ADM.tab) {
       <div class="btns cheat">${B('god', 0, god ? '😇 갓모드 끄기' : '😇 갓모드 켜기 (안 맞음 · 공격력 10배)')}</div>
       <div class="btns cheat">${B('gold', 1e6, '🪙 골드 +100만')}${B('gold', 1e8, '🪙 골드 +1억')}${B('lv', 55, '🌟 55레벨')}${B('lv', 1, '🌱 1레벨로')}</div>
       <div class="btns cheat">${B('gear', 0, '🗡️ 최고 장비 + 최고 강화')}${B('titles', 0, '🏷️ 칭호 모두')}${B('skins', 0, '👕 모든 스킨 받기')}${B('rskmax', 0, '⭐ 레이드 스킨 최고 레벨')}${B('pots', 0, '🥤 물약·체력 가득')}</div>
-      <div class="btns cheat">${B('wood', 1000, '🪵 목재 +1000')}${B('stone', 1000, '🪨 석재 +1000')}${B('farmCoin', 1000, '🌻 텃밭 코인 +1000')}</div>
+      <div class="btns cheat">${B('wood', 1000, '🪵 목재 +1000')}${B('stone', 1000, '🪨 석재 +1000')}${B('farmmax', 1, '🧺 호미·비료 최고')}</div>
       <div class="btns cheat">${B('farm', 0, '🌾 텃밭 다 자람')}${B('work', 0, '🪓 알바 창고 가득')}${B('cool', 0, '⏱️ 기다리는 시간 없애기')}</div>
       <p class="muted" style="margin-bottom:4px">직접 숫자 넣기 (빼려면 -를 붙여요)</p>
-      <div class="admform"><input id="cN" type="number" placeholder="숫자" value="1000"><select id="cK"><option value="gold">골드 더하기</option><option value="exp">경험치 더하기</option><option value="lv">레벨 정하기</option><option value="wood">목재 더하기</option><option value="stone">석재 더하기</option><option value="farmCoin">텃밭 코인 더하기</option></select><button class="mini main" data-x="custom">적용</button></div>`,
+      <div class="admform"><input id="cN" type="number" placeholder="숫자" value="1000"><select id="cK"><option value="gold">골드 더하기</option><option value="exp">경험치 더하기</option><option value="lv">레벨 정하기</option><option value="wood">목재 더하기</option><option value="stone">석재 더하기</option></select><button class="mini main" data-x="custom">적용</button></div>`,
       async (x, el) => {
         let [k, n] = x.split(':');
         if (k === 'raid') { const og = n === '1', j = await api('/api/admin/raid', { boss: og ? 'ogre' : 'rdragon' }); closeModal(); toast(`${og ? '👹 오우거' : '🐉 드래곤'} 레이드 모집을 열었어요 (2분, 모두에게 창이 떠요)`); RAIDQ.asked = 0; setTimeout(raidCheck, 300); return; }
@@ -7268,12 +7405,12 @@ function rodEnd(c, fish, big) {
 function bragFish(c, fish, big) { c.fz = null; c.brag = { fish, big, t0: performance.now() }; say(c, `${bragText(fish, big).replace(' 잡았다!', '')} 자랑!`, 3600); }
 function drawBrag(c, top, now) {
   const B = c.brag, k = Math.min(1, Math.max(0, (now - B.t0) / 260)); if (k <= 0) return top;
-  const im = fishImgC(fishDef(B.fish)?.id), y = top - 24 - Math.sin(now / 260) * 2, s0 = 46 * (.6 + .4 * k);
+  const F0 = B.crop || B.fish, im = B.crop ? cropImgC(B.crop.id) : fishImgC(fishDef(B.fish)?.id), y = top - 24 - Math.sin(now / 260) * 2, s0 = 46 * (.6 + .4 * k);
   ctx.save(); ctx.globalAlpha = k; ctx.translate(c.x, y); ctx.rotate(Math.sin(now / 420) * .12);
   ctx.fillStyle = 'rgba(255,240,170,.35)'; ctx.beginPath(); ctx.ellipse(0, 0, s0 * .62, s0 * .42, 0, 0, 7); ctx.fill();   // 은은한 빛
   if (im) { const s = s0 / Math.max(im.width, im.height); inkImage(ctx, im, -im.width * s / 2, -im.height * s / 2, im.width * s, im.height * s, 1.8); }   // 바깥 검은 테두리
-  else { ctx.font = `${Math.round(s0 * .6)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; fillTextIco(ctx, B.fish.i, 0, 0); }
-  if (B.fish.grade !== 'normal') { ctx.fillStyle = fgOf(B.fish.grade).c; for (let i = 0; i < 3; i++) { const a = now / 500 + i * 2.1; ctx.globalAlpha = k * (.5 + .5 * Math.sin(now / 180 + i)); ctx.beginPath(); ctx.arc(Math.cos(a) * s0 * .55, Math.sin(a) * s0 * .3, 2.2, 0, 7); ctx.fill(); } }
+  else { ctx.font = `${Math.round(s0 * .6)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; fillTextIco(ctx, F0.i, 0, 0); }
+  if (F0.grade !== 'normal') { ctx.fillStyle = fgOf(F0.grade).c; for (let i = 0; i < 3; i++) { const a = now / 500 + i * 2.1; ctx.globalAlpha = k * (.5 + .5 * Math.sin(now / 180 + i)); ctx.beginPath(); ctx.arc(Math.cos(a) * s0 * .55, Math.sin(a) * s0 * .3, 2.2, 0, 7); ctx.fill(); } }
   ctx.restore(); return top - 46;
 }
 // 찌를 던질 자리: 누른 곳 쪽으로, 내 자리에서 3칸 안의 물
@@ -7457,7 +7594,8 @@ const GUIDE = () => [
     ['🏆 낚시 랭킹판', '낚시점 옆 랭킹판에서 제일 비싼 · 제일 큰 · 제일 많이 낚은 사람 순위를 봐요. 🏆 랭킹 창에서도 볼 수 있어요.'],
   ]],
   ['🌾', '텃밭 · 채집', [
-    ['텃밭', '텃밭 두둑을 눌러 씨앗 심기 → 물 주기 → 수확. 물을 주면 잠깐 빨리 자라요. 🌻 텃밭 코인으로 물뿌리개·밭 칸을 늘려요.'],
+    ['텃밭', '두둑을 누르면 수수께끼 씨앗(무료)을 심고, 1~2분 뒤 수확해요. 무엇이 자랄지는 수확할 때 알아요! 작물은 가방에 모였다가 텃밭 창고에서 팔아요. 호미·비료를 올리면 밭 칸·큰 작물·희귀·전설 작물이 늘어요. 옆의 🏆 농사 랭킹판에서 순위도 봐요.'],
+    ['🌾 농사왕', '텃밭 창고 → 👑 농사왕 탭. 목표(수확 수·희귀·전설·도감 등)를 이룰 때마다 농사왕 스킨을 하나씩 받아요. 창고 앞 농사왕 심어라 아저씨가 팁을 알려 줘요.'],
     ['나무·바위', '마을의 나무·바위를 누르면 캐서 🪵 목재·🪨 석재를 얻어요. 시간이 지나면 다시 자라요.'],
     ['벌목소·채석장', '알바를 고용하면 화면을 꺼도 목재·석재가 쌓여요 (최대 10시간). 가서 받기를 눌러요.'],
   ]],
@@ -7466,7 +7604,7 @@ const GUIDE = () => [
     ['카페 알바', '1분 일하면 골드를 받아요. 알바 중에는 카페 앞에서만 있어요.'],
   ]],
   ['🧺', '자동', [
-    ['자동 생활', '오른쪽 🧺 자동 버튼. 캐릭터가 직접 걸어가서 텃밭 수확·심기·물 주기, 나무 베기, 바위 캐기, 강·바다 낚시를 하고 틈틈이 산책·인사도 해요.'],
+    ['자동 생활', '오른쪽 🧺 자동 버튼. 캐릭터가 직접 걸어가서 텃밭 수확·심기, 나무 베기, 바위 캐기, 강·바다 낚시를 하고 틈틈이 산책·인사도 해요.'],
     ['효율', '손으로 하는 것과 똑같이 모여요. 게임 화면을 켜 둔 동안만 해요. 사냥·알바 중에는 잠깐 쉬어요.'],
   ]],
   ['🏠', '집', [
@@ -7583,7 +7721,7 @@ function dailyView() {
     <div class="dq">${tasks.map((q, i) => { const p = Math.min(q.v, dailyProg(me, q)), ok = d.done.includes(i); return `<div class="dqi${ok ? ' ok' : ''}"><span class="ic">${q.i}</span><span class="nm">${q.n}<small>${p.toLocaleString()} / ${q.v.toLocaleString()}</small>${bar(p, q.v, ok ? 'ok' : '')}</span><span class="rw">${ok ? '✅' : goldTxt(dailyGold(me.lv))}</span></div>`; }).join('')}</div>
     <h4 class="sub">이번 주 도장 <small class="muted">(월요일에 새로 시작)</small></h4>
     <div class="stamps">${Array.from({ length: STAMP_GOAL }, (_, i) => `<span class="stamp${i < s.n ? ' on' : ''}">${i < s.n ? '🥬' : i + 1}</span>`).join('')}<span class="boxr${s.box ? ' on' : ''}">${s.box ? '🎁 받음!' : '🎁'}</span></div>
-    <p class="muted">도장 1개: 🪙 300 · 🌻 3 / 도장 ${STAMP_GOAL}개 상자: ${goldTxt(weekBox(me.lv).gold)} · 🌻 ${weekBox(me.lv).farm}</p>`;
+    <p class="muted">도장 1개: 🪙 600 / 도장 ${STAMP_GOAL}개 상자: ${goldTxt(weekBox(me.lv).gold)}</p>`;
 }
 function villageView() {
   const W = NEWS.data?.village; if (!W) return '<p class="muted">불러오는 중…</p>';
@@ -7637,8 +7775,8 @@ async function openNews(tab = 'daily', again) {
 function tookDaily(list) {
   for (const x of list) {
     if (x.gold) { toast(`📋 의뢰 완료! ${x.i} ${x.n} · ${goldTxt(x.gold)}`); sysMsg(`📋 오늘 의뢰 완료: ${x.n} (+${x.gold.toLocaleString()} 골드)`); }
-    if (x.stamp) { toast(`🥬 오늘 의뢰를 다 했어요! 도장 ${x.stamp}/${STAMP_GOAL}`); sysMsg(`🥬 도장 ${x.stamp}개째! 🪙 +300 · 🌻 +3`); emote(me, '🎉'); }
-    if (x.box) { toast(`🎁 도장 ${STAMP_GOAL}개 상자! ${goldTxt(x.box.gold)}`); sysMsg(`🎁 이번 주 도장 상자: 골드 ${x.box.gold.toLocaleString()} · 🌻 ${x.box.farm}`); }
+    if (x.stamp) { toast(`🥬 오늘 의뢰를 다 했어요! 도장 ${x.stamp}/${STAMP_GOAL}`); sysMsg(`🥬 도장 ${x.stamp}개째! 🪙 +600`); emote(me, '🎉'); }
+    if (x.box) { toast(`🎁 도장 ${STAMP_GOAL}개 상자! ${goldTxt(x.box.gold)}`); sysMsg(`🎁 이번 주 도장 상자: 골드 ${x.box.gold.toLocaleString()}`); }
   }
   renderNewsDot();
 }
