@@ -1,6 +1,6 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, guideProg, guideInit, guideNext, npcExp as guideExp, TAG_COLORS, RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
+import { jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, GUIDE_MARKS, guideQ, guideProg, guideInit, guideNext, npcExp as guideExp, TAG_COLORS, RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
@@ -319,6 +319,7 @@ async function play(env, user, fn) {
     const r = await env.DB.prepare('SELECT * FROM characters WHERE user_id = ?').bind(user.id).first();
     const W = await world(env), c = toChar(r), at = now(), out = {}; c._adm = !!user.is_admin; c.gfx = worldFx(W, at); c._w = W;
     const lv0 = c.lv, g0 = c.gold; c._spent = 0; dailyState(c, at); npcState(c, at); guideInit(c);
+    if (guideQ(c)?.[0] === 'wish' && c.life.gq.wr !== c.life.gq.i) { c.life.wishAt = 0; c.life.gq.wr = c.life.gq.i; }   // 2026-11-20 가이드가 분수 단계가 되면 소원 쿨타임 한 번 없앰
     if (!c.hunt) {   // 마을: 체력이 1초에 2%씩 참
       const max = derive(c).maxHp;
       c.hp = Math.min(max, Math.round(c.hp + Math.max(0, (at - (c.hpAt || at)) / 1000) * max * HUNT.townRegen)); c.hpAt = at;
@@ -382,6 +383,7 @@ const GAME = {
     notWorking(c);
     const fi = Number(b.f); if (!Number.isInteger(fi) || !FIELDS[fi]) fail(400, '없는 사냥터예요');
     if (c.hp < 1) fail(400, '체력이 없어요. 잠깐 쉬었다 가세요');
+    cntAdd(c, 'huntGo');   // 가이드용
     startHunt(c, fi, at);
     return { log: ['hunt-start', FIELDS[fi].n] };
   },
@@ -617,7 +619,7 @@ const GAME = {
     if (!p) fail(400, '지금 마을에 없는 주민이에요');
     if (own(st.q, String(p.i))) fail(400, '이미 받은 임무예요');
     if (npcActive(st) >= NPC_MAX) fail(400, `임무는 한 번에 ${NPC_MAX}개까지 받을 수 있어요`);
-    st.q[p.i] = { b: p.task.k === 'talk' ? 0 : c.life.cnt[p.task.k] || 0, s: 0 };
+    st.q[p.i] = { b: p.task.k === 'talk' ? 0 : c.life.cnt[p.task.k] || 0, s: 0 }; cntAdd(c, 'npcTake');
     return { log: ['npc-take', p.task.n] };
   },
   '/api/npc/talk'(c, b, at) {
@@ -646,6 +648,9 @@ const GAME = {
   '/api/title'(c, b) { const id = String(b.id || ''); if (!c.life.titles.includes(id)) fail(400, '아직 없는 칭호예요'); c.title = id; },
   // 뱃지 달기 (2026-11-20 도감 센터). id = '' 이면 떼기
   // 📘 가이드 퀘스트 (2026-11-20): 다 하면 보상 받고 다음 단계로 (건너뛰기는 2026-11-20 없앰)
+  '/api/guide/mark'(c, b) {   // 화면에서만 알 수 있는 행동 (걷기·건물 누르기·바로가기 등). 지금 단계일 때만 셈
+    const k = String(b.k || ''), q = guideQ(c); if (!q || q[4] !== k || !GUIDE_MARKS.includes(k)) fail(400, '지금 가이드 단계가 아니에요'); cntAdd(c, k);
+  },
   '/api/guide/claim'(c) {
     const P = guideProg(c); if (!P) fail(400, '가이드 퀘스트를 모두 끝냈어요'); if (!P.ok) fail(400, `아직 다 못 했어요 (${P.n} / ${P.v})`);
     const r = P.q[8], exp = guideExp(c.lv); c.gold += r.gold || 0; c.life.res.wood += r.wood || 0; c.life.res.stone += r.stone || 0; addExp(c, exp);
@@ -831,7 +836,7 @@ const GAME = {
     if (!sum) fail(400, '올릴 능력치를 골라 주세요');
     if (sum > c.points) fail(400, '남은 포인트가 부족해요');
     for (const k of Object.keys(STATS)) c[k] += add[k] ?? 0;
-    c.points -= sum;
+    c.points -= sum; cntAdd(c, 'statUp');
   },
 };
 async function saveLook(req, env, user) {
