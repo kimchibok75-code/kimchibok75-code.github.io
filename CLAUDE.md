@@ -824,6 +824,21 @@
 - 광장 전광판(방송 꺼짐): 큰 글씨 "환영합니다!" + 뉴비 안내(가이드 퀘스트·초보자 가이드), 생방송 안내는 아래 줄에 작게 (`drawScreen`)
 - **사냥터 최소 레벨**: `FIELDS[i].min`보다 낮으면 못 들어감 (화면 🔒 Lv.N부터 · 서버 `/api/hunt/start`도 거절)
 
+### 어뷰징 대비 · 관리자 화면 · 점검 모드 · 되돌리기 — 2026-11-20
+- **가입 제한** (index.js `signup`): 같은 IP 하루 3개(`SIGNUP_IP_DAY`) · 같은 기기(브라우저 `cbt-dev`, 헤더 `X-Dev`) 일주일 1개(`SIGNUP_DEV_WEEK`). 막히면 "○월 ○일 00:00부터 다시 가입할 수 있어요" (`kTime`). `signups.dev_hash`, 가입 기록 8일 보관
+- **접속 기록** `access` 표 (user_id, kind ip|dev, h 해시만): 로그인·가입·/api/me 때 (`guard.js`의 `track`). 화면 `api()`가 모든 요청에 `X-Dev` 헤더를 붙임 (`devId()`)
+- **레이드 인원 보너스는 10레벨 이상만** 셈 (raid.js `/result`의 `n10`, `/state`의 `joined10`)
+- **어뷰징 감시** `game-worker/src/guard.js`의 `scan()`: 크론이 한 시간마다 (정각 뒤 첫 5분). 결과는 `flags` 표 (user_id, k, why, score, ok_until). 자동으로 막지 않음
+  - ① 같은 IP 3개 이상 / 같은 기기 2개 이상 (`multi-ip`, `multi-dev`) ② 성장: `growth` 표(한 시간 전 값)와 비교, 경험치 보통(`huntIdleExp/.7`)의 4배 · 번 돈 보통(`1500×레벨+8000`)의 10배 이상이고 50만 넘음 ③ 하루 20시간 넘게 활동 · 6시간 동안 같은 activity 1,500번 ④ 서버가 거절한 요청(400) 2시간 60번 (`rejects` 표, route의 GAME 처리에서 셈) ⑤ 같은 묶음끼리 같은 사람 신고 · 같은 레이드 일주일 5번 ⑥ 만든 지 7일 안 된 계정이 레벨·번 돈 10위 안
+  - 관리자·테스트·zz 계정은 빼고 셈. 하루 넘게 다시 안 잡히면 지워짐. 주의: SQL에서 별칭을 표의 열 이름(`n`)과 같게 쓰면 HAVING이 열을 봐서 틀림
+- **매일 캐릭터 사본** `char_snap` (매일 새벽 4시 KST, 8일 안에 움직인 캐릭터, 7일 보관). 열 목록은 `pragma_table_info`로 읽어서 열이 늘어도 그대로. 관리자 → 사람 → '되돌리기' (`restore`: 되돌리기 전 모습도 '되돌리기 전 …' 사본으로 남김 → 그 사람을 마을에서 내보냄)
+- **점검 모드 = 관리자만 접속 가능** (`src/maint.js`, `settings` 표 `maint = {on, msg}`, 15초 기억): 켜면 관리자가 아닌 사람은 모든 요청·로그인·가입이 503, 마을 방은 `{t:'maint'}` + 4003으로 내보냄 → 화면 `showMaint`: "점검 중입니다" 창(`#maintBox`, 로딩 화면보다 위), 30초마다 `/api/health`의 `maint`를 보고 끝나면 새로 고침
+- **관리자 화면 새로** (`openAdmin(tab, keep)`, `ADM_VIEW`, bsWrap 틀 `ADM_B`): 🚨 의심 / 📮 신고 / 👤 사람(같은 IP·기기 계정, 의심, 사본 되돌리기) / 💬 채팅 / 🛠️ 운영(점검 체크박스·공지·방송 보너스·지금 사본) / 🧪 치트. 위에 전체·오늘 가입·하루 접속 요약. 🛡️ 버튼에 의심+신고 수 빨간 숫자 (`/api/me`의 `adm` → `admBadge`)
+  - 서버: `/api/admin/overview`, `/flags`, `/flag-ok {id, days}`, `/scan`, `/snap-now`, `/restore {id, day}`, `/maint {on, msg}`, `/user?id=` 또는 `?nick=`
+- **D1 전체 되돌리기 (최후 수단)**: Cloudflare D1 Time Travel (무료 7일). 배포 전에 `game-worker`에서 `npx --yes wrangler@4.45.0 d1 time-travel info kimchibok-game`로 북마크를 적어 둠 → 되돌릴 땐 점검 모드를 켜고 `npx --yes wrangler@4.45.0 d1 time-travel restore kimchibok-game --bookmark=북마크` (그 뒤의 모든 기록이 사라짐, 한 사람만이면 관리자 화면 '되돌리기'로)
+- 대장간 최대 강화 **+20** (`ENH_MAX`), 성공 확률은 +10부터 27→5%, 최소 5% (`enhRate`), 값 `ENH_COST` 20칸
+- 🐉 · 👹 아이콘 = 뱃지와 같은 드래곤·오우거 얼굴 그림 (`setIconOverride`, game.html `artReady` 뒤. `d-head`·`og-head`는 처음부터 불러옴)
+
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감
 - 다 지은 공동 건설(꽃밭·등대 등)을 지도에 그림으로 보여 주기

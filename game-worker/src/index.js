@@ -14,6 +14,8 @@ export { Town };
 import { Chzzk } from './chzzk.js';
 export { Chzzk };
 import { Raid } from './raid.js';
+import { maintGet, maintSet, MAINT_MSG } from './maint.js';
+import { track, bumpReject, scan, snapAll, restore, groups, hash as gHash, devOf } from './guard.js';
 export { Raid };
 const raidDO = env => env.RAID.get(env.RAID.idFromName('main'));   // 레이드 방은 하나
 
@@ -22,7 +24,8 @@ const TERMS_VER = '2026-11-18';   // 가입 안내(개인 팬 게임·수익 없
 const PBKDF2_ITER = 30000;            // 비밀번호 해시 반복 횟수 (무료 요금제 CPU 한도 안에서)
 const DAY = 864e5;
 const LOCK_FAILS = 5, LOCK_MS = 10 * 60e3;
-const SIGNUP_PER_HOUR = 3;
+const SIGNUP_IP_DAY = 3, SIGNUP_DEV_WEEK = 1;   // 2026-11-20 가입 제한: 같은 IP 하루 3개 · 같은 기기(브라우저) 일주일 1개
+const kTime = t => { const d = new Date(t + 9 * 3600e3); return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일 ${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`; };
 
 class HttpError extends Error { constructor(status, msg) { super(msg); this.status = status; } }
 const fail = (status, msg) => { throw new HttpError(status, msg); };
@@ -39,13 +42,16 @@ export default {
         env.DB.prepare('DELETE FROM activity WHERE at < ?').bind(t - 90 * d),
         env.DB.prepare('DELETE FROM chronicle WHERE at < ?').bind(t - 60 * d),
         env.DB.prepare('DELETE FROM sessions WHERE expires_at < ?').bind(t),
-        env.DB.prepare('DELETE FROM signups WHERE at < ?').bind(t - 3 * d),
+        env.DB.prepare('DELETE FROM signups WHERE at < ?').bind(t - 8 * d),   // 기기 가입 제한(일주일) 때문에 8일 보관
+        env.DB.prepare('DELETE FROM access WHERE last_at < ?').bind(t - 60 * d),
       ]).catch(() => {}));
+      ctx.waitUntil(scan(env).catch(e => console.error('scan', e?.stack || e)));   // 2026-11-20 어뷰징 감시 (한 시간마다)
+      if (new Date(t + 9 * 3600e3).getUTCHours() === 4) ctx.waitUntil(snapAll(env, dayKey(t)).catch(e => console.error('snap', e?.stack || e)));   // 매일 새벽 4시 캐릭터 사본
     }
   },
   async fetch(req, env) {
     const origin = req.headers.get('Origin') || '';
-    const cors = { 'Access-Control-Allow-Origin': ORIGINS.includes(origin) ? origin : ORIGINS[0], 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Max-Age': '86400', Vary: 'Origin' };
+    const cors = { 'Access-Control-Allow-Origin': ORIGINS.includes(origin) ? origin : ORIGINS[0], 'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Dev', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Max-Age': '86400', Vary: 'Origin' };
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     // 실시간 마을 (WebSocket): 로그인 확인은 방(Durable Object)이 첫 메시지로 함
     if (new URL(req.url).pathname === '/ws') {
@@ -72,13 +78,14 @@ export default {
 
 async function route(req, env, url) {
   const p = url.pathname, m = req.method;
-  if (p === '/' || p === '/api/health') return json({ ok: true, name: '치복 타운 서버', stage: 4 });
+  if (p === '/' || p === '/api/health') { const M = await maintGet(env); return json({ ok: true, name: '치복 타운 서버', stage: 4, maint: M.on ? (M.msg || MAINT_MSG) : '' }); }
   if (m === 'GET' && p === '/api/mods-order') return json(await modOrderGet(env));   // 누구나 읽기 (홈페이지 모드 추천 순서)
   if (m === 'POST' && p === '/api/signup') return signup(req, env);
   if (m === 'POST' && p === '/api/login') return login(req, env);
   if (m === 'POST' && p === '/api/recover') return recover(req, env);
   const s = await auth(req, env);
-  if (m === 'GET' && p === '/api/me') return play(env, s.user, dailyBonus);
+  if (!s.user.is_admin) { const M = await maintGet(env); if (M.on) fail(503, M.msg || MAINT_MSG); }   // 2026-11-20 점검 중(관리자만 접속 가능)
+  if (m === 'GET' && p === '/api/me') { await track(env, s.user.id, req); return play(env, s.user, async (c, at, out) => { const r = dailyBonus(c, at); if (s.user.is_admin) out.adm = await admCounts(env); return r; }); }
   if (m === 'POST' && p === '/api/logout') { await env.DB.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(s.tokenHash).run(); return json({ ok: true }); }
   if (m === 'POST' && p === '/api/character') return saveLook(req, env, s.user);
   if (m === 'POST' && p === '/api/move') return saveMove(req, env, s.user);
@@ -98,7 +105,7 @@ async function route(req, env, url) {
   if (m === 'POST' && p === '/api/suggest') return suggestWrite(req, env, s.user);
   if (m === 'POST' && p === '/api/suggest/del') return suggestDel(req, env, s.user);
   const g = GAME[p];
-  if (m === 'POST' && g) { const b = await readBody(req); return play(env, s.user, (c, at, out) => g(c, b, at, out, env, s.user)); }
+  if (m === 'POST' && g) { const b = await readBody(req); try { return await play(env, s.user, (c, at, out) => g(c, b, at, out, env, s.user)); } catch (e) { if (e instanceof HttpError && e.status === 400) await bumpReject(env, s.user.id); throw e; } }
   if (m === 'POST' && p === '/api/password') return changePw(req, env, s);
   if (m === 'POST' && p === '/api/nick') return changeNick(req, env, s);
   if (m === 'POST' && p === '/api/recovery-code') return newRecovery(req, env, s.user);
@@ -170,9 +177,14 @@ async function signup(req, env) {
   if (scanBad(nick).hit) fail(400, '닉네임에 쓸 수 없는 말이 들어 있어요');
   if (!allOk(pwChecks(pw, nick))) fail(400, '비밀번호 규칙을 확인해 주세요');
   if (b.agree !== TERMS_VER) fail(400, '가입 안내를 읽고 동의해 주세요');   // 2026-11-18 개인 팬 게임 안내 동의 (가입 화면 체크)
-  const ipHash = await sha256('signup:' + (req.headers.get('CF-Connecting-IP') || 'local'));
-  const recent = await env.DB.prepare('SELECT COUNT(*) AS n FROM signups WHERE ip_hash = ? AND at > ?').bind(ipHash, now() - 3600e3).first();
-  if (recent.n >= SIGNUP_PER_HOUR) fail(429, '같은 곳에서 가입을 너무 많이 했어요. 1시간 뒤에 다시 해 주세요');
+  const M = await maintGet(env); if (M.on) fail(503, M.msg || MAINT_MSG);
+  const ipHash = await sha256('signup:' + (req.headers.get('CF-Connecting-IP') || 'local')), dev = devOf(req) || String(b.dev || ''), devHash = /^[\w-]{4,40}$/.test(dev) ? await gHash('dev:' + dev) : '';
+  {   // 2026-11-20 가입 제한: 막히면 언제부터 다시 되는지 알려 줌
+    const ipR = (await env.DB.prepare('SELECT at FROM signups WHERE ip_hash = ? AND at > ? ORDER BY at').bind(ipHash, now() - DAY).all()).results;
+    if (ipR.length >= SIGNUP_IP_DAY) fail(429, `같은 인터넷(IP)에서는 하루에 ${SIGNUP_IP_DAY}개까지만 가입할 수 있어요. ${kTime(ipR[ipR.length - SIGNUP_IP_DAY].at + DAY)}부터 다시 가입할 수 있어요`);
+    const devR = devHash ? (await env.DB.prepare('SELECT at FROM signups WHERE dev_hash = ? AND at > ? ORDER BY at').bind(devHash, now() - 7 * DAY).all()).results : [];
+    if (devR.length >= SIGNUP_DEV_WEEK) fail(429, `이 기기(브라우저)에서는 일주일에 ${SIGNUP_DEV_WEEK}번만 가입할 수 있어요. ${kTime(devR[devR.length - SIGNUP_DEV_WEEK].at + 7 * DAY)}부터 다시 가입할 수 있어요. 이미 만든 계정이 있다면 로그인해 주세요`);
+  }
   if (await findUser(env, nick)) fail(409, '이미 있는 닉네임이에요');
   const salt = randB64(16), code = newCode(), t = now();
   let id;
@@ -183,10 +195,10 @@ async function signup(req, env) {
   } catch (e) { if (String(e).includes('UNIQUE')) fail(409, '이미 있는 닉네임이에요'); throw e; }
   await env.DB.batch([
     charInsert(env, id, t),
-    env.DB.prepare('INSERT INTO signups (ip_hash, at) VALUES (?, ?)').bind(ipHash, t),
+    env.DB.prepare('INSERT INTO signups (ip_hash, dev_hash, at) VALUES (?, ?, ?)').bind(ipHash, devHash, t),
     env.DB.prepare('INSERT INTO activity (user_id, kind, detail, at) VALUES (?, ?, ?, ?)').bind(id, 'signup', `${nick} · 안내 동의 ${TERMS_VER}`, t),
   ]);
-  const user = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(id).first();
+  const user = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(id).first(); await track(env, id, req);
   return json({ token: await newSession(env, id, true), code, me: await loadMe(env, user) });
 }
 // 새 캐릭터 한 줄 (가입·계정 초기화 같이 씀)
@@ -219,7 +231,8 @@ async function login(req, env) {
   const ip = await ipOf(req), locked = await lockedMsg(env, user, ip); if (locked) fail(429, locked);
   if (!(await checkPw(user, b.pw))) { const r = await countFail(env, user, ip); fail(401, typeof r === 'string' ? r : `닉네임 또는 비밀번호가 맞지 않아요 (${r}/${LOCK_FAILS})`); }
   if (user.banned) fail(403, '이용이 정지된 계정이에요. 김치복 디스코드나 팬 카페로 문의해 주세요');
-  await env.DB.prepare('UPDATE users SET last_login = ? WHERE id = ?').bind(now(), user.id).run(); await clearFails(env, user, ip);
+  if (!user.is_admin) { const M = await maintGet(env); if (M.on) fail(503, M.msg || MAINT_MSG); }
+  await env.DB.prepare('UPDATE users SET last_login = ? WHERE id = ?').bind(now(), user.id).run(); await clearFails(env, user, ip); await track(env, user.id, req);
   await log(env, user.id, 'login');
   return json({ token: await newSession(env, user.id, !!b.keep), me: await loadMe(env, user) });
 }
@@ -525,7 +538,7 @@ const GAME = {
     if (c.life.raidGot === start) fail(400, '이미 보상을 받았어요');
     const res = await raidDO(env).fetch(`https://raid/result?start=${start}&uid=${user.id}`), j = await res.json();
     if (!res.ok) fail(res.status, j.error || '보상을 받지 못했어요');
-    const D = derive(c), RW = raidReward(c.lv), m = (j.dead ? RAID.deadMul : 1) * (.85 + .3 * Math.min(1, j.share * j.n)) * raidCrowd(j.n);
+    const D = derive(c), RW = raidReward(c.lv), m = (j.dead ? RAID.deadMul : 1) * (.85 + .3 * Math.min(1, j.share * j.n)) * raidCrowd(j.n10 ?? j.n);
     let gold = Math.round(RW.gold * m * (1 + D.goldB / 100)); const exp = Math.round(RW.exp * m * (1 + D.expB / 100));
     let skin = null, skinLv = 0, skinN = 0; const skins = [];
     // 2026-11-18 전용 스킨은 무조건 1개, RAID.drop2 확률로 2개. 세트 6부위 중 하나씩. 이미 있으면 개수가 늘어 레벨이 오름
@@ -539,7 +552,7 @@ const GAME = {
     }
     if (skins[0]) ({ skin, lv: skinLv, n: skinN } = skins[0]);
     c.gold += gold; const up = addExp(c, exp); c.life.raidGot = start; cntAdd(c, 'raid'); c.hp = D.maxHp; c.hpAt = at;
-    return { raid: { boss: j.boss, gold, exp, up, skin, skinLv, skinN, skins, crowd: Math.round((raidCrowd(j.n) - 1) * 100), dead: j.dead, rank: j.rank, n: j.n, dmg: j.dmg }, log: ['raid', `${gold} ${exp} ${skins.map(x => x.skin).join(' ')}`.trim()],
+    return { raid: { boss: j.boss, gold, exp, up, skin, skinLv, skinN, skins, crowd: Math.round((raidCrowd(j.n10 ?? j.n) - 1) * 100), dead: j.dead, rank: j.rank, n: j.n, dmg: j.dmg }, log: ['raid', `${gold} ${exp} ${skins.map(x => x.skin).join(' ')}`.trim()],
       chron: ['raid', `${RAID_BOSS[j.boss]?.n || '레이드'} 레이드에 성공했어요!`] };   // 2026-11-20 마을 소식에서는 한 레이드를 한 줄로 묶어 보여 줌 (news)
   },
   // 스킨샵 (겉모습만, 현금 결제 없음)
@@ -1174,6 +1187,13 @@ async function modsOrder(req, env, user) {
   return json({ ok: true });
 }
 
+// 관리자 버튼 숫자: 처리 안 한 신고 · 의심 계정
+async function admCounts(env) {
+  const t = now(), [r, f] = await env.DB.batch([
+    env.DB.prepare('SELECT COUNT(DISTINCT target_id) AS n FROM reports WHERE done = 0'),
+    env.DB.prepare('SELECT COUNT(DISTINCT user_id) AS n FROM flags WHERE ok_until < ?').bind(t)]);
+  return { reports: r.results[0].n, flags: f.results[0].n };
+}
 async function admin(p, m, req, env, user, url) {
   if (!user.is_admin) fail(403, '관리자만 쓸 수 있어요');
   const DB = env.DB, t = now(), q = k => url.searchParams.get(k) || '';
@@ -1213,12 +1233,52 @@ async function admin(p, m, req, env, user, url) {
       .bind(u ? 1 : 0, u?.id || 0, text, `%${text}%`).all()).results;
     return json({ lines: rows });
   }
-  if (m === 'GET' && p === '/api/admin/user') {
-    const u = await DB.prepare('SELECT u.id, u.nick, u.created_at, u.last_login, u.banned, u.mute_until, u.is_admin, c.lv FROM users u LEFT JOIN characters c ON c.user_id = u.id WHERE u.nick_key = ?').bind(q('nick').toLowerCase()).first();
+  if (m === 'GET' && p === '/api/admin/user') {   // 닉네임 또는 id로 찾기 (2026-11-20 같은 IP·기기 계정 · 의심 · 사본 같이)
+    const sel = 'SELECT u.id, u.nick, u.created_at, u.last_login, u.banned, u.mute_until, u.is_admin, c.lv, c.gold FROM users u LEFT JOIN characters c ON c.user_id = u.id WHERE ';
+    const u = q('id') ? await DB.prepare(sel + 'u.id = ?').bind(Number(q('id'))).first() : await DB.prepare(sel + 'u.nick_key = ?').bind(q('nick').trim().toLowerCase()).first();
     if (!u) fail(404, '그 닉네임은 없어요');
-    const w = await DB.prepare('SELECT COUNT(*) AS n FROM warnings WHERE user_id = ? AND at > ?').bind(u.id, t - 7 * DAY).first();
-    const r = await DB.prepare('SELECT COUNT(*) AS n FROM reports WHERE target_id = ? AND done = 0').bind(u.id).first();
-    return json({ user: { ...u, warns: w.n, reports: r.n } });
+    const [w, r, links, fl, snaps, acc] = await DB.batch([
+      DB.prepare('SELECT COUNT(*) AS n FROM warnings WHERE user_id = ? AND at > ?').bind(u.id, t - 7 * DAY),
+      DB.prepare('SELECT COUNT(*) AS n FROM reports WHERE target_id = ? AND done = 0').bind(u.id),
+      DB.prepare(`SELECT b.user_id AS id, x.nick, x.banned, c.lv, GROUP_CONCAT(DISTINCT a.kind) AS kinds, MAX(b.last_at) AS last FROM access a JOIN access b ON b.kind = a.kind AND b.h = a.h AND b.user_id <> a.user_id
+        JOIN users x ON x.id = b.user_id LEFT JOIN characters c ON c.user_id = b.user_id WHERE a.user_id = ? GROUP BY b.user_id ORDER BY last DESC LIMIT 30`).bind(u.id),
+      DB.prepare('SELECT k, why, score, at, ok_until FROM flags WHERE user_id = ? ORDER BY score DESC').bind(u.id),
+      DB.prepare('SELECT day, lv, gold, at FROM char_snap WHERE user_id = ? ORDER BY at DESC').bind(u.id),
+      DB.prepare("SELECT COUNT(CASE WHEN kind = 'ip' THEN 1 END) AS ip, COUNT(CASE WHEN kind = 'dev' THEN 1 END) AS dev FROM access WHERE user_id = ?").bind(u.id)]);
+    return json({ user: { ...u, warns: w.results[0].n, reports: r.results[0].n, ips: acc.results[0].ip, devs: acc.results[0].dev }, links: links.results, flags: fl.results, snaps: snaps.results });
+  }
+  if (m === 'GET' && p === '/api/admin/overview') {   // 관리자 화면 맨 위 요약
+    const [users, sign, act, rep, fl] = await DB.batch([
+      DB.prepare('SELECT COUNT(*) AS n FROM users'),
+      DB.prepare('SELECT COUNT(*) AS n FROM users WHERE created_at > ?').bind(t - DAY),
+      DB.prepare('SELECT COUNT(*) AS n FROM characters WHERE updated_at > ?').bind(t - DAY),
+      DB.prepare('SELECT COUNT(DISTINCT target_id) AS n FROM reports WHERE done = 0'),
+      DB.prepare('SELECT COUNT(DISTINCT user_id) AS n FROM flags WHERE ok_until < ?').bind(t)]);
+    return json({ users: users.results[0].n, signups: sign.results[0].n, active: act.results[0].n, reports: rep.results[0].n, flags: fl.results[0].n, maint: await maintGet(env, true) });
+  }
+  if (m === 'GET' && p === '/api/admin/flags') {   // 의심 계정 (점수 높은 순)
+    const rows = (await DB.prepare(`SELECT f.user_id AS id, u.nick, u.created_at, u.banned, c.lv, f.k, f.why, f.score, f.at FROM flags f JOIN users u ON u.id = f.user_id LEFT JOIN characters c ON c.user_id = f.user_id
+      WHERE f.ok_until < ? ORDER BY f.at DESC LIMIT 400`).bind(t).all()).results, by = new Map();
+    for (const r of rows) { let x = by.get(r.id); if (!x) by.set(r.id, x = { id: r.id, nick: r.nick, lv: r.lv, created_at: r.created_at, banned: r.banned, score: 0, list: [] }); x.score += r.score; x.list.push({ k: r.k, why: r.why, at: r.at }); }
+    return json({ users: [...by.values()].sort((a, b) => b.score - a.score), groups: (await groups(env, t)).filter(g => g.ids.length >= 2).length });
+  }
+  if (m === 'POST' && p === '/api/admin/flag-ok') {   // 문제 없음 → 그 기간 동안 의심 목록에서 숨김
+    const u = await userOf(id), days = Math.max(1, Math.min(365, Number(body.days) || 30));
+    await DB.prepare('UPDATE flags SET ok_until = ? WHERE user_id = ?').bind(t + days * DAY, u.id).run(); await done('flag-ok', `${u.nick} ${days}일`); return json({ ok: true });
+  }
+  if (m === 'POST' && p === '/api/admin/scan') { const n = await scan(env); await done('scan', String(n)); return json({ ok: true, n }); }   // 지금 바로 다시 검사
+  if (m === 'POST' && p === '/api/admin/snap-now') { await snapAll(env, dayKey(t)); await done('snap', dayKey(t)); return json({ ok: true }); }
+  if (m === 'POST' && p === '/api/admin/restore') {   // 이 계정 되돌리기 (사본 날짜)
+    const u = await userOf(id), day = String(body.day || '');
+    if (!(await restore(env, u.id, day, '되돌리기 전 ' + new Date(t + 9 * 3600e3).toISOString().slice(5, 16).replace('T', ' ')))) fail(404, '그 날짜 사본이 없어요');
+    await toRooms(env, { act: 'kick', id: u.id, why: '관리자가 계정을 예전 상태로 되돌렸어요. 다시 들어와 주세요' });
+    await done('restore', `${u.nick} ${day}`); return json({ ok: true });
+  }
+  if (m === 'POST' && p === '/api/admin/maint') {   // 관리자만 접속 가능 (점검 모드)
+    const v = { on: !!body.on, msg: String(body.msg || '').trim().slice(0, 100) };
+    await DB.prepare("INSERT OR REPLACE INTO settings (k, v) VALUES ('maint', ?)").bind(JSON.stringify(v)).run(); maintSet(v);
+    if (v.on) await toRooms(env, { act: 'maint', msg: v.msg || MAINT_MSG });
+    await done('maint', `${v.on ? '켬' : '끔'} ${v.msg}`); return json({ ok: true, maint: v });
   }
   if (m === 'POST' && p === '/api/admin/temp-pw') {   // 비밀번호·복구 코드를 다 잊은 사람에게 임시 비밀번호
     const u = await userOf(id), abc = 'abcdefghjkmnpqrstuvwxyz', dig = '23456789', r = crypto.getRandomValues(new Uint8Array(8));

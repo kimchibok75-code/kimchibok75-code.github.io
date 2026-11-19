@@ -3,6 +3,7 @@
 // - 채팅 규칙(기획서 8-1)은 여기서 검사. 금칙어 목록은 서버에만 있음
 import { DurableObject } from 'cloudflare:workers';
 import { cleanChat } from './chat.js';
+import { maintGet, MAINT_MSG } from './maint.js';
 import { T, MW, MH, FISH_BY, fishByName, CROP_BY } from '../../assets/js/game-rules.js';
 import { SPOTS } from '../../assets/js/game-map.js';
 // 광장: 분수 가운데에서 이 거리 안 (치지직 채팅은 여기 있는 사람 말만 마을에 보임)
@@ -73,6 +74,7 @@ export class Town extends DurableObject {
     if (!/^[\w-]{20,}$/.test(String(token || ''))) return ws.close(4401, 'auth');
     const u = await DB.prepare('SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?').bind(await sha256(token), now()).first();
     if (!u || u.banned) { this.send(ws, { t: 'bye', why: u ? '이용이 정지된 계정이에요' : '로그인이 끝났어요' }); return ws.close(4401, 'auth'); }
+    if (!u.is_admin) { const M = await maintGet(this.env); if (M.on) { this.send(ws, { t: 'maint', msg: M.msg || MAINT_MSG }); return ws.close(4003, 'maint'); } }   // 2026-11-20 점검 중: 관리자만
     const c = await DB.prepare('SELECT * FROM characters WHERE user_id = ?').bind(u.id).first();
     if (!c) return ws.close(4401, 'auth');
     const rep = await DB.prepare('SELECT COUNT(DISTINCT reporter_id) AS n FROM reports WHERE target_id = ? AND done = 0').bind(u.id).first();
@@ -257,6 +259,10 @@ export class Town extends DurableObject {
     if (b.act === 'house') this.all({ t: 'house', h: b.h });   // 누가 집을 짓거나 옮김 → 그 집만 고쳐 그림
     if (b.act === 'event') this.all({ t: 'event', e: b.e });
     if (b.act === 'raid') this.all({ t: 'raid', start: b.start });   // 관리자가 레이드를 엶   // 마을 사건·공동 건설 소식
+    if (b.act === 'maint') for (const w of this.members()) {   // 2026-11-20 점검 시작: 관리자가 아닌 사람은 모두 내보냄
+      const a = this.info(w); if (a.adm || a.gone) continue;
+      a.gone = true; this.save(w, a); this.send(w, { t: 'maint', msg: b.msg || MAINT_MSG }); try { w.close(4003, 'maint'); } catch {} this.all({ t: 'leave', id: a.id }, w);
+    }
     for (const w of this.members()) {
       const a = this.info(w); if (a.id !== b.id) continue;
       if (b.act === 'dup') { a.gone = true; a.dup = true; this.save(w, a); this.send(w, { t: 'dup' }); try { w.close(4002, 'dup'); } catch {} this.all({ t: 'leave', id: a.id }, w); }

@@ -46,7 +46,7 @@ export class Raid extends DurableObject {
     if (p === '/state') {   // 지금 모집 중인 레이드 (화면이 정각 창을 띄울 때 확인)
       const st = this.open(r, t);
       const ob = st ? (r?.start === st ? r.boss : raidBossOf(st)) : '';   // 모집 중인 레이드의 보스
-      return J({ open: st, boss: ob, joined: st && r?.start === st ? Object.keys(r.players).length : 0, run: r && !r.done ? r.start : 0, rboss: r?.boss || 'rdragon', last: r?.done ? r.start : 0 });   // run = 진행 중인 레이드 (새로고침하면 다시 들어감)
+      return J({ open: st, boss: ob, joined: st && r?.start === st ? Object.keys(r.players).length : 0, joined10: st && r?.start === st ? Object.values(r.players).filter(o => (o.lv || 0) >= 10).length : 0, run: r && !r.done ? r.start : 0, rboss: r?.boss || 'rdragon', last: r?.done ? r.start : 0 });   // run = 진행 중인 레이드 (새로고침하면 다시 들어감)
     }
     if (p === '/result') {   // 보상 받기 전 확인 (한 번만)
       const st = Number(url.searchParams.get('start')), uid = Number(url.searchParams.get('uid'));
@@ -55,7 +55,7 @@ export class Raid extends DurableObject {
       const me = r.players[uid]; if (!me) return J({ error: '이 레이드에 참여하지 않았어요' }, 404);
       // 2026-11-20 여기서 '받음'을 적지 않음: 캐릭터 저장이 겹쳐 다시 시도하면 '이미 받았어요'로 보상이 사라졌음. 한 번만 받기는 캐릭터의 life.raidGot(저장할 때 ver 확인)이 지킴
       const list = Object.values(r.players), total = list.reduce((a, b) => a + b.dmg, 0) || 1;
-      return J({ dead: me.dead, dmg: Math.round(me.dmg), share: me.dmg / total, n: list.length, rank: 1 + list.filter(o => o.dmg > me.dmg).length, boss: r.boss });
+      return J({ dead: me.dead, dmg: Math.round(me.dmg), share: me.dmg / total, n: list.length, n10: list.filter(o => (o.lv || 0) >= 10).length,   /* 2026-11-20 인원 보너스는 10레벨 이상만 셈 */ rank: 1 + list.filter(o => o.dmg > me.dmg).length, boss: r.boss });
     }
     if (p === '/ws') {
       if (req.headers.get('Upgrade') !== 'websocket') return new Response('websocket only', { status: 426 });

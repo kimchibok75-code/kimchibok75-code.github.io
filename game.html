@@ -547,6 +547,7 @@ body.hunting .side { display: none; }
 .modal { position: fixed; inset: 0; z-index: 40; background: rgba(31, 42, 58, .38); display: grid; place-items: center; padding: 16px; }
 .modal[hidden] { display: none; }
 .away[hidden] { display: none; }
+.away.maint { z-index: 9500; background: rgba(31, 42, 58, .86); }
 .away { position: fixed; inset: 0; z-index: 90; background: rgba(31, 42, 58, .72); display: grid; place-items: center; padding: 16px; }
 .away-card { width: min(360px, 100%); background: var(--paper); border: 2px solid var(--ink); border-radius: 18px; box-shadow: 0 5px 0 var(--ink); padding: 22px 18px 18px; display: grid; gap: 12px; text-align: center; }
 .away-card h2 { margin: 0; font-size: calc(22px * var(--fs)); } .away-card p { margin: 0; line-height: 1.6; color: var(--ink-soft); }
@@ -771,6 +772,29 @@ body.hunting .side { display: none; }
 .sndset input[type=range] { width: 100%; accent-color: #e8553a; }
 .skgrid.raid button { position: relative; } .skgrid.raid .rlv { position: absolute; left: 4px; top: 4px; z-index: 1; background: #b8392f; color: #fff; border-radius: 7px; padding: 1px 5px; font-size: 10.5px; line-height: 1.3; pointer-events: none; }
 .iconbtn.adm { background: #efe7ff; border-color: #6c4fc2; }
+.iconbtn.adm[data-n]::after { content: attr(data-n); position: absolute; top: -7px; right: -7px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--kimchi); color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center; border: 2px solid #fff; }
+/* 2026-11-20 관리자 화면 */
+.adm-info { font-size: calc(13px * var(--fs)); color: var(--ink-soft); background: #f4f1ff; border-radius: 10px; padding: 7px 10px; margin-bottom: 8px; line-height: 1.5; }
+.adm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.adm-card { border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 10px; background: #fff; display: grid; gap: 5px; font-size: calc(13.5px * var(--fs)); }
+.adm-card + .adm-card, .adm-cols { margin-top: 8px; }
+.adm-card.hot { border-color: var(--kimchi); background: #fff6f4; }
+.adm-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; } .adm-top small { color: var(--ink-soft); }
+.adm-nick { font: inherit; font-weight: 800; background: none; border: 0; padding: 0; color: #4a3aa8; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.adm-big { font-size: calc(17px * var(--fs)); }
+.adm-score { margin-left: auto; font-weight: 800; color: var(--kimchi); font-size: calc(12px * var(--fs)); }
+.adm-why { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: calc(12.5px * var(--fs)); } .adm-why b { white-space: nowrap; margin-right: 4px; }
+.adm-acts { display: flex; flex-wrap: wrap; gap: 5px; } .mini.danger { color: var(--kimchi); border-color: var(--kimchi); }
+.adm-empty { text-align: center; color: var(--ink-soft); padding: 22px 0; margin: 0; }
+.adm-seg { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; } .adm-seg button { font: inherit; font-size: calc(13px * var(--fs)); padding: 6px 12px; border-radius: 99px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; }
+.adm-seg button[aria-pressed="true"] { background: var(--bc, #6c4fc2); color: #fff; border-color: transparent; }
+.adm-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .adm-cols .adm-card + .adm-card { margin-top: 0; }
+@media (max-width: 600px) { .adm-cols { grid-template-columns: 1fr; } }
+.adm-h { margin: 0 0 4px; font-size: calc(14px * var(--fs)); display: flex; align-items: center; gap: 6px; } .adm-h small { color: var(--ink-soft); font-weight: 600; }
+.adm-mini { list-style: none; margin: 0 0 6px; padding: 0; display: grid; gap: 4px; max-height: 170px; overflow: auto; }
+.adm-mini li { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: calc(13px * var(--fs)); } .adm-mini small { color: var(--ink-soft); }
+.adm-ck { display: flex; gap: 8px; align-items: center; margin: 4px 0; cursor: pointer; } .adm-ck input { width: 20px; height: 20px; }
+.admlog.tall { max-height: 360px; }
 .raidbox { position: absolute; top: 62px; left: 12px; width: min(250px, calc(58% - 12px)); background: rgba(38,24,24,.94); color: #fff; border: 2px solid var(--ink); border-radius: 14px; padding: 8px 12px; z-index: 6; box-shadow: var(--shadow); }
 .raidbox .rb-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 8px; font-size: calc(14px * var(--fs)); }
 .raidbox .rb-top b { margin-right: auto; }
@@ -1331,6 +1355,9 @@ a.iconbtn { color: inherit; text-decoration: none; }
 </div>
 
 <!-- 모달 -->
+<div class="away maint" id="maintBox" hidden role="alertdialog" aria-modal="true" aria-labelledby="maintT">
+    <div class="away-card"><div class="away-ic" aria-hidden="true">🛠️</div><h2 id="maintT">점검 중입니다</h2><p></p><small class="muted">점검이 끝나면 저절로 다시 들어가요</small>
+      <button class="btn main" id="maintGo" type="button">다시 확인하기</button></div></div>
 <div class="away" id="away" hidden role="alertdialog" aria-modal="true" aria-labelledby="awayT">
     <div class="away-card"><div class="away-ic" aria-hidden="true">📱💻</div><h2 id="awayT"></h2><p></p>
       <button class="btn main" id="awayGo" type="button">여기서 이어서 하기</button><button class="btn" id="awayNo" type="button">아니요</button></div>
@@ -1345,7 +1372,7 @@ import { JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, T
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
-import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico, icoImgFlat } from './assets/js/game-icons.js?v=__BUILD__';
+import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico, icoImgFlat, setIconOverride } from './assets/js/game-icons.js?v=__BUILD__';
 import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSolid, noise2, inCore, BUILDINGS as MAP_BUILDINGS, SPOTS, PORTAL, BACK, FISH_AT, PLOTS, BENCHES, NODES, DECO,
   HOUSE_W, HOUSE_H, DPORTAL, ROOM_W, ROOM_H, ROOM_DOOR, soft, PLAZA_C, PLAZA_R, nearWater, shoreNear, seaAt, coastY, SEA_AT, fishShadows, FSHADOW } from './assets/js/game-map.js?v=__BUILD__';
 import { DW, DH, DONG_NAME, dTileAt, dSolid, dSoft, DTREES, DBENCH, DGATE, DSPAWN, canHouseD, treeUnderHouse, LAKE } from './assets/js/game-dong.js?v=__BUILD__';
@@ -1870,7 +1897,7 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 // 다 불러온 뒤에 마을을 시작함 (artReady). 못 불러온 그림은 예전 코드 그림을 그대로 씀
 const ART = {};
 const MON_IMG = ['rat', 'hen', 'boar', 'wolf', 'shroom', 'vine', 'eagle', 'turtle', 'golem', 'drone', 'guard', 'fixbot', 'kingboar', 'bear', 'lord', 'boss', 'bat', 'spider', 'ogolem', 'mole', 'snake', 'croc', 'slime', 'cobra'];   // 2026-11-20 사용자 몬스터 그림 (mon-art.py)
-const ART_N = ['sign', ...FIELDS.map(f => 'hbg-' + f.id), ...MON_IMG.map(k => 'mon-' + k), 'fx-dragon', 'fx-ogre', 'b-farmrank', 'b-suggest', 'b-beginner', 'b-dex', 'bench', 'soon-sign', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
+const ART_N = ['sign', 'd-head', 'og-head', ...FIELDS.map(f => 'hbg-' + f.id), ...MON_IMG.map(k => 'mon-' + k), 'fx-dragon', 'fx-ogre', 'b-farmrank', 'b-suggest', 'b-beginner', 'b-dex', 'bench', 'soon-sign', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
   'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
   ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].flatMap(n => ['mg-' + n, 'fk-' + n, 'mk-' + n, 'fa-' + n])];
@@ -1880,6 +1907,10 @@ let raidArtP = null;
 const loadArt = n => new Promise(ok => { const im = new Image(); im.onload = () => { ART[n] = im; ok(); }; im.onerror = () => ok(); im.src = `assets/img/town/${n}.webp?v=__BUILD__`; });
 const loadRaidArt = () => (raidArtP ||= Promise.all(ART_RAID.map(loadArt)));
 const artReady = Promise.all(ART_N.map(loadArt));
+// 2026-11-20 🐉 · 👹 아이콘은 뱃지와 같은 드래곤·오우거 얼굴 그림 (검은 테두리)
+artReady.then(() => { for (const [k, a] of [['dragon', 'd-head'], ['ogre', 'og-head']]) { const im = ART[a]; if (!im) continue;
+  const cv = document.createElement('canvas'); cv.width = cv.height = 64; const q = cv.getContext('2d'), f = 56 / Math.max(im.width, im.height), w = im.width * f, h = im.height * f;
+  inkImage(q, im, 32 - w / 2, 32 - h / 2, w, h, 3.4); setIconOverride(k, cv.toDataURL()); } });
 // 그림 조각 (캐릭터 스킨용): inkDraw 안에서 테두리 없이 그림을 그림. rot = 돌리기(가운데 기준)
 // 그림 바깥 테두리 (2026-11-18): 그림 모양대로 검게 칠한 판(silOf)을 둘레 16방향으로 O만큼 밀어 그린 뒤 그 위에 그림
 const SIL = new WeakMap(), RING = Array.from({ length: 16 }, (_, i) => [Math.cos(i * Math.PI / 8), Math.sin(i * Math.PI / 8)]);
@@ -2592,7 +2623,7 @@ const soonAt = b => ({ x: (b.x + b.w / 2) * T, y: (b.y + b.h) * T + T * 1.1 });
 // 그림 내 디자인/안내판.png → town-art.py → sign.webp. 자리는 문 왼쪽 앞 (SIGN_OFF로 건물마다 조정, 칸 단위)
 const SIGN_IDS = ['lumber', 'fishshop', 'cafe', 'dex', 'gacha', 'hall', 'smith', 'skin', 'quarry', 'portal', 'farmshed'];
 const SIGN_W = 30, SIGN_H = Math.round(SIGN_W * 203 / 160);
-const SIGN_OFF = { fishshop: [-1.4, .7], farmshed: [-1.5, .7] };
+const SIGN_OFF = { fishshop: [-1.4, .7], farmshed: [-2.3, .7], smith: [-2.5, .8], hall: [-2.5, .8], cafe: [-2.4, .8] };   // 2026-11-20 대장간·마을회관·카페·텃밭 창고는 조금 왼쪽으로
 const SP_SIGN = () => sprite('signI', SIGN_W + BP * 2, SIGN_H + BP * 2, SIGN_W / 2 + BP, SIGN_H + BP, g => inkImage(g, ART.sign, -SIGN_W / 2, -SIGN_H, SIGN_W, SIGN_H));
 let SIGNS = null;
 const signList = () => SIGNS ||= SIGN_IDS.map(id => {
@@ -3363,7 +3394,7 @@ async function raidCheck() {
   if (mine && j.last === mine) { RD = null; return raidClaim(mine); }   // 끝났는데 보상을 못 받았음
   if (mine && mine < j.now - RAID.every) try { localStorage.removeItem('cbt-raid'); } catch {}
   if (!j.open || j.open <= j.now + 1500 || RAIDQ.asked === j.open) return;
-  RAIDQ.asked = j.open; raidAsk(j.open, j.joined, j.boss);
+  RAIDQ.asked = j.open; RAIDQ.j10 = j.joined10 ?? j.joined; raidAsk(j.open, j.joined, j.boss);
 }
 // 레이드 모집 창 (2026-11-18 새로): 건물 창과 같은 틀. 닫아도 위쪽 칩(#raidChip)으로 모집이 끝날 때까지 다시 열 수 있음
 function raidAsk(start, joined, boss) {
@@ -3376,21 +3407,21 @@ function raidAsk(start, joined, boss) {
 function raidSheet() {
   loadRaidArt();
   const start = RAIDQ.open; if (!start || RD) return;
-  const R = raidReward(me.lv), B = RB(), n = RAIDQ.joined || 0, bonus = Math.round((raidCrowd(n + 1) - 1) * 100);
+  const R = raidReward(me.lv), B = RB(), n = RAIDQ.joined || 0, n10 = RAIDQ.j10 ?? n, bonus = me.lv >= 10 ? Math.round((raidCrowd(n10 + 1) - 1) * 100) : 0;   // 2026-11-20 인원 보너스는 10레벨 이상만 셈
   const left = () => Math.max(0, Math.ceil((start - srvNow()) / 1000)), ring = l => `${(l / (RAID.recruit / 1000)) * 100.5} 100.5`;
   const hi = bossHeadImg(RAIDQ.boss), ic = hi ? '<img class="rq-ic" src="' + hi.src + '" alt="">' : B.i;
   bsOpen({ id: 'raid', icon: ic, name: `${B.n} 레이드` }, {
     tag: `마을 사람들과 다 같이 ${B.obj} 잡아요 · 1~2분`,
     body: `<div class="rq-hero">
         <div class="rq-time"><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="16" class="bg"/><circle cx="18" cy="18" r="16" class="fg" id="rqRing" stroke-dasharray="${ring(left())}"/></svg><b id="raidLeft">${left()}</b><small>초 남음</small></div>
-        <div class="rq-who"><b id="raidJoined">${n}명</b><span>참여 중</span><em id="raidBonus">${n ? `인원 보너스 +${Math.round((raidCrowd(n) - 1) * 100)}%` : '첫 번째로 참여해 보세요!'}</em></div>
+        <div class="rq-who"><b id="raidJoined">${n}명</b><span>참여 중</span><em id="raidBonus">${n ? `인원 보너스 +${Math.round((raidCrowd(n10) - 1) * 100)}%` : '첫 번째로 참여해 보세요!'}</em></div>
       </div>
       <div class="rq-rew">
         <span>🪙<b>${fmtN(R.gold)}</b><small>골드 약</small></span>
         <span>✨<b>${fmtN(R.exp)}</b><small>경험치 약</small></span>
         <span class="sk">${B.i}<b>스킨 1개 확정</b><small>30% 확률로 2개!</small></span>
       </div>
-      <ul class="rq-tips"><li>👥 한 명마다 보상 +3% (최대 +60%)${bonus ? ` · 내가 들어가면 +${bonus}%` : ''} ${itip('🔥 바닥이 빨개지면 피하세요\n💤 쓰러져도 끝까지 있으면 보상을 받아요\n🚪 중간에 나가면 그 레이드 보상은 없어요')}</li></ul>`,
+      <ul class="rq-tips"><li>👥 10레벨 이상 한 명마다 보상 +3% (최대 +60%)${bonus ? ` · 내가 들어가면 +${bonus}%` : ''} ${itip('🔥 바닥이 빨개지면 피하세요\n💤 쓰러져도 끝까지 있으면 보상을 받아요\n🚪 중간에 나가면 그 레이드 보상은 없어요')}</li></ul>`,
     foot: `<div class="bs-two">${bbtn('no', '나중에')}${bbtn('join', '⚔️ 참여하기', '하던 사냥·낚시는 멈춰요', { main: true })}</div>`,
     ready: el => {
       clearInterval(RAIDQ.tick);
@@ -3413,9 +3444,9 @@ $('#raidChip').onclick = () => raidSheet();
 setInterval(raidChip, 1000);
 setInterval(async () => {
   if (!RAIDQ.open || RD || document.visibilityState !== 'visible') return;
-  try { const j = await api('/api/raid'); if (j.open !== RAIDQ.open) return; RAIDQ.joined = j.joined || 0;
+  try { const j = await api('/api/raid'); if (j.open !== RAIDQ.open) return; RAIDQ.joined = j.joined || 0; RAIDQ.j10 = j.joined10 ?? RAIDQ.joined;
     const a = document.getElementById('raidJoined'), b = document.getElementById('raidBonus');
-    if (a) a.textContent = RAIDQ.joined + '명'; if (b) b.textContent = RAIDQ.joined ? `인원 보너스 +${Math.round((raidCrowd(RAIDQ.joined) - 1) * 100)}%` : '첫 번째로 참여해 보세요!';
+    if (a) a.textContent = RAIDQ.joined + '명'; if (b) b.textContent = RAIDQ.joined ? `인원 보너스 +${Math.round((raidCrowd(RAIDQ.j10) - 1) * 100)}%` : '첫 번째로 참여해 보세요!';
   } catch {}
 }, 6000);
 async function raidJoin(start) {
@@ -6323,12 +6354,23 @@ const store = { get: k => { try { return localStorage.getItem(k) || sessionStora
   set: (k, v, keep) => { try { (keep ? localStorage : sessionStorage).setItem(k, v); } catch {} }, del: k => { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch {} } };
 let token = store.get('cbt-token');
 let apiAt = 0;   // 마지막으로 서버에 저장 요청을 보낸 시각 (접속 신호 아끼기)
+// 2026-11-20 점검 중(관리자만 접속 가능): 서버가 503을 주거나 마을 방이 {t:'maint'}를 보내면 점검 화면. 30초마다 확인해서 끝나면 새로 고침
+const MT = { on: false, t: 0 };
+function showMaint(msg) {
+  const el = $('#maintBox'); el.querySelector('p').textContent = msg || '지금은 점검 중이에요. 잠시 뒤에 다시 들어와 주세요'; el.hidden = false;
+  if (MT.on) return; MT.on = true;
+  try { S.away = true; NET.want = false; NET.ws?.close(); closeModal(); } catch {}
+  const check = async () => { try { const j = await (await fetch(API + '/api/health', { cache: 'no-store' })).json(); if (!j.maint) location.reload(); else el.querySelector('p').textContent = j.maint; } catch {} };
+  $('#maintGo').onclick = check; MT.t = setInterval(check, 30e3);
+}
+const devId = () => { try { return localStorage.getItem('cbt-dev') || ''; } catch { return ''; } };   // 기기(브라우저) 번호: 가입 제한 · 다중 계정 확인용
 async function api(path, body, opts = {}) {
   let r; if (body) apiAt = Date.now();
-  try { r = await fetch(API + path, { method: body ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: body ? JSON.stringify(body) : undefined, keepalive: !!opts.keepalive }); }
+  try { r = await fetch(API + path, { method: body ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json', ...(devId() ? { 'X-Dev': devId() } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: body ? JSON.stringify(body) : undefined, keepalive: !!opts.keepalive }); }
   catch { throw new Error('서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요'); }
   const j = await r.json().catch(() => ({}));
   if (r.status === 401 && token && !opts.quiet401) { token = null; store.del('cbt-token'); }
+  if (r.status === 503 && j.error) showMaint(j.error);
   if (!r.ok) { const e = new Error(j.error || `문제가 생겼어요 (${r.status})`); e.status = r.status; throw e; }
   return j;
 }
@@ -6347,6 +6389,7 @@ function applyMe(m, keep) {
 }
 // 서버 응답 처리: 내 정보 맞추기 + 사냥 결과 알려 주기
 function took(j) {
+  if (j.adm) admBadge(j.adm);   // 관리자: 처리 안 한 신고 · 의심 계정 수
   if (j.fishCoin) toast(`🐚 남은 낚시 코인을 골드로 바꿨어요 (+${j.fishCoin.toLocaleString()})`);   // 2026-11-20 낚시 코인 없앰
   if (j.farmCoin) toast(`🌱 남은 텃밭 코인을 골드로 바꿨어요 (+${j.farmCoin.toLocaleString()})`);   // 2026-11-20 텃밭 개편: 텃밭 코인 없앰
   if (j.auto && !$('#app').hidden) {
@@ -7901,6 +7944,7 @@ function onNet(m) {
   else if (m.t === 'raid') raidCheck();   // 관리자가 레이드를 엶
   else if (m.t === 'notice') { chatSys(`📢 공지: ${m.text}`); toast(`📢 ${m.text}`); }
   else if (m.t === 'kick' || m.t === 'bye') { NET.want = false; chatSys(m.why); toast(m.why); }
+  else if (m.t === 'maint') showMaint(m.msg);
   setOnline();
 }
 // 내 겉모습·레벨이 바뀌면 다른 사람 화면에도 (서버가 저장된 값을 다시 읽음)
@@ -7915,91 +7959,164 @@ function openBlocks() {
     el => wire(el, async id => { try { await api('/api/block', { id: +id, off: true }); S.blocked.delete(+id); toast('차단을 풀었어요'); openBlocks(); } catch (x) { toast(x.message); } }));
 }
 
-// ───────── 관리자 화면 (김치복님): 신고함 · 채팅 기록 · 사람 찾기 · 공지 ─────────
+// ───────── 관리자 화면 (2026-11-20 새로 정리): 🚨 의심 · 📮 신고 · 👤 사람 · 💬 채팅 · 🛠️ 운영(점검·공지·사본) · 🧪 치트 ─────────
 const fmtT = t => new Date(t).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-const ADM = { tab: 'reports', done: false, chat: null, user: null, q: { nick: '', text: '', who: '' } };
-$('#admBtn').onclick = () => openAdmin('cheat');
-async function openAdmin(tab = ADM.tab) {
-  ADM.tab = tab;
-  const tabs = [['reports', '🚨 신고함'], ['chat', '💬 채팅'], ['user', '🔎 사람'], ['notice', '📢 공지'], ['cheat', '🧪 치트']];
-  const show = (body, ready) => openModal(`<h3>🛡️ 관리자 화면</h3><div class="rtabs">${tabs.map(([k, n]) => `<button data-t="${k}" aria-pressed="${k === tab}">${n}</button>`).join('')}</div><div class="adm">${body}</div><button class="close" data-close>닫기</button>`,
-    el => { el.querySelector('.rtabs').onclick = e => { const t = e.target.closest('[data-t]')?.dataset.t; if (t) openAdmin(t); }; wire(el.querySelector('.adm'), async (x, b) => { try { await ready(x, el, b); } catch (err) { toast(err.message); } }); });
-  if (tab === 'reports') {
-    show('<p class="muted">불러오는 중…</p>', () => {});
-    let j; try { j = await api(`/api/admin/reports${ADM.done ? '?done=1' : ''}`); } catch (x) { return show(`<p class="muted">${esc(x.message)}</p>`, () => {}); }
-    return show(`<p class="muted">${ADM.done ? '처리한 신고 (최근 100개)' : '처리 안 한 신고'} <button class="mini" data-x="toggle">${ADM.done ? '처리 안 한 것 보기' : '처리한 것 보기'}</button></p>
-      ${j.reports.map(r => `<div class="rep"><b>🚨 ${esc(r.target)}</b> <small class="muted">← ${esc(r.reporter)} · ${esc(r.reason)} · ${fmtT(r.at)}</small>
-        <details><summary>최근 채팅 ${r.lines.length}줄</summary><ul class="admlog">${r.lines.map(l => `<li><small class="muted">${fmtT(l.at)} ${l.ch === 'all' ? '전체' : '근처'}</small> ${esc(l.text)}</li>`).join('') || '<li class="muted">채팅 기록 없음</li>'}</ul></details>
-        ${ADM.done ? `<small class="muted">처리: ${esc(r.note || '완료')}</small>` : `<div class="btns"><button class="mini" data-x="ok:${r.id}">문제 없음</button><button class="mini" data-x="mute:${r.id}:${r.target_id}">1시간 조용</button><button class="mini" data-x="kick:${r.id}:${r.target_id}">내보내기</button><button class="mini" data-x="ban:${r.id}:${r.target_id}" style="color:var(--kimchi)">영구 차단</button></div>`}</div>`).join('') || '<p class="muted">신고가 없어요 👍</p>'}
-      <p class="muted">같은 사람에 대한 신고는 한 번 처리하면 같이 처리돼요. 서로 다른 3명 넘게 신고하면 처리 전까지 그 사람은 채팅을 할 수 없어요.</p>`,
-      async x => {
-        if (x === 'toggle') { ADM.done = !ADM.done; return openAdmin('reports'); }
+const ADM = { tab: 'flags', done: false, chat: null, user: null, flags: null, reports: null, ov: null, cnt: { reports: 0, flags: 0 }, q: { nick: '', text: '', who: '' }, msg: '' };
+const ADM_B = { id: 'admin', icon: '🛡️', name: '관리자 화면' };
+// 의심 종류 (서버 guard.js의 k)
+const FLAG_K = { 'multi-ip': '🌐 같은 IP', 'multi-dev': '📱 같은 기기', 'fast-exp': '⚡ 빠른 성장', 'fast-gold': '💰 빠른 돈', 'bot-hours': '🤖 쉬지 않음', 'bot-repeat': '🔁 같은 일 반복',
+  rejects: '⛔ 거절 많음', 'report-ring': '🗳️ 짜고 신고', 'raid-ring': '🐉 같이 레이드', 'new-top': '🆕 새 계정 상위권' };
+const daysAgo = t => { const d = Math.floor((Date.now() - t) / 864e5); return d < 1 ? '오늘' : `${d}일 전`; };
+function admBadge(c) {
+  if (c) ADM.cnt = c; const b = $('#admBtn'); if (!b) return;
+  const n = (ADM.cnt.flags || 0) + (ADM.cnt.reports || 0); if (n) b.dataset.n = n > 99 ? '99+' : n; else delete b.dataset.n;
+}
+$('#admBtn').onclick = () => openAdmin(ADM.cnt.flags ? 'flags' : ADM.cnt.reports ? 'reports' : ADM.tab);
+async function admLoad(tab) {   // 탭마다 필요한 것을 서버에서 읽음
+  if (!ADM.ov || tab === 'ops' || tab === 'flags' || tab === 'reports') ADM.ov = await api('/api/admin/overview').catch(() => ADM.ov);
+  if (ADM.ov) admBadge({ reports: ADM.ov.reports, flags: ADM.ov.flags });
+  if (tab === 'flags') ADM.flags = await api('/api/admin/flags');
+  if (tab === 'reports') ADM.reports = (await api(`/api/admin/reports${ADM.done ? '?done=1' : ''}`)).reports;
+}
+async function admFind(q) {   // q: 닉네임 또는 {id}
+  ADM.user = await api(q.id ? `/api/admin/user?id=${q.id}` : `/api/admin/user?nick=${encodeURIComponent(q)}`); ADM.q.who = ADM.user.user.nick; return openAdmin('user', true);
+}
+async function openAdmin(tab = ADM.tab, keep) {
+  ADM.tab = tab; S.btab.admin = tab;
+  if (!keep) { openModal(bsWrap(ADM_B, { tag: '불러오는 중…', body: '<p class="muted" style="text-align:center;padding:24px 0">불러오는 중…</p>' })); try { await admLoad(tab); } catch (x) { toast(x.message); } }
+  reopen = () => openAdmin(S.btab.admin);   // 탭을 바꾸면 그 탭 내용을 새로 읽음
+  const o = ADM.ov, c = ADM.cnt;
+  const tabs = [['flags', '🚨 의심', c.flags], ['reports', '📮 신고', c.reports], ['user', '👤 사람'], ['chat', '💬 채팅'], ['ops', o?.maint?.on ? '🔒 운영' : '🛠️ 운영'], ['cheat', '🧪 치트']];
+  const tag = o ? `전체 ${fmtN(o.users)}명 · 오늘 가입 ${o.signups} · 하루 접속 ${o.active}${o.maint?.on ? ' · 🔒 점검 중 (관리자만 접속)' : ''}` : '';
+  const V = ADM_VIEW[tab]();
+  bsOpen(ADM_B, { tag, tabs, tab, body: V.body, foot: V.foot }, async (x, btn) => { try { await V.on(x, btn, sheet); } catch (err) { toast(err.message); } }, true);
+}
+const admUserBtn = (id, nick) => `<button class="adm-nick" data-x="who:${id}">${esc(nick)}</button>`;
+const ADM_VIEW = {
+  flags() {
+    const F = ADM.flags || { users: [] };
+    return {
+      body: `<div class="adm-info">한 시간마다 서버가 6가지를 검사해요. <b>자동으로 막지 않아요</b> — 보고 판단해 주세요. ${itip('① 같은 IP·기기에서 만든 계정 묶음\n② 보통보다 몇 배 빠른 경험치·골드\n③ 하루 20시간 넘게 활동 · 같은 일만 계속 (매크로 의심)\n④ 서버가 거절한 요청이 많음 (조작 시도 의심)\n⑤ 같은 묶음 계정끼리 같은 사람 신고 · 같은 레이드\n⑥ 만든 지 7일 안 된 계정이 순위 10위 안\n\n같은 집 와이파이나 같은 통신사(휴대폰)는 IP가 같을 수 있어요.\n\'문제 없음\'을 누르면 30일 동안 목록에서 숨겨요.')}</div>
+        ${F.users.length ? `<ul class="adm-list">${F.users.map(u => `<li class="adm-card${u.score >= 5 ? ' hot' : ''}">
+          <div class="adm-top">${admUserBtn(u.id, u.nick)}<small>Lv.${u.lv ?? '-'} · 가입 ${daysAgo(u.created_at)}${u.banned ? ' · 차단됨' : ''}</small><span class="adm-score">점수 ${u.score}</span></div>
+          <ul class="adm-why">${u.list.map(f => `<li><b>${FLAG_K[f.k] || esc(f.k)}</b> ${esc(f.why)}</li>`).join('')}</ul>
+          <div class="adm-acts"><button class="mini" data-x="who:${u.id}">👤 자세히</button><button class="mini" data-x="ok:${u.id}">✅ 문제 없음</button></div></li>`).join('')}</ul>`
+          : '<p class="adm-empty">이상한 계정이 없어요 👍</p>'}`,
+      foot: bbtn('scan', '🔄 지금 다시 검사', '보통은 한 시간마다 저절로 해요', { wide: true }),
+      async on(x) {
+        const [a, id] = x.split(':');
+        if (a === 'who') return admFind({ id });
+        if (a === 'ok') { await api('/api/admin/flag-ok', { id: +id, days: 30 }); toast('30일 동안 목록에서 숨겼어요'); }
+        if (a === 'scan') { const j = await api('/api/admin/scan', {}); toast(`검사했어요 (징후 ${j.n}개)`); }
+        await admLoad('flags'); openAdmin('flags', true);
+      },
+    };
+  },
+  reports() {
+    const R = ADM.reports || [];
+    return {
+      body: `<div class="adm-seg"><button data-x="seg:0" aria-pressed="${!ADM.done}">처리 안 한 신고</button><button data-x="seg:1" aria-pressed="${ADM.done}">처리한 신고</button>${itip('같은 사람에 대한 신고는 한 번 처리하면 같이 처리돼요.\n서로 다른 3명 넘게 신고하면 처리 전까지 그 사람은 채팅을 할 수 없어요.')}</div>
+        ${R.length ? `<ul class="adm-list">${R.map(r => `<li class="adm-card"><div class="adm-top">🚨 ${admUserBtn(r.target_id, r.target)}<small>← ${esc(r.reporter)} · ${esc(r.reason)} · ${fmtT(r.at)}</small></div>
+          <details><summary>최근 채팅 ${r.lines.length}줄</summary><ul class="admlog">${r.lines.map(l => `<li><small class="muted">${fmtT(l.at)}</small> ${esc(l.text)}</li>`).join('') || '<li class="muted">채팅 기록 없음</li>'}</ul></details>
+          ${ADM.done ? `<small class="muted">처리: ${esc(r.note || '완료')}</small>` : `<div class="adm-acts"><button class="mini" data-x="ok:${r.id}:${r.target_id}">문제 없음</button><button class="mini" data-x="mute:${r.id}:${r.target_id}">1시간 조용</button><button class="mini" data-x="kick:${r.id}:${r.target_id}">내보내기</button><button class="mini danger" data-x="ban:${r.id}:${r.target_id}">영구 차단</button></div>`}</li>`).join('')}</ul>`
+          : `<p class="adm-empty">${ADM.done ? '처리한 신고가 없어요' : '새 신고가 없어요 👍'}</p>`}`,
+      async on(x) {
         const [a, rid, uid] = x.split(':');
+        if (a === 'who') return admFind({ id: rid });
+        if (a === 'seg') { ADM.done = rid === '1'; await admLoad('reports'); return openAdmin('reports', true); }
         if (a === 'ban' && !(await ask('나중에 사람 찾기에서 풀 수 있어요.', { title: '정말 영구 차단할까요?', ok: '차단', danger: true }))) return;
         if (a === 'mute') await api('/api/admin/mute', { id: +uid, min: 60 });
         if (a === 'kick') await api('/api/admin/kick', { id: +uid });
         if (a === 'ban') await api('/api/admin/ban', { id: +uid, on: true });
         await api('/api/admin/report-done', { id: +rid, note: { ok: '문제 없음', mute: '1시간 채팅 금지', kick: '내보내기', ban: '영구 차단' }[a] });
-        toast('처리했어요'); openAdmin('reports');
-      });
-  }
-  if (tab === 'chat') {
-    const q = ADM.q;
-    return show(`<div class="admform"><input id="aNick" placeholder="닉네임 (비우면 모두)" value="${esc(q.nick)}"><input id="aText" placeholder="찾을 말 (비우면 모두)" value="${esc(q.text)}"><button class="mini main" data-x="find">찾기</button></div>
-      <ul class="admlog">${ADM.chat ? ADM.chat.map(l => `<li><small class="muted">${fmtT(l.at)} ${l.ch === 'all' ? '전체' : '근처'}</small> <b>${esc(l.nick)}</b> ${esc(l.text)}</li>`).join('') || '<li class="muted">없어요</li>' : '<li class="muted">최근 30일 채팅에서 찾아요 (최대 200줄)</li>'}</ul>`,
-      async (x, el) => { q.nick = el.querySelector('#aNick').value.trim(); q.text = el.querySelector('#aText').value.trim(); ADM.chat = (await api(`/api/admin/chat?nick=${encodeURIComponent(q.nick)}&q=${encodeURIComponent(q.text)}`)).lines; openAdmin('chat'); });
-  }
-  if (tab === 'user') {
-    const u = ADM.user;
-    return show(`<div class="admform"><input id="aWho" placeholder="닉네임" value="${esc(ADM.q.who)}"><button class="mini main" data-x="find">찾기</button></div>
-      ${u ? `<div class="rep"><b>${esc(u.nick)}</b> <small class="muted">Lv.${u.lv ?? '-'} · 가입 ${fmtT(u.created_at)} · 마지막 로그인 ${u.last_login ? fmtT(u.last_login) : '-'}</small>
-        <p style="margin:6px 0">경고(7일) ${u.warns}번 · 처리 안 한 신고 ${u.reports}개${u.mute_until > Date.now() ? ` · <b>채팅 금지 ~${fmtT(u.mute_until)}</b>` : ''}${u.banned ? ' · <b style="color:var(--kimchi)">영구 차단됨</b>' : ''}</p>
-        <div class="btns"><button class="mini" data-x="temp">🔑 임시 비밀번호 발급</button><button class="mini" data-x="mute:10">10분 조용</button><button class="mini" data-x="mute:60">1시간</button><button class="mini" data-x="mute:1440">24시간</button><button class="mini" data-x="mute:0">조용 풀기</button><button class="mini" data-x="kick">내보내기</button><button class="mini" data-x="ban" style="color:var(--kimchi)">${u.banned ? '차단 풀기' : '영구 차단'}</button></div></div>
-        <p class="muted">임시 비밀번호: 비밀번호와 복구 코드를 둘 다 잊은 사람에게 줘요. 그 사람은 임시 비밀번호로 들어와서 설정 → 비밀번호 바꾸기로 바로 바꾸게 안내해 주세요. <b>본인이 맞는지 꼭 확인</b>하고 발급하세요 (디스코드·카페 등).</p>` : ''}`,
-      async (x, el) => {
-        if (x === 'find') { ADM.q.who = el.querySelector('#aWho').value.trim(); if (!ADM.q.who) return; ADM.user = (await api(`/api/admin/user?nick=${encodeURIComponent(ADM.q.who)}`)).user; return openAdmin('user'); }
+        toast('처리했어요'); await admLoad('reports'); openAdmin('reports', true);
+      },
+    };
+  },
+  user() {
+    const U = ADM.user, u = U?.user;
+    const card = !u ? '<p class="adm-empty">닉네임을 넣고 찾아 주세요. 의심·신고 목록에서 이름을 눌러도 와요.</p>' : `<div class="adm-card">
+        <div class="adm-top"><b class="adm-big">${esc(u.nick)}</b><small>#${u.id} · Lv.${u.lv ?? '-'} · 🪙 ${fmtN(u.gold || 0)}</small></div>
+        <div class="cs">${chip(`가입 ${fmtT(u.created_at)}`)}${chip(`마지막 로그인 ${u.last_login ? fmtT(u.last_login) : '-'}`)}${chip(`경고(7일) ${u.warns}`, u.warns ? 'mid' : '')}${chip(`신고 ${u.reports}`, u.reports ? 'lo' : '')}${chip(`IP ${u.ips} · 기기 ${u.devs}`)}${u.mute_until > Date.now() ? chip(`채팅 금지 ~${fmtT(u.mute_until)}`, 'lo') : ''}${u.banned ? chip('영구 차단됨', 'lo') : ''}</div>
+        <div class="adm-acts"><button class="mini" data-x="mute:10">10분 조용</button><button class="mini" data-x="mute:60">1시간</button><button class="mini" data-x="mute:1440">24시간</button><button class="mini" data-x="mute:0">조용 풀기</button><button class="mini" data-x="kick">내보내기</button><button class="mini" data-x="temp">🔑 임시 비밀번호</button><button class="mini danger" data-x="ban">${u.banned ? '차단 풀기' : '영구 차단'}</button></div></div>
+      <div class="adm-cols">
+        <div class="adm-card"><h4 class="adm-h">🔗 같은 IP·기기 계정 <small>${U.links.length}</small></h4>${U.links.length ? `<ul class="adm-mini">${U.links.map(l => `<li>${admUserBtn(l.id, l.nick)}<small>Lv.${l.lv ?? '-'} · ${String(l.kinds).split(',').map(k => (k === 'ip' ? 'IP' : '기기')).join('·')}${l.banned ? ' · 차단' : ''}</small></li>`).join('')}</ul>` : '<p class="muted">없어요</p>'}
+          <h4 class="adm-h">🚨 의심 <small>${U.flags.length}</small></h4>${U.flags.length ? `<ul class="adm-mini">${U.flags.map(f => `<li><span><b>${FLAG_K[f.k] || esc(f.k)}</b> <small>${esc(f.why)}</small></span></li>`).join('')}</ul>` : '<p class="muted">없어요</p>'}</div>
+        <div class="adm-card"><h4 class="adm-h">📸 되돌리기 사본 ${itip('매일 새벽 4시에 캐릭터를 통째로 저장해요 (7일 보관).\n되돌리면 레벨·골드·장비·가방·생활 기록이 그때로 돌아가요.\n되돌리기 전 모습도 사본으로 남아서 다시 되돌릴 수 있어요.')}</h4>
+          ${U.snaps.length ? `<ul class="adm-mini">${U.snaps.map(s => `<li><span><b>${esc(s.day)}</b> <small>Lv.${s.lv} · 🪙 ${fmtN(s.gold)}</small></span><button class="mini" data-x="restore:${esc(s.day)}">되돌리기</button></li>`).join('')}</ul>` : '<p class="muted">아직 사본이 없어요</p>'}</div>
+      </div>`;
+    return {
+      body: `<div class="admform"><input id="aWho" placeholder="닉네임" value="${esc(ADM.q.who)}"><button class="mini main" data-x="find">찾기</button></div>${card}`,
+      async on(x, btn, el) {
+        if (x === 'find') { const v = el.querySelector('#aWho').value.trim(); if (v) await admFind(v); return; }
         const [a, v] = x.split(':');
+        if (a === 'who') return admFind({ id: v });
         if (a === 'temp') {
-          if (!(await ask('지금 비밀번호는 못 쓰게 되고, 모든 기기에서 로그아웃돼요.', { title: `${u.nick}님에게 임시 비밀번호를 만들까요?`, ok: '만들기' }))) return;
+          if (!(await ask('지금 비밀번호는 못 쓰게 되고, 모든 기기에서 로그아웃돼요. 본인이 맞는지 꼭 확인하고 발급하세요 (디스코드·카페 등).', { title: `${u.nick}님에게 임시 비밀번호를 만들까요?`, ok: '만들기' }))) return;
           const j = await api('/api/admin/temp-pw', { id: u.id });
-          return openModal(`<h3>🔑 ${esc(j.nick)}님 임시 비밀번호</h3><p class="muted">지금 한 번만 보여 줘요. 본인에게만 전해 주세요.</p><div class="code-box">${esc(j.pw)}</div><button class="btn main" data-close>전했어요</button>`);
+          return openModal(`<h3>🔑 ${esc(j.nick)}님 임시 비밀번호</h3><p class="muted">지금 한 번만 보여 줘요. 본인에게만 전하고, 들어가서 설정 → 비밀번호 바꾸기로 바로 바꾸게 안내해 주세요.</p><div class="code-box">${esc(j.pw)}</div><button class="btn main" data-close>전했어요</button>`);
         }
+        if (a === 'restore') { const day = x.slice(8); if (!(await ask(`${u.nick}님의 캐릭터를 「${day}」 사본으로 되돌려요. 그 사람은 마을에서 잠깐 나가져요.`, { title: '이 계정을 되돌릴까요?', ok: '되돌리기', danger: true }))) return; await api('/api/admin/restore', { id: u.id, day }); toast('되돌렸어요'); }
         if (a === 'mute') await api('/api/admin/mute', { id: u.id, min: +v });
         if (a === 'kick') await api('/api/admin/kick', { id: u.id });
         if (a === 'ban') { if (!u.banned && !(await ask('나중에 풀 수 있어요.', { title: `${u.nick}님을 영구 차단할까요?`, ok: '차단', danger: true }))) return; await api('/api/admin/ban', { id: u.id, on: !u.banned }); }
-        toast('처리했어요'); ADM.user = (await api(`/api/admin/user?nick=${encodeURIComponent(u.nick)}`)).user; openAdmin('user');
-      });
-  }
-  if (tab === 'cheat') {   // 관리자 시험용 치트 (내 캐릭터만 바뀜, 서버 기록에 남음)
+        if (a !== 'restore') toast('처리했어요');
+        await admFind({ id: u.id });
+      },
+    };
+  },
+  chat() {
+    const q = ADM.q;
+    return {
+      body: `<div class="admform"><input id="aNick" placeholder="닉네임 (비우면 모두)" value="${esc(q.nick)}"><input id="aText" placeholder="찾을 말 (비우면 모두)" value="${esc(q.text)}"><button class="mini main" data-x="find">찾기</button></div>
+        <ul class="admlog tall">${ADM.chat ? ADM.chat.map(l => `<li><small class="muted">${fmtT(l.at)}</small> <b>${esc(l.nick)}</b> ${esc(l.text)}</li>`).join('') || '<li class="muted">없어요</li>' : '<li class="muted">최근 30일 채팅에서 찾아요 (최대 200줄)</li>'}</ul>`,
+      async on(x, btn, el) { q.nick = el.querySelector('#aNick').value.trim(); q.text = el.querySelector('#aText').value.trim(); ADM.chat = (await api(`/api/admin/chat?nick=${encodeURIComponent(q.nick)}&q=${encodeURIComponent(q.text)}`)).lines; openAdmin('chat', true); },
+    };
+  },
+  ops() {
+    const M = ADM.ov?.maint || { on: false, msg: '' };
+    return {
+      body: `<div class="adm-card${M.on ? ' hot' : ''}"><h4 class="adm-h">🔒 점검 모드 ${itip('켜면 관리자가 아닌 사람은 모두 마을에서 나가지고 "점검 중입니다" 화면이 떠요.\n점검 중에는 로그인·가입도 막혀요.\n끄면 그 화면에서 30초 안에 저절로 다시 들어와요.')}</h4>
+          <label class="adm-ck"><input type="checkbox" data-x="maint" ${M.on ? 'checked' : ''}> <b>관리자만 접속 가능</b>${M.on ? ' <small style="color:var(--kimchi)">· 지금 점검 중</small>' : ''}</label>
+          <div class="admform"><input id="aMaint" maxlength="100" placeholder="점검 안내 (비우면 기본 안내)" value="${esc(M.msg || ADM.msg)}"></div></div>
+        <div class="adm-card"><h4 class="adm-h">📢 공지 ${itip('모든 마을 채널에 떠요 (100글자).\n채팅창에서 /공지 내용 · /조용 닉네임 10분 · /내보내기 닉네임 도 돼요.')}</h4>
+          <div class="admform"><input id="aNotice" maxlength="100" placeholder="공지 내용"><button class="mini main" data-x="notice">보내기</button></div></div>
+        <div class="adm-cols"><div class="adm-card"><h4 class="adm-h">📺 방송 보너스 ${itip('방송 연결이 안 될 때나 이벤트용.\n켜는 동안 마을 모두 경험치·골드 2배.')}</h4><div class="adm-acts"><button class="mini" data-x="live:60">1시간</button><button class="mini" data-x="live:180">3시간</button><button class="mini" data-x="live:0">끄기</button></div></div>
+          <div class="adm-card"><h4 class="adm-h">📸 캐릭터 사본 ${itip('매일 새벽 4시에 저절로 만들어요 (7일 보관).\n큰 패치 전에 한 번 더 만들어 두면 좋아요.\n한 사람만 되돌리기: 👤 사람 탭에서.')}</h4><div class="adm-acts"><button class="mini" data-x="snap">지금 모두 사본 만들기</button></div></div></div>`,
+      async on(x, btn, el) {
+        if (x === 'maint') {
+          const on = btn.checked, msg = el.querySelector('#aMaint').value.trim(); ADM.msg = msg; btn.checked = !on;
+          if (!(await ask(on ? '관리자가 아닌 사람은 지금 모두 나가지고, 다시 들어올 수 없어요.' : '모두 다시 들어올 수 있어요.', { title: on ? '점검을 시작할까요?' : '점검을 끝낼까요?', ok: on ? '점검 시작' : '점검 끝', danger: on }))) return;
+          const j = await api('/api/admin/maint', { on, msg }); ADM.ov = { ...ADM.ov, maint: j.maint }; toast(on ? '🔒 점검 모드를 켰어요' : '🔓 점검을 끝냈어요'); return openAdmin('ops', true);
+        }
+        if (x === 'notice') { const text = el.querySelector('#aNotice').value.trim(); if (!text) return; await api('/api/admin/notice', { text }); toast('공지를 보냈어요'); el.querySelector('#aNotice').value = ''; return; }
+        if (x.startsWith('live:')) { const min = +x.slice(5); await api('/api/admin/live', { min }); return toast(min ? `방송 보너스를 ${min}분 동안 켰어요 (30초 안에 반영)` : '방송 보너스를 껐어요'); }
+        if (x === 'snap') { await api('/api/admin/snap-now', {}); toast('모두 사본을 만들었어요'); }
+      },
+    };
+  },
+  cheat() {   // 관리자 시험용 치트 (내 캐릭터만 바뀜, 서버 기록에 남음)
     const god = !!me.life?.god, B = (k, n, label) => `<button class="mini" data-x="${k}:${n}">${label}</button>`;
-    return show(`<p class="muted">시험용이에요. <b>내 캐릭터만</b> 바뀌고, 쓴 기록은 서버에 남아요.</p>
-      <div class="btns cheat">${B('raid', 0, '🐉 드래곤 레이드 지금 열기')}${B('raid', 1, '👹 오우거 레이드 지금 열기')}</div>
-      <div class="btns cheat">${B('god', 0, god ? '😇 갓모드 끄기' : '😇 갓모드 켜기 (안 맞음 · 공격력 10배)')}</div>
-      <div class="btns cheat">${B('gold', 1e6, '🪙 골드 +100만')}${B('gold', 1e8, '🪙 골드 +1억')}${B('lv', 55, '🌟 55레벨')}${B('lv', 1, '🌱 1레벨로')}</div>
-      <div class="btns cheat">${B('gear', 0, '🗡️ 최고 장비 + 최고 강화')}${B('titles', 0, '🏷️ 칭호 모두')}${B('skins', 0, '👕 모든 스킨 받기')}${B('rskmax', 0, '⭐ 레이드 스킨 최고 레벨')}${B('skmax', 0, '⚡ 모든 스킬 최고 레벨')}${B('pots', 0, '🥤 물약·체력 가득')}</div>
-      <div class="btns cheat">${B('wood', 1000, '🪵 목재 +1000')}${B('stone', 1000, '🪨 석재 +1000')}${B('fishmax', 1, '🎣 낚싯대·미끼 최고')}${B('farmmax', 1, '🧺 호미·비료 최고')}</div>
-      <label class="ck" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" data-x="lgonly:0" ${me.life?.lgOnly ? 'checked' : ''}> 🐟 전설 물고기만 낚이기 (던지면 늘 낚임)</label>
-      <label class="ck" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" data-x="lgcrop:0" ${me.life?.lgCrop ? 'checked' : ''}> 🌾 전설 작물만 수확하기 (지금부터 심는 씨앗)</label>
-      <div class="btns cheat">${B('farm', 0, '🌾 텃밭 다 자람')}${B('work', 0, '🪓 알바 창고 가득')}${B('cool', 0, '⏱️ 기다리는 시간 없애기')}</div>
-      <p class="muted" style="margin-bottom:4px">직접 숫자 넣기 (빼려면 -를 붙여요)</p>
-      <div class="admform"><input id="cN" type="number" placeholder="숫자" value="1000"><select id="cK"><option value="gold">골드 더하기</option><option value="exp">경험치 더하기</option><option value="lv">레벨 정하기</option><option value="wood">목재 더하기</option><option value="stone">석재 더하기</option></select><button class="mini main" data-x="custom">적용</button></div>`,
-      async (x, el) => {
+    return {
+      body: `<div class="adm-info">시험용이에요. <b>내 캐릭터만</b> 바뀌고, 쓴 기록은 서버에 남아요.</div>
+        <div class="btns cheat">${B('raid', 0, '🐉 드래곤 레이드 지금 열기')}${B('raid', 1, '👹 오우거 레이드 지금 열기')}${B('god', 0, god ? '😇 갓모드 끄기' : '😇 갓모드 켜기')}</div>
+        <div class="btns cheat">${B('gold', 1e6, '🪙 골드 +100만')}${B('gold', 1e8, '🪙 골드 +1억')}${B('lv', 55, '🌟 55레벨')}${B('lv', 1, '🌱 1레벨로')}${B('pots', 0, '🥤 물약·체력 가득')}</div>
+        <div class="btns cheat">${B('gear', 0, '🗡️ 최고 장비 + 최고 강화')}${B('titles', 0, '🏷️ 칭호 모두')}${B('skins', 0, '👕 모든 스킨')}${B('rskmax', 0, '⭐ 레이드 스킨 최고')}${B('skmax', 0, '⚡ 스킬 최고')}</div>
+        <div class="btns cheat">${B('wood', 1000, '🪵 목재 +1000')}${B('stone', 1000, '🪨 석재 +1000')}${B('fishmax', 1, '🎣 낚싯대·미끼 최고')}${B('farmmax', 1, '🧺 호미·비료 최고')}${B('farm', 0, '🌾 텃밭 다 자람')}${B('work', 0, '🪓 알바 창고 가득')}${B('cool', 0, '⏱️ 기다림 없애기')}</div>
+        <label class="adm-ck"><input type="checkbox" data-x="lgonly:0" ${me.life?.lgOnly ? 'checked' : ''}> 🐟 전설 물고기만 낚이기 (던지면 늘 낚임)</label>
+        <label class="adm-ck"><input type="checkbox" data-x="lgcrop:0" ${me.life?.lgCrop ? 'checked' : ''}> 🌾 전설 작물만 수확하기 (지금부터 심는 씨앗)</label>
+        <div class="admform"><input id="cN" type="number" placeholder="숫자" value="1000"><select id="cK"><option value="gold">골드 더하기</option><option value="exp">경험치 더하기</option><option value="lv">레벨 정하기</option><option value="wood">목재 더하기</option><option value="stone">석재 더하기</option></select><button class="mini main" data-x="custom">적용</button></div>`,
+      async on(x, btn, el) {
         let [k, n] = x.split(':');
-        if (k === 'raid') { const og = n === '1', j = await api('/api/admin/raid', { boss: og ? 'ogre' : 'rdragon' }); closeModal(); toast(`${og ? '👹 오우거' : '🐉 드래곤'} 레이드 모집을 열었어요 (2분, 모두에게 창이 떠요)`); RAIDQ.asked = 0; setTimeout(raidCheck, 300); return; }
+        if (k === 'raid') { const og = n === '1'; await api('/api/admin/raid', { boss: og ? 'ogre' : 'rdragon' }); closeModal(); toast(`${og ? '👹 오우거' : '🐉 드래곤'} 레이드 모집을 열었어요 (2분, 모두에게 창이 떠요)`); RAIDQ.asked = 0; setTimeout(raidCheck, 300); return; }
         if (k === 'custom') { k = el.querySelector('#cK').value; n = el.querySelector('#cN').value; }
         if (k === 'lv' && !(await ask('능력치가 다시 계산돼요.', { title: `${n}레벨로 바꿀까요?` }))) return;
         const j = await act('/api/admin/cheat', { k, n: Number(n) }); if (!j) return;
-        toast('🧪 ' + j.msg); sysMsg('🧪 치트: ' + j.msg); if (k === 'god' || k === 'skins' || k === 'rskmax' || k === 'skmax' || k === 'lgonly' || k === 'lgcrop') openAdmin('cheat');
-      });
-  }
-  if (tab === 'notice') {
-    return show(`<p class="muted">모든 마을 채널에 공지가 떠요 (100글자까지). 채팅창에서 <b>/공지 내용</b>, <b>/조용 닉네임 10분</b>, <b>/내보내기 닉네임</b> 으로도 할 수 있어요.</p>
-      <div class="admform"><input id="aNotice" maxlength="100" placeholder="공지 내용"><button class="mini main" data-x="send">보내기</button></div>
-      <h4 class="sub">📺 방송 보너스 직접 켜기</h4><p class="muted">방송 연결이 안 될 때나 이벤트용. 켜는 동안 마을 모두 경험치·골드 2배.</p>
-      <div class="actions"><button class="mini" data-x="live:60">1시간</button><button class="mini" data-x="live:180">3시간</button><button class="mini" data-x="live:0">끄기</button></div>`,
-      async (x, el) => { if (x.startsWith('live:')) { const min = +x.slice(5); await api('/api/admin/live', { min }); toast(min ? `방송 보너스를 ${min}분 동안 켰어요 (30초 안에 반영)` : '방송 보너스를 껐어요'); return; } const text = el.querySelector('#aNotice').value.trim(); if (!text) return; await api('/api/admin/notice', { text }); toast('공지를 보냈어요'); el.querySelector('#aNotice').value = ''; });
-  }
-}
+        toast('🧪 ' + j.msg); sysMsg('🧪 치트: ' + j.msg); if (['god', 'skins', 'rskmax', 'skmax', 'lgonly', 'lgcrop'].includes(k)) openAdmin('cheat', true);
+      },
+    };
+  },
+};
 
 // ───────── 카페 알바 (1분) ─────────
 const jobLeft = () => Math.max(0, Math.ceil((me.jobEnd - Date.now()) / 1000));

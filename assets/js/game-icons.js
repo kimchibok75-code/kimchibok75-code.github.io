@@ -253,6 +253,11 @@ export function icoImg(key) {
   return IMG[key].complete && IMG[key].naturalWidth ? IMG[key] : null;
 }
 const IMG_F = {};
+// 2026-11-20 그림으로 바꿔 쓰기 (레이드 보스 얼굴 등): 이미 화면에 있는 것도 바꿈
+export function setIconOverride(key, url) {
+  URL_CACHE[key] = url; const im = new Image(); im.src = url; IMG[key] = im; IMG_F[key] = im;
+  for (const e of document.querySelectorAll('img.ico')) if (keyOf(e.alt) === key) e.src = url;
+}
 export function icoImgFlat(key) {
   if (!ICONS[key]) return null;
   if (!IMG_F[key]) { const im = new Image(); im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg(key, true)); IMG_F[key] = im; }
