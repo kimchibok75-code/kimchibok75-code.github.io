@@ -5347,7 +5347,7 @@ function took(j) {
     for (const it of h.drops || []) if (it.g && ['epic', 'legend', 'myth'].includes(it.g)) { toast(`✨ ${GRADES[it.g].n} 장비! ${itemName(it)}`); sysMsg(`✨ ${GRADES[it.g].n} 장비 획득: ${itemName(it)}`); }
     if (HT && h.drops?.length) h.drops.slice(0, 3).forEach((it, i) => floatText(me.x + (i - 1) * 26, me.y - 84 - i * 10, `${itemIcon(it)} ${GRADES[it.g].n}`, it.g === 'normal' ? '#e6ebf2' : GRADES[it.g].c, 14, 1.8));
     if (h.offline >= 60 && !h.died) { const L = h.life || {}, n = v => (v || 0).toLocaleString();
-      openModal(`<h3>🌙 자리 비운 동안 ${awayTip()}</h3><p>${Math.floor(h.sec / 3600)}시간 ${Math.floor(h.sec % 3600 / 60)}분 동안 부지런히 움직였어요! 사냥도 하고 마을 일도 했어요.</p>
+      openModal(`<h3>🌙 자리 비운 동안 ${awayTip()}</h3><p>${awayWhen(h.sec)} 부지런히 움직였어요! 사냥도 하고 마을 일도 했어요.</p>
       <h4 class="placeh">⚔️ 사냥</h4><table class="ruletable"><tbody><tr><td>처치</td><td>${h.kills.toLocaleString()}마리</td></tr><tr><td>경험치</td><td>+${h.exp.toLocaleString()}${h.up ? ` (레벨 +${h.up})` : ''}</td></tr><tr><td>골드</td><td>+${h.gold.toLocaleString()}</td></tr><tr><td>물약</td><td>${h.pots}개 마심</td></tr></tbody></table>
       ${h.life ? `<h4 class="placeh">🧺 생활</h4><table class="ruletable"><tbody><tr><td>생활 경험치</td><td>+${n(L.exp)}${L.up ? ` (레벨 +${L.up})` : ''}</td></tr><tr><td>골드</td><td>+${n(L.gold)}</td></tr><tr><td>목재 · 석재</td><td>🪵 +${n(L.wood)} · 🪨 +${n(L.stone)}</td></tr><tr><td>코인</td><td>${COIN.fish[0]} +${n(L.fish)} · ${COIN.farm[0]} +${n(L.farm)}</td></tr></tbody></table>` : ''}<button class="btn main" data-close>확인</button>`); }
     if (h.died) {
@@ -5578,10 +5578,13 @@ $('#makeDone').onclick = async () => {
 // i 아이콘: 누르거나 마우스를 올리면 작은 설명 (2026-11-19: 방치 효율 같은 설명은 글로 다 적지 않고 여기로)
 const itip = t => `<button type="button" class="itip" aria-label="설명" data-tip="${esc(t)}">i</button>`;
 const awayTip = () => itip(`화면을 닫아 둔 시간은 최대 ${HUNT.offlineMax / 3600}시간까지, 효율 ${Math.round(HUNT.offlineEff * 100)}%로 계산해요 (경험치는 ${Math.round(HUNT.offlineExp * 100)}%). 절반은 사냥, 절반은 마을 일이에요.`);
+// 비운 시간 글 (2026-11-19): 4시간(offlineMax)을 넘으면 '그중 4시간만 계산'이라고 같이 보여 줌 (예전엔 실제로 비운 시간만 보여서 4시간 넘게 받은 것처럼 보였음)
+const awayHM = s => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); return h ? `${h}시간${m ? ` ${m}분` : ''}` : `${m}분`; };
+const awayWhen = sec => sec - HUNT.onlineGap > HUNT.offlineMax ? `${awayHM(sec)} 비웠는데, 그중 <b>최대 ${awayHM(HUNT.offlineMax)}</b>만 계산해서` : `${awayHM(sec)} 동안`;
 function awaySheet(a) {
   const L = a.life || {}, n = v => (v || 0).toLocaleString(), hm = s => `${Math.floor(s / 3600)}시간 ${Math.floor(s % 3600 / 60)}분`;
   const H = a.hunt || {}, up = (L.up || 0) + (H.up || 0);
-  const show = () => openModal(`<h3>🌙 자리 비운 동안 ${awayTip()}</h3><p>${hm(a.sec)} 동안 <b>사냥</b>과 <b>마을 일</b>을 열심히 했어요!</p>
+  const show = () => openModal(`<h3>🌙 자리 비운 동안 ${awayTip()}</h3><p>${awayWhen(a.sec)} <b>사냥</b>과 <b>마을 일</b>을 열심히 했어요!</p>
     <table class="ruletable"><tbody><tr><td>⚔️ 사냥</td><td>몬스터 ${n(H.kill)}마리 처치</td></tr><tr><td>경험치</td><td>+${n((L.exp || 0) + (H.exp || 0))}${up ? ` (레벨 +${up})` : ''} <small class="muted">(사냥 ${n(H.exp)} · 마을 일 ${n(L.exp)})</small></td></tr><tr><td>골드</td><td>+${n((L.gold || 0) + (H.gold || 0))} <small class="muted">(사냥 ${n(H.gold)} · 마을 일 ${n(L.gold)})</small></td></tr><tr><td>목재 · 석재</td><td>🪵 +${n(L.wood)} · 🪨 +${n(L.stone)}</td></tr><tr><td>코인</td><td>${COIN.fish[0]} +${n(L.fish)} · ${COIN.farm[0]} +${n(L.farm)}</td></tr></tbody></table>
     <button class="btn main" data-close>확인</button>`);
   logAct(`자리 비운 동안 ${hm(a.sec)}: 골드 +${n((L.gold || 0) + (H.gold || 0))}`);
