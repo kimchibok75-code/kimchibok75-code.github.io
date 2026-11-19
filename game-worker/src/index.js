@@ -1,6 +1,6 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { TAG_COLORS, RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
+import { GUIDE_Q, guideProg, guideInit, guideNext, npcExp as guideExp, TAG_COLORS, RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
@@ -306,7 +306,7 @@ async function play(env, user, fn) {
   for (let tries = 0; tries < 4; tries++) {
     const r = await env.DB.prepare('SELECT * FROM characters WHERE user_id = ?').bind(user.id).first();
     const W = await world(env), c = toChar(r), at = now(), out = {}; c._adm = !!user.is_admin; c.gfx = worldFx(W, at); c._w = W;
-    const lv0 = c.lv, g0 = c.gold; c._spent = 0; dailyState(c, at); npcState(c, at);
+    const lv0 = c.lv, g0 = c.gold; c._spent = 0; dailyState(c, at); npcState(c, at); guideInit(c);
     if (!c.hunt) {   // 마을: 체력이 1초에 2%씩 참
       const max = derive(c).maxHp;
       c.hp = Math.min(max, Math.round(c.hp + Math.max(0, (at - (c.hpAt || at)) / 1000) * max * HUNT.townRegen)); c.hpAt = at;
@@ -513,7 +513,7 @@ const GAME = {
       skins.push({ skin: k, lv: rskLv(rsk[k]), n: rsk[k] });
     }
     if (skins[0]) ({ skin, lv: skinLv, n: skinN } = skins[0]);
-    c.gold += gold; const up = addExp(c, exp); c.life.raidGot = start; c.hp = D.maxHp; c.hpAt = at;
+    c.gold += gold; const up = addExp(c, exp); c.life.raidGot = start; cntAdd(c, 'raid'); c.hp = D.maxHp; c.hpAt = at;
     return { raid: { boss: j.boss, gold, exp, up, skin, skinLv, skinN, skins, crowd: Math.round((raidCrowd(j.n) - 1) * 100), dead: j.dead, rank: j.rank, n: j.n, dmg: j.dmg }, log: ['raid', `${gold} ${exp} ${skins.map(x => x.skin).join(' ')}`.trim()],
       chron: ['raid', `${RAID_BOSS[j.boss]?.n || '레이드'} 레이드에 성공했어요!`] };   // 2026-11-20 마을 소식에서는 한 레이드를 한 줄로 묶어 보여 줌 (news)
   },
@@ -632,6 +632,14 @@ const GAME = {
   '/api/mine/king'(c, b) { return kingClaim(c, 'mine', b); },   // 채굴왕 (2026-11-19): 손으로 캔 석재 100개마다
   '/api/title'(c, b) { const id = String(b.id || ''); if (!c.life.titles.includes(id)) fail(400, '아직 없는 칭호예요'); c.title = id; },
   // 뱃지 달기 (2026-11-20 도감 센터). id = '' 이면 떼기
+  // 📘 가이드 퀘스트 (2026-11-20): 다 하면 보상 받고 다음 단계로 · 건너뛰기(보상 없음)
+  '/api/guide/claim'(c) {
+    const P = guideProg(c); if (!P) fail(400, '가이드 퀘스트를 모두 끝냈어요'); if (!P.ok) fail(400, `아직 다 못 했어요 (${P.n} / ${P.v})`);
+    const r = P.q[8], exp = guideExp(c.lv); c.gold += r.gold || 0; c.life.res.wood += r.wood || 0; c.life.res.stone += r.stone || 0; addExp(c, exp);
+    const nx = guideNext(c); if (!nx) cntAdd(c, 'guideDone'); c._noEarn = 1;
+    return { guide: { done: P.q[0], r, exp, end: !nx }, lexp: exp, log: ['guide', P.q[0]] };
+  },
+  '/api/guide/skip'(c) { const P = guideProg(c); if (!P) fail(400, '가이드 퀘스트를 모두 끝냈어요'); const nx = guideNext(c); if (!nx) cntAdd(c, 'guideDone'); return { log: ['guide-skip', P.q[0]] }; },
   '/api/tagc'(c, b) { const v = String(b.c || ''); if (!TAG_COLORS.includes(v)) fail(400, '없는 색이에요'); c.life.tagc = v; },   // 이름표 배경색
   '/api/badge'(c, b) { const id = String(b.id || ''); if (id && !hasBadge(c, id)) fail(400, '아직 없는 뱃지예요'); c.life.badge = id; },
   // 낚시점: 낚싯대 · 미끼 올리기 (2026-11-20부터 골드, 한 단계씩)

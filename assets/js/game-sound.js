@@ -146,7 +146,11 @@ function schedule() {
   }
 }
 // 파일로 된 배경 음악 (2026-11-20 사용자 곡). 없는 모드는 위의 코드 노래
-const FILES = { town: { src: 'assets/audio/town.mp3', v: .75 } };
+const FILES = { town: { src: 'assets/audio/town.mp3', v: .75 },
+  // 2026-11-20 사냥터 4곳 · 레이드 2종 (원본: 텍스쳐 템플릿/내 디자인/배경음/)
+  'hunt-plain': { src: 'assets/audio/hunt-plain.mp3', v: .75 }, 'hunt-forest': { src: 'assets/audio/hunt-forest.mp3', v: .75 },
+  'hunt-canyon': { src: 'assets/audio/hunt-canyon.mp3', v: .75 }, 'hunt-factory': { src: 'assets/audio/hunt-factory.mp3', v: .75 },
+  'raid-rdragon': { src: 'assets/audio/raid-rdragon.mp3', v: .75 }, 'raid-ogre': { src: 'assets/audio/raid-ogre.mp3', v: .75 } };
 const FA = {};
 function fileOf(mode) {
   const f = FILES[mode]; if (!f || !A) return null;
@@ -171,6 +175,6 @@ function musicKick() {
   M.step = 0; M.next = A.currentTime + .15; M.timer = setInterval(schedule, 120); schedule();
 }
 // 배경 음악 바꾸기 (null = 끔)
-export function bgm(mode) { M.want = mode; musicKick(); }
+export function bgm(mode) { if (mode && !FILES[mode] && mode.includes('-')) mode = mode.split('-')[0]; M.want = mode; musicKick(); }   // 'hunt-plain'처럼 파일이 없으면 코드 노래 'hunt'
 // 지금 소리 상태 (확인용): 'running'이면 소리가 남
 export const sndState = () => ({ ctx: A?.state || 'none', music: M.mode, playing: total });

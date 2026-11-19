@@ -777,6 +777,11 @@ body.raiding .huntbox, body.raiding .placebar, body.raiding .roombtn { display: 
 .qbox ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .qbox li { display: grid; grid-template-columns: 24px 1fr; gap: 6px; align-items: center; padding: 5px 6px; border-radius: 9px; background: rgba(31, 42, 58, .06); cursor: pointer; }
 .qbox li:hover { background: rgba(31, 42, 58, .12); }
+.qbox .qb-guide { display: grid; grid-template-columns: 24px 1fr; gap: 6px; align-items: center; padding: 6px 7px; border-radius: 10px; background: #e7f0ff; box-shadow: inset 0 0 0 1.5px #5b86e0; cursor: pointer; }
+.qbox .qb-guide:hover { background: #d9e7ff; } .qbox .qb-guide.ok { background: #fff1c9; box-shadow: inset 0 0 0 1.5px #f2a516; animation: gqPulse 1.4s ease-in-out infinite; }
+.qbox .qb-guide .ic { font-size: 18px; text-align: center; } .qbox .qb-guide b { display: block; font-weight: 700; line-height: 1.3; } .qbox .qb-guide small { color: #4a5568; }
+@keyframes gqPulse { 50% { box-shadow: inset 0 0 0 2.5px #f2a516; } }
+.gq-steps i.now { background: color-mix(in srgb, var(--bc) 45%, transparent); }
 .qbox li.ok { background: #fff1c9; box-shadow: inset 0 0 0 1.5px #f2a516; }
 .qbox li .ic { font-size: 18px; text-align: center; }
 .qbox li b { display: block; font-weight: 700; line-height: 1.3; }
@@ -1250,7 +1255,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { GUIDE_Q, guideProg, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
@@ -3145,7 +3150,7 @@ async function raidJoin(start) {
   } catch (x) { toast(x.message); } finally { RAIDQ.busy = false; }
 }
 function enterRaid(start, boss) {
-  bgm('raid'); sfx('roar');
+  bgm('raid-' + (boss || raidBossOf(start))); sfx('roar');
   boss = RAID_BOSS[boss] ? boss : raidBossOf(start);
   try { localStorage.setItem('cbt-raid', String(start)); } catch {}
   RD = { start, boss, club: 0, back: { x: me.x, y: me.y }, ps: new Map(), hp: 1, max: 1, pat: raidPattern(start, boss), hits: new Set(), fx: [], floats: [], parts: [], atkT: 1, sendT: 0, acc: 0,
@@ -3823,7 +3828,7 @@ function renderRaid(now) {
   if (RD.flash > 0) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .7); g.addColorStop(0, 'rgba(255,0,0,0)'); g.addColorStop(1, `rgba(255,40,30,${RD.flash * 1.4})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
 }
 function enterHunt(h) {
-  bgm('hunt'); sfx('warp');
+  bgm('hunt-' + (FIELDS[h.f]?.id || '')); sfx('warp');
   const f = FIELDS[h.f]; paintHunt(f);
   HT = { f, mons: [], floats: [], parts: [], fx: [], shots: [], shake: 0, freeze: 0, loc: { kills: 0, exp: 0, gold: 0 }, t0: h.start, srv: h, bossAt: performance.now() + (h.boss - h.t) * 1000, atkT: .4, potCD: 0, target: null, cd: { ...(h.cd || {}) }, q: [], sh: 0, bt: 0, batk: 0, bcrit: 0 };
   setHbMin(false);   // 현황판은 펼친 채로 시작
@@ -4835,17 +4840,55 @@ function renderQuests() {
   { const sr = $('#stage').getBoundingClientRect(), hb = document.querySelector('#stage .hud').getBoundingClientRect(), bn = $('#liveBanner');
     let b = hb.bottom; if (!bn.hidden && innerWidth <= 760) b = Math.max(b, bn.getBoundingClientRect().bottom);
     const top = Math.round(Math.max(innerWidth <= 760 ? 54 : 58, b - sr.top + 6)) + 'px'; if (box.style.top !== top) box.style.top = top; }
-  const sig = JSON.stringify([on, NPC.blk, rows, avail, lt]); if (sig === NPC.sig) return; NPC.sig = sig;
-  box.hidden = !on || (!mine.length && !avail);
+  const G = !$('#app').hidden && !HT && !RD && me.life?.gq ? guideProg(me) : null;   // 📘 가이드 퀘스트 (2026-11-20)
+  if (G?.ok && GQ.toastI !== me.life.gq.i) { GQ.toastI = me.life.gq.i; toast(`📘 가이드 「${G.q[2]}」 완료! 왼쪽 위 가이드를 눌러 보상을 받으세요`); sfx('levelup'); }
+  const gHtml = G ? `<div class="qb-guide${G.ok ? ' ok' : ''}" data-gq role="button" tabindex="0"><span class="ic">${G.q[1]}</span><span><b>📘 가이드 ${me.life.gq.i + 1}/${GUIDE_Q.length} · ${esc(G.q[2])}</b><small>${G.ok ? '✅ 눌러서 보상 받기' : G.q[5] > 1 ? `${G.n} / ${G.v}` : '눌러서 자세히 보기'}</small></span></div>` : '';
+  const sig = JSON.stringify([on, NPC.blk, rows, avail, lt, gHtml]); if (sig === NPC.sig) return; NPC.sig = sig;
+  box.hidden = !gHtml && (!on || (!mine.length && !avail));
   if (box.hidden) return;
-  box.innerHTML = `<div class="qb-top"><b>📜 임무 ${mine.length}/${NPC_MAX}</b><span title="새 주민이 오면 받은 임무는 사라져요">⏳ ${lt}</span><button class="qbmin" type="button" aria-label="임무창 접기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-7 7 7"/></svg></button></div>
+  if (!on) { box.innerHTML = gHtml; iconize(box); return; }
+  box.innerHTML = gHtml + `<div class="qb-top"><b>📜 임무 ${mine.length}/${NPC_MAX}</b><span title="새 주민이 오면 받은 임무는 사라져요">⏳ ${lt}</span><button class="qbmin" type="button" aria-label="임무창 접기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-7 7 7"/></svg></button></div>
     ${rows.length ? `<ul>${rows.map(([ok, ic, n, sub, gi]) => `<li class="${ok ? 'ok' : ''}" data-go="${gi}"><span class="ic">${ic}</span><span><b>${esc(n)}</b><small>${esc(sub)}</small></span></li>`).join('')}</ul>` : ''}
     ${avail && mine.length < NPC_MAX ? `<p class="qhint">머리 위에 ❗ 말풍선이 있는 주민을 누르면 임무를 받아요 (${avail}명)</p>` : ''}`;
   iconize(box);
 }
 setInterval(renderQuests, 1000);
+// ───── 📘 가이드 퀘스트 창 (2026-11-20): 지금 단계 설명 · 진행 · 보상 · 가기 / 보상 받기 / 건너뛰기 ─────
+const GQ = { toastI: -1 };
+const gqReward = (r, lv) => [r.gold ? goldTxt(r.gold) : '', r.wood ? `🪵 ${r.wood}` : '', r.stone ? `🪨 ${r.stone}` : '', `✨ 경험치 ${fmtN(npcExp(lv))}`].filter(Boolean);
+function openGuideQ() {
+  const G = guideProg(me), i = me.life?.gq?.i || 0;
+  if (!G) return toast('📘 가이드 퀘스트를 모두 끝냈어요!');
+  const q = G.q, steps = GUIDE_Q.map((x, k) => `<i class="${k < i ? 'on' : k === i ? 'now' : ''}" title="${esc(x[2])}"></i>`).join('');
+  const body = `<div class="bs-card hero"><h4>${q[1]} ${esc(q[2])}<small>${i + 1} / ${GUIDE_Q.length}</small></h4><p>${esc(q[3])}</p>${thinBar(G.n / G.v)}
+      <div class="cs">${chip(G.ok ? '✅ 다 했어요!' : `진행 ${G.n} / ${G.v}`, G.ok ? 'up' : '')}</div></div>
+    <div class="bs-card"><h4>🎁 보상</h4><div class="cs">${gqReward(q[8], me.lv).map(t => chip(t, 'up')).join('')}</div></div>
+    <div class="bs-card"><h4>전체 진행</h4><div class="bs-steps gq-steps">${steps}</div><p class="muted">모두 끝내면 칭호 「마을을 한 바퀴 돈」 (경험치 · 골드 +2%)</p></div>`;
+  const foot = G.ok ? bbtn('claim', '🎁 보상 받기', '', { main: true, wide: true })
+    : `<div class="bs-two">${bbtn('go', q[6] ? `🚶 ${q[6]} 가기` : '⏰ 다음 레이드 알아보기', '', { main: true })}${bbtn('skip', '⏭️ 건너뛰기', '보상 없음')}</div>`;
+  openModal(bsWrap({ id: 'guideq', icon: '📘', name: '가이드 퀘스트' }, { tag: '마을의 놀거리를 하나씩 해 봐요', body, foot }), el => wire(el, async x => {
+    if (x === 'claim') {
+      const j = await act('/api/guide/claim', {}); if (!j?.guide) return;
+      const g = j.guide; sfx('levelup'); emote(me, '🎉');
+      toast(`📘 가이드 완료! ${gqReward(g.r, me.lv).slice(0, -1).join(' · ')}`); sysMsg(`📘 가이드 「${GUIDE_Q.find(x => x[0] === g.done)?.[2] || ''}」 보상: ${gqReward(g.r, me.lv).slice(0, -1).join(' · ')}`);
+      if (g.end) { closeModal(); return openModal(`<div class="legendpop"><p class="lp-k">📘 가이드 퀘스트 완료 📘</p><h3>마을을 한 바퀴 돌았어요!</h3><p>새 칭호 「마을을 한 바퀴 돈」을 받았어요.</p><p class="muted">이제 마음 가는 대로 치복 타운을 즐겨 주세요 🎉</p><button class="btn main" data-close>고마워요!</button></div>`); }
+      NPC.sig = ''; renderQuests(); return openGuideQ();
+    }
+    if (x === 'skip') {
+      if (!(await ask('이 단계의 보상은 받을 수 없어요.', { title: `「${q[2]}」을(를) 건너뛸까요?`, ok: '건너뛰기' }))) return;
+      const j = await act('/api/guide/skip', {}); if (!j) return; NPC.sig = ''; renderQuests(); return openGuideQ();
+    }
+    if (x === 'go') {
+      closeModal();
+      if (!q[6]) { const m = Math.ceil((RAID.every - srvNow() % RAID.every) / 60000); return toast(`🐉 다음 레이드까지 약 ${m}분. 모집 창이 뜨면 참가하세요!`); }
+      const p = PLACES.find(z => z[1] === q[6]); if (!p) return; ROAM.pause = 20;
+      if (teleport(p[2], p[3]) !== false && q[7]) setTimeout(() => placeOpen(p[1]), 250);
+    }
+  }));
+}
 document.addEventListener('click', e => {
   const box = $('#questBox'); if (!box || !box.contains(e.target)) return;
+  if (e.target.closest('[data-gq]')) return openGuideQ();
   if (e.target.closest('.qbmin')) { box.classList.toggle('min'); try { localStorage.setItem('cbt-qmin', box.classList.contains('min') ? '1' : '0'); } catch {} return; }
   const li = e.target.closest('[data-go]'); if (!li) return;
   const p = NPC.list[+li.dataset.go]; if (!p) return;
@@ -4929,7 +4972,7 @@ function spend(n) { if (me.gold < n) { toast('골드가 부족해요'); return f
 //  · 점진적 공개 · 밀러의 법칙: 긴 설명은 접은 '도움말'에, 화면에는 한 줄 소개 + 숫자 꼬리표만
 //  · 상태 보이기: 진행 막대, 모자란 재료는 빨간 꼬리표에 '얼마 모자란지'까지
 //  · 일관성(제이콥의 법칙): 모든 건물이 같은 순서 — 머리 → 지갑 → 탭 → 내용 → 도움말 → 주 버튼
-const BC = { suggest: '#d0743a', beginner: '#3f9a4a', dex: '#8a5bd0', tower: '#7b6fd6', kfr: '#d9472b', raid: '#c0392b', cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', fishrank: '#1f7fa8', farmrank: '#5a9a2e', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a', fountain: '#3f8fd0' };
+const BC = { guideq: '#3b6fd6', suggest: '#d0743a', beginner: '#3f9a4a', dex: '#8a5bd0', tower: '#7b6fd6', kfr: '#d9472b', raid: '#c0392b', cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', fishrank: '#1f7fa8', farmrank: '#5a9a2e', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a', fountain: '#3f8fd0' };
 S.btab = {}; S.bhelp = {};
 const WAL = { gold: () => ['🪙', me.gold], wood: () => [RES.wood.i, LIFE().res.wood], stone: () => [RES.stone.i, LIFE().res.stone], fish: () => [COIN.fish[0], LIFE().coins.fish], farm: () => [COIN.farm[0], LIFE().coins.farm] };
 const fmtN = n => Math.floor(n || 0).toLocaleString();
@@ -7623,6 +7666,7 @@ const GUIDE = () => [
     ['걷기', isPC() ? '바닥을 누르거나 화살표·WASD로 걸어요.' : '바닥을 누르거나, 화면을 끌면 그 방향으로 계속 걸어요.'],
     ...(isPC() ? [['점프 · 공격', 'C = 점프, 공중에서 C 한 번 더 = 더블 점프(건물·나무도 넘어가요). 화살표를 누른 채 C면 그쪽으로 뛰어요. Z = 공격(마을에선 바라보는 쪽, 사냥터에선 가까운 몬스터에게 · 쿨타임 찬 스킬부터 순서대로). 스페이스바 = 가까이 있는 건물·주민·나무·바위·물가를 누른 것처럼 이용.']] : []),
     ['건물 이용', '건물을 누르면 그 앞까지 걸어가서 바로 창이 열려요.'],
+    ['📘 가이드 퀘스트', '왼쪽 위 파란 칸. 마을의 놀거리를 차례대로 한 번씩 해 보는 퀘스트예요. 단계마다 보상이 있고, 다 끝내면 칭호를 받아요.'],
     ['🔰 초보자 가이드 · 📮 건의 게시판', '광장 남쪽 팻말 두 개. 처음 할 일을 차례대로 알려 주고, 김치복에게 바라는 점을 글로 남길 수 있어요(🔒 비공개도 돼요).'],
     ['🏘️ 바로가기', '오른쪽 버튼. 가고 싶은 곳을 누르면 그 자리로 바로 이동하고 시설 창도 열려요.'],
     ['채팅·이모트', '아래 채팅 칸은 같은 채널의 모두에게 보여요. 😊 버튼으로 이모트. 귓속말·친구·거래는 없어요.'],
