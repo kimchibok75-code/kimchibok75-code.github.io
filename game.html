@@ -2734,10 +2734,10 @@ function nameTag(c, now) {
 function nameTagAt(c, now) {
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   // 2026-11-20 두 줄: 윗줄 Lv.00 (작게, 바탕 없음) / 아랫줄 뱃지 + 닉네임 (바탕). 둘 다 가운데
-  ctx.font = '700 11.5px "IBM Plex Sans KR", sans-serif'; const label = `${c.adm ? '🛡️ ' : ''}${c.name}`;
+  ctx.font = '700 11.5px "IBM Plex Sans KR", sans-serif'; const label = c.name;   // 2026-11-20 관리자도 평범하게 (🛡️ 표시 없음)
   const bd = c === me ? LIFE()?.badge : c.badge, bw = bd ? 19 : 0, tw = ctx.measureText(label).width + 12 + bw;
-  const tc = c === me ? LIFE()?.tagc : c.tagc, plain = !tc && !c.adm;   // 2026-11-20 기본 = 하얀 바탕 + 검은 글씨 (모두 같음)
-  ctx.fillStyle = tc ? tc + 'f0' : c.adm ? 'rgba(108,79,194,.94)' : 'rgba(255,255,255,.95)'; rr(ctx, c.x - tw / 2, c.y - 66, tw, 17, 8.5); ctx.fill();   // 이름표 배경색 (life.tagc)
+  const tc = c === me ? LIFE()?.tagc : c.tagc, plain = !tc;   // 2026-11-20 기본 = 하얀 바탕 + 검은 글씨 (관리자도 같음)
+  ctx.fillStyle = tc ? tc + 'f0' : 'rgba(255,255,255,.95)'; rr(ctx, c.x - tw / 2, c.y - 66, tw, 17, 8.5); ctx.fill();   // 이름표 배경색 (life.tagc)
   if (plain) { ctx.strokeStyle = 'rgba(31,42,58,.35)'; ctx.lineWidth = 1; ctx.stroke(); }
   ctx.fillStyle = plain ? '#1f2a3a' : '#fff'; ctx.fillText(label, c.x + bw / 2, c.y - 57.5);
   if (bd) drawBadge(bd, c.x - tw / 2 + 12, c.y - 57.5, 21);
@@ -5412,7 +5412,7 @@ function setLive(on) { S.live = on; $('#liveBanner').hidden = !on; toast(on ? '�
 // ───────── 프로필 카드 · 신고 (귓속말·친구·선물·거래 없음) ─────────
 function openProfile(p) {
   const gear = Object.entries(p.equip || {}).filter(([, it]) => it?.st);
-  openModal(`<div class="prof"><canvas id="profCv"></canvas><div><h3><span class="lv">Lv.${p.lv}</span>${esc(p.name)}${p.adm ? ' 🛡️' : ''}</h3><div class="row" style="justify-content:flex-start"><span class="badge">🏷️ ${esc(titleName(p.title) || '새로 온')}</span></div><p class="muted" style="margin-top:6px">${esc(p.intro || '')}</p></div></div>
+  openModal(`<div class="prof"><canvas id="profCv"></canvas><div><h3><span class="lv">Lv.${p.lv}</span>${esc(p.name)}</h3><div class="row" style="justify-content:flex-start"><span class="badge">🏷️ ${esc(titleName(p.title) || '새로 온')}</span></div><p class="muted" style="margin-top:6px">${esc(p.intro || '')}</p></div></div>
     <p class="muted" style="margin:0">${CLASSES[p.cls || 'sword'].i} ${CLASSES[p.cls || 'sword'].n}</p>
     <ul class="ilist">${gear.map(([k, it]) => row(gIcon(it), itemTag(it), `${SLOTS[k].n}${p.enh?.[k] ? ` +${p.enh[k]}` : ''} · ${itemDesc(it, p.enh?.[k] || 0)}`, '')).join('')}</ul>
     <div class="actions pact">
