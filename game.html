@@ -1680,15 +1680,15 @@ async function paintGround(step, M = MAP_T) {   // M: 어떤 지도를 그릴지
   const ST = 4, NX = WP / ST + 1, NY = HP / ST + 1;
   const field = t => { const f = new Float32Array(NX * NY); for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) f[j * NX + i] = M.soft(t, i * ST / T, j * ST / T); return f; };
   function shape(f, th) {   // th 보다 큰 곳을 덮는 Path2D (마칭 스퀘어)
-    const P = new Path2D();
+    const P = new Path2D(); P.none = true;   // none: 덮는 곳이 하나도 없음 (치복동의 자갈처럼)
     for (let j = 0; j < NY - 1; j++) {
       let run = -1;
-      const flush = i => { if (run >= 0) { P.rect(run * ST, j * ST, (i - run) * ST, ST); run = -1; } };
+      const flush = i => { if (run >= 0) { P.none = false; P.rect(run * ST, j * ST, (i - run) * ST, ST); run = -1; } };
       for (let i = 0; i < NX - 1; i++) {
         const v = [f[j * NX + i], f[j * NX + i + 1], f[(j + 1) * NX + i + 1], f[(j + 1) * NX + i]];   // 왼위 · 오위 · 오아래 · 왼아래 (시계 방향)
         const inn = v.map(x => x >= th), n = inn.filter(Boolean).length;
         if (n === 4) { if (run < 0) run = i; continue; }
-        flush(i); if (!n) continue;
+        flush(i); if (!n) continue; P.none = false;
         const C = [[i * ST, j * ST], [(i + 1) * ST, j * ST], [(i + 1) * ST, (j + 1) * ST], [i * ST, (j + 1) * ST]], pts = [];
         for (let k = 0; k < 4; k++) {
           const k2 = (k + 1) % 4; if (inn[k]) pts.push(C[k]);
@@ -1703,6 +1703,7 @@ async function paintGround(step, M = MAP_T) {   // M: 어떤 지도를 그릴지
   // 모양 P 안에만 그리기: clip은 휴대폰 GPU에서 아주 느려서(멈춤), 다른 판에 그린 뒤 P 모양으로 오려서 한 번에 붙임
   let LY = null;
   const inside = (P, draw) => {
+    if (P.none) return;   // 빈 모양이면 destination-in이 아무것도 안 지워서 무늬가 바닥 전체에 찍혔음 (2026-11-19 치복동 풀밭이 지저분했던 원인)
     if (!LY) { LY = document.createElement('canvas'); LY.width = cv.width; LY.height = cv.height; }
     const q = LY.getContext('2d', SOFT); q.setTransform(1, 0, 0, 1, 0, 0); q.globalCompositeOperation = 'source-over'; q.globalAlpha = 1; q.clearRect(0, 0, LY.width, LY.height);
     q.setTransform(GK, 0, 0, GK, 0, 0); q.lineCap = 'round'; draw(q);
@@ -1714,9 +1715,9 @@ async function paintGround(step, M = MAP_T) {   // M: 어떤 지도를 그릴지
   await step(1);
   // 1) 풀밭: 큰 얼룩 → 작은 얼룩 → 풀잎
   g.fillStyle = '#8fcb70'; g.fillRect(0, 0, WP, HP);
-  for (let i = 0; i < Math.round(260 * AK); i++) { g.globalAlpha = r(.12, .26) * (M.town ? 1 : .45);   // 치복동은 얼룩을 옅게 (지저분해 보여서, 2026-11-19)
+  for (let i = 0; i < Math.round(260 * AK); i++) { g.globalAlpha = r(.12, .26);   // 풀밭은 타운·치복동 똑같이
     g.fillStyle = pick(['#a7db86', '#7fbd62', '#9ad37b', '#86c468']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(120, 260), r(70, 150), r(0, 3), 0, 7); g.fill(); }
-  if (M.town) for (let i = 0; i < Math.round(900 * AK); i++) { g.globalAlpha = r(.15, .35); g.fillStyle = pick(['#a2d982', '#84c266', '#97d079', '#8cc86d', '#aadd8b']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(14, 46), r(8, 24), r(0, 3), 0, 7); g.fill(); }
+  for (let i = 0; i < Math.round(900 * AK); i++) { g.globalAlpha = r(.15, .35); g.fillStyle = pick(['#a2d982', '#84c266', '#97d079', '#8cc86d', '#aadd8b']); g.beginPath(); g.ellipse(r(0, WP), r(0, HP), r(14, 46), r(8, 24), r(0, 3), 0, 7); g.fill(); }
   g.globalAlpha = 1; g.lineCap = 'round';
   for (let i = 0; i < Math.round(9000 * AK); i++) {   // 풀잎 (짧은 획 두세 개)
     if (i && i % 3000 === 0) await new Promise(res => setTimeout(res));
