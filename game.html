@@ -179,7 +179,7 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .rk-v { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; } .rk-v small { display: block; font-weight: 600; font-size: calc(11.5px * var(--fs)); color: var(--ink-soft); }
 /* 낚시 개편 (2026-11-20): 물고기 그림 · 가방 · 팔기 · 도감 · 랭킹판 */
 /* 물고기 그림 바깥 검은 테두리 (2026-11-20): 네 방향 그림자를 겹쳐 외곽선처럼 */
-.fpic { width: 64px; height: 48px; object-fit: contain; display: block; margin: 0 auto; filter: drop-shadow(1.2px 0 0 #1f2a3a) drop-shadow(-1.2px 0 0 #1f2a3a) drop-shadow(0 1.2px 0 #1f2a3a) drop-shadow(0 -1.2px 0 #1f2a3a) drop-shadow(0 2px 2px rgba(0,0,0,.18)); }
+.fpic { width: 64px; height: 48px; object-fit: contain; display: block; margin: 0 auto; filter: url(#fink) drop-shadow(0 2px 2px rgba(0,0,0,.18)); }
 .fpic.emo { font-size: 34px; line-height: 48px; text-align: center; filter: none; }
 .fpic.s { width: 34px; height: 26px; display: inline-block; vertical-align: middle; margin: 0; } .fpic.s.emo { font-size: 20px; line-height: 26px; }
 .fpic.big { width: 220px; height: 150px; } .fpic.big.emo { font-size: 90px; line-height: 150px; }
@@ -978,6 +978,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="fink" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feComponentTransfer in="SourceAlpha" result="a"><feFuncA type="linear" slope="4.25" intercept="-1.5"/></feComponentTransfer><feMorphology in="a" operator="dilate" radius="1.2" result="d"/><feFlood flood-color="#1f2a3a"/><feComposite in2="d" operator="in" result="ink"/><feMerge><feMergeNode in="ink"/><feMergeNode in="SourceGraphic"/></feMerge></filter></svg>
 
 <!-- ─────────── 로그인 · 가입 ─────────── -->
 <div class="boot" id="boot" role="status" aria-live="polite"><div class="boot-in"><b class="boot-t"><img class="boot-ic" src="assets/img/game-192.png" alt="">치복 타운</b><div class="boot-bar"><i id="bootBar"></i></div><small id="bootMsg">불러오는 중…</small></div></div>
@@ -1770,7 +1771,9 @@ function silOf(im, fresh) {
   let c = SIL.get(im); if (c && !fresh) return c;   // fresh = 매번 바뀌는 그림(드래곤 판)
   if (!c) { c = document.createElement('canvas'); SIL.set(im, c); }
   c.width = im.width; c.height = im.height; const q = c.getContext('2d');
-  q.clearRect(0, 0, c.width, c.height); q.drawImage(im, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = INK; q.fillRect(0, 0, c.width, c.height); q.globalCompositeOperation = 'source-over';
+  q.clearRect(0, 0, c.width, c.height); q.drawImage(im, 0, 0);
+  if (!fresh) try { const d = q.getImageData(0, 0, c.width, c.height), a = d.data; for (let i = 3; i < a.length; i += 4) a[i] = a[i] < 90 ? 0 : a[i] > 150 ? 255 : (a[i] - 90) * 4.25; q.putImageData(d, 0, 0); } catch {}   // 옅은 빛·번짐은 테두리에서 뺌
+  q.globalCompositeOperation = 'source-in'; q.fillStyle = INK; q.fillRect(0, 0, c.width, c.height); q.globalCompositeOperation = 'source-over';
   return c;
 }
 const inkSil = (g, im, x, y, w, h, O = 2.4, fresh) => { const s = silOf(im, fresh); for (const [a, b] of RING) g.drawImage(s, x + a * O, y + b * O, w, h); };
@@ -7518,7 +7521,7 @@ function drawBrag(c, top, now) {
   const B = c.brag, k = Math.min(1, Math.max(0, (now - B.t0) / 260)); if (k <= 0) return top;
   // 2026-11-20 크기 = 실제 길이·무게에 맞춤 (작은 건 작게, 고래·거대 작물은 정말 크게). 물고기 1cm~300m, 작물 2g~50t
   const F0 = B.crop || B.fish, im = B.crop ? cropImgC(B.crop.id) : fishImgC(fishDef(B.fish)?.id);
-  const sz = B.crop ? Math.min(140, Math.max(30, B.crop.g ? 30 * Math.pow(B.crop.g / 100, .14) : 46)) : Math.min(300, Math.max(30, B.fish?.len ? 30 * Math.pow(B.fish.len / 10, .3) : 46));   // 작물은 최대 140 (2026-11-20 너무 커서 줄임)
+  const sz = B.crop ? Math.min(64, Math.max(30, B.crop.g ? 30 * Math.pow(B.crop.g / 100, .08) : 40)) : Math.min(300, Math.max(30, B.fish?.len ? 30 * Math.pow(B.fish.len / 10, .3) : 46));   // 작물은 30~64 (2026-11-20 사용자 요청으로 두 번 줄임)
   const s0 = sz * (.6 + .4 * k), y = top - 6 - s0 / 2 - Math.sin(now / 260) * 2 * (1 + sz / 120);
   ctx.save(); ctx.globalAlpha = k; ctx.translate(c.x, y); ctx.rotate(Math.sin(now / 420) * .12);
   ctx.fillStyle = 'rgba(255,240,170,.35)'; ctx.beginPath(); ctx.ellipse(0, 0, s0 * .62, s0 * .42, 0, 0, 7); ctx.fill();   // 은은한 빛
