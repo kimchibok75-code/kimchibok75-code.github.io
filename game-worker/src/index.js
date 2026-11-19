@@ -1,6 +1,6 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
+import { FISH_KING, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_COIN, AUTO_FISH, FISH_SHOP, cropOf, CANS, FARM, plotGrown, farmSettle, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
@@ -499,12 +499,12 @@ const GAME = {
     }
     if (id.startsWith('suit:') || id.startsWith('wsk:')) {   // 의상 · 무기 스킨 (입기는 /api/character 로)
       const s = id.startsWith('suit:') ? SUITS.find(x => 'suit:' + x.id === id) : WSKINS.find(x => wskKey(x) === id);
-      if (!s || s.raid) fail(400, s ? '레이드에서만 얻을 수 있어요' : '없는 스킨이에요');
+      if (!s || s.raid || s.fk) fail(400, s ? (s.fk ? '낚시점 낚시왕 보상이에요' : '레이드에서만 얻을 수 있어요') : '없는 스킨이에요');
       if (c.hats.includes(id)) fail(400, '이미 가지고 있어요');
       spend(c, s.price); c.hats.push(id);
       return { log: ['skin', id] };
     }
-    const h = HATS.find(x => x.id === id && x.id !== 'none' && !x.raid && !x.free); if (!h) fail(400, '없는 스킨이에요');
+    const h = HATS.find(x => x.id === id && x.id !== 'none' && !x.raid && !x.free && !x.fk); if (!h) fail(400, '없는 스킨이에요');
     if (c.hats.includes(h.id)) fail(400, '이미 가지고 있어요');
     spend(c, h.price); c.hats.push(h.id); c.hat = h.id;
     return { log: ['skin', h.id] };
@@ -593,6 +593,15 @@ const GAME = {
     const st = npcState(c, at), i = String(Number(b.i));
     if (!own(st.q, i) || st.q[i].s !== 0) fail(400, '받은 임무가 없어요');
     delete st.q[i];
+  },
+  // 낚시왕 보상 (2026-11-19): 물고기 50마리마다 다음 부위 하나. 받은 것은 hats에 들어감 (순서대로라서 '몇 개 받았나'는 hats로 셈)
+  '/api/fish/king'(c) {
+    const n = c.life.cnt?.fish || 0, next = FISH_KING.keys.find(k => !c.hats.includes(k));
+    if (!next) fail(400, '낚시왕 보상을 모두 받았어요');
+    const need = (FISH_KING.keys.indexOf(next) + 1) * FISH_KING.every;
+    if (n < need) fail(400, `물고기 ${need}마리를 낚아야 받을 수 있어요 (지금 ${n}마리)`);
+    c.hats.push(next);
+    return { fk: next, log: ['fish-king', next], chron: next === FISH_KING.keys[FISH_KING.keys.length - 1] ? ['fish', '낚시왕 세트를 모두 모았어요! 🎣'] : null };
   },
   '/api/title'(c, b) { const id = String(b.id || ''); if (!c.life.titles.includes(id)) fail(400, '아직 없는 칭호예요'); c.title = id; },
   // 낚시점: 낚싯대 · 미끼 올리기 (낚시 코인)

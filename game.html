@@ -110,6 +110,7 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .bs-card p { margin: 0; }
 .bs-sec { margin: 4px 2px -3px; font-weight: 800; font-size: calc(13.5px * var(--fs)); color: var(--ink-soft); }
 .bs-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.bs-list.fk-list { grid-template-columns: minmax(0, 1fr) !important; } .fk-ic { overflow: hidden; } .fk-ic canvas { width: 100%; height: 100%; display: block; } .fk-row.own { opacity: .72; }
 .bs-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 64px; padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; }
 .bs-row.cur { border-color: var(--bcl); background: var(--bcs); }
 .bs-row.stack .bs-qty { grid-column: 1 / -1; }
@@ -1168,7 +1169,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { FISH_KING, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISH_COIN, FISHING, AUTO_FISH, fishOdds, fishHit, FISH_RIVER, FISH_SEA, CROPS, cropOf, CANS, FARM, plotGrown, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
@@ -1307,7 +1308,9 @@ const OGS = { hat: [-21.5, -63.5, 43.25, 44], suit: [-13.75, -23.75, 28, 22], ey
 // 마법소녀 세트 (2026-11-18, 스킨샵): town-art.py tpl_set → meta 'mg'
 const MGS = { hat: [-23.5, -58, 47, 39], suit: [-13.5, -23.5, 27.5, 20.25], eyes: [-9, -32.75, 18, 7.75], sword: [-12.25, -30, 24.625, 40.5], bow: [-12.375, -20, 23.125, 40.75], staff: [-13.875, -37.125, 28.125, 50.875] };
 // 템플릿 틀 그대로 그린 스킨 세트: 스킨 id → [그림 앞글자, 위치표]. 눈은 drawEyes, 모자는 hatParts, 의상은 suitParts, 무기는 wskParts
-const TSK = { ogre: ['og', OGS], magic: ['mg', MGS] };
+// 낚시왕 세트 (2026-11-19, 낚시점 보상): town-art.py tpl_set → meta 'fk'
+const FKS = { hat: [-24.5, -55, 49.5, 28.75], suit: [-9.75, -22.25, 19.75, 17], eyes: [-12.5, -33.75, 25, 8.25], sword: [-9.5, -33, 18.75, 44.5], bow: [-10, -19.25, 18.625, 38.5], staff: [-13.25, -36, 26.875, 48.125] };
+const TSK = { ogre: ['og', OGS], magic: ['mg', MGS], fishking: ['fk', FKS] };
 const HAT_NOHAIR = new Set();   // 늘 헤어를 숨길 모자 (2026-11-18: 비움 — 헤어는 '모자를 써도 헤어 보이기' 체크로만 정함)
 function wskParts(type, id) {
   const ts = TSK[id]; if (ts && ART[ts[0] + '-' + type]) return [imgPart(ts[0] + '-' + type, ...ts[1][type])];
@@ -1386,7 +1389,7 @@ function suitParts(id, bob, hy) {
         { path: E(-8.6, y + 2, 3.8, 3), c: '#9aa5b1' }, { path: E(8.6, y + 2, 3.8, 3), c: '#9aa5b1' }); break;
     case 'cabbage': sl = '#bfe39a'; F.push(body('#bfe39a'), { flat: 1, path: R(-.5, y + 2, 1, 11, .5), c: 'rgba(255,255,255,.6)' }, { flat: 1, path: PG([[0, y + 7], [-5, y + 4], [-5, y + 5.2], [0, y + 8.5]]), c: 'rgba(255,255,255,.45)' },
       ...[-8, -3, 3, 8].map(x => ({ path: E(x, y + 1, 3.8, 2.6, x * .06), c: '#7fcf6a' }))); break;
-    case 'ogre': case 'magic': { sl = id === 'ogre' ? '#7d9a3c' : '#f7b6cf'; const [pf, ps] = TSK[id];
+    case 'ogre': case 'magic': case 'fishking': { sl = { ogre: '#7d9a3c', magic: '#f7b6cf', fishking: '#e9d9b0' }[id]; const [pf, ps] = TSK[id];
       if (ART[pf + '-suit']) { F.push(imgPart(pf + '-suit', ps.suit[0], y + ps.suit[1] + 20, ps.suit[2], ps.suit[3])); break; }
       F.push(body(sl)); break; }
     case 'rdragon': sl = '#a8322a';
@@ -1650,7 +1653,7 @@ const ART = {};
 const ART_N = ['b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
   ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
-  ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'mg-' + n), 'ogre-bg'];
+  ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].flatMap(n => ['mg-' + n, 'fk-' + n]), 'ogre-bg'];
 const artReady = Promise.all(ART_N.map(n => new Promise(ok => { const im = new Image(); im.onload = () => { ART[n] = im; ok(); }; im.onerror = () => ok(); im.src = `assets/img/town/${n}.webp?v=__BUILD__`; })));
 // 그림 조각 (캐릭터 스킨용): inkDraw 안에서 테두리 없이 그림을 그림. rot = 돌리기(가운데 기준)
 // 그림 바깥 테두리 (2026-11-18): 그림 모양대로 검게 칠한 판(silOf)을 둘레 16방향으로 O만큼 밀어 그린 뒤 그 위에 그림
@@ -6024,7 +6027,9 @@ function fishShop(b, keep) {
   const item = k => { const S0 = FISH_SHOP[k], l = F0[k], max = l >= S0.cost.length;
     return `<li class="bs-row"><span class="bs-ri">${S0.i}</span><div><b class="t">${S0.names[l]}${max ? chip('최고', 'gold') : ''}</b>${steps(l + 1, S0.names.length)}<div class="cs">${max ? '' : chip(`다음: ${S0.names[l + 1]}`, 'up')}${chip(S0.d)}</div></div>
       <div class="bs-act">${max ? '' : bbtn(k, '사기', coinTxt('fish', S0.cost[l]), { main: true, dis: L.coins.fish < S0.cost[l] })}</div></li>`; };
-  bsOpen(b, { tag: '낚시 코인으로 낚싯대 · 미끼 올리기', wal: ['fish'],
+  const tab = btab('fishshop', 'shop', ['shop', 'king']);
+  if (tab === 'king') return fishKing(b, keep);
+  bsOpen(b, { tag: '낚시 코인으로 낚싯대 · 미끼 올리기', wal: ['fish'], tabs: FS_TABS, tab,
     body: `<div class="bs-card hero"><div class="cs">${chip(`🎯 낚을 확률 ${Math.round(fishHit(F0.rod, D.fx) * 100)}%`, 'up')}${chip(`🍀 운 ${D.luk}`)}</div></div>
       <div class="bs-sec">🛒 장비 올리기</div><ul class="bs-list">${item('rod')}${item('bait')}</ul>
       <div class="bs-card"><h4>📊 물고기 등급 확률</h4><table class="bs-table"><thead><tr><th>등급</th><th>지금</th>${nr ? '<th>낚싯대 ↑</th>' : ''}${nb ? '<th>미끼 ↑</th>' : ''}<th>코인</th></tr></thead><tbody>
@@ -6035,6 +6040,33 @@ function fishShop(b, keep) {
       if (x === 'go') { closeModal(); teleport(FISH_AT.x, FISH_AT.y); return toast('🎣 물을 누르면 바로 낚싯대를 던져요'); }
       if (x === 'auto') return openFishing();
       const j = await act('/api/fish/shop', { k: x }); if (j) { toast(`${FISH_SHOP[x].i} ${FISH_SHOP[x].names[LIFE().fish[x]]}!`); emote(me, '🎉'); logAct(`${FISH_SHOP[x].names[LIFE().fish[x]]} 구입`); reopen?.(); }
+    }, keep);
+}
+
+// 낚시왕 (2026-11-19): 물고기 50마리마다 낚시왕 스킨 한 부위 (모자 → 의상 → 눈 → 검 → 활 → 지팡이), '받기'를 눌러야 받음
+const FS_TABS = [['shop', '🛒 낚싯대·미끼'], ['king', '👑 낚시왕']];
+const fkNext = () => FISH_KING.keys.find(k => !me.hats.includes(k));
+const fkReady = () => { const k = fkNext(); return !!k && (LIFE()?.cnt?.fish || 0) >= (FISH_KING.keys.indexOf(k) + 1) * FISH_KING.every; };
+function fishKing(b, keep) {
+  reopen = () => fishShop(b, true);
+  const n = LIFE().cnt?.fish || 0, E = FISH_KING.every, next = fkNext(), ready = fkReady(), got = FISH_KING.keys.filter(k => me.hats.includes(k)).length, ni = FISH_KING.keys.indexOf(next);
+  const kindOf = k => k.startsWith('suit:') ? '의상' : k.startsWith('eye:') ? '눈' : k.startsWith('wsk:') ? { sword: '검', bow: '활', staff: '지팡이' }[k.split(':')[1]] : '모자';
+  const row = (k, i) => { const it = fkItem(k), need = (i + 1) * E, own = me.hats.includes(k), now = k === next;
+    const st = own ? chip('✔ 받음', 'good') : now && ready ? bbtn('get', '받기', '', { main: true }) : chip(`🔒 ${fmtN(need)}마리`);
+    return `<li class="bs-row fk-row${own ? ' own' : ''}"><span class="bs-ri fk-ic"><canvas data-k="${k}"></canvas></span><div><b class="t">${it.n}</b><div class="cs">${chip(`🎣 ${fmtN(need)}마리`)}${chip(kindOf(k))}${chip(fxText(it.fx || {}), 'up')}</div></div><div class="bs-act">${st}</div></li>`; };
+  const body = `<div class="bs-card hero"><h4>👑 낚시왕 세트<small>${got} / ${FISH_KING.keys.length} 받음</small></h4>
+      ${thinBar(next ? Math.min(1, Math.max(0, (n - ni * E) / E)) : 1)}
+      <div class="cs">${chip(`🐟 지금까지 ${fmtN(n)}마리`)}${next ? chip(ready ? '🎁 받을 보상이 있어요!' : `다음까지 ${fmtN((ni + 1) * E - n)}마리`, ready ? 'up' : '') : chip('🏆 모두 모음', 'gold')}</div></div>
+    <ul class="bs-list fk-list">${FISH_KING.keys.map(row).join('')}</ul>`;
+  const help = `<p>물고기를 <b>${E}마리</b> 낚을 때마다 낚시왕 스킨을 하나씩 받아요. 순서: 모자 → 의상 → 눈 → 검 → 활 → 지팡이.</p><p><b>받기</b>를 눌러야 받아요. 받은 스킨은 캐릭터창 → 스킨에서 쓸 수 있고, 가지고만 있어도 보유 효과가 붙어요.</p><p>스킨샵에서는 팔지 않아요.</p>`;
+  const foot = ready ? bbtn('get', `🎁 ${fkItem(next).n} 받기`, '', { main: 1, wide: 1 }) : bbtn('go', '🎣 낚시하러 가기', '', { main: 1, wide: 1 });
+  const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };
+  bsOpen(b, { tag: `물고기 ${E}마리마다 낚시왕 스킨 하나씩`, wal: ['fish'], tabs: FS_TABS, tab: 'king', body, help, foot,
+    ready: el => requestAnimationFrame(() => el.querySelectorAll('.fk-ic canvas').forEach(cv => { const k = cv.dataset.k, [a, x, y] = k.split(':');
+      skinTile(cv, a === 'eye' ? { ...look, eyes: x } : a === 'suit' ? { ...look, suit: x } : a === 'wsk' ? wskLook(look, x, y) : { ...look, hat: k }, a === 'eye' ? 'eye' : a === 'suit' ? 'suit' : a === 'wsk' ? 'weapon' : undefined); })) },
+    async x => {
+      if (x === 'go') { closeModal(); teleport(FISH_AT.x, FISH_AT.y); return toast('🎣 물을 누르면 바로 낚싯대를 던져요'); }
+      if (x === 'get') { const j = await act('/api/fish/king', {}); if (j?.fk) { const it = fkItem(j.fk); toast(`👑 ${it.n} 받았어요! 캐릭터창 → 스킨에서 써 보세요`); emote(me, '🎉'); sfx('levelup'); logAct(`낚시왕 보상: ${it.n}`); reopen?.(); } }
     }, keep);
 }
 
@@ -6125,7 +6157,7 @@ function skinShop(b, keep) {
   reopen = () => skinShop(b, true);
   const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
   const tile = (key, name, own, on, price, fx) => `<button type="button" data-x="${key}" aria-pressed="${on}" title="${name} · 보유 효과: ${fxText(fx || {})}" aria-label="${name} · 보유 효과 ${fxText(fx || {})}${own ? '' : ` · ${price.toLocaleString()} 골드`}"><canvas></canvas>${own ? `<em class="own">${on ? '착용' : '보유'}</em>` : price ? `<em>🪙 ${price.toLocaleString()}</em>` : ''}<small>${name.replace(/^\S+\s/, '')}<i class="skfx">${fxText(fx || {})}</i></small></button>`;
-  const hats = HATS.filter(h => h.id !== 'none' && !h.raid && !h.free), eyes = EYE_SKINS.filter(e => e.price), suits = SUITS.filter(s => !s.raid);
+  const hats = HATS.filter(h => h.id !== 'none' && !h.raid && !h.free && !h.fk), eyes = EYE_SKINS.filter(e => e.price), suits = SUITS.filter(s => !s.raid && !s.fk);
   const WT = [['sword', '검'], ['bow', '활'], ['staff', '지팡이']], rsets = [['rdragon', '🐉 레드 드래곤 · 매시 정각'], ['ogre', '👹 오우거 · 매시 30분']];
   const rItem = k => k.startsWith('eye:') ? EYE_SKINS.find(e => 'eye:' + e.id === k) : k.startsWith('suit:') ? SUITS.find(s => 'suit:' + s.id === k) : k.startsWith('wsk:') ? WSKINS.find(w => wskKey(w) === k) : HATS.find(h => h.id === k);
   const worn = k => { const [a, b, c2] = k.split(':'); return a === 'eye' ? me.eyes === b : a === 'suit' ? me.suit === b : a === 'wsk' ? me.wsk?.[b] === c2 : me.hat === k; };
@@ -6135,7 +6167,7 @@ function skinShop(b, keep) {
     hat: () => grid('shopHats', '', hats.map(h => tile('hat:' + h.id, h.n, me.hats.includes(h.id), me.hat === h.id, h.price, h.fx)).join('')) + '<p class="muted">모자 스킨을 안 쓰면 장착한 머리 장비가 보여요.</p>',
     eye: () => grid('shopEyes', '', eyes.map(e => tile('eye:' + e.id, e.n, me.hats.includes('eye:' + e.id), me.eyes === e.id, e.price, e.fx)).join('')),
     suit: () => grid('shopSuits', '', suits.map(x => tile('suit:' + x.id, x.n, me.hats.includes('suit:' + x.id), me.suit === x.id, x.price, x.fx)).join('')),
-    wsk: () => WT.map(([t, tn]) => `<div class="bs-sec">${tn}</div>${grid('', ' shopW', WSKINS.filter(w => w.t === t && !w.raid).map(w => tile(wskKey(w), w.n, me.hats.includes(wskKey(w)), me.wsk?.[t] === w.id, w.price, w.fx)).join(''))}`).join(''),
+    wsk: () => WT.map(([t, tn]) => `<div class="bs-sec">${tn}</div>${grid('', ' shopW', WSKINS.filter(w => w.t === t && !w.raid && !w.fk).map(w => tile(wskKey(w), w.n, me.hats.includes(wskKey(w)), me.wsk?.[t] === w.id, w.price, w.fx)).join(''))}`).join(''),
     raid: () => `<p class="muted">레이드에서만 얻어요. 같은 스킨을 또 얻으면 <b>레벨이 올라 효과가 세져요</b> (레벨마다 +${RSK.step * 100}%).</p>` + rsets.map(([set, title]) => `<div class="bs-sec">${title}</div>` + grid('shopRaid', ' raid', raidSet(set).map(k => { const it = rItem(k), n = rskCount(me, k), lv = rskLv(n), need = rskNeed(lv);
       return tile('raid|' + k, it.n, !!n, worn(k), 0, rskFx(it.fx, Math.max(1, lv))).replace(/<\/button>$/, `<b class="rlv">${n ? `Lv.${lv}${need ? ` · ${n}/${need}` : ' · 최고'}` : '🔒 미보유'}</b></button>`); }).join(''))).join(''),
   }[tab]();
@@ -6654,6 +6686,7 @@ function fishShow(j, here, auto) {
     townFloat(me.x, me.y - 20, `+${f.price.toLocaleString()}`, '#ffd166');
     if (!auto) logAct(`${f.i} ${f.n} ${f.len}cm +${f.price}`);
     if (['epic', 'legend'].includes(f.grade)) sysMsg(`🎣 ${FG[f.grade].n} 물고기! ${f.n} ${f.len}cm`);
+    if ((LIFE()?.cnt?.fish || 0) % FISH_KING.every === 0 && fkReady()) setTimeout(() => toast(`👑 물고기 ${fmtN(LIFE().cnt.fish)}마리! 낚시점 → 낚시왕에서 ${fkItem(fkNext()).n}을(를) 받아 가세요`), 1800);
   } else {
     sfx('splash'); const rare = ['rare', 'epic', 'legend'].includes(j.fish.grade);
     if (here) { rodEnd(me, null); netSend({ t: 'fish', s: 3 }); }
@@ -6819,6 +6852,7 @@ const GUIDE = () => [
     ['강 · 바다', '강·연못과 마을 남쪽 바다에서 나는 물고기가 달라요. 목록은 낚시터 창에서 볼 수 있어요.'],
     ['보상', '낚은 물고기는 바로 팔려서 골드가 되고, 🐚 낚시 코인도 받아요. 2초에 한 번 던질 수 있어요.'],
     ['낚시점', '낚시 코인으로 낚싯대(낚을 확률 ↑)와 미끼(좋은 등급 ↑)를 올려요.'],
+    ['낚시왕', '물고기 50마리마다 낚시점 → 낚시왕 탭에서 낚시왕 스킨을 하나씩 받아요 (모자 → 의상 → 눈 → 검 → 활 → 지팡이). 받기를 눌러야 받아요.'],
     ['물고기 그림자', '물속에서 헤엄치는 물고기 그림자 근처로 던지면 좋은 물고기가 잘 나와요. 낚으면 사라지고 다른 곳에 또 나타나요.'],
     ['순위', '낚시터 창에서 제일 비싼·제일 큰·제일 많이 낚은 사람 순위를 봐요.'],
   ]],
