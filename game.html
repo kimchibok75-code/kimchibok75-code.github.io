@@ -439,6 +439,8 @@ body.raiding .actpad .ap-atk, body.modal-open .actpad { display: none; }
 .actpad button.on, .actpad button:active { transform: translateY(3px); box-shadow: 0 1px 0 #1f2a3a; }
 .ap-jump { width: 54px; height: 54px; background: rgba(191, 239, 255, .92); margin-bottom: 26px; }
 .ap-jump svg { width: 24px; height: 24px; }
+.ap-use { width: 54px; height: 54px; background: rgba(184, 238, 170, .94); font-size: 21px; margin-bottom: 26px; } .ap-use.off { opacity: .45; }
+body.hunting .actpad .ap-use, body.raiding .actpad .ap-use { display: none; }
 .ap-atk { width: 70px; height: 70px; background: rgba(255, 207, 90, .95); font-size: 26px; }
 .ap-atk .ico { width: 30px; height: 30px; }
 .rcol { position: absolute; right: 10px; top: 56px; display: grid; gap: 6px; justify-items: end; }   /* 오른쪽 세로 버튼 + 확대 버튼 (버튼 수가 바뀌어도 안 겹침) */
@@ -1093,7 +1095,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <!-- ─────────── 게임 ─────────── -->
 <div class="app" id="app" hidden>
-  <div class="actpad" id="actPad"><button class="ap-jump" id="apJump" type="button" aria-label="점프"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 13l6-6 6 6"/><path d="M6 19l6-6 6 6" opacity=".55"/></svg><small>점프</small></button><button class="ap-atk" id="apAtk" type="button" aria-label="공격"><span id="apAtkI">🗡️</span><small>공격</small></button></div>
+  <div class="actpad" id="actPad"><button class="ap-jump" id="apJump" type="button" aria-label="점프"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 13l6-6 6 6"/><path d="M6 19l6-6 6 6" opacity=".55"/></svg><small>점프</small></button><button class="ap-use" id="apUse" type="button" aria-label="이용"><span id="apUseI">✋</span><small>이용</small></button><button class="ap-atk" id="apAtk" type="button" aria-label="공격"><span id="apAtkI">🗡️</span><small>공격</small></button></div>
   <aside class="panel" id="panel" aria-label="내 캐릭터">
     <button class="peek" id="peek" aria-expanded="false">
       <span class="grip"></span>
@@ -1466,7 +1468,7 @@ function suitParts(id, bob, hy) {
         { path: E(-8.6, y + 2, 3.8, 3), c: '#9aa5b1' }, { path: E(8.6, y + 2, 3.8, 3), c: '#9aa5b1' }); break;
     case 'cabbage': sl = '#bfe39a'; F.push(body('#bfe39a'), { flat: 1, path: R(-.5, y + 2, 1, 11, .5), c: 'rgba(255,255,255,.6)' }, { flat: 1, path: PG([[0, y + 7], [-5, y + 4], [-5, y + 5.2], [0, y + 8.5]]), c: 'rgba(255,255,255,.45)' },
       ...[-8, -3, 3, 8].map(x => ({ path: E(x, y + 1, 3.8, 2.6, x * .06), c: '#7fcf6a' }))); break;
-    case 'ogre': case 'magic': case 'fishking': case 'mineking': { sl = { ogre: '#7d9a3c', magic: '#f7b6cf', fishking: '#e9d9b0', mineking: '#d9a441' }[id]; const [pf, ps] = TSK[id];
+    case 'ogre': case 'magic': case 'fishking': case 'mineking': case 'farmking': { sl = { ogre: '#7d9a3c', magic: '#f7b6cf', fishking: '#e9d9b0', mineking: '#d9a441', farmking: '#3f6f9a' }[id]; const [pf, ps] = TSK[id];
       if (ART[pf + '-suit']) { F.push(imgPart(pf + '-suit', ps.suit[0], y + ps.suit[1] + 20, ps.suit[2], ps.suit[3])); break; }
       F.push(body(sl)); break; }
     case 'rdragon': sl = '#a8322a';
@@ -1990,7 +1992,7 @@ function stepChar(ch, dt) {
 let people = [];
 function mkPerson(d) {
   return { id: d.id, name: d.n, adm: d.adm, lv: d.lv, title: d.title, badge: d.badge || "", intro: d.intro, face: d.face, body: d.body, eyes: d.eyes, hat: d.hat, hair: d.hair, hairC: d.hairC, hatHair: d.hatHair !== false, suit: d.suit || '', wsk: d.wsk || {}, equip: d.equip || {}, cls: d.cls || 'sword', enh: d.enh || {},
-    x: d.tx ?? d.x, y: d.ty ?? d.y, path: [], seed: (d.id % 17) * .37, speed: 195, hunt: !!d.hunt, room: d.room || 0, sit: -1, bubble: null, emote: null };
+    x: d.tx ?? d.x, y: d.ty ?? d.y, path: [], seed: (d.id % 17) * .37, speed: 195, hunt: !!d.hunt, au: !!d.au, room: d.room || 0, sit: -1, bubble: null, emote: null };
 }
 const personOf = id => people.find(p => p.id === id);
 const shown = p => !p.hunt && !S.blocked.has(p.id) && (p.room || 0) === (me.room || 0);
@@ -2718,6 +2720,7 @@ function nameTagAt(c, now) {
   if (c.emote && c.emote.until > now) { const k = 1 - (c.emote.until - now) / 2200; ctx.font = '22px sans-serif'; ctx.globalAlpha = Math.min(1, (1 - k) * 3); fillTextIco(ctx, c.emote.e, c.x + tw / 2 + 12, c.y - 60 - k * 14); ctx.globalAlpha = 1; }
   if (c.bubble && c.bubble.until > now) bubbleAt(c.x, top - 2, c.bubble.text, c === me);
   else if (c === me && me.job && !HT) { const l = jobLeft(); bubbleAt(c.x, top - 2, l ? `☕ 알바 중 ${fmtSec(l)}` : '☕ 알바 끝!', true); }
+  else if ((c === me ? AU.on : c.au) && !HT && !c.hunt) bubbleAt(c.x, top - 2, '🧺 자동 생활 중…', c === me);
   else if (c === me && F.auto && !HT) bubbleAt(c.x, top - 2, `🎣 낚시 중 · 미끼 ${me.life?.fish?.pack || 0}`, true);
 }
 function drawTownFloats() {
@@ -4390,7 +4393,11 @@ function spaceTarget() {
     if (me.life?.farm) PLOTS.forEach((P, pi) => add(d(P.x, P.y) - 12, P.x, P.y, P.x, P.y + 16, () => farmTap(pi)));
     const tx = Math.floor(me.x / T), ty = Math.floor(me.y / T); let wb = null;   // 물: 가까운 물 칸 (낚시)
     for (let y = ty - 2; y <= ty + 2; y++) for (let x = tx - 2; x <= tx + 2; x++) if (tileAt(x, y) === WATER) { const k = d((x + .5) * T, (y + .5) * T) - T / 2; if (!wb || k < wb[0]) wb = [k, (x + .5) * T, (y + .5) * T]; }
-    if (wb) add(wb[0], wb[1], wb[2], wb[1], wb[2], () => fishAtWater(wb[1], wb[2]));
+    if (wb) {
+      const gone = LIFE()?.fsh || [], sh = fishShadows(Date.now()).filter(s => s.a >= .3 && !gone.includes(s.id)).map(s => [Math.hypot(s.x * T - me.x, s.y * T - me.y), s]).filter(([k]) => k < 4.5 * T).sort((a, b) => a[0] - b[0])[0];
+      const [px, py] = sh ? [sh[1].x * T, sh[1].y * T] : [wb[1], wb[2]];
+      add(wb[0], wb[1], wb[2], wb[1], wb[2], () => fishAtWater(px, py));
+    }
   }
   let best = null, bs = 1e9;
   for (const c of C) {
@@ -5113,7 +5120,7 @@ function smithSheet(b, keep) {
   const rowOf = k => { const sl = SLOTS[k], l = me.enh[k] || 0, it = me.equip[k], max = l >= ENH_MAX, cost = ENH_COST[l], r = +enhRate(l, D).toFixed(1);
     return `<li class="bs-row${k === me.cls ? ' cur' : ''}"><span class="bs-ri">${it ? gIcon(it) : sl.i}</span><div><b class="t">${sl.n} <span class="lv">+${l}</span>${k === me.cls ? chip('사용 중', 'up') : ''}</b>${thinBar(l / ENH_MAX)}
       <div class="cs">${max ? chip('최대 강화', 'gold') : `${it ? chip(`${pn(it)} ${pw(it, l)} → <b>${pw(it, l + 1)}</b>`) : chip('장비 없음')}${chip(`성공 ${r}%`, r >= 70 ? 'hi' : r >= 30 ? 'mid' : 'lo')}`}</div></div>
-      <div class="bs-act">${max ? '' : bbtn(k, '강화', `🪙 ${fmtN(cost)}`, { main: k === me.cls, dis: me.gold < cost })}</div></li>`; };
+      <div class="bs-act">${max ? '' : bbtn(k, '강화', `🪙 ${fmtN(cost)}`, { main: me.gold >= cost, dis: me.gold < cost })}</div></li>`; };
   const wpn = [me.cls, ...WEAPON_SLOTS.filter(s => s !== me.cls)].filter(k => WEAPON_SLOTS.includes(k));
   bsOpen(b, { tag: '장비 칸 강화 · 실패해도 안 떨어져요', wal: ['gold'],
     body: `<div class="bs-card hero"><div class="cs">${chip(`${CLASSES[me.cls].i} ${CLASSES[me.cls].n}`)}${chip(`⚔️ ${me.cls === 'staff' ? '마력' : '공격'} ${fmtN(D.hit)}`)}${chip(`🛡️ 방어 ${fmtN(D.def)}`)}${chip(`❤️ 체력 ${fmtN(D.maxHp)}`)}</div></div>
@@ -5547,15 +5554,16 @@ function meBadgeSync() {
 // 점프 = C (공중에서 한 번 더 = 더블 점프), 공격 = Z (사냥터에서는 꾹 누르면 계속). 레이드에서는 공격 버튼 숨김
 function padPos() { const p = $('#panel'); if (!p) return; const r = p.getBoundingClientRect(), b = r.height ? Math.max(0, innerHeight - r.top) : 0; document.documentElement.style.setProperty('--padb', Math.round(b) + 'px'); }
 addEventListener('resize', padPos); try { new ResizeObserver(padPos).observe($('#panel')); } catch {}
-setInterval(() => { padPos(); try { document.body.classList.toggle('raiding', !!RD); document.body.classList.toggle('ingame', !$('#app').hidden && !S.away); document.body.classList.toggle('modal-open', !modal.hidden); padIcon(); } catch {} }, 250);
+setInterval(() => { padPos(); try { document.body.classList.toggle('raiding', !!RD); document.body.classList.toggle('ingame', !$('#app').hidden && !S.away); document.body.classList.toggle('modal-open', !modal.hidden); padIcon(); $('#apUse').classList.toggle('off', !spaceTarget()); auSync(); } catch {} }, 250);
 {
-  const J = $('#apJump'), A = $('#apAtk'); let held = null;
-  for (const el of [J, A]) el.addEventListener('touchstart', e => e.preventDefault(), { passive: false });   // 빠르게 두 번 눌러도 화면이 확대·이동되지 않게 (채팅창이 올라가 보이던 문제)
+  const J = $('#apJump'), A = $('#apAtk'), U = $('#apUse'); let held = null;
+  for (const el of [J, A, U]) el.addEventListener('touchstart', e => e.preventDefault(), { passive: false });   // 빠르게 두 번 눌러도 화면이 확대·이동되지 않게 (채팅창이 올라가 보이던 문제)
   const press = (el, f) => { el.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); el.classList.add('on'); f(); }); };
   const up = el => () => { el.classList.remove('on'); if (el === A) { clearInterval(held); held = null; } };
   press(J, () => { if (!S.away) myJump(); });
+  press(U, () => { if (!S.away && !HT && !RD) spaceAct(); });   // 2026-11-20 휴대폰 이용 버튼 = PC 스페이스바
   press(A, () => { myAttack(); clearInterval(held); held = setInterval(() => { if (HT) myAttack(); else { clearInterval(held); held = null; } }, 150); });
-  for (const el of [J, A]) { for (const k of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(k, up(el)); el.addEventListener('contextmenu', e => e.preventDefault()); el.addEventListener('click', e => e.stopPropagation()); }
+  for (const el of [J, A, U]) { for (const k of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(k, up(el)); el.addEventListener('contextmenu', e => e.preventDefault()); el.addEventListener('click', e => e.stopPropagation()); }
 }
 let apCls = '';
 function padIcon() { const D = derive(), c = D.magic ? 'staff' : D.far ? 'bow' : 'sword'; if (c === apCls) return; apCls = c; $('#apAtkI').textContent = { sword: '🗡️', bow: '🏹', staff: '🪄' }[c]; iconize($('#apAtkI')); }
@@ -6498,7 +6506,7 @@ function openFarm(keep) {
       const [a, v] = x.split(':');
       if (a === 'lk') return toast(`🔒 호미를 Lv${plotNeed(+v)}로 올리면 열려요 (🛒 호미·비료 탭)`);
       if (a === 'p') { const p = LIFE().farm.plots[+v], st = plotStage(p, Date.now());
-        if (st === 'empty') return farmPlant(+v); if (st === 'ready') return farmHarvest(+v);
+        if (st === 'empty') return farmPlant(null); if (st === 'ready') return farmHarvest(+v);   // 2026-11-20 사용자 요청: 심기는 언제나 빈 밭 모두
         return toast(`🌱 무엇이 자랄까요? ${fmtLeft(plotLeftS(p))} 뒤에 다 자라요`); }
       if (a === 'plantall') return farmPlant(null);
       if (a === 'harvestall') return farmHarvest(null);
@@ -7171,6 +7179,8 @@ function takeOver() { $('#away').hidden = true; S.away = false; NET.take = true;
 $('#awayGo').onclick = takeOver;
 $('#awayNo').onclick = () => showAway('wait');
 function netRetry() { const d = Math.min(30e3, 1000 * 2 ** NET.tries++); setTimeout(() => { if (NET.want && !NET.ws) netConnect(); }, d); }
+// 자동 생활 켜짐을 마을 사람들에게 알림 (바뀔 때 + 새로 접속했을 때 한 번)
+function auSync() { const v = AU.on ? 1 : 0; if (!NET.ready || (NET.auWs === NET.ws && NET.au === v)) return; if (netSend({ t: 'au', on: v })) { NET.au = v; NET.auWs = NET.ws; } }
 function netSend(o) { if (!NET.ready || NET.ws?.readyState !== 1) return false; NET.ws.send(JSON.stringify(o)); return true; }
 function netClose() { NET.want = false; NET.ready = false; try { NET.ws?.close(); } catch {} NET.ws = null; people = []; }
 function netGo() { if (HT) return; const d = me.path[me.path.length - 1] || me; netSend({ t: 'go', x: Math.round(me.x), y: Math.round(me.y), tx: Math.round(d.x), ty: Math.round(d.y) }); }
@@ -7248,6 +7258,7 @@ function onNet(m) {
   else if (m.t === 'room') { const p = personOf(m.id); if (p) Object.assign(p, { room: m.r || 0, x: m.x, y: m.y, path: [], sit: -1, buf: null }); }
   else if (m.t === 'house' && m.h && Number.isInteger(m.h.id)) setHouses([...HOUSES.filter(h => h.id !== m.h.id), m.h]);
   else if (m.t === 'go') { const p = personOf(m.id); if (p) { standUp(p); netMove(p, m); } }
+  else if (m.t === 'au') { const p = personOf(m.id); if (p) p.au = !!m.on; }
   else if (m.t === 'hunt') { const p = personOf(m.id); if (p) { p.hunt = m.on; p.path = []; p.sit = -1; p.buf = null; } }
   else if (m.t === 'fish') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) { if (m.s === 1) rodOut(p, m.bx, m.by, m.r); else if (m.s === 2) { rodEnd(p, { id: m.fid, i: m.i, n: m.n, grade: m.g, len: m.len }, m.big); if (m.sh) SH_GONE.add(m.sh); } else if (m.s === 3) rodEnd(p, null); else if (m.s === 4) bragFish(p, { id: m.fid, i: m.i, n: m.n, grade: m.g, len: m.len }, m.big); else p.fz = null; } }
   else if (m.t === 'emo') { const p = personOf(m.id); if (p && !S.blocked.has(p.id)) emote(p, m.e); }

@@ -281,9 +281,22 @@ async function news(env) {
   if (NEWS.v && Date.now() - NEWS.at < 20e3) return NEWS.v;
   const [W, top, chron] = await Promise.all([world(env),
     env.DB.prepare('SELECT u.nick, g.score FROM village_give g JOIN users u ON u.id = g.user_id WHERE u.banned = 0 ORDER BY g.score DESC LIMIT 10').all(),
-    env.DB.prepare('SELECT at, kind, text FROM chronicle ORDER BY id DESC LIMIT 30').all()]);
-  NEWS = { at: Date.now(), v: { village: W, top: top.results.map(r => ({ nick: r.nick, score: Math.round(r.score) })), chron: chron.results } };
+    env.DB.prepare('SELECT at, kind, text FROM chronicle ORDER BY id DESC LIMIT 200').all()]);
+  NEWS = { at: Date.now(), v: { village: W, top: top.results.map(r => ({ nick: r.nick, score: Math.round(r.score) })), chron: raidGroup(chron.results).slice(0, 30) } };
   return NEWS.v;
+}
+// 2026-11-20 레이드 소식은 한 레이드(같은 보스 · 같은 30분)를 한 줄로: '○○님 외 N명이 레드 드래곤 레이드에 성공했어요!' (예전 '전용 스킨을 얻었어요' 줄도 같이 묶음)
+function raidGroup(rows) {
+  const out = [], grp = new Map();
+  for (const r of rows) {
+    const m = r.kind === 'raid' && /^(.+?)님이 (.+?) 레이드(?:에서|에) /.exec(r.text);
+    if (!m) { out.push(r); continue; }
+    const key = m[2] + ':' + Math.floor(r.at / 1800e3); let g = grp.get(key);
+    if (!g) { g = { at: r.at, kind: 'raid', boss: m[2], who: [] }; grp.set(key, g); out.push(g); }
+    if (!g.who.includes(m[1])) g.who.push(m[1]);
+  }
+  for (const g of grp.values()) { const n = g.who.length; g.text = `${g.who[n - 1]}님${n > 1 ? ` 외 ${n - 1}명` : ''}이 ${g.boss} 레이드에 성공했어요!`; delete g.who; delete g.boss; }
+  return out;
 }
 // 마을 연대기 (전설 물고기, 신화 장비, 공동 건설 완성 등 큰일만)
 const chron = (env, kind, text) => env.DB.prepare('INSERT INTO chronicle (at, kind, text) VALUES (?, ?, ?)').bind(now(), kind, String(text).slice(0, 120)).run().then(() => { NEWS.at = 0; }).catch(() => {});
@@ -502,7 +515,7 @@ const GAME = {
     if (skins[0]) ({ skin, lv: skinLv, n: skinN } = skins[0]);
     c.gold += gold; const up = addExp(c, exp); c.life.raidGot = start; c.hp = D.maxHp; c.hpAt = at;
     return { raid: { boss: j.boss, gold, exp, up, skin, skinLv, skinN, skins, crowd: Math.round((raidCrowd(j.n) - 1) * 100), dead: j.dead, rank: j.rank, n: j.n, dmg: j.dmg }, log: ['raid', `${gold} ${exp} ${skins.map(x => x.skin).join(' ')}`.trim()],
-      chron: skin ? ['raid', `${RAID_BOSS[j.boss]?.n || '레이드'} 레이드에서 전용 스킨을 얻었어요!`] : null };
+      chron: ['raid', `${RAID_BOSS[j.boss]?.n || '레이드'} 레이드에 성공했어요!`] };   // 2026-11-20 마을 소식에서는 한 레이드를 한 줄로 묶어 보여 줌 (news)
   },
   // 스킨샵 (겉모습만, 현금 결제 없음)
   '/api/skin'(c, b) {
