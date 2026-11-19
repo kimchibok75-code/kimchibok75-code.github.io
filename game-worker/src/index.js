@@ -153,7 +153,7 @@ const findUser = (env, nick) => env.DB.prepare('SELECT * FROM users WHERE nick_k
 // ───────── 가입 · 로그인 · 비밀번호 찾기 ─────────
 async function signup(req, env) {
   const b = await readBody(req), nick = String(b.nick || '').trim(), pw = String(b.pw || '');
-  if (!allOk(nickChecks(nick))) fail(400, '닉네임 규칙을 확인해 주세요 (2~10글자, 한글·영문·숫자)');
+  if (!allOk(nickChecks(nick))) fail(400, '닉네임 규칙을 확인해 주세요 (띄어쓰기 포함 2~10글자, 한글·영문·숫자·띄어쓰기)');
   if (scanBad(nick).hit) fail(400, '닉네임에 쓸 수 없는 말이 들어 있어요');
   if (!allOk(pwChecks(pw, nick))) fail(400, '비밀번호 규칙을 확인해 주세요');
   if (b.agree !== TERMS_VER) fail(400, '가입 안내를 읽고 동의해 주세요');   // 2026-11-18 개인 팬 게임 안내 동의 (가입 화면 체크)
@@ -825,7 +825,7 @@ async function changeNick(req, env, s) {
   const b = await readBody(req), user = s.user, nick = String(b.nick || '').trim(), t = now();
   if (user.nick_at && t - user.nick_at < NICK_GAP) { const d = Math.ceil((user.nick_at + NICK_GAP - t) / 864e5); fail(429, `닉네임은 일주일에 한 번만 바꿀 수 있어요 (${d}일 남음)`); }
   if (nick === user.nick) fail(400, '지금 닉네임과 같아요');
-  if (!allOk(nickChecks(nick))) fail(400, '닉네임 규칙을 확인해 주세요 (2~10글자, 한글·영문·숫자)');
+  if (!allOk(nickChecks(nick))) fail(400, '닉네임 규칙을 확인해 주세요 (띄어쓰기 포함 2~10글자, 한글·영문·숫자·띄어쓰기)');
   if (nick === OWNER_NICK && !user.is_admin) fail(400, '쓸 수 없는 닉네임이에요');
   if (scanBad(nick).hit) fail(400, '닉네임에 쓸 수 없는 말이 들어 있어요');
   const same = await findUser(env, nick); if (same && same.id !== user.id) fail(409, '이미 있는 닉네임이에요');

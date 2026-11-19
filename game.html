@@ -201,6 +201,8 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .legendpop .fpic.big { animation: lpBob 1.6s ease-in-out infinite; filter: drop-shadow(0 0 18px rgba(255,190,60,.85)); } @keyframes lpBob { 50% { transform: translateY(-8px) rotate(-3deg); } }
 .legendpop .btn { margin-top: 10px; min-width: 160px; }
 #fbagList { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 5px; } #fbagList .fcard { min-height: 0; cursor: pointer; padding: 6px 2px 4px; } #fbagList .fpic { width: 48px; height: 34px; }
+/* 캐릭터창 칭호 줄: 뱃지 + 칭호 가운데 (2026-11-20) */
+.meTitleRow { justify-content: center; align-items: center; gap: 6px; } .meBadge { width: 30px; height: 30px; cursor: pointer; flex: none; } .meBadge[hidden] { display: none; }
 /* 도감 센터 (2026-11-20) */
 .dexms { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; } .c.lk { background: #eef0f3; color: #8a93a0; }
 .dexsk { display: flex; flex-wrap: wrap; gap: 5px; }
@@ -1002,8 +1004,8 @@ a.iconbtn { color: inherit; text-decoration: none; }
         <label for="nick">닉네임</label>
         <input id="nick" autocomplete="username" placeholder="2~10글자" maxlength="10">
         <ul class="rules chips" id="nickRules" hidden>
-          <li data-r="len">2~10글자</li>
-          <li data-r="chars">한글·영문·숫자만</li>
+          <li data-r="len">2~10글자 (띄어쓰기 포함)</li>
+          <li data-r="chars">한글·영문·숫자·띄어쓰기</li>
           <li data-r="name">김치복·관리자 같은 이름 X</li>
         </ul>
       </div>
@@ -1104,7 +1106,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
       <div class="me">
         <canvas id="meCanvas" aria-label="내 캐릭터"></canvas>
         <h2><span class="lv" id="meLv">Lv.1</span><span id="meName">김복단</span><button type="button" class="nkbtn" id="nickBtn" aria-label="닉네임 바꾸기" title="닉네임 바꾸기">✏️</button></h2>
-        <div class="row"><button type="button" class="badge tbtn" id="meTitle" title="칭호 보기">🏷️ 새로 온 ›</button></div>
+        <div class="row meTitleRow"><canvas class="meBadge" id="meBadge" width="64" height="64" hidden title="뱃지"></canvas><button type="button" class="badge tbtn" id="meTitle" title="칭호 보기">🏷️ 새로 온 ›</button></div>
         <p class="intro" id="meIntro">림월드 좋아하는 김복단이에요</p>
       </div>
       <div class="bars">
@@ -1158,8 +1160,6 @@ a.iconbtn { color: inherit; text-decoration: none; }
         <h3>물약</h3>
         <ul class="ilist" id="potList"></ul>
         <label class="potset">사냥 중 자동으로 마시기: 체력 <select id="potAt"><option>30</option><option selected>40</option><option>50</option><option>60</option><option>70</option></select>% 이하</label>
-        <h3>최근 일</h3>
-        <ul class="log" id="actLog"></ul>
       </div>
     </div>
   </aside>
@@ -1727,7 +1727,7 @@ function bootDone() { setTimeout(() => { try { localStorage.setItem('cbt-booting
 // ───── 사용자가 그린 그림 (텍스쳐 템플릿/내 디자인 → scripts/img-export/town-art.py → assets/img/town) ─────
 // 다 불러온 뒤에 마을을 시작함 (artReady). 못 불러온 그림은 예전 코드 그림을 그대로 씀
 const ART = {};
-const ART_N = ['b-dex', 'bench', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
+const ART_N = ['b-suggest', 'b-beginner', 'b-dex', 'bench', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'raid-bg', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
   ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), 'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
   ...['head', 'body', 'rarm', 'larm', 'leg', 'hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].flatMap(n => ['mg-' + n, 'fk-' + n, 'mk-' + n]), 'ogre-bg'];
@@ -2688,11 +2688,15 @@ function nameTag(c, now) {
 }
 function nameTagAt(c, now) {
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.font = '700 11.5px "IBM Plex Sans KR", sans-serif'; const label = `${c.adm ? '🛡️ ' : ''}Lv.${c.lv} ${c.name}`; const tw = ctx.measureText(label).width + 12;
+  // 2026-11-20 두 줄: 윗줄 Lv.00 (작게, 바탕 없음) / 아랫줄 뱃지 + 닉네임 (바탕). 둘 다 가운데
+  ctx.font = '700 11.5px "IBM Plex Sans KR", sans-serif'; const label = `${c.adm ? '🛡️ ' : ''}${c.name}`;
+  const bd = c === me ? LIFE()?.badge : c.badge, bw = bd ? 19 : 0, tw = ctx.measureText(label).width + 12 + bw;
   ctx.fillStyle = c === me ? 'rgba(232,85,58,.94)' : c.adm ? 'rgba(108,79,194,.94)' : 'rgba(31,42,58,.76)'; rr(ctx, c.x - tw / 2, c.y - 66, tw, 17, 8.5); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.fillText(label, c.x, c.y - 57.5);
-  const bd = c === me ? LIFE()?.badge : c.badge; if (bd) drawBadge(bd, c.x - tw / 2 - 13, c.y - 58, 26);   // 뱃지: 이름 왼쪽 (2026-11-20)
-  let top = c.y - 66;
+  ctx.fillStyle = '#fff'; ctx.fillText(label, c.x + bw / 2, c.y - 57.5);
+  if (bd) drawBadge(bd, c.x - tw / 2 + 12, c.y - 57.5, 21);
+  ctx.font = '800 9.5px "IBM Plex Sans KR", sans-serif'; ctx.lineJoin = 'round'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(31,42,58,.8)';
+  ctx.strokeText(`Lv.${c.lv}`, c.x, c.y - 72.5); ctx.fillStyle = '#fff'; ctx.fillText(`Lv.${c.lv}`, c.x, c.y - 72.5);
+  let top = c.y - 79;
   const tn = c.title && c.title !== 'new' ? titleName(c.title) : '';
   if (tn) {
     ctx.font = '700 10.5px "IBM Plex Sans KR", sans-serif'; const w2 = ctx.measureText(tn).width + 12;
@@ -4824,7 +4828,7 @@ function openNick() {
   openModal(`<h3>✏️ 닉네임 바꾸기</h3>
     <p class="sub">지금 닉네임: <b>${esc(me.name)}</b></p>
     ${wait ? `<p class="nk-wait">⏳ 닉네임은 <b>일주일에 한 번</b>만 바꿀 수 있어요.<br>다음에 바꿀 수 있는 날: <b>${new Date(me.nickAt + NICK_GAP).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</b> (${Math.ceil(left / 864e5)}일 남음)</p>`
-    : `<div class="field"><label for="nkIn">새 닉네임</label><input id="nkIn" maxlength="10" placeholder="2~10글자" autocomplete="off"><ul class="rules chips" id="nkRules"><li data-r="len">2~10글자</li><li data-r="chars">한글·영문·숫자만</li><li data-r="name">김치복·관리자 같은 이름 X</li></ul></div>
+    : `<div class="field"><label for="nkIn">새 닉네임</label><input id="nkIn" maxlength="10" placeholder="2~10글자" autocomplete="off"><ul class="rules chips" id="nkRules"><li data-r="len">2~10글자 (띄어쓰기 포함)</li><li data-r="chars">한글·영문·숫자·띄어쓰기</li><li data-r="name">김치복·관리자 같은 이름 X</li></ul></div>
       <ul class="nk-note"><li>바꾸면 <b>일주일 동안 다시 못 바꿔요.</b></li><li><b>로그인할 때도 새 닉네임</b>을 써야 해요. (비밀번호는 그대로)</li></ul>
       <p class="err" id="nkErr" role="alert"></p>`}
     <div class="actions">${wait ? '' : '<button class="btn main" data-x="go" id="nkGo" disabled>바꾸기</button>'}</div>`, el => {
@@ -4983,7 +4987,7 @@ function boardArt(kind) {
   }
   return cv;
 }
-artReady.then(() => { ART['b-suggest'] = boardArt('suggest'); ART['b-beginner'] = boardArt('beginner'); });
+artReady.then(() => { ART['b-suggest'] ||= boardArt('suggest'); ART['b-beginner'] ||= boardArt('beginner'); });   // 사용자 그림(b-suggest.webp 등)을 못 불러왔을 때만 코드 그림
 
 // 건의 게시판: 글쓰기 / 모아 보기. 비공개(🔒)는 쓴 사람과 김치복만 봄
 const SG = { list: null, max: 500, admin: false, draft: '', priv: false, err: '', at: 0 };
@@ -5290,7 +5294,7 @@ function openSpot(s) {
   if (s.id === 'screen') return openModal(`<h3>📺 광장 대형 전광판</h3><p>김치복님이 방송을 켜면 이 전광판에서 <b>마을 사람들과 같이</b> 볼 수 있어요.</p><p><b>${boardText()}</b></p><p class="muted">방송 중에 광장 근처에 있으면, 치지직 채팅에 게임 닉네임과 똑같은 닉네임으로 쓴 말이 마을 채팅에도 보여요.</p><button class="close" data-close>닫기</button>`);
 }
 function addGold(n) { me.gold += n; syncBars(); }
-function logAct(t) { S.log.unshift(t); S.log = S.log.slice(0, 6); $('#actLog').innerHTML = S.log.map(l => `<li>· ${esc(l)}</li>`).join(''); }
+function logAct(t) { S.log.unshift(t); S.log = S.log.slice(0, 6); }   // 2026-11-20 가방의 '최근 일' 칸은 없앰 (기록만 남김)
 function doAct(a) {
   closeModal();
   if (a === 'soon') toast('다음 단계에서 만들 기능이에요');
@@ -5514,7 +5518,15 @@ function syncMe() {
   $('#meName').textContent = me.name; $('#peekName').textContent = me.name; $('#meTitle').textContent = `🏷️ ${titleName(me.title) || '새로 온'} ›`; $('#meIntro').textContent = me.intro;
   $('#meLv').textContent = `Lv.${me.lv}`; $('#peekLv').textContent = `Lv.${me.lv}`;
   portrait($('#meCanvas'), me, 3); portrait($('#peekCanvas'), me, .82);
-  renderCls(); renderStats(); renderEquip(); renderSkills(); renderSkins(); renderBag(); syncBars(); lookChanged();
+  renderCls(); renderStats(); renderEquip(); renderSkills(); renderSkins(); renderBag(); syncBars(); lookChanged(); meBadgeSync();
+}
+// 캐릭터창 칭호 왼쪽 뱃지 (2026-11-20). 그림을 아직 불러오는 중이면 조금 뒤 다시
+function meBadgeSync() {
+  const cv = $('#meBadge'), id = LIFE()?.badge || ''; if (!cv) return;
+  if (!id) { cv.hidden = true; cv.dataset.id = ''; return; }
+  if (cv.dataset.id === id && !cv.hidden) return;
+  const sp = badgeCanvas(id); if (!sp) { setTimeout(meBadgeSync, 400); return; }
+  const g = cv.getContext('2d'); g.clearRect(0, 0, 64, 64); g.drawImage(sp, 0, 0); cv.dataset.id = id; cv.hidden = false;
 }
 // 자주 바뀌는 숫자 (체력·경험치·골드·사냥 상황)
 // ───────── 휴대폰 점프·공격 버튼 (2026-11-19) ─────────
@@ -6726,7 +6738,7 @@ function dexSheet(b, keep) {
     if (x.startsWith('bg:')) { DX.bg = x.slice(3); return reopen(); }
     if (x.startsWith('bl:')) return toast(`🔒 ${badgeOf(x.slice(3))?.d || ''}`);
     if (x.startsWith('t:')) { const id = x.slice(2), j = await act('/api/title', { id }); if (j) { toast(`🏷️ 「${titleName(id)}」 칭호를 달았어요`); reopen(); } return; }
-    if (x.startsWith('b:')) { const id = x.slice(2), j = await act('/api/badge', { id }); if (j) { toast(id ? `🍀 ${badgeOf(id).n}를 달았어요` : '뱃지를 뗐어요'); lookChanged(); reopen(); } }
+    if (x.startsWith('b:')) { const id = x.slice(2), j = await act('/api/badge', { id }); if (j) { toast(id ? `🍀 ${badgeOf(id).n}를 달았어요` : '뱃지를 뗐어요'); lookChanged(); meBadgeSync(); reopen(); } }
   }, keep);
 }
 // ───────── 가챠: 단계 × 등급 표 ─────────
@@ -6983,6 +6995,7 @@ function drawMon(m, t) {
   ctx.restore();
 }
 $('#meTitle').onclick = () => goDex('title');
+$('#meBadge').onclick = () => goDex('badge');
 
 // ───────── 실시간 마을 (3단계): 다른 사람 보기 · 채팅 · 이모트 ─────────
 // 위치는 "어디서 어디로 걷기 시작"만 보내고, 길은 각자 화면이 똑같이 계산해요 (주고받는 양이 아주 적음)

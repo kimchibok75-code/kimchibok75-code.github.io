@@ -32,7 +32,7 @@ export const NICK_BAN = ['김치복', '치복', '관리자', '운영자', '운�
 export const COMMON_PW = ['password1', 'qwer1234', 'abc12345', 'asdf1234', 'qwerty123', '1q2w3e4r', 'zxcv1234', 'iloveyou1', 'password123', 'a1234567', '1q2w3e4r5t', 'qwerty1234', 'asdf12345', 'abcd1234', 'aa123456', 'qwer12345'];
 export function nickChecks(n = '') {
   const len = [...n].length;
-  return { len: len >= 2 && len <= 10, chars: /^[가-힣a-zA-Z0-9]+$/.test(n), name: n === OWNER_NICK || !NICK_BAN.some(b => n.toLowerCase().includes(b)) };
+  return { len: len >= 2 && len <= 10, chars: /^[가-힣a-zA-Z0-9]+( [가-힣a-zA-Z0-9]+)*$/.test(n), name: n === OWNER_NICK || !NICK_BAN.some(b => n.replace(/ /g, '').toLowerCase().includes(b)) };   // 2026-11-20 띄어쓰기 허용 (가운데 한 칸씩, 띄어쓰기 포함 10글자)
 }
 export function pwChecks(p = '', n = '') {
   return { len: p.length >= 8 && p.length <= 64, mix: /[a-zA-Z]/.test(p) && /\d/.test(p), nick: !n || !p.toLowerCase().includes(n.toLowerCase()), common: !COMMON_PW.includes(p.toLowerCase()), repeat: !/^(.)\1*(.)\2*$/.test(p) };
