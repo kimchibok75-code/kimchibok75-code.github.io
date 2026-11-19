@@ -5249,10 +5249,10 @@ addEventListener('keydown', e => {
 });
 $('#chatIn').addEventListener('keydown', e => {
   if (e.isComposing) return;
-  if (e.key === 'Escape' || (e.key === 'Enter' && !e.target.value.trim())) { e.preventDefault(); e.target.blur(); }
+  if (e.key === 'Escape' || (e.key === 'Enter' && !e.target.value.trim())) { e.preventDefault(); e.stopPropagation(); e.target.blur(); }   // stopPropagation: 안 막으면 아래 창 전체 Enter가 바로 다시 채팅 칸을 켬 (2026-11-19 고침)
 });
 $('#chatIn').addEventListener('input', e => { const n = [...e.target.value].length; $('#chatCount').textContent = `${n}/60`; $('#chatCount').classList.toggle('full', n >= 60); $('#chatCount').classList.toggle('near', n >= 45); });
-$('#chatForm').addEventListener('submit', e => { e.preventDefault(); const v = $('#chatIn').value; if (!v.trim()) return; if (trySend(v) !== false) { $('#chatIn').value = ''; $('#chatCount').textContent = '0/60'; $('#chatCount').classList.remove('full'); if (PC_KEYS) $('#chatIn').blur(); else $('#chatIn').focus(); } });   // PC: Enter로 보내면 채팅 끝 → 바로 다시 걷기 (2026-11-18 요청). 휴대폰은 계속 칠 수 있게
+$('#chatForm').addEventListener('submit', e => { e.preventDefault(); const v = $('#chatIn').value; if (!v.trim()) return; if (trySend(v) !== false) { $('#chatIn').value = ''; $('#chatCount').textContent = '0/60'; $('#chatCount').classList.remove('full'); if (!PC_KEYS) $('#chatIn').focus(); } if (PC_KEYS) $('#chatIn').blur(); });   // PC: Enter로 보내면 채팅 끝 → 바로 다시 걷기 (2026-11-18 요청). 휴대폰은 계속 칠 수 있게
 $('#emoBtn').onclick = () => { $('#emotes').hidden = !$('#emotes').hidden; if (innerWidth <= 760) $('#chat').classList.add('expanded'); };
 $('#emotes').addEventListener('click', e => { const em = e.target.closest('[data-e]')?.dataset.e; if (em) { emote(me, em); $('#emotes').hidden = true; } });
 $('#chatExp').onclick = () => $('#chat').classList.toggle('expanded');
