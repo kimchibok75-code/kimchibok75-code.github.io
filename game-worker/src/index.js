@@ -645,14 +645,13 @@ const GAME = {
   '/api/mine/king'(c, b) { return kingClaim(c, 'mine', b); },   // 채굴왕 (2026-11-19): 손으로 캔 석재 100개마다
   '/api/title'(c, b) { const id = String(b.id || ''); if (!c.life.titles.includes(id)) fail(400, '아직 없는 칭호예요'); c.title = id; },
   // 뱃지 달기 (2026-11-20 도감 센터). id = '' 이면 떼기
-  // 📘 가이드 퀘스트 (2026-11-20): 다 하면 보상 받고 다음 단계로 · 건너뛰기(보상 없음)
+  // 📘 가이드 퀘스트 (2026-11-20): 다 하면 보상 받고 다음 단계로 (건너뛰기는 2026-11-20 없앰)
   '/api/guide/claim'(c) {
     const P = guideProg(c); if (!P) fail(400, '가이드 퀘스트를 모두 끝냈어요'); if (!P.ok) fail(400, `아직 다 못 했어요 (${P.n} / ${P.v})`);
     const r = P.q[8], exp = guideExp(c.lv); c.gold += r.gold || 0; c.life.res.wood += r.wood || 0; c.life.res.stone += r.stone || 0; addExp(c, exp);
     const nx = guideNext(c); if (!nx) cntAdd(c, 'guideDone'); c._noEarn = 1;
     return { guide: { done: P.q[0], r, exp, end: !nx }, lexp: exp, log: ['guide', P.q[0]] };
   },
-  '/api/guide/skip'(c) { const P = guideProg(c); if (!P) fail(400, '가이드 퀘스트를 모두 끝냈어요'); const nx = guideNext(c); if (!nx) cntAdd(c, 'guideDone'); return { log: ['guide-skip', P.q[0]] }; },
   '/api/tagc'(c, b) { const v = String(b.c || ''); if (!TAG_COLORS.includes(v)) fail(400, '없는 색이에요'); c.life.tagc = v; },   // 이름표 배경색
   '/api/badge'(c, b) { const id = String(b.id || ''); if (id && !hasBadge(c, id)) fail(400, '아직 없는 뱃지예요'); c.life.badge = id; },
   // 낚시점: 낚싯대 · 미끼 올리기 (2026-11-20부터 골드, 한 단계씩)

@@ -3022,9 +3022,24 @@ const HUNT_ART = {
   factory: { base: '#a4acb6', patch: ['#99a1ab', '#aeb6bf', '#8f97a1', '#b5bcc4'], trail: ['#e9b949', '#2f3742'], tuft: '#7d8590', vig: 'rgba(20,25,35,' },
 };
 const blitTo = (g, sp, x, y, sc = 1) => g.drawImage(sp.c, x - sp.ox * sc, y - sp.oy * sc, sp.w * sc, sp.h * sc);
+// 2026-11-20 사냥터 바닥 = 사용자 그림 (내 디자인/배경 들판·깊은 숲·황야·공장 → hbg-<사냥터 id>.webp). 사냥터에 들어갈 때 불러옴
+// 아직 못 불러왔으면 예전 코드 그림을 먼저 쓰고, 다 불러오면 바꿔 그림
+const hbgP = {};
+function loadHuntBg(f) { return (hbgP[f.id] ||= loadArt('hbg-' + f.id).then(() => { if (ART['hbg-' + f.id] && huntGround[f.id] && !huntGround[f.id].img) { delete huntGround[f.id]; if (HT?.f?.id === f.id) paintHunt(f); } })); }
 function paintHunt(f) {
   if (huntGround[f.id]) return huntGround[f.id];
   if (innerWidth <= 760) for (const k in huntGround) delete huntGround[k];
+  const bg = ART['hbg-' + f.id];
+  if (!bg) loadHuntBg(f);
+  else {
+    const WP = HW * T, HP = HH * T, K = PHONE ? SPR_K : 2, cvs = document.createElement('canvas'); cvs.width = WP * K; cvs.height = HP * K;
+    const g = cvs.getContext('2d', PHONE ? { willReadFrequently: true } : undefined); g.scale(K, K); g.imageSmoothingQuality = 'high';
+    const ar = WP / HP, iw = bg.naturalWidth, ih = bg.naturalHeight, sw = Math.min(iw, ih * ar), sh = sw / ar;   // 비율이 다르면 가운데를 잘라 꽉 채움
+    g.drawImage(bg, (iw - sw) / 2, (ih - sh) / 2, sw, sh, 0, 0, WP, HP);
+    const A = HUNT_ART[f.id] || HUNT_ART.plain, v = g.createRadialGradient(WP / 2, HP / 2, Math.min(WP, HP) * .35, WP / 2, HP / 2, Math.max(WP, HP) * .72);
+    v.addColorStop(0, A.vig + '0)'); v.addColorStop(1, A.vig + '.22)'); g.fillStyle = v; g.fillRect(0, 0, WP, HP);
+    cvs.img = 1; return (huntGround[f.id] = cvs);
+  }
   const A = HUNT_ART[f.id] || HUNT_ART.plain, K = PHONE ? SPR_K : 2, WP = HW * T, HP = HH * T;
   const cvs = document.createElement('canvas'); cvs.width = WP * K; cvs.height = HP * K; const g = cvs.getContext('2d', PHONE ? { willReadFrequently: true } : undefined); g.scale(K, K); seed = 31 + f.tier * 97;
   const r = (a, b) => a + rnd() * (b - a), pick = l => l[Math.floor(rnd() * l.length)];
@@ -4909,7 +4924,7 @@ function renderQuests() {
   iconize(box);
 }
 setInterval(renderQuests, 1000);
-// ───── 📘 가이드 퀘스트 창 (2026-11-20): 지금 단계 설명 · 진행 · 보상 · 가기 / 보상 받기 / 건너뛰기 ─────
+// ───── 📘 가이드 퀘스트 창 (2026-11-20): 지금 단계 설명 · 진행 · 보상 · 가기 / 보상 받기 ─────
 const GQ = { toastI: -1 };
 const gqReward = (r, lv) => [r.gold ? goldTxt(r.gold) : '', r.wood ? `🪵 ${r.wood}` : '', r.stone ? `🪨 ${r.stone}` : '', `✨ 경험치 ${fmtN(npcExp(lv))}`].filter(Boolean);
 function openGuideQ() {
@@ -4921,7 +4936,7 @@ function openGuideQ() {
     <div class="bs-card"><h4>🎁 보상</h4><div class="cs">${gqReward(q[8], me.lv).map(t => chip(t, 'up')).join('')}</div></div>
     <div class="bs-card"><h4>전체 진행</h4><div class="bs-steps gq-steps">${steps}</div><p class="muted">모두 끝내면 칭호 「마을을 한 바퀴 돈」 (경험치 · 골드 +2%)</p></div>`;
   const foot = G.ok ? bbtn('claim', '🎁 보상 받기', '', { main: true, wide: true })
-    : `<div class="bs-two">${bbtn('go', q[6] ? `🚶 ${q[6]} 가기` : '⏰ 다음 레이드 알아보기', '', { main: true })}${bbtn('skip', '⏭️ 건너뛰기', '보상 없음')}</div>`;
+    : bbtn('go', q[6] ? `🚶 ${q[6]} 가기` : '⏰ 다음 레이드 알아보기', '', { main: true, wide: true });   // 2026-11-20 건너뛰기 없앰 (사용자 요청)
   openModal(bsWrap({ id: 'guideq', icon: '📘', name: '가이드 퀘스트' }, { tag: '마을의 놀거리를 하나씩 해 봐요', body, foot }), el => wire(el, async x => {
     if (x === 'claim') {
       const j = await act('/api/guide/claim', {}); if (!j?.guide) return;
@@ -4929,10 +4944,6 @@ function openGuideQ() {
       toast(`📘 가이드 완료! ${gqReward(g.r, me.lv).slice(0, -1).join(' · ')}`); sysMsg(`📘 가이드 「${GUIDE_Q.find(x => x[0] === g.done)?.[2] || ''}」 보상: ${gqReward(g.r, me.lv).slice(0, -1).join(' · ')}`);
       if (g.end) { closeModal(); return openModal(`<div class="legendpop"><p class="lp-k">📘 가이드 퀘스트 완료 📘</p><h3>마을을 한 바퀴 돌았어요!</h3><p>새 칭호 「마을을 한 바퀴 돈」을 받았어요.</p><p class="muted">이제 마음 가는 대로 치복 타운을 즐겨 주세요 🎉</p><button class="btn main" data-close>고마워요!</button></div>`); }
       NPC.sig = ''; renderQuests(); return openGuideQ();
-    }
-    if (x === 'skip') {
-      if (!(await ask('이 단계의 보상은 받을 수 없어요.', { title: `「${q[2]}」을(를) 건너뛸까요?`, ok: '건너뛰기' }))) return;
-      const j = await act('/api/guide/skip', {}); if (!j) return; NPC.sig = ''; renderQuests(); return openGuideQ();
     }
     if (x === 'go') {
       closeModal();
