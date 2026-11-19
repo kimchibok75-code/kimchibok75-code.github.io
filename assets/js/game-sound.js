@@ -148,7 +148,7 @@ function schedule() {
 // 파일로 된 배경 음악 (2026-11-20 사용자 곡). 없는 모드는 위의 코드 노래
 const FILES = { town: { src: 'assets/audio/town.mp3', v: .75 },
   // 2026-11-20 사냥터 4곳 · 레이드 2종 (원본: 텍스쳐 템플릿/내 디자인/배경음/)
-  'hunt-plain': { src: 'assets/audio/hunt-plain.mp3', v: .75 }, 'hunt-mine': { src: 'assets/audio/hunt-canyon.mp3', v: .7 }, 'hunt-swamp': { src: 'assets/audio/hunt-forest.mp3', v: .7 },   // 2026-11-20 폐광 = 바위 협곡 음악, 늪지 = 깊은 숲 음악 (임시, 나중에 바꿀 예정) 'hunt-forest': { src: 'assets/audio/hunt-forest.mp3', v: .75 },
+  'hunt-plain': { src: 'assets/audio/hunt-plain.mp3', v: .75 }, 'hunt-mine': { src: 'assets/audio/hunt-mine.mp3', v: .75 }, 'hunt-swamp': { src: 'assets/audio/hunt-swamp.mp3', v: .75 }, 'hunt-forest': { src: 'assets/audio/hunt-forest.mp3', v: .75 },
   'hunt-canyon': { src: 'assets/audio/hunt-canyon.mp3', v: .75 }, 'hunt-factory': { src: 'assets/audio/hunt-factory.mp3', v: .75 },
   'raid-rdragon': { src: 'assets/audio/raid-rdragon.mp3', v: .75 }, 'raid-ogre': { src: 'assets/audio/raid-ogre.mp3', v: .75 } };
 const FA = {};
