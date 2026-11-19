@@ -1022,7 +1022,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 </style>
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="fink" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feComponentTransfer in="SourceAlpha" result="a"><feFuncA type="linear" slope="4.25" intercept="-1.5"/></feComponentTransfer><feMorphology in="a" operator="dilate" radius="1.2" result="d"/><feFlood flood-color="#1f2a3a"/><feComposite in2="d" operator="in" result="ink"/><feMerge><feMergeNode in="ink"/><feMergeNode in="SourceGraphic"/></feMerge></filter></svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="fink" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB"><feComponentTransfer in="SourceAlpha" result="a"><feFuncA type="linear" slope="4.25" intercept="-1.5"/></feComponentTransfer><feMorphology in="a" operator="dilate" radius="2.3" result="d"/><feFlood flood-color="#1f2a3a"/><feComposite in2="d" operator="in" result="ink"/><feMerge><feMergeNode in="ink"/><feMergeNode in="SourceGraphic"/></feMerge></filter></svg>
 
 <!-- ─────────── 로그인 · 가입 ─────────── -->
 <div class="boot" id="boot" role="status" aria-live="polite"><div class="boot-in"><b class="boot-t"><img class="boot-ic" src="assets/img/game-192.png" alt="">치복 타운</b><div class="boot-bar"><i id="bootBar"></i></div><small id="bootMsg">불러오는 중…</small></div></div>
@@ -3094,11 +3094,7 @@ function paintHunt(f) {
     const g = cvs.getContext('2d', PHONE ? { willReadFrequently: true } : undefined); g.scale(K, K); g.imageSmoothingQuality = 'high';
     const ar = WP / HP, iw = bg.naturalWidth, ih = bg.naturalHeight, sw = Math.min(iw, ih * ar), sh = sw / ar;   // 비율이 다르면 가운데를 잘라 꽉 채움
     g.drawImage(bg, (iw - sw) / 2, (ih - sh) / 2, sw, sh, 0, 0, WP, HP);
-    // 2026-11-20 바깥 색: 그림 가장자리의 평균색을 조금 어둡게 → 맵 끝을 그 색으로 부드럽게 이어서 경계가 안 보이게
-    const ec = HUNT_EDGE[f.id] ||= edgeColor(bg), E = 1.8 * T;
-    for (const [x0, y0, x1, y1, rx, ry, rw, rh] of [[0, 0, 0, E, 0, 0, WP, E], [0, HP, 0, HP - E, 0, HP - E, WP, E], [0, 0, E, 0, 0, 0, E, HP], [WP, 0, WP - E, 0, WP - E, 0, E, HP]]) {
-      const lg = g.createLinearGradient(x0, y0, x1, y1); lg.addColorStop(0, `rgba(${ec},.95)`); lg.addColorStop(.45, `rgba(${ec},.35)`); lg.addColorStop(1, `rgba(${ec},0)`); g.fillStyle = lg; g.fillRect(rx, ry, rw, rh);
-    }
+    HUNT_EDGE[f.id] ||= edgeColor(bg);   // 바깥 색 = 그림 가장자리 평균색 (경계는 흐리지 않고 딱 나뉘게, 2026-11-20 사용자 요청)
     cvs.img = 1; return (huntGround[f.id] = cvs);
   }
   const A = HUNT_ART[f.id] || HUNT_ART.plain, K = PHONE ? SPR_K : 2, WP = HW * T, HP = HH * T;
@@ -6517,6 +6513,7 @@ function teleport(px, py, quiet) {
   if (BUSY() && !quiet) { busyToast(); return false; }
   if (me.room) toTown([px, py]);
   if (TOWN.bad(Math.floor(px / T), Math.floor(py / T))) return toast('거기는 갈 수 없어요');
+  if (me.fz) { netSend({ t: 'fish', s: 0 }); me.fz = null; }   // 낚시 중 순간이동 → 낚싯대 거둠 (기다리던 낚시는 취소)
   standUp(me); me.x = px; me.y = py; me.path = []; me.moving = false; GA = null; cam = { x: me.x, y: me.y }; savePos(true); netGo(); if (!quiet) emote(me, '✨');
 }
 $('#townBtn').onclick = () => {
@@ -7131,7 +7128,7 @@ function badgeCanvas(id) {   // 2026-11-20 사용자 요청: 둥근 바탕 없�
     inkImage(g, lc, 4, 4, 56, 56, 2.6);
   } else if (im) {
     const k = 56 / Math.max(im.width, im.height), w = im.width * k, h = im.height * k;
-    inkImage(g, im, 32 - w / 2, 32 - h / 2, w, h, 2.4);
+    inkImage(g, im, 32 - w / 2, 32 - h / 2, w, h, 3.4);
   } else { g.font = '44px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; fillTextIco(g, cd?.i || fd?.i || '🐟', 32, 34); }
   return BADGE_SP[id] = cv;
 }
@@ -7741,7 +7738,7 @@ const bragText = (f, big) => `${f.i} ${fmtCm(f.len)}짜리 ${f.n}${f.grade && f.
 const fishBagL = () => LIFE()?.fbag || [];
 const autoFishStop = () => { F.auto = false; };   // 자동 낚시는 2026-11-18에 없앰 (부르는 곳 호환용)
 // 낚시하는 모습: c.fz = { bx, by(찌 자리), r(낚싯대 단계), t0, ph: wait 기다림 · bite 입질 · got 낚음 · miss 놓침, at, fish, until }
-function rodOut(c, bx, by, r = 0) { const t = performance.now(); c.brag = null; c.fz = { bx, by, r, t0: t, ph: 'wait', until: t + 15e3 }; c.dir = bx < c.x ? -1 : 1; }
+function rodOut(c, bx, by, r = 0) { const t = performance.now(); c.brag = null; c.fz = { bx, by, r, t0: t, ph: 'wait', until: t + 15e3, ox: c.x, oy: c.y, rm: c.room || 0 }; c.dir = bx < c.x ? -1 : 1; }
 function rodEnd(c, fish, big) {
   const t = performance.now(); if (!c.fz) rodOut(c, c.x + (c.dir || 1) * 40, c.y + 14);
   Object.assign(c.fz, { ph: fish ? 'got' : 'miss', at: t, fish, until: t + (fish ? 900 : 1500) });
@@ -7757,7 +7754,7 @@ function drawBrag(c, top, now) {
   const s0 = sz * (.6 + .4 * k), y = top - 6 - s0 / 2 - Math.sin(now / 260) * 2 * (1 + sz / 120);
   ctx.save(); ctx.globalAlpha = k; ctx.translate(c.x, y); ctx.rotate(Math.sin(now / 420) * .12);
   ctx.fillStyle = 'rgba(255,240,170,.35)'; ctx.beginPath(); ctx.ellipse(0, 0, s0 * .62, s0 * .42, 0, 0, 7); ctx.fill();   // 은은한 빛
-  if (im) { const s = s0 / Math.max(im.width, im.height); inkImage(ctx, im, -im.width * s / 2, -im.height * s / 2, im.width * s, im.height * s, 1.8); }   // 바깥 검은 테두리
+  if (im) { const s = s0 / Math.max(im.width, im.height); inkImage(ctx, im, -im.width * s / 2, -im.height * s / 2, im.width * s, im.height * s, 3.2); }   // 바깥 검은 테두리
   else { ctx.font = `${Math.round(s0 * .6)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; fillTextIco(ctx, F0.i, 0, 0); }
   if (F0.grade !== 'normal') { ctx.fillStyle = fgOf(F0.grade).c; for (let i = 0; i < 3; i++) { const a = now / 500 + i * 2.1; ctx.globalAlpha = k * (.5 + .5 * Math.sin(now / 180 + i)); ctx.beginPath(); ctx.arc(Math.cos(a) * s0 * .55, Math.sin(a) * s0 * .3, 2.2, 0, 7); ctx.fill(); } }
   ctx.restore(); return top - s0 - 2;
@@ -7853,7 +7850,7 @@ function drawRods(chars, now) {
     if (z.ph === 'got' && z.fish) {   // 낚은 물고기를 줄 끝에 매달고 자랑 (그림이 있으면 그림)
       const im = fishImgC(fishDef(z.fish)?.id);
       ctx.save(); ctx.translate(bx, by + 6); ctx.rotate(Math.sin(now / 160) * .35);
-      if (im) { const s = 40 / Math.max(im.width, im.height); inkImage(ctx, im, -im.width * s / 2, -im.height * s * .3, im.width * s, im.height * s, 1.6); }
+      if (im) { const s = 40 / Math.max(im.width, im.height); inkImage(ctx, im, -im.width * s / 2, -im.height * s * .3, im.width * s, im.height * s, 2.8); }
       else { ctx.font = '26px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; fillTextIco(ctx, z.fish.i, 0, 0); }
       ctx.restore(); continue;
     }
@@ -7866,7 +7863,7 @@ function drawRods(chars, now) {
 // 걷기 시작하면 낚싯대를 넣음. 다 보여 줬으면 넣음
 function rodTick(now) {
   for (const c of [me, ...people]) if (c.brag && (c.moving || c.jz > 0 || c.sit >= 0 || (c === me && (HT || me.room > 0)))) c.brag = null;
-  for (const c of [me, ...people]) if (c.fz && (c.moving || c.sit >= 0 || c.fz.until < now)) { if (c === me && c.fz.until >= now && (c.fz.ph === 'wait' || c.fz.ph === 'bite')) netSend({ t: 'fish', s: 0 }); c.fz = null; }
+  for (const c of [me, ...people]) if (c.fz && (c.moving || c.sit >= 0 || c.fz.until < now || (c.fz.ox != null && (Math.hypot(c.x - c.fz.ox, c.y - c.fz.oy) > T * 2 || (c.room || 0) !== c.fz.rm)))) { if (c === me && c.fz.until >= now && (c.fz.ph === 'wait' || c.fz.ph === 'bite')) netSend({ t: 'fish', s: 0 }); c.fz = null; }
 }
 // ───────── 🏆 낚시 랭킹판 (2026-11-20, 낚시점 옆 건물): 제일 비싼 · 제일 큰 · 제일 많이 잡은 ─────────
 // 강가 표지판·바로가기 '강'도 이 창 (내 장비 · 가방 · 방금 낚은 것)

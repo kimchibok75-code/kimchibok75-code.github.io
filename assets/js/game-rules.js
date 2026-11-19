@@ -793,9 +793,21 @@ export const GUIDE_MARKS = ['gMove', 'gBld', 'gWarp', 'gHall', 'gDong', 'gSkin',
 const GUIDE_V1 = ['wish', 'wood', 'stone', 'hire', 'fish', 'fishSold', 'plant', 'crops', 'cropSold', 'job', 'npc', 'kills', 'gacha', 'enhTry', 'skillPull', 'boss', 'badge', 'give', 'house', 'raid'];
 export const guideQ = c => { const g = c.life?.gq; return g && g.i < GUIDE_Q.length ? GUIDE_Q[g.i] : null; };
 export const guideCnt = (c, q) => (q[4] === '@badge' ? (c.life?.badge ? 1 : 0) : c.life?.cnt?.[q[4]] || 0);
-export function guideProg(c) {   // { q, n: 지금까지, v: 목표, ok }
+// 2026-11-20 사용자 요청: 예전에 이미 해 본 것(기록이 있음)은 바로 성공. 새로 만든 기록(npcTake 등)은 예전부터 있던 흔적도 봄
+export function guideHave(c, q) {
+  const L = c.life || {}, C = L.cnt || {}, n = guideCnt(c, q);
+  switch (q[4]) {
+    case 'npcTake': return Math.max(n, C.npc || 0, Object.keys(L.npc?.q || {}).length);
+    case 'huntGo': return Math.max(n, C.kills ? 1 : 0);
+    case 'statUp': return Math.max(n, spentPoints(c) > 0 || (c.presets || []).some(p => p?.s?.some(v => v > 5)) ? 1 : 0);
+    case 'raid': return Math.max(n, L.raidGot ? 1 : 0);
+    case 'house': case 'gDong': return Math.max(n, L.house?.d ? 1 : 0);
+  }
+  return n;
+}
+export function guideProg(c) {   // { q, n: 지금까지, v: 목표, ok }  — 지금까지 한 전체 기록으로 셈
   const q = guideQ(c); if (!q) return null;
-  const n = q[4][0] === '@' ? guideCnt(c, q) : Math.max(0, guideCnt(c, q) - (c.life.gq.b || 0));
+  const n = guideHave(c, q);
   return { q, n: Math.min(n, q[5]), v: q[5], ok: n >= q[5] };
 }
 // 서버: 처음이면 시작 / 다음 단계로 넘길 때 그 단계 시작 값 기록
