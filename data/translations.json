@@ -301,6 +301,12 @@
       "ko": "여기에는 군복의 새로운 색상 변형, 다양한 임무에 보너스를 제공하는 작업복, 특수 기능을 갖춘 전투 장비, 새로운 위장 전투 장비 세트, 속옷 및 세레가 포함됩니다.",
       "at": 1794912160077
     },
+    "3840619132": {
+      "src": "Styles pack for equipment in VFE Classical. Adds styles for centurian helmet, legionnaire helmet, spatha, and a bonus tyrannosaur headdress.",
+      "full": "VFE Classical 장비용 스타일 팩. 백부장 헬멧, 군단병 헬멧, 스파타 및 보너스 티라노사우루스 머리 장식에 대한 스타일을 추가합니다.",
+      "ko": "VFE Classical 장비용 스타일 팩. 백부장 헬멧, 군단병 헬멧, 스파타 및 보너스 티라노사우루스 머리 장식에 대한 스타일을 추가합니다.",
+      "at": 1795197189157
+    },
     "3840679920": {
       "src": "Explore, catch and raise Pokémon alongside your colony.",
       "full": "식민지와 함께 포켓몬을 탐험하고, 잡고, 키우세요.",
@@ -320,10 +326,10 @@
       "at": 1794901760038
     },
     "3840883595": {
-      "src": "Research prerequisite: Standard Mechtech",
-      "full": "연구 전제 조건: 표준 기계 기술",
-      "ko": "연구 전제 조건: 표준 기계 기술",
-      "at": 1794960704416
+      "src": "Adds two mechanoid charging structures: a 3×3 large charging station, and a small wall-mounted charging station.",
+      "full": "2개의 메카노이드 충전 구조(3×3 대형 충전 스테이션 및 소형 벽 장착형 충전 스테이션)를 추가합니다.",
+      "ko": "2개의 메카노이드 충전 구조(3×3 대형 충전 스테이션 및 소형 벽 장착형 충전 스테이션)를 추가합니다.",
+      "at": 1795197187542
     },
     "3841078351": {
       "src": "A new spacer-tier warcasket for Vanilla Factions Expanded - Pirates.",
