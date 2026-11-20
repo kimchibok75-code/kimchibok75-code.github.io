@@ -100,8 +100,8 @@ export const enhRate = (enh, D) => Math.min(100, Math.max(5, ENH_RATE[enh] ?? 5)
 export const ENH_COST = [700, 1400, 2400, 3600, 5600, 8400, 12000, 17000, 22000, 30000, 40000, 52000, 66000, 82000, 100000, 125000, 155000, 190000, 230000, 280000];
 // fx = 보유 효과 (가지고만 있어도 붙음. 쓰고 있지 않아도 됨)
 // 스킨샵 값 (2026-11-18 평균화): 최소 10,000 · 10k ≈ 효과 3점, 15k ≈ 4점, 20k ≈ 5점, 30k ≈ 7점 (공격·경험치·골드·체력·방어 1% = 1점, 치명타 1%p = 1.5점, 생활 효과는 절반)
-// clear = 투명 모자 (2026-11-19): 아무 효과 없음, 모두 처음부터 가짐(free). 쓰면 머리 장비가 안 보이고 헤어는 그대로
-export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'clear', n: '✨ 투명 모자', price: 0, free: 1 }, { id: 'ribbon', n: '🎀 리본', price: 10000, fx: { expP: 3 } }, { id: 'sprout', n: '🌱 새싹', price: 10000, fx: { farmP: 6 } }, { id: 'cat', n: '🐱 고양이 귀', price: 15000, fx: { crit: 2, expP: 1 } }, { id: 'straw', n: '👒 밀짚모자', price: 15000, fx: { fishP: 8 } }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 20000, fx: { atkP: 2, goldP: 2 } },
+// clear = 투명 모자 (2026-11-19): 아무 효과 없음. 2026-11-20부터 스킨샵에서 무료로 받음 (가이드 단계, 예전에 받은 사람은 그대로). 쓰면 머리 장비가 안 보이고 헤어는 그대로
+export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'clear', n: '✨ 투명 모자', price: 0 }, { id: 'ribbon', n: '🎀 리본', price: 10000, fx: { expP: 3 } }, { id: 'sprout', n: '🌱 새싹', price: 10000, fx: { farmP: 6 } }, { id: 'cat', n: '🐱 고양이 귀', price: 15000, fx: { crit: 2, expP: 1 } }, { id: 'straw', n: '👒 밀짚모자', price: 15000, fx: { fishP: 8 } }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 20000, fx: { atkP: 2, goldP: 2 } },
   { id: 'rdragon', n: '🐉 용의 뿔', price: 0, raid: 'rdragon', fx: { atkP: 4, crit: 2 } },
   { id: 'ogre', n: '👹 오우거 투구', price: 0, raid: 'ogre', fx: { hpP: 5, defP: 4 } },
   { id: 'magic', n: '💗 마법소녀 왕관', price: 30000, fx: { expP: 4, crit: 2 } },
@@ -656,7 +656,7 @@ export const DEX_FX = {
   skin: [{ hpP: 1 }, { atkP: 1 }, { goldP: 1 }, { defP: 1 }, { expP: 1 }, { atkP: 1 }, { hpP: 2 }, { crit: 1 }, { goldP: 2 }, { atkP: 2 }, { expP: 2 }, { defP: 2 }, { atkP: 3, crit: 1 }],
 };
 // 도감에 들어가는 스킨 (처음부터 가진 것 · 투명 모자는 빼고)
-export const DEX_SKINS = () => [...HATS.filter(h => h.id !== 'none' && !h.free).map(h => h.id), ...EYE_SKINS.filter(e => e.id !== 'dot').map(e => 'eye:' + e.id), ...SUITS.map(x => 'suit:' + x.id), ...WSKINS.map(wskKey)];
+export const DEX_SKINS = () => [...HATS.filter(h => h.id !== 'none' && h.id !== 'clear').map(h => h.id), ...EYE_SKINS.filter(e => e.id !== 'dot').map(e => 'eye:' + e.id), ...SUITS.map(x => 'suit:' + x.id), ...WSKINS.map(wskKey)];
 export const dexFishGot = c => FISH_LIST.filter(f => c.life?.cnt?.['fc_' + f.id] || c.life?.cnt?.['lf_' + f.id]);
 export const dexSkinGot = c => { const own = Array.isArray(c.hats) ? c.hats : []; return DEX_SKINS().filter(k => own.includes(k)); };
 export const dexCropGot = c => CROP_LIST.filter(x => c.life?.cnt?.['cc_' + x.id]);
@@ -790,9 +790,12 @@ export const GUIDE_Q = [
   ['move', '🚶', '마을 걸어 보기', '바닥을 누르면 그곳으로 걸어가요. PC는 방향키·WASD, 휴대폰은 화면을 끌어도 돼요.', 'gMove', 1, '', 0, { gold: 200 }],
   ['bld', '🏠', '건물 하나 눌러 보기', '카페·대장간 같은 건물을 누르면 그 건물 창이 열려요. 아무 건물이나 눌러 보세요.', 'gBld', 1, '광장', 0, { gold: 200 }],
   ['look', '💇', '내 모습 꾸미기', '왼쪽 캐릭터창을 펼치고 → 스킨 탭에서 헤어스타일·헤어 색·얼굴 색·옷 색을 바꿔 보세요. 언제든 무료예요.', 'gLook', 1, '', 0, { gold: 200 }],   // 2026-11-20 사용자 요청
+  ['hatBuy', '🎩', '투명 모자 받기', '스킨샵 → 🎩 모자 탭에서 ✨ 투명 모자를 눌러 받아요. 공짜예요! 쓰면 머리 장비가 가려지고 헤어가 보여요.', '@clear', 1, '스킨', 1, { gold: 300 }],   // 2026-11-20 사용자 요청
+  ['wear', '👕', '스킨 착용하기', '가진 스킨은 왼쪽 캐릭터창 → 스킨 탭에서 눌러 쓰고 벗어요. 받은 투명 모자를 써 보세요. (스킨샵에서 눌러도 돼요)', 'gWear', 1, '', 0, { gold: 200 }],
   ['npcTake', '❗', '주민 임무 받기', '머리 위에 ❗가 뜬 주민을 눌러 임무를 받아요. 받은 임무는 왼쪽 위 임무창에서 볼 수 있어요.', 'npcTake', 1, '광장', 0, { gold: 300 }],
   ['wish', '⛲', '분수에 동전 던지기', '광장 가운데 분수를 누르고 동전을 던지면 좋은 버프가 생겨요.', 'wish', 1, '광장', 1, { gold: 300 }],
   ['warp', '🏘️', '바로가기 써 보기', '오른쪽 🏘️ 바로가기 버튼을 누르고 가고 싶은 곳을 고르면 바로 이동해요.', 'gWarp', 1, '', 0, { gold: 200 }],
+  ['cls', '🎭', '직업 골라 보기', '왼쪽 캐릭터창 맨 위에서 검사(힘) · 궁수(민첩) · 마법사(지력)를 골라요. 언제든 무료로 바꿀 수 있고, 고른 직업의 무기로 싸워요.', 'gCls', 1, '', 0, { gold: 200 }],   // 2026-11-20 사용자 요청
   ['huntGo', '🌀', '사냥터 들어가기', '사냥터 포탈을 누르고 사냥터를 고르면 들어가요. 들어가면 알아서 싸워요.', 'huntGo', 1, '사냥', 1, { gold: 300 }],
   ['kills', '⚔️', '몬스터 10마리 잡기', '사냥터에 있으면 자동으로 싸워요. 현황판에서 수동 전투를 켜면 직접 조작도 돼요.', 'kills', 10, '사냥', 1, { gold: 600 }],
   ['statUp', '💪', '능력치 올리기', '레벨이 오르면 포인트가 생겨요. 왼쪽 캐릭터창 → 능력치에서 ＋를 눌러요. 검사는 힘 · 궁수는 민첩 · 마법사는 지력.', 'statUp', 1, '', 0, { gold: 300 }],
@@ -810,16 +813,17 @@ export const GUIDE_Q = [
   ['hall', '🏛️', '마을회관 둘러보기', '마을회관에서 내 집을 짓고, 마을 소식과 공동 건설을 볼 수 있어요.', 'gHall', 1, '회관', 1, { gold: 300 }],
   ['give', '🏗️', '공동 건설에 기부하기', '마을회관 → 마을 탭. 다 같이 모아 지으면 모두에게 효과가 생겨요.', 'give', 1, '회관', 1, { gold: 10000, wood: 60, stone: 40 }],
   ['dong', '🏡', '치복동 들어가기', '타운 남쪽의 🏡 치복동 포탈을 지나면 집들이 모인 동네가 나와요.', 'gDong', 1, '치복동', 0, { gold: 300 }],
-  ['skin', '👕', '스킨샵 둘러보기', '스킨샵에서 모자·눈·옷·무기 스킨을 사요. 가지고만 있어도 효과가 붙어요.', 'gSkin', 1, '스킨', 1, { gold: 300 }],
   ['dex', '📖', '뱃지 · 칭호 살펴보기', '도감 센터의 칭호·뱃지 탭에서 이름표에 달 칭호와 뱃지를 골라요.', 'gDex', 1, '도감', 1, { gold: 500 }],
   ['house', '🏡', '치복동에 내 집 짓기', '마을회관 → 내 집에서 치복동 자리를 골라 지어요. 기부 보상으로 받은 재료로 지을 수 있어요.', 'house', 1, '회관', 1, { gold: 2000 }],
   ['raid', '🐉', '레이드 참여하기', '30분마다 레이드가 열려요 (정각 드래곤 · 30분 오우거). 모집 창이 뜨면 참가하세요.', 'raid', 1, '', 0, { gold: 5000 }],
 ];
-export const GUIDE_MARKS = ['gMove', 'gBld', 'gWarp', 'gHall', 'gDong', 'gSkin', 'gDex', 'gAuto', 'gLook'];
+export const GUIDE_MARKS = ['gMove', 'gBld', 'gWarp', 'gHall', 'gDong', 'gSkin', 'gDex', 'gAuto', 'gLook', 'gWear', 'gCls'];
+// v2 순서 (2026-11-20 투명 모자·착용·직업 단계를 넣기 전) → v3로 옮길 때 그 단계(없으면 다음 단계)로
+const GUIDE_V2 = ['move', 'bld', 'look', 'npcTake', 'wish', 'warp', 'huntGo', 'kills', 'statUp', 'gacha', 'enhTry', 'wood', 'stone', 'fish', 'fishSold', 'plant', 'crops', 'cropSold', 'job', 'auto', 'hall', 'give', 'dong', 'skin', 'dex', 'house', 'raid'];
 // 예전(v1) 순서 → 같은 id가 있으면 그 단계로 옮겨 줌
 const GUIDE_V1 = ['wish', 'wood', 'stone', 'hire', 'fish', 'fishSold', 'plant', 'crops', 'cropSold', 'job', 'npc', 'kills', 'gacha', 'enhTry', 'skillPull', 'boss', 'badge', 'give', 'house', 'raid'];
 export const guideQ = c => { const g = c.life?.gq; return g && g.i < GUIDE_Q.length ? GUIDE_Q[g.i] : null; };
-export const guideCnt = (c, q) => (q[4] === '@badge' ? (c.life?.badge ? 1 : 0) : c.life?.cnt?.[q[4]] || 0);
+export const guideCnt = (c, q) => (q[4] === '@badge' ? (c.life?.badge ? 1 : 0) : q[4] === '@clear' ? (c.hats?.includes('clear') ? 1 : 0) : c.life?.cnt?.[q[4]] || 0);
 // 2026-11-20 사용자 요청: 예전에 이미 해 본 것(기록이 있음)은 바로 성공. 새로 만든 기록(npcTake 등)은 예전부터 있던 흔적도 봄
 export function guideHave(c, q) {
   const L = c.life || {}, C = L.cnt || {}, n = guideCnt(c, q);
@@ -828,6 +832,8 @@ export function guideHave(c, q) {
     case 'huntGo': return Math.max(n, C.kills ? 1 : 0);
     case 'statUp': return Math.max(n, spentPoints(c) > 0 || (c.presets || []).some(p => p?.s?.some(v => v > 5)) ? 1 : 0);
     case 'raid': return Math.max(n, L.raidGot ? 1 : 0);
+    case 'gCls': return Math.max(n, c.cls && c.cls !== 'sword' ? 1 : 0);
+    case 'gWear': return Math.max(n, (c.hat && c.hat !== 'none') || c.suit || (c.eyes && c.eyes !== 'dot') || Object.values(c.wsk || {}).some(Boolean) ? 1 : 0);
     case 'house': case 'gDong': return Math.max(n, L.house?.d ? 1 : 0);
   }
   return n;
@@ -839,10 +845,15 @@ export function guideProg(c) {   // { q, n: 지금까지, v: 목표, ok }  — �
 }
 // 서버: 처음이면 시작 / 다음 단계로 넘길 때 그 단계 시작 값 기록
 export function guideInit(c) {
-  const L = c.life; if (!L.gq || typeof L.gq !== 'object') { L.gq = { i: 0, b: 0, v: 2 }; L.gq.b = guideCnt(c, GUIDE_Q[0]); }
-  if (L.gq.v !== 2) {   // 예전 순서로 하던 사람: 같은 단계가 있으면 거기서, 없으면 처음부터 (다 끝낸 사람은 그대로 끝)
+  const L = c.life; if (!L.gq || typeof L.gq !== 'object') { L.gq = { i: 0, b: 0, v: 3 }; L.gq.b = guideCnt(c, GUIDE_Q[0]); }
+  if (L.gq.v === 2) {   // 2026-11-20 v2 → v3: 하던 단계로 (빠진 단계면 그다음). 새로 넣은 앞 단계는 건너뜀
+    let k = GUIDE_Q.length;
+    if (!L.cnt?.guideDone) for (let j = L.gq.i; j < GUIDE_V2.length; j++) { const x = GUIDE_Q.findIndex(q => q[0] === GUIDE_V2[j]); if (x >= 0) { k = x; break; } }
+    L.gq = { i: k, b: GUIDE_Q[k] ? guideCnt(c, GUIDE_Q[k]) : 0, v: 3 };
+  }
+  if (L.gq.v !== 3) {   // 예전 순서로 하던 사람: 같은 단계가 있으면 거기서, 없으면 처음부터 (다 끝낸 사람은 그대로 끝)
     const old = GUIDE_V1[L.gq.i], k = L.cnt?.guideDone ? GUIDE_Q.length : Math.max(0, GUIDE_Q.findIndex(q => q[0] === old));
-    L.gq = { i: k, b: GUIDE_Q[k] ? guideCnt(c, GUIDE_Q[k]) : 0, v: 2 };
+    L.gq = { i: k, b: GUIDE_Q[k] ? guideCnt(c, GUIDE_Q[k]) : 0, v: 3 };
   }
   return L.gq;
 }

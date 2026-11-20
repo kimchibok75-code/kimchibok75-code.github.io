@@ -260,7 +260,6 @@ function toChar(r) {
     equip: JSON.parse(r.equip), bag: JSON.parse(r.bag), hats: JSON.parse(r.hats), pots: JSON.parse(r.pots), potAt: r.pot_at,
     hunt: r.hunt ? JSON.parse(r.hunt) : null, bonusDay: r.bonus_day, jobAt: r.job_at, ver: r.ver,
     cls: CLASSES[r.cls] ? r.cls : 'sword', enh: jp(r.enh, {}), presets: jp(r.presets, null) || defaultPresets(), preset: r.preset || 0, gacha: { w: 0, a: 0, ...jp(r.gacha, {}) }, life: fixLife(jp(r.life, null)) };
-  for (const h of HATS) if (h.free && !c.hats.includes(h.id)) c.hats.push(h.id);   // 처음부터 가지는 모자 (투명 모자)
   if ('weapon' in c.equip || 'acc' in c.equip) oldGear(c);
   if (!titleOf(c.title) || !c.life.titles.includes(c.title)) c.title = 'new';   // 예전 칭호 글자 → 새 칭호
   if (walkSolid(Math.floor(c.x / T), Math.floor(c.y / T))) { c.x = START.x; c.y = START.y; }   // 지도가 바뀌어서 막힌 곳에 있으면 광장으로

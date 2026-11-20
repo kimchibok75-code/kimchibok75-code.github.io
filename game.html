@@ -4852,7 +4852,8 @@ function steerTick(dt) {
 // ───────── 키 설정 (PC, 2026-11-20): 공격·점프 키를 바꿀 수 있음. 이 기기에만 저장 (localStorage cbt-keys) ─────────
 // Ctrl·Alt(왼쪽)도 됨. 그 키를 누른 채 걷기·다른 키도 되게 하고, 브라우저 동작(Alt 메뉴·Alt+← 뒤로 가기·Ctrl+D·Ctrl+휠 확대)은 막음
 // Ctrl+W(탭 닫기)는 브라우저 규칙이라 못 막음 → Ctrl을 누른 지 2초 안에 페이지를 떠나려 하면 '나가시겠습니까?' 창
-const KEY_DEF = { atk: 'KeyZ', jump: 'KeyC' }, KEY_ACT = { atk: '⚔️ 공격', jump: '🦘 점프' };
+const KEY_DEF = { atk: 'ControlLeft', jump: 'AltLeft' },   // 2026-11-20 사용자 결정: 기본 왼쪽 Ctrl 공격 · 왼쪽 Alt 점프
+  KEY_ACT = { atk: '⚔️ 공격', jump: '🦘 점프' };
 const KB = (() => { const o = { ...KEY_DEF }; try { const j = JSON.parse(localStorage.getItem('cbt-keys') || '{}'); for (const k in o) if (typeof j[k] === 'string' && j[k]) o[k] = j[k]; } catch {} if (o.atk === o.jump) Object.assign(o, KEY_DEF); return o; })();
 const kbSave = () => { try { localStorage.setItem('cbt-keys', JSON.stringify(KB)); } catch {} };
 const KEY_NM = { ControlLeft: '왼쪽 Ctrl', ControlRight: '오른쪽 Ctrl', AltLeft: '왼쪽 Alt', AltRight: '오른쪽 Alt', Backquote: '`', Minus: '-', Equal: '=', BracketLeft: '[', BracketRight: ']', Backslash: '\\', Semicolon: ';', Quote: "'", Comma: ',', Period: '.', Slash: '/', IntlBackslash: '\\' };
@@ -4885,10 +4886,10 @@ function keySheet(keep) {
     kbMod('Alt') && '<li>Alt를 뗄 때 브라우저 메뉴로 가는 것 · Alt+←(뒤로 가기)는 막아 뒀어요. <b>Alt+Tab · Alt+F4</b>는 윈도우 키라서 그대로 동작해요.</li>'].filter(Boolean);
   openModal(`<h3>⌨️ 키 설정</h3><p class="muted">이 기기(브라우저)에만 저장돼요. 걷기(화살표·WASD) · 이용(Space) · 채팅(Enter) · 닫기(Esc)는 바꿀 수 없어요.</p>
     <div class="kbset">${Object.keys(KEY_ACT).map(k => `<div class="kbrow"><b>${KEY_ACT[k]}</b><button class="btn kbkey${KBW.k === k ? ' wait' : ''}" data-k="${k}">${KBW.k === k ? '바꿀 키를 누르세요… (Esc 취소)' : `<kbd>${esc(KN(k))}</kbd><small>바꾸기</small>`}</button></div>`).join('')}</div>
-    ${W.length ? `<ul class="kbwarn">${W.join('')}</ul>` : '<p class="muted kbtip">💡 왼쪽 Ctrl · 왼쪽 Alt도 쓸 수 있어요. 고정 키 창이 뜨는 Shift, 한/영 키인 오른쪽 Alt는 못 써요.</p>'}
-    <div class="row2"><button class="btn" data-k="reset">기본값 (Z · C)</button><button class="btn main" data-close>다 했어요</button></div>`, el => {
+    ${W.length ? `<ul class="kbwarn">${W.join('')}</ul>` : '<p class="muted kbtip">💡 고정 키 창이 뜨는 Shift, 한/영 키인 오른쪽 Alt는 못 써요.</p>'}
+    <div class="row2"><button class="btn" data-k="reset">기본값 (왼쪽 Ctrl · 왼쪽 Alt)</button><button class="btn main" data-close>다 했어요</button></div>`, el => {
     el.onclick = e => { const k = e.target.closest('[data-k]')?.dataset.k; if (!k) return;
-      if (k === 'reset') { Object.assign(KB, KEY_DEF); kbSave(); KBW.k = null; toast('기본 키(Z 공격 · C 점프)로 돌렸어요'); } else KBW.k = KBW.k === k ? null : k;
+      if (k === 'reset') { Object.assign(KB, KEY_DEF); kbSave(); KBW.k = null; toast('기본 키(왼쪽 Ctrl 공격 · 왼쪽 Alt 점프)로 돌렸어요'); } else KBW.k = KBW.k === k ? null : k;
       keySheet(true); };
   }, keep);
 }
@@ -5742,10 +5743,10 @@ function suggestSheet(b, keep) {
 // 초보자 가이드 (2026-11-20 새로): 가이드 퀘스트 순서를 4개 장으로 묶어 보여 줌 (한 것 ✓ · 지금 할 일 강조 · 앞으로 할 일)
 // 장 = [아이콘, 이름, 한 줄 설명, 가이드 퀘스트 id 목록]. 가이드 퀘스트(GUIDE_Q)에 단계를 넣으면 여기 장에도 id를 넣을 것
 const BG_CH = [
-  ['👣', '마을 익히기', '걷고, 건물을 누르고, 주민과 친해져요', ['move', 'bld', 'look', 'npcTake', 'wish', 'warp']],
-  ['⚔️', '사냥으로 크기', '사냥 → 레벨업 → 능력치 → 장비를 키워요', ['huntGo', 'kills', 'statUp', 'gacha', 'enhTry']],
+  ['👣', '마을 익히기', '걷고, 건물을 누르고, 주민과 친해져요', ['move', 'bld', 'look', 'hatBuy', 'wear', 'npcTake', 'wish', 'warp']],
+  ['⚔️', '사냥으로 크기', '직업 고르기 → 사냥 → 레벨업 → 능력치 → 장비를 키워요', ['cls', 'huntGo', 'kills', 'statUp', 'gacha', 'enhTry']],
   ['🎣', '마을 일 해 보기', '나무·돌·물고기·작물을 모아 골드로 바꿔요', ['wood', 'stone', 'fish', 'fishSold', 'plant', 'crops', 'cropSold', 'job', 'auto']],
-  ['🏡', '마을의 주민 되기', '기부하고, 집을 짓고, 다 같이 레이드!', ['hall', 'give', 'dong', 'skin', 'dex', 'house', 'raid']],
+  ['🏡', '마을의 주민 되기', '기부하고, 집을 짓고, 다 같이 레이드!', ['hall', 'give', 'dong', 'dex', 'house', 'raid']],
 ];
 const BG_SYS = [
   ['⚔️', '싸우며 크기', '사냥터 6곳 · 가챠 · 강화 · 스킬 · 30분마다 레이드'],
@@ -6413,7 +6414,7 @@ function renderCls() {
   $('#clsBar').innerHTML = Object.entries(CLASSES).map(([k, c]) => { const it = me.equip[k]; return `<button type="button" data-cls="${k}" aria-pressed="${me.cls === k}"><span class="cn">${c.i}${c.n}</span><small>${STATS[c.st].n}${it ? ` · ${pwrTxt(it)}` : ''}</small></button>`; }).join('');
 }
 $('#clsBar').addEventListener('click', async e => {
-  const k = e.target.closest('[data-cls]')?.dataset.cls; if (!k || k === me.cls) return;
+  const k = e.target.closest('[data-cls]')?.dataset.cls; if (k) guideMark('gCls'); if (!k || k === me.cls) return;   // 가이드: 직업 골라 보기
   const j = await act('/api/class', { cls: k }); if (j) { toast(`${CLASSES[k].i} ${CLASSES[k].n}(으)로 바꿨어요 · ${WTYPES[k].n}으로 싸워요`); logAct(`클래스: ${CLASSES[k].n}`); }
 });
 $('#presetBar').addEventListener('click', async e => {
@@ -6684,6 +6685,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 let lookT = null;
 function saveLook() {
   clearTimeout(lookT); guideMark('gLook');   // 가이드: 내 모습 꾸미기
+  if ((me.hat && me.hat !== 'none') || me.suit || (me.eyes && me.eyes !== 'dot') || Object.values(me.wsk || {}).some(Boolean)) guideMark('gWear');   // 가이드: 스킨 착용하기
   lookT = setTimeout(() => api('/api/character', { face: me.face, body: me.body, eyes: me.eyes, hat: me.hat, hair: me.hair, hairC: me.hairC, hatHair: me.hatHair !== false, suit: me.suit || '', wsk: me.wsk || {} }).catch(e => toast(e.message)), 700);
 }
 // 실제 김치복 방송 상태 (홈페이지와 같은 Worker)
@@ -7763,8 +7765,8 @@ const houseDoor = h => [(h.x + 1.5) * T, (h.y + HOUSE_H + .5) * T];
 function skinShop(b, keep) {
   reopen = () => skinShop(b, true);
   const look = { face: me.face, body: me.body, hair: 'none', hairC: me.hairC, hat: '', eyes: 'dot' };   // 미리보기는 늘 민머리·기본 눈 (그 스킨만 보이게)
-  const tile = (key, name, own, on, price, fx) => `<button type="button" data-x="${key}" aria-pressed="${on}" title="${name} · 보유 효과: ${fxText(fx || {})}" aria-label="${name} · 보유 효과 ${fxText(fx || {})}${own ? '' : ` · ${price.toLocaleString()} 골드`}"><canvas></canvas>${own ? `<em class="own">${on ? '착용' : '보유'}</em>` : price ? `<em>🪙 ${price.toLocaleString()}</em>` : ''}<small>${name.replace(/^\S+\s/, '')}<i class="skfx">${fxText(fx || {})}</i></small></button>`;
-  const hats = HATS.filter(h => h.id !== 'none' && !h.raid && !h.free && !h.fk), eyes = EYE_SKINS.filter(e => e.price), suits = SUITS.filter(s => !s.raid && !s.fk);
+  const tile = (key, name, own, on, price, fx) => `<button type="button" data-x="${key}" aria-pressed="${on}" title="${name} · 보유 효과: ${fxText(fx || {})}" aria-label="${name} · 보유 효과 ${fxText(fx || {})}${own ? '' : ` · ${price.toLocaleString()} 골드`}"><canvas></canvas>${own ? `<em class="own">${on ? '착용' : '보유'}</em>` : price ? `<em>🪙 ${price.toLocaleString()}</em>` : key.startsWith('raid|') ? '' : '<em>🎁 무료</em>'}<small>${name.replace(/^\S+\s/, '')}<i class="skfx">${fxText(fx || {})}</i></small></button>`;
+  const hats = HATS.filter(h => h.id !== 'none' && !h.raid && !h.fk), eyes = EYE_SKINS.filter(e => e.price), suits = SUITS.filter(s => !s.raid && !s.fk);
   const WT = [['sword', '검'], ['bow', '활'], ['staff', '지팡이']], rsets = [['rdragon', '🐉 레드 드래곤 · 매시 정각'], ['ogre', '👹 오우거 · 매시 30분']];
   const rItem = k => k.startsWith('eye:') ? EYE_SKINS.find(e => 'eye:' + e.id === k) : k.startsWith('suit:') ? SUITS.find(s => 'suit:' + s.id === k) : k.startsWith('wsk:') ? WSKINS.find(w => wskKey(w) === k) : HATS.find(h => h.id === k);
   const worn = k => { const [a, b, c2] = k.split(':'); return a === 'eye' ? me.eyes === b : a === 'suit' ? me.suit === b : a === 'wsk' ? me.wsk?.[b] === c2 : me.hat === k; };
@@ -7808,10 +7810,10 @@ function skinPreview(b, o) {
   const price = item.price || 0, poor = me.gold < price;
   const btn = own ? `<button class="btn main" data-y="wear">${on ? '벗기' : '쓰기'}</button>`
     : o.raidOnly ? '<button class="btn main" disabled>🐉 레이드에서만 얻어요</button>'
-    : `<button class="btn main" data-y="buy" ${poor ? 'disabled' : ''}>${poor ? '골드가 모자라요' : `구매하고 바로 쓰기 · ${goldTxt(price)}`}</button>`;
+    : `<button class="btn main" data-y="buy" ${poor ? 'disabled' : ''}>${poor ? '골드가 모자라요' : price ? `구매하고 바로 쓰기 · ${goldTxt(price)}` : '🎁 무료로 받고 바로 쓰기'}</button>`;
   openModal(`<h3>👀 ${item.n}</h3>
     <div class="skpv"><figure><canvas></canvas><figcaption>지금</figcaption></figure><span class="skpv-ar" aria-hidden="true">→</span><figure class="new"><canvas></canvas><figcaption>${on ? '벗으면' : '쓰면'}</figcaption></figure></div>
-    <p style="text-align:center;margin:0">${kind}${o.raidOnly ? ' · 레이드 전용' : own ? ' · <b>가지고 있어요</b>' : ` · <b>${goldTxt(price)}</b>`}<br><span class="skfxline">보유 효과: <b>${fxText(item.fx || {}) || '없음'}</b></span>${!own && !o.raidOnly ? `<br><small class="muted">가진 골드 ${goldTxt(me.gold)}</small>` : ''}</p>
+    <p style="text-align:center;margin:0">${kind}${o.raidOnly ? ' · 레이드 전용' : own ? ' · <b>가지고 있어요</b>' : ` · <b>${price ? goldTxt(price) : '무료'}</b>`}<br><span class="skfxline">보유 효과: <b>${fxText(item.fx || {}) || '없음'}</b></span>${!own && !o.raidOnly ? `<br><small class="muted">가진 골드 ${goldTxt(me.gold)}</small>` : ''}</p>
     <div class="actions">${btn}<button class="btn" data-y="back">돌아가기</button></div>`, el => {
     const cvs = [...el.querySelectorAll('.skpv canvas')], d = Math.min(devicePixelRatio || 1, 2);
     for (const cv of cvs) { cv.width = (cv.clientWidth || 132) * d; cv.height = (cv.clientHeight || 156) * d; }
