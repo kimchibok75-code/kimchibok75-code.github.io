@@ -2,7 +2,7 @@
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
 import { SAVER, saverLife, jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, GUIDE_MARKS, guideQ, guideProg, guideInit, guideNext, npcExp as guideExp, TAG_COLORS, RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
-  fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
+  fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, wishGold, wishExp, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
   offlineLife, offlineHuntAway, PRESET_CD, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait, fishCasts } from '../../assets/js/game-rules.js';
 import { isSolid, NODES, BACK, tileAt, WATER, waterIn, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
@@ -95,6 +95,7 @@ async function route(req, env, url) {
   if (m === 'GET' && p === '/api/rank') return rankList(env, s.user, url.searchParams.get('k'));
   if (m === 'GET' && p === '/api/houses') return json({ houses: (await env.DB.prepare('SELECT h.user_id AS id, u.nick, h.x, h.y, h.roof, h.lv FROM houses h JOIN users u ON u.id = h.user_id WHERE u.banned = 0').all()).results });
   if (m === 'GET' && p === '/api/news') return json(await news(env));
+  if (m === 'GET' && p === '/api/fountain') return json(await fountain(env));   // 2026-11-21 분수 잭팟 금액 · 역대 당첨자
   if (m === 'GET' && p === '/api/raid') { const j = await (await raidDO(env).fetch('https://raid/state')).json(); return json({ ...j, now: now() }); }
   if (m === 'GET' && p === '/api/whoami') return json({ nick: s.user.nick, admin: !!s.user.is_admin });   // 홈페이지(모드 추천 편집 버튼)용. 게임 정산은 안 함
   if (m === 'POST' && p === '/api/admin/mods-order') return modsOrder(req, env, s.user);
@@ -324,6 +325,21 @@ function raidGroup(rows) {
   for (const g of grp.values()) { const n = g.who.length; g.text = `${g.who[n - 1]}님${n > 1 ? ` 외 ${n - 1}명` : ''}이 ${g.boss} 레이드에 성공했어요!`; delete g.who; delete g.boss; }
   return out;
 }
+// 소원 분수 잭팟 (2026-11-21): 모인 돈(pool)을 한 번에 0으로 바꾸며 그 값을 읽음 → × 1.5. 당첨자는 최근 10명만 남김
+let FOUNT = { at: 0, v: null };
+async function fountain(env) {
+  if (FOUNT.v && Date.now() - FOUNT.at < 15e3) return FOUNT.v;
+  const [f, w] = await Promise.all([env.DB.prepare('SELECT pool FROM fountain WHERE id = 1').first(), env.DB.prepare('SELECT nick, gold, at FROM fountain_win ORDER BY id DESC LIMIT 10').all()]);
+  const pool = f?.pool || 0; FOUNT = { at: Date.now(), v: { pool, prize: Math.round(pool * WISH.jpMul), wins: w.results } };
+  return FOUNT.v;
+}
+async function jackpot(env, user) {
+  const r = await env.DB.prepare('UPDATE fountain SET last = pool, pool = 0 WHERE id = 1 RETURNING last').first();
+  const g = Math.max(Math.round(WISH.cost * WISH.jpMul), Math.round((r?.last || 0) * WISH.jpMul)), t = now();
+  await env.DB.batch([env.DB.prepare('INSERT INTO fountain_win (user_id, nick, gold, at) VALUES (?, ?, ?, ?)').bind(user.id, user.nick, g, t),
+    env.DB.prepare('DELETE FROM fountain_win WHERE id NOT IN (SELECT id FROM fountain_win ORDER BY id DESC LIMIT 10)')]);
+  FOUNT.at = 0; return g;
+}
 // 마을 연대기 (전설 물고기, 신화 장비, 공동 건설 완성 등 큰일만)
 const chron = (env, kind, text) => env.DB.prepare('INSERT INTO chronicle (at, kind, text) VALUES (?, ?, ?)').bind(now(), kind, String(text).slice(0, 120)).run().then(() => { NEWS.at = 0; }).catch(() => {});
 
@@ -411,6 +427,7 @@ const GAME = {
     return { log: ['hunt-start', FIELDS[fi].n] };
   },
   '/api/hunt/sync'() {},
+  '/api/hunt/bossf'(c, b) { c.life.bossF = b.on ? 1 : 0; },   // 2026-11-21 '강한 보스도 싸우기' 체크 (기본 꺼짐 = 질 것 같으면 피함)
   '/api/hunt/leave'(c, b, at, out) {
     if (!c.hunt) return { summary: null };   // 이미 쓰러져서 마을에 있음
     if (b.died) {   // 화면에서 체력이 0이 됨 → 바로 마을로 (쓰러짐 손해는 똑같이)
@@ -809,19 +826,22 @@ const GAME = {
     w.acc -= have; c.life.res[W.res] += have; cntAdd(c, W.res, have);
     return { res: W.res, amt: have };
   },
-  // 소원 분수: 10분에 한 번, 10골드
-  '/api/wish'(c, b, at) {
+  // 소원 분수: 5분에 한 번, 100골드 (2026-11-21 개편: 꽝 30%, 사냥 N분어치 골드·경험치, 버프 60분, 잭팟 = 모인 돈 × 1.5)
+  // play()가 다시 시도해도 같은 결과가 나오게 굴린 값·잭팟 금액은 b에 기억 (잭팟을 두 번 받지 않게)
+  async '/api/wish'(c, b, at, out, env, user) {
     townOnly(c);
     const L = c.life, left = Math.ceil((L.wishAt + WISH.cd * (eventNow(at)?.k === 'wish' ? .5 : 1) - at) / 1000);
     if (left > 0) fail(400, `분수가 아직 잔잔해요. ${Math.ceil(left / 60)}분 뒤에 다시 빌 수 있어요`);
     spend(c, WISH.cost); L.wishAt = at; cntAdd(c, 'wish');
-    const o = rollWish(), r = { k: o.k };
-    if (o.k === 'gold') { r.gold = o.min + Math.floor(Math.random() * (o.max - o.min + 1)); c.gold += r.gold; }
-    if (o.k === 'jackpot' || o.k === 'rainbow') { r.gold = o.g; c.gold += o.g; cntAdd(c, 'jackpot'); }
+    const o = b._o ||= rollWish(), r = { k: o.k };
+    if (o.k === 'gold' || o.k === 'rainbow') { r.gold = wishGold(c.lv, o.m); c.gold += r.gold; }
+    if (o.k === 'exp') { r.exp = wishExp(c.lv, o.m); r.up = addExp(c, r.exp); }
+    if (o.k === 'jackpot') { b._jp ??= await jackpot(env, user); r.gold = b._jp; c.gold += r.gold; c._noEarn = 1; }
+    if (o.k === 'jackpot' || o.k === 'rainbow') cntAdd(c, 'jackpot');
     if (o.b) { L.buff = { k: o.b, until: at + o.min * 60e3 }; r.buff = o.b; r.min = o.min; }
-    if (o.k === 'coin') { r.gold = 300; c.gold += 300; }   // 2026-11-20 텃밭 코인 3 → 골드 300
-    if (o.k === 'pots') c.pots.xl = Math.min(999, c.pots.xl + 2);
-    return { wish: r, log: ['wish', o.k] };
+    if (o.k === 'pots') { r.n = o.n; c.pots.xl = Math.min(999, c.pots.xl + o.n); }
+    return { wish: r, log: ['wish', o.k], chron: o.k === 'jackpot' ? ['wish', `소원 분수에서 💰 잭팟! 🪙 ${r.gold.toLocaleString()}골드를 받았어요`] : null,
+      after: () => env.DB.prepare('UPDATE fountain SET pool = pool + ? WHERE id = 1').bind(WISH.cost).run().then(() => { FOUNT.at = 0; }).catch(() => {}) };   // 던진 골드는 분수에 모임
   },
   // 집: 짓기(처음) · 옮기기(이사) · 지붕 색. 집 자리는 서버가 지도로 확인
   async '/api/house/build'(c, b, at, out, env, user) {

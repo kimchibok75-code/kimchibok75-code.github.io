@@ -544,14 +544,19 @@ export const HOUSE = { cost: { gold: 10000, wood: 60, stone: 40 }, move: { gold:
   roofs: ['#4f9d5a', '#2bb3a6', '#3d7bd9', '#9a5ad6', '#e8553a', '#e9a23b', '#ef7fa6', '#5d6b7e'] };
 export const costText = o => Object.entries(o).map(([k, v]) => `${k === 'gold' ? '🪙' : RES[k].i} ${v.toLocaleString()}`).join(' · ');
 
-// ───────── 소원 분수: 5분에 한 번, 10골드 ─────────
-export const WISH = { cost: 10, cd: 5 * MIN };   // 2026-11-18 쿨타임 10분 → 5분
+// ───────── 소원 분수: 5분에 한 번, 100골드 (2026-11-21 개편) ─────────
+// 던진 골드는 분수에 모이고(서버 fountain.pool), 아주 드물게 💰 잭팟 = 모인 돈의 1.5배를 한 번에 받음 → 0부터 다시 모임
+export const WISH = { cost: 100, cd: 5 * MIN, jpMul: 1.5 };   // 2026-11-18 쿨타임 10분 → 5분 · 2026-11-21 10 → 100골드
+// 바로 받는 골드·경험치는 내 레벨 사냥 N분어치 (레벨이 올라도 쓸모 있게)
+export const wishGold = (lv, min) => Math.round((1500 * lv + 8000) * .55 * min / 60);
+export const wishExp = (lv, min) => Math.round(huntIdleExp(lv) / .7 * min / 60);
 // 버프 (하나만, 새로 받으면 바뀜)
-export const BUFFS = { gold: { n: '반짝이는 물보라', i: '💰', d: '골드 +15%', fx: { goldP: 15 } }, exp: { n: '맑은 물결', i: '📘', d: '경험치 +15%', fx: { expP: 15 } },
-  atk: { n: '용기의 물방울', i: '⚔️', d: '공격력 +10%', fx: { atkP: 10 } }, luck: { n: '무지개 축복', i: '🌈', d: '골드 +20% · 경험치 +20% · 치명타 +5%p', fx: { goldP: 20, expP: 20, crit: 5 } } };
-// [무게, 결과]
-export const WISH_TABLE = [[55, { k: 'none' }], [18, { k: 'gold', min: 20, max: 60 }], [8, { k: 'buff', b: 'gold', min: 30 }], [8, { k: 'buff', b: 'exp', min: 30 }],
-  [5, { k: 'coin' }], [3, { k: 'pots' }], [2, { k: 'buff', b: 'atk', min: 60 }], [.7, { k: 'jackpot', g: 1000 }], [.3, { k: 'rainbow', g: 3000, b: 'luck', min: 60 }]];
+export const BUFFS = { gold: { n: '반짝이는 물보라', i: '💰', d: '골드 +30%', fx: { goldP: 30 } }, exp: { n: '맑은 물결', i: '📘', d: '경험치 +30%', fx: { expP: 30 } },
+  atk: { n: '용기의 물방울', i: '⚔️', d: '공격력 +20%', fx: { atkP: 20 } }, fish: { n: '물고기의 노래', i: '🎣', d: '물고기 값 +30% · 낚을 확률 +10%p', fx: { fishP: 30, fishZ: 10 } },
+  luck: { n: '무지개 축복', i: '🌈', d: '골드 +30% · 경험치 +30% · 치명타 +5%p', fx: { goldP: 30, expP: 30, crit: 5 } } };
+// [무게(%), 결과] — 꽝 30%
+export const WISH_TABLE = [[30, { k: 'none' }], [17, { k: 'gold', m: 5 }], [13, { k: 'exp', m: 5 }], [10, { k: 'buff', b: 'exp', min: 60 }], [10, { k: 'buff', b: 'gold', min: 60 }],
+  [6, { k: 'buff', b: 'atk', min: 60 }], [6, { k: 'buff', b: 'fish', min: 60 }], [5.7, { k: 'pots', n: 5 }], [2, { k: 'rainbow', m: 30, b: 'luck', min: 90 }], [.3, { k: 'jackpot' }]];
 export function rollWish() { let r = Math.random() * WISH_TABLE.reduce((a, [w]) => a + w, 0); for (const [w, o] of WISH_TABLE) { if ((r -= w) < 0) return o; } return WISH_TABLE[0][1]; }
 
 // ───────── 장비 랜덤 옵션 (뽑을 때 붙음) ─────────
@@ -667,19 +672,24 @@ export function dexFx(c) {
   return fx;
 }
 // 뱃지: 이름 왼쪽에 다는 작은 그림 (효과 없음). life.badge = 단 뱃지 id
+export const MON_BADGE = { mon: 100, boss: 10 };
 export const BADGES = [
   { id: 'leaf', n: '새내기 뱃지', g: '기본', d: '치복 타운 주민이라면 누구나' },
   { id: 'rdragon', n: '레드 드래곤 뱃지', g: '레이드', d: '레드 드래곤 레이드 스킨 6개를 모두 모으기', raid: 'rdragon' },
   { id: 'ogre', n: '오우거 뱃지', g: '레이드', d: '오우거 레이드 스킨 6개를 모두 모으기', raid: 'ogre' },
   ...FISH_LIST.map(f => ({ id: 'f_' + f.id, n: `${f.n} 뱃지`, g: f.sea ? '바다 물고기' : '민물 물고기', d: `${f.n} 낚기`, fish: f.id })),
   ...CROP_LIST.map(x => ({ id: 'c_' + x.id, n: `${x.n} 뱃지`, g: '작물', d: `${x.n} 수확하기`, crop: x.id })),   // 2026-11-20
+  // 2026-11-21 몬스터 뱃지: 일반 몬스터는 100마리, 보스는 10마리 잡으면 (서버 hunt.js가 cnt.mk_종류로 셈)
+  ...Object.values(MONS).map(m => ({ id: 'm_' + m.k, n: `${m.n} 뱃지`, g: '몬스터', d: `${m.n} ${MON_BADGE.mon}마리 잡기`, mon: m.k, need: MON_BADGE.mon })),
+  ...FIELDS.map(f => ({ id: 'm_' + f.boss.k, n: `${f.boss.n} 뱃지`, g: '보스', d: `${f.boss.n} ${MON_BADGE.boss}번 잡기`, mon: f.boss.k, need: MON_BADGE.boss })),
 ];
-export const BADGE_GROUPS = ['기본', '레이드', '민물 물고기', '바다 물고기', '작물'];
+export const BADGE_GROUPS = ['기본', '레이드', '몬스터', '보스', '민물 물고기', '바다 물고기', '작물'];
 export const badgeOf = id => BADGES.find(b => b.id === id);
 export const hasBadge = (c, id) => { const b = badgeOf(id); if (!b) return false;
   if (b.raid) return raidSet(b.raid).every(k => (c.hats || []).includes(k));
   if (b.fish) return !!(c.life?.cnt?.['fc_' + b.fish] || c.life?.cnt?.['lf_' + b.fish]);
   if (b.crop) return !!c.life?.cnt?.['cc_' + b.crop];
+  if (b.mon) return (c.life?.cnt?.['mk_' + b.mon] || 0) >= b.need;
   return true; };
 export function titleFx(c) { const fx = {}; for (const id of c.life?.titles || []) addFx(fx, titleOf(id)?.fx || {}); return fx; }
 // 효과 합계: 가진 칭호 전부 + 지금 버프 + 장비 옵션(방어구 3칸 + 지금 클래스 무기)

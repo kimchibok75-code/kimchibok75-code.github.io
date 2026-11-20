@@ -36,6 +36,7 @@ export class Town extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));   // 연결 유지용 (방을 깨우지 않음)
+    this.recent = [];   // 2026-11-21 최근 채팅 30줄 (10분): 다시 붙은 사람이 그 사이 놓친 채팅을 받음
     this.cache = new Map(); this.rate = new Map(); this.talk = new Map();   // 연결 정보 캐시 · 메시지 속도 · 사람별 채팅 기록 (다시 접속해도 이어짐)
   }
   info(ws) { let a = this.cache.get(ws); if (!a) { a = ws.deserializeAttachment() || {}; this.cache.set(ws, a); } return a; }
@@ -95,7 +96,8 @@ export class Town extends DurableObject {
       look: lookRow(c), x: c.x, y: c.y, tx: c.x, ty: c.y, hunt: !!c.hunt, sit: -1, room2: 0, sent: [], last: [], cool: 0, lookAt: 0, emoAt: 0, houseAt: 0 });
     this.save(ws, a);
     this.ctx.waitUntil(this.env.CHZZK?.get(this.env.CHZZK.idFromName('main')).fetch('https://chzzk/nick').catch(() => {}));   // 2026-11-20 새로 들어온 사람도 치지직 채팅이 바로 이어지게 (닉네임 기억 비움)
-    this.send(ws, { t: 'hi', id: a.id, ch: a.room, list: others.map(w => this.pub(this.info(w))) });
+    const ct = now(); this.recent = this.recent.filter(x => ct - x.at < 600e3);
+    this.send(ws, { t: 'hi', id: a.id, ch: a.room, list: others.map(w => this.pub(this.info(w))), chat: this.recent });
     this.all({ t: 'join', p: this.pub(a) }, ws);
   }
 
@@ -191,7 +193,8 @@ export class Town extends DurableObject {
     if (!r.ok) return r.warn ? this.warn(ws, a, r.why) : r.why && no(r.why);
     if (k.last.length >= 2 && k.last.slice(-2).every(x => x === r.text)) return no('같은 말을 3번 연속 보낼 수 없어요');
     k.last = [...k.last, r.text].slice(-3); k.sent.push(t); k.n++;
-    const out = JSON.stringify({ t: 'say', id: a.id, n: a.n, adm: a.adm ? 1 : 0, text: r.text, ch });
+    const o = { t: 'say', id: a.id, n: a.n, adm: a.adm ? 1 : 0, text: r.text, ch, at: t }; this.keep(o);
+    const out = JSON.stringify(o);
     for (const w of this.members()) {
       try { w.send(out); } catch {}
     }
@@ -233,7 +236,8 @@ export class Town extends DurableObject {
     }
     sys('관리자 명령어: /공지 내용 · /조용 닉네임 10분 · /내보내기 닉네임');
   }
-  // 치지직 채팅: 닉네임이 완전히 같고, 마을 광장 근처에 있는 사람(사냥·집 안 X)의 말만 이 채널 모두에게 보여 줌
+  keep(o) { this.recent.push(o); if (this.recent.length > 30) this.recent.shift(); }
+  // 치지직 채팅: 닉네임이 완전히 같은 사람의 말을 이 채널 모두에게 보여 줌 (2026-11-21 어느 맵에 있든: 사냥·레이드·집 안·치복동도. 채팅 금지만 빼고)
   async chzzk(list) {
     if (!Array.isArray(list)) return new Response('bad', { status: 400 });
     const byNick = new Map(); for (const w of this.members()) { const a = this.info(w); if (a.n) byNick.set(a.n.trim().toLowerCase(), a); }   // 2026-11-20 대소문자·앞뒤 띄어쓰기는 같게 봄
@@ -242,10 +246,9 @@ export class Town extends DurableObject {
     const t = now(), rows = [];
     for (const m of list.slice(0, 200)) {
       const a = byNick.get(String(m.n).trim().toLowerCase()); if (!a) continue;
-      const x = a.tx ?? a.x, y = a.ty ?? a.y;
-      if (a.hunt || a.room2 || a.mute > t || a.limited || !Number.isFinite(x) || !nearPlaza(x, y)) continue;
+      if (a.mute > t || a.limited) continue;
       const r = cleanChat(String(m.text || '')); if (!r.ok) continue;   // 금칙어·링크·개인정보 검사는 마을 채팅과 같음 (경고는 없음)
-      this.all({ t: 'say', id: a.id, n: a.n, adm: a.adm ? 1 : 0, text: r.text, ch: 'all', chz: 1 });
+      const o = { t: 'say', id: a.id, n: a.n, adm: a.adm ? 1 : 0, text: r.text, ch: 'all', chz: 1, at: t }; this.keep(o); this.all(o);
       rows.push([a.id, a.n, r.text]);
     }
     if (rows.length) await this.env.DB.batch(rows.map(([id, n, text]) => this.env.DB.prepare("INSERT INTO chat_log (user_id, nick, ch, text, at) VALUES (?, ?, 'chzzk', ?, ?)").bind(id, n, text, t))).catch(() => {});

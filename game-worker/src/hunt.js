@@ -97,10 +97,12 @@ export function settle(c, at, onGap = HUNT.onlineGap) {   // onGap: 100%로 쳐 
     const lv0 = c.lv, isBoss = h.t >= h.boss;
     if (isBoss) {
       h.boss += HUNT.bossEvery;
-      // 보스: 이길 수 있을 때만 싸움 (질 것 같으면 피해서 손해 없음)
-      const test = { ...st, pots: { ...st.pots }, cd: { ...st.cd }, used: 0 }, r = fight(test, D, f.boss, true);
-      if (r.dead) { out.bossSkip.push(f.boss.n); continue; }
-      Object.assign(st, { ...test, used: st.used + test.used }); c.pots = st.pots;
+      // 보스: 이길 수 있을 때만 싸움 (질 것 같으면 피해서 손해 없음). 2026-11-21 보스전은 늘 풀 컨디션(체력 가득·스킬 쿨타임 0)으로 계산 → 이기고 지는 게 들쭉날쭉하지 않게
+      // life.bossF(사냥 현황판 '강한 보스도 싸우기' 체크)면 질 것 같아도 싸움 → 지면 쓰러짐
+      const test = { ...st, hp: D.maxHp, sh: 0, bt: 0, pots: { ...st.pots }, cd: {}, used: 0 }, r = fight(test, D, f.boss, true);
+      if (r.dead && !c.life?.bossF) { out.bossSkip.push(f.boss.n); continue; }
+      Object.assign(st, { ...test, cd: { ...st.cd }, used: st.used + test.used }); c.pots = st.pots;
+      if (r.dead) { sec -= r.t; h.t += r.t; out.died = true; out.bossDied = f.boss.n; break; }
       sec -= r.t; h.t += r.t;
       reward(c, h, out, f, f.boss, D, true, offLeft > 0 ? OFF_XP() : 1); offLeft -= r.t;
       out.bosses.push(f.boss.n);
@@ -130,6 +132,7 @@ function reward(c, h, out, f, mon, D, boss, xm = 1) {
   out.up += addExp(c, e);
   c.gold += g; out.kills++; out.exp += e; out.gold += g; h.kills++; h.exp += e; h.gold += g;
   if (boss) h.bosses++;
+  if (mon.k) cntAdd(c, 'mk_' + mon.k);   // 2026-11-21 몬스터 뱃지: 종류별 처치 수
 }
 export function summary(h, at) {
   return { f: h.f, sec: Math.round((at - h.start) / 1000), kills: h.kills, exp: h.exp, gold: h.gold, pots: h.pots, drops: h.drops, sold: h.sold, bosses: h.bosses, best: h.best };

@@ -1,6 +1,6 @@
 // 치지직 채팅 → 치복 타운 (Cloudflare Durable Object, 하나만 씀)
 // - 1분마다 방송 상태를 확인하고, 방송 중이면 치지직 채팅 서버에 "읽기 전용"으로 접속
-// - 받은 채팅은 1초씩 모아서 마을 채널(Town)에 보냄. Town이 닉네임이 완전히 같고 광장 근처에 있는 사람의 말만 보여 줌
+// - 받은 채팅은 1초씩 모아서 마을 채널(Town)에 보냄. Town이 닉네임이 완전히 같은 사람의 말을 보여 줌 (2026-11-21 어느 맵에서든)
 // - 치지직 공식 문서가 없는 방식(웹 채팅과 같은 주소)이라, 치지직이 바꾸면 안 될 수 있음 → 그래도 게임은 그대로 돌아감
 import { DurableObject } from 'cloudflare:workers';
 import { MAX_CH } from './town.js';
@@ -70,7 +70,7 @@ export class Chzzk extends DurableObject {
       this.buf.push({ n: nick, text: tx });
     }
     if (this.buf.length > 200) this.buf = this.buf.slice(-200);
-    if (this.buf.length && !this.flushT) this.flushT = setTimeout(() => this.flush(), 3000);   // 2026-11-20 1초 → 3초씩 모아서
+    if (this.buf.length && !this.flushT) this.flushT = setTimeout(() => this.flush(), 1000);   // 2026-11-21 다시 1초씩 (3초는 늦게 보였음. 마을에 그 닉네임이 없으면 채널을 안 깨워서 부담 적음)
   }
 
   async flush() {
