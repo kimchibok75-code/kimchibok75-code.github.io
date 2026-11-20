@@ -1431,7 +1431,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { CHAIN, CLEAVE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { CHAIN, CLEAVE, PIERCE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
@@ -4286,7 +4286,7 @@ function updateHunt(dt) {
     const tx = p.m.x, ty = p.m.y - 18 * p.m.d.s, dx = tx - p.x, dy = ty - p.y, d = Math.hypot(dx, dy);
     p.t += dt; p.a = Math.atan2(dy, dx);
     if (p.m.dead) { p.done = true; fxBurst(p.x, p.y, FXC[p.k], 4, 60, 2); continue; }
-    if (d <= p.sp * dt + 6) { p.done = true; applyHit(p.m, p.h, D, p.k); continue; }
+    if (d <= p.sp * dt + 6) { p.done = true; applyHit(p.m, p.h, D, p.k); if (p.k === 'arrow' && !p.pierced) pierceShot(p, D); continue; }
     p.x += dx / d * p.sp * dt; p.y += dy / d * p.sp * dt;
     if (p.k === 'magic' && Math.random() < .8) HT.parts.push({ x: p.x, y: p.y, vx: (Math.random() - .5) * 30, vy: (Math.random() - .5) * 30, life: .3, t: 0, c: Math.random() < .5 ? '#c9a2ff' : '#7fd0ff', s: 2.6, g: 0 });
   }
@@ -4381,6 +4381,13 @@ function fxBolt(a, b) {
   fxRing(b.x, by, '#9fdcff', 26, .3); sfx('magic');
 }
 // 2026-11-20 검사 다수 타격: 맞은 몬스터 주변(CLEAVE.r칸)의 몬스터도 같이 맞음 (보스는 빼고). 서버 hunt.js도 같은 비율로 계산
+// 2026-11-20 궁수 관통 화살: 맞은 몬스터 뒤(날아온 방향으로 PIERCE.r칸 안)의 몬스터 하나에 PIERCE.k만큼 (보스 빼고). 서버 hunt.js와 같은 비율
+function pierceShot(p, D) {
+  const m = p.m; if (!D.pierce || m.boss || !(p.h?.dmg > 0)) return;
+  const ux = Math.cos(p.a), uy = Math.sin(p.a); let best = null, bd = PIERCE.r * T;
+  for (const o of HT.mons) { if (o === m || o.dead || o.boss) continue; const dx = o.x - m.x, dy = o.y - m.y, along = dx * ux + dy * uy, d = Math.hypot(dx, dy); if (along > 0 && d < bd && Math.abs(dx * uy - dy * ux) < T * 1.2) { best = o; bd = d; } }
+  if (best) HT.shots.push({ k: 'arrow', x: m.x, y: m.y - 18 * m.d.s, m: best, h: { dmg: Math.max(1, Math.round(p.h.dmg * D.pierce)), kind: '' }, sp: 620, t: 0, a: p.a, pierced: true });
+}
 function cleaveAround(m, dmg, D) {
   if (!(dmg > 0) || m.boss) return;
   for (const o of HT.mons) if (o !== m && !o.dead && !o.boss && Math.hypot(o.x - m.x, o.y - m.y) < CLEAVE.r * T) applyHit(o, { dmg: Math.max(1, Math.round(dmg)), kind: '' }, D, 'melee');

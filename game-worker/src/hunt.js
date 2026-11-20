@@ -27,6 +27,7 @@ function fight(st, D, mon, boss) {
     if (side) { st.pre = (st.pre || 0) + dmg * CHAIN.k; return; }
     hp -= dmg;
     if (!boss && D.cleave) st.pre = (st.pre || 0) + dmg * (m === 1 ? D.cleave : D.cleaveSk);   // 주변 몬스터도 같이 맞음
+    else if (!boss && D.pierce) st.pre = (st.pre || 0) + dmg * D.pierce;   // 궁수: 화살이 뒤 몬스터까지 뚫음
     if (D.steal) st.hp = Math.min(D.maxHp, st.hp + dmg * D.steal / 100);   // 흡혈
   };
   while (hp > 0 && steps++ < 20000) {

@@ -24,6 +24,8 @@ export const START_GOLD = 500;
 export const POINTS_PER_LV = 4;
 
 // ───────── 활 · 원거리 밸런스 (시험 계산으로 맞춘 값) ─────────
+// 2026-11-20 밸런스(100레벨 시험): 필살기 확률 최대 30% · 배율 최대 6.5배 (마법사 후반이 두 배로 셌음), 활 공격 속도 최대 2 → 2.3배, 민첩 1당 체력 +2
+export const SP_MAX = 30, SPMUL_MAX = 6.5, BOW_ASPD_MAX = 2.3;
 export const MELEE_K = 2.6, STAFF_K = 1.7, STAFF_SP = 1, BOW_DEX = 1.3, BOW_GAP = 1.1, BOW_M = .9, FAR_LEAD = .6, FAR_WALK = .8;
 // 원거리 거리 유지: 몬스터에게 맞은 뒤 kite 확률(민첩 1당 +0.08%p, 최대 kiteMax)로 뒤로 물러나서 back초 동안 안 맞음
 export const FAR_KITE = .2, FAR_KITE_MAX = .4, FAR_BACK = .7;
@@ -70,6 +72,8 @@ export const WTYPES = { sword: { n: '검', i: '🗡️', gap: 1.0, m: 1, st: 'st
 // 원거리 무기: 몬스터가 다가오는 시간(초)만큼 먼저 공격, 걸어가는 시간도 줄어듦 (FAR.walk 배)
 export const STAFF_WALK = .8;   // 2026-11-20 마법사는 멀리서 마법을 쏴서 몬스터 사이를 덜 걸음 (이동이 느려 뒤처지던 것 보완)
 export const CHAIN = { r: 3, k: .7 };   // 2026-11-20 번개 사슬 연쇄: r칸 안 다른 몬스터로 튐. 서버는 튄 피해 × k를 다음 몬스터에 미리 넣음 (주변 몬스터가 늘 다 있진 않으니 조금 깎음)
+// 2026-11-20 궁수 관통 화살: 기본 공격·화살 스킬이 맞은 몬스터 뒤(r칸 안) 몬스터 하나에 k만큼 더 (보스 빼고). 서버는 다음 몬스터에 미리 넣음
+export const PIERCE = { k: .3, r: 3 };
 export const CLEAVE = { hit: .25, sk: .6, r: 1.6 };   // 2026-11-20 검사 다수 타격: 기본 공격은 주변(r칸) 몬스터에 25%, 공격 스킬은 주변 모두에 60%
 export const FAR = { lead: FAR_LEAD, walk: FAR_WALK, kite: FAR_KITE, kiteMax: FAR_KITE_MAX, back: FAR_BACK };
 // 장비 칸 6개: 무기 3 + 방어구 3. k: 방어구 칸별 수치 배율
@@ -85,7 +89,7 @@ export const ITEM_NAMES = {
 };
 // 단계별 기본 수치 (일반 등급 기준). 무기 공격력 · 방어구 방어 · 방어구 체력
 export const W_ATK = [7, 15, 34, 72, 145, 280], A_DEF = [3, 8, 17, 36, 72, 140], A_HP = [17, 38, 85, 180, 360, 700];
-export const STATS = { str: { n: '힘', i: '💪', d: `검 공격력 +${MELEE_K} · 체력 +5 · 물리 방어 +0.5` }, dex: { n: '민첩', i: '🏃', d: `활 공격력 +${BOW_DEX} · 공격 속도 +0.5% · 회피 +0.2% · 이동 속도 +0.3%` }, int: { n: '지력', i: '🧠', d: `지팡이 마력 +${STAFF_K} · 마법 방어 +0.5 · 필살기 피해 +2% · 확률 +0.1%` }, luk: { n: '운', i: '🍀', d: '치명타 +0.25% · 골드 +1% (최대 +100%) · 강화 성공 +0.05%p' } };
+export const STATS = { str: { n: '힘', i: '💪', d: `검 공격력 +${MELEE_K} · 체력 +5 · 물리 방어 +0.5` }, dex: { n: '민첩', i: '🏃', d: `활 공격력 +${BOW_DEX} · 체력 +2 · 공격 속도 +0.5% (활은 최대 ${BOW_ASPD_MAX}배) · 회피 +0.2% · 이동 속도 +0.3%` }, int: { n: '지력', i: '🧠', d: `지팡이 마력 +${STAFF_K} · 마법 방어 +0.5 · 필살기 피해 +2% · 확률 +0.1% (최대 ${SPMUL_MAX}배 · ${SP_MAX}%)` }, luk: { n: '운', i: '🍀', d: '치명타 +0.25% · 골드 +1% (최대 +100%) · 강화 성공 +0.05%p' } };
 // 강화: 장비가 아니라 장비 칸(슬롯)을 강화. 장비를 바꿔도 강화 단계는 그대로
 export const LUK_GOLD_MAX = 100;   // 2026-11-20 운으로 오르는 골드는 최대 +100% (2배)
 export const PRESET_CD = 10 * 60e3;   // 2026-11-20 능력치 프리셋은 10분에 한 번 바꿀 수 있음
@@ -281,10 +285,10 @@ export function derive(c) {
   const god = !!c.life?.god, am = (1 + (fx.atkP || 0) / 100) * (god ? 10 : 1);   // god: 관리자 갓모드 (안 맞음 + 공격력 10배)
   const atk = Math.round(((staff ? 3 : wAtk) + ((bow ? dex * wt.k : str * (staff ? 2 : wt.k)) + c.lv) * (staff ? 1 : wt.gap)) * am), mag = Math.round(((staff ? wAtk : 0) + (int * (staff ? wt.k : 2) + c.lv) * (staff ? wt.gap : 1)) * am);
   return { god, b, str, dex, int, luk, atk, mag, hit: staff ? mag : atk, magic: staff, far: !!wt.far, wt: cls, cls, fx, skills: mySkills(c, cls),
-    def: Math.round((def + str * .5) * (1 + (fx.defP || 0) / 100)), mdef: Math.round((def * .5 + int * .5) * (1 + ((fx.defP || 0) + (fx.mdefP || 0)) / 100)), maxHp: Math.round((100 + c.lv * 20 + str * 5 + hp) * (1 + (fx.hpP || 0) / 100)),
-    gap: wt.gap / Math.min(2, 1 + dex * .005) / (1 + (fx.aspd || 0) / 100), spd: Math.min(1.8, (1 + dex * .003) * (1 + (fx.spdP || 0) / 100)), crit: Math.min(70, 5 + luk * .25 + (fx.crit || 0)), critM: 1.5 + (fx.critD || 0) / 100,
-    eva: Math.min(45, dex * .2 + (fx.eva || 0)), sp: 5 + int * .1 + (fx.sp || 0), spMul: (2 + int * .02) * (wt.sp || 1), goldB: Math.min(LUK_GOLD_MAX, luk) + (fx.goldP || 0), expB: fx.expP || 0, enhB: Math.min(15, luk * .05 + (fx.enhB || 0)),
-    bossP: fx.bossP || 0, steal: fx.steal || 0, walkM: staff ? STAFF_WALK : 1, cleave: cls === 'sword' ? CLEAVE.hit : 0, cleaveSk: cls === 'sword' ? CLEAVE.sk : 0, regen: HUNT.huntRegen + (fx.regen || 0) / 100, potP: fx.potP || 0 };
+    def: Math.round((def + str * .5) * (1 + (fx.defP || 0) / 100)), mdef: Math.round((def * .5 + int * .5) * (1 + ((fx.defP || 0) + (fx.mdefP || 0)) / 100)), maxHp: Math.round((100 + c.lv * 20 + str * 5 + dex * 2 + hp) * (1 + (fx.hpP || 0) / 100)),
+    gap: wt.gap / Math.min(bow ? BOW_ASPD_MAX : 2, 1 + dex * .005) / (1 + (fx.aspd || 0) / 100), spd: Math.min(1.8, (1 + dex * .003) * (1 + (fx.spdP || 0) / 100)), crit: Math.min(70, 5 + luk * .25 + (fx.crit || 0)), critM: 1.5 + (fx.critD || 0) / 100,
+    eva: Math.min(45, dex * .2 + (fx.eva || 0)), sp: Math.min(SP_MAX, 5 + int * .1 + (fx.sp || 0)), spMul: Math.min(SPMUL_MAX, 2 + int * .02) * (wt.sp || 1), goldB: Math.min(LUK_GOLD_MAX, luk) + (fx.goldP || 0), expB: fx.expP || 0, enhB: Math.min(15, luk * .05 + (fx.enhB || 0)),
+    bossP: fx.bossP || 0, steal: fx.steal || 0, walkM: staff ? STAFF_WALK : 1, cleave: cls === 'sword' ? CLEAVE.hit : 0, cleaveSk: cls === 'sword' ? CLEAVE.sk : 0, pierce: bow ? PIERCE.k : 0, regen: HUNT.huntRegen + (fx.regen || 0) / 100, potP: fx.potP || 0 };
 }
 
 // 새 캐릭터 기본값: 무기 3개(1단계 일반) 모두 낌, 클래스는 검사
@@ -316,7 +320,7 @@ export const MONS = {
   drone: M('녹슨 드론', 42, 2800, 110, 360, 95, '#b58a5a', .9, 'bot', true, 'drone'), guard: M('경비 로봇', 48, 4000, 140, 470, 120, '#7f8fa3', 1.15, 'bot', false, 'guard'), fixbot: M('폭주 수리봇', 53, 5500, 170, 600, 150, '#e0a63a', 1.1, 'bot', true, 'fixbot'),
   // 2026-11-20 폐광 · 늪지 (최고 레벨 뒤의 사냥터: 더 세고 골드가 많음)
   bat: M('폐광 박쥐', 59, 9000, 225, 820, 205, '#6b5277', .9, 'wing', false, 'bat'), spider: M('폐광 거미', 63, 11000, 260, 960, 240, '#6e4a36', 1, 'ears', false, 'spider'), ogolem: M('광석 골렘', 67, 13500, 295, 1120, 275, '#8f8a92', 1.25, 'rock', true, 'ogolem'),
-  snake: M('독 뱀', 74, 28000, 759, 1350, 320, '#6a3f7a', .95, 'ears', true, 'snake'), croc: M('늪지 악어', 78, 34400, 858, 1550, 365, '#5f7a3a', 1.15, 'ears', false, 'croc'), slime: M('독성 슬라임', 82, 41600, 946, 1750, 410, '#9bd13a', 1, 'cap', true, 'slime'),
+  snake: M('독 뱀', 74, 28000, 759, 1755, 416, '#6a3f7a', .95, 'ears', true, 'snake'), croc: M('늪지 악어', 78, 34400, 858, 2015, 475, '#5f7a3a', 1.15, 'ears', false, 'croc'), slime: M('독성 슬라임', 82, 41600, 946, 2275, 533, '#9bd13a', 1, 'cap', true, 'slime'),
 };
 export const FIELDS = [
   { id: 'plain', n: '바람 들판', i: '🌾', min: 1, max: 10, tier: 0, mons: ['rat', 'hen', 'boar'], boss: M('왕 멧돼지', 12, 2000, 40, 400, 300, '#7d4f33', 2, 'snout', false, 'kingboar'), g: ['#9ad27f', '#91ca75'], deco: 'flower' },
@@ -324,7 +328,7 @@ export const FIELDS = [
   { id: 'canyon', n: '바위 협곡', i: '⛰️', min: 25, max: 40, tier: 2, mons: ['eagle', 'turtle', 'golem'], boss: M('협곡의 주인', 42, 50000, 260, 9000, 4000, '#7a746b', 2.3, 'rock', true, 'lord'), g: ['#d2b48a', '#c9ab80'], deco: 'rock' },
   { id: 'factory', n: '고장 난 공장', i: '🏚️', min: 40, max: 55, tier: 3, mons: ['drone', 'guard', 'fixbot'], boss: M('공장장 기계', 57, 160000, 520, 25000, 10000, '#5e6b7d', 2.4, 'bot', true, 'boss'), g: ['#a3abb5', '#9aa2ad'], deco: 'pipe' },
   { id: 'mine', n: '버려진 폐광', i: '⛏️', min: 55, max: 70, tier: 4, mons: ['bat', 'spider', 'ogolem'], boss: M('거대 두더지', 72, 320000, 790, 42000, 17000, '#7a5640', 2.3, 'snout', false, 'mole'), g: ['#6d6359', '#655b52'], deco: 'rock' },
-  { id: 'swamp', n: '독안개 늪지', i: '🐊', min: 70, max: 85, tier: 5, mons: ['snake', 'croc', 'slime'], boss: M('거대 코브라', 87, 832000, 2310, 62000, 25000, '#5c3a6e', 2.4, 'ears', true, 'cobra'), g: ['#5d7a4a', '#566f44'], deco: 'tree' },
+  { id: 'swamp', n: '독안개 늪지', i: '🐊', min: 70, max: 85, tier: 5, mons: ['snake', 'croc', 'slime'], boss: M('거대 코브라', 87, 832000, 2310, 80600, 32500, '#5c3a6e', 2.4, 'ears', true, 'cobra'), g: ['#5d7a4a', '#566f44'], deco: 'tree' },
 ];
 // 내 레벨이 몬스터보다 10 이상 높으면 경험치 줄어듦
 export const expPenalty = (lv, mlv) => { const d = lv - mlv; return d >= 10 ? Math.max(.2, 1 - (d - 9) * .1) : 1; };
