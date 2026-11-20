@@ -751,6 +751,7 @@ body.hunting .side { display: none; }
 .sv-where { font-size: 16px; opacity: .8; } .sv-time { font-size: 15px; opacity: .7; } .sv-got { font-size: 15px; color: #ffe9a8; min-height: 1.4em; } .sv-raid { font-size: 14px; color: #ffb3a8; font-weight: 700; }
 .sv-foot { margin-top: 18px; font-size: 13px; opacity: .55; }
 @keyframes svBob { 50% { transform: translateY(-8px); } } @keyframes svDot { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+.lim-when { margin: 4px 0 10px; padding: 10px 12px; border-radius: 12px; background: #fff4e5; font-size: 15px; line-height: 1.5; } #limitLeft { display: block; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--kimchi, #d33); }
 #rlBox { position: fixed; left: 50%; top: 16px; transform: translateX(-50%); z-index: 9999; display: flex; align-items: center; gap: 14px; width: min(560px, calc(100vw - 24px)); padding: 16px 18px; border-radius: 18px;
   background: #1f2a3a; color: #fff; box-shadow: 0 12px 40px rgba(0,0,0,.45), 0 0 0 3px #ffd166; animation: rlIn .35s ease-out; }
 #rlBox .rl-ic { font-size: 34px; animation: rlSpin 2s linear infinite; } #rlBox .rl-ic img { width: 38px; height: 38px; }
@@ -1434,6 +1435,12 @@ a.iconbtn { color: inherit; text-decoration: none; }
 <div class="away maint" id="maintBox" hidden role="alertdialog" aria-modal="true" aria-labelledby="maintT">
     <div class="away-card"><div class="away-ic" aria-hidden="true">🛠️</div><h2 id="maintT">점검 중입니다</h2><p></p><small class="muted">점검이 끝나면 저절로 다시 들어가요</small>
       <button class="btn main" id="maintGo" type="button">다시 확인하기</button></div></div>
+<div class="away maint" id="limitBox" hidden role="alertdialog" aria-modal="true" aria-labelledby="limitT">
+    <div class="away-card"><div class="away-ic" aria-hidden="true">😢</div><h2 id="limitT">오늘 서버를 다 썼어요</h2>
+      <p>치복 타운은 <b>무료 서버</b>로 운영돼요.<br>오늘 쓸 수 있는 양을 모두 써서 지금은 들어갈 수 없어요.</p>
+      <div class="lim-when">매일 <b>오전 9시</b>(한국 시간)에 다시 열려요<span id="limitLeft"></span></div>
+      <small class="muted">캐릭터와 아이템은 안전하게 저장돼 있어요. 다시 열리면 저절로 들어가요.</small>
+      <button class="btn main" id="limitGo" type="button">다시 확인하기</button></div></div>
 <div class="away" id="away" hidden role="alertdialog" aria-modal="true" aria-labelledby="awayT">
     <div class="away-card"><div class="away-ic" aria-hidden="true">📱💻</div><h2 id="awayT"></h2><p></p>
       <button class="btn main" id="awayGo" type="button">여기서 이어서 하기</button><button class="btn" id="awayNo" type="button">아니요</button></div>
@@ -6570,12 +6577,36 @@ function showMaint(msg) {
   const check = async () => { try { const j = await (await fetch(API + '/api/health', { cache: 'no-store' })).json(); if (!j.maint) location.reload(); else el.querySelector('p').textContent = j.maint; } catch {} };
   $('#maintGo').onclick = check; MT.t = setInterval(check, 30e3);
 }
+// 무료 서버 한도 초과 안내 (2026-11-20): Cloudflare 무료 요금제는 하루 요청 수가 정해져 있고, 넘으면 오전 9시(한국 시간 = 0시 UTC)까지 오류 화면(1027)을 줌
+// 그 화면에는 CORS 머리글이 없어서 fetch가 실패함 → 'no-cors'로 다시 물어 서버까지는 닿는지 확인. 잠깐 오류일 수 있어서 8초 뒤 한 번 더 보고 둘 다 그러면 안내
+const LM = { on: false, at: 0, t: null, tick: null };
+async function limitProbe() {
+  try { const r = await fetch(API + '/api/health', { cache: 'no-store' }); if (r.ok) return false; const t = await r.text().catch(() => ''); return r.status === 429 || /1027|exceed|limit|quota/i.test(t); }
+  catch { try { await fetch(API + '/api/health', { mode: 'no-cors', cache: 'no-store' }); return true; } catch { return false; } }   // no-cors도 안 되면 인터넷 문제 → 안내 안 함
+}
+async function limitCheck() {
+  if (LM.on || Date.now() - LM.at < 30e3 || navigator.onLine === false) return; LM.at = Date.now();
+  if (!(await limitProbe())) return; await new Promise(r => setTimeout(r, 8000));
+  if (await limitProbe()) showLimit();
+}
+function showLimit() {
+  if (LM.on) return; LM.on = true; const el = $('#limitBox'); el.hidden = false; iconize(el);
+  try { S.away = true; NET.want = false; NET.ws?.close(); closeModal(); if (typeof SV !== 'undefined' && SV.on) { SV.on = false; $('#saver').hidden = true; } } catch {}
+  const draw = () => { const t = Math.ceil(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate() + 1) - Date.now()) / 1000, h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = Math.floor(t % 60);
+    $('#limitLeft').textContent = ` · 남은 시간 ${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; };
+  const check = async () => { if (LOCAL_LIMIT) return; try { const r = await fetch(API + '/api/health', { cache: 'no-store' }); if (r.ok) location.reload(); } catch {} };
+  $('#limitGo').onclick = check; draw(); LM.tick = setInterval(draw, 1000); LM.t = setInterval(check, 5 * 60e3);
+}
+const LOCAL_LIMIT = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('limit') === '1';   // 시험용: 주소에 &limit=1
+if (LOCAL_LIMIT) setTimeout(showLimit, 500);
+setTimeout(() => { if (!token) limitCheck(); }, 1500);   // 로그인 전(로그인 화면)에도 한 번 확인
 const devId = () => { try { return localStorage.getItem('cbt-dev') || ''; } catch { return ''; } };   // 기기(브라우저) 번호: 가입 제한 · 다중 계정 확인용
 async function api(path, body, opts = {}) {
   let r; if (body) apiAt = Date.now();
   try { r = await fetch(API + path, { method: body ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json', ...(devId() ? { 'X-Dev': devId() } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: body ? JSON.stringify(body) : undefined, keepalive: !!opts.keepalive }); }
-  catch { throw new Error('서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요'); }
+  catch { limitCheck(); throw new Error('서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요'); }   // 무료 한도 초과일 수도 있어서 확인
   const j = await r.json().catch(() => ({}));
+  if (r.status === 429 && !j.error || r.status >= 500 && /exceed|limit|quota/i.test(j.error || '')) limitCheck();
   if (r.status === 401 && token && !opts.quiet401) { token = null; store.del('cbt-token'); }
   if (r.status === 503 && j.error) showMaint(j.error);
   if (!r.ok) { const e = new Error(j.error || `문제가 생겼어요 (${r.status})`); e.status = r.status; throw e; }
