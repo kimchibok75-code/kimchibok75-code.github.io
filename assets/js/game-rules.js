@@ -314,7 +314,7 @@ export const MONS = {
   drone: M('녹슨 드론', 42, 2800, 110, 360, 95, '#b58a5a', .9, 'bot', true, 'drone'), guard: M('경비 로봇', 48, 4000, 140, 470, 120, '#7f8fa3', 1.15, 'bot', false, 'guard'), fixbot: M('폭주 수리봇', 53, 5500, 170, 600, 150, '#e0a63a', 1.1, 'bot', true, 'fixbot'),
   // 2026-11-20 폐광 · 늪지 (최고 레벨 뒤의 사냥터: 더 세고 골드가 많음)
   bat: M('폐광 박쥐', 59, 9000, 225, 820, 205, '#6b5277', .9, 'wing', false, 'bat'), spider: M('폐광 거미', 63, 11000, 260, 960, 240, '#6e4a36', 1, 'ears', false, 'spider'), ogolem: M('광석 골렘', 67, 13500, 295, 1120, 275, '#8f8a92', 1.25, 'rock', true, 'ogolem'),
-  snake: M('독 뱀', 74, 17500, 345, 1350, 320, '#6a3f7a', .95, 'ears', true, 'snake'), croc: M('늪지 악어', 78, 21500, 390, 1550, 365, '#5f7a3a', 1.15, 'ears', false, 'croc'), slime: M('독성 슬라임', 82, 26000, 430, 1750, 410, '#9bd13a', 1, 'cap', true, 'slime'),
+  snake: M('독 뱀', 74, 28000, 759, 1350, 320, '#6a3f7a', .95, 'ears', true, 'snake'), croc: M('늪지 악어', 78, 34400, 858, 1550, 365, '#5f7a3a', 1.15, 'ears', false, 'croc'), slime: M('독성 슬라임', 82, 41600, 946, 1750, 410, '#9bd13a', 1, 'cap', true, 'slime'),
 };
 export const FIELDS = [
   { id: 'plain', n: '바람 들판', i: '🌾', min: 1, max: 10, tier: 0, mons: ['rat', 'hen', 'boar'], boss: M('왕 멧돼지', 12, 2000, 40, 400, 300, '#7d4f33', 2, 'snout', false, 'kingboar'), g: ['#9ad27f', '#91ca75'], deco: 'flower' },
@@ -322,7 +322,7 @@ export const FIELDS = [
   { id: 'canyon', n: '바위 협곡', i: '⛰️', min: 25, max: 40, tier: 2, mons: ['eagle', 'turtle', 'golem'], boss: M('협곡의 주인', 42, 50000, 260, 9000, 4000, '#7a746b', 2.3, 'rock', true, 'lord'), g: ['#d2b48a', '#c9ab80'], deco: 'rock' },
   { id: 'factory', n: '고장 난 공장', i: '🏚️', min: 40, max: 55, tier: 3, mons: ['drone', 'guard', 'fixbot'], boss: M('공장장 기계', 57, 160000, 520, 25000, 10000, '#5e6b7d', 2.4, 'bot', true, 'boss'), g: ['#a3abb5', '#9aa2ad'], deco: 'pipe' },
   { id: 'mine', n: '버려진 폐광', i: '⛏️', min: 55, max: 70, tier: 4, mons: ['bat', 'spider', 'ogolem'], boss: M('거대 두더지', 72, 320000, 790, 42000, 17000, '#7a5640', 2.3, 'snout', false, 'mole'), g: ['#6d6359', '#655b52'], deco: 'rock' },
-  { id: 'swamp', n: '독안개 늪지', i: '🐊', min: 70, max: 85, tier: 5, mons: ['snake', 'croc', 'slime'], boss: M('거대 코브라', 87, 520000, 1050, 62000, 25000, '#5c3a6e', 2.4, 'ears', true, 'cobra'), g: ['#5d7a4a', '#566f44'], deco: 'tree' },
+  { id: 'swamp', n: '독안개 늪지', i: '🐊', min: 70, max: 85, tier: 5, mons: ['snake', 'croc', 'slime'], boss: M('거대 코브라', 87, 832000, 2310, 62000, 25000, '#5c3a6e', 2.4, 'ears', true, 'cobra'), g: ['#5d7a4a', '#566f44'], deco: 'tree' },
 ];
 // 내 레벨이 몬스터보다 10 이상 높으면 경험치 줄어듦
 export const expPenalty = (lv, mlv) => { const d = lv - mlv; return d >= 10 ? Math.max(.2, 1 - (d - 9) * .1) : 1; };
