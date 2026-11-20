@@ -754,6 +754,7 @@ body.hunting .side { display: none; }
 .sv-where { font-size: 16px; opacity: .8; } .sv-time { font-size: 15px; opacity: .7; } .sv-got { font-size: 15px; color: #ffe9a8; min-height: 1.4em; } .sv-raid { font-size: 14px; color: #ffb3a8; font-weight: 700; }
 .sv-foot { margin-top: 18px; font-size: 13px; opacity: .55; }
 @keyframes svBob { 50% { transform: translateY(-8px); } } @keyframes svDot { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+.nick-tip { margin: 6px 0 0; padding: 8px 10px; border-radius: 10px; background: #eef8f0; font-size: 13px; line-height: 1.5; color: #2c4a35; }
 .lim-when { margin: 4px 0 10px; padding: 10px 12px; border-radius: 12px; background: #fff4e5; font-size: 15px; line-height: 1.5; } #limitLeft { display: block; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--kimchi, #d33); }
 #rlBox { position: fixed; left: 50%; top: 16px; transform: translateX(-50%); z-index: 9999; display: flex; align-items: center; gap: 14px; width: min(560px, calc(100vw - 24px)); padding: 16px 18px; border-radius: 18px;
   background: #1f2a3a; color: #fff; box-shadow: 0 12px 40px rgba(0,0,0,.45), 0 0 0 3px #ffd166; animation: rlIn .35s ease-out; }
@@ -1208,6 +1209,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
           <li data-r="chars">한글·영문·숫자·띄어쓰기</li>
           <li data-r="name">김치복·관리자 같은 이름 X</li>
         </ul>
+        <p class="nick-tip" id="nickTip" hidden>💬 <b>치지직 닉네임과 똑같이</b> 지으면, 방송 때 치지직에서 친 채팅이 게임 광장에도 떠요.<br>✏️ 닉네임은 가입한 뒤에도 일주일에 한 번 바꿀 수 있어요.</p>
       </div>
       <div class="field">
         <label for="pw">비밀번호</label>
@@ -5559,6 +5561,7 @@ function openNick() {
   const left = me.nickAt ? me.nickAt + NICK_GAP - Date.now() : 0, wait = left > 0;
   openModal(`<h3>✏️ 닉네임 · 이름표</h3>
     <p class="sub">지금 닉네임: <b>${esc(me.name)}</b></p>
+    <p class="nick-tip">💬 <b>치지직 닉네임과 똑같이</b> 바꾸면, 방송 때 치지직에서 친 채팅이 게임 광장에도 떠요.</p>
     <div class="field"><label>🎨 이름표 색 <span class="tagpv">${esc(me.name)}</span></label><div class="tagsw" id="tagSw"></div></div>
     ${wait ? `<p class="nk-wait">⏳ 닉네임은 <b>일주일에 한 번</b>만 바꿀 수 있어요.<br>다음에 바꿀 수 있는 날: <b>${new Date(me.nickAt + NICK_GAP).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</b> (${Math.ceil(left / 864e5)}일 남음)</p>`
     : `<div class="field"><label for="nkIn">새 닉네임</label><input id="nkIn" maxlength="10" placeholder="2~10글자" autocomplete="off"><ul class="rules chips" id="nkRules"><li data-r="len">2~10글자 (띄어쓰기 포함)</li><li data-r="chars">한글·영문·숫자·띄어쓰기</li><li data-r="name">김치복·관리자 같은 이름 X</li></ul></div>
@@ -6833,7 +6836,7 @@ function showAuth(m) {
   mode = m; $('#authCard').hidden = false; $('#findCard').hidden = true; $('#codeCard').hidden = true; $('#makeCard').hidden = true;
   $('#tabLogin').setAttribute('aria-selected', m === 'login'); $('#tabJoin').setAttribute('aria-selected', m === 'join');
   const join = m === 'join';
-  $('#nickRules').hidden = !join; $('#pwRules').hidden = !join; $('#pw2Wrap').hidden = !join; $('#pwSafe').hidden = !join; $('#termsWrap').hidden = !join; $('#mockNote').hidden = join; $('#agree').checked = false; $('#forgotBtn').hidden = join; $('#keepWrap').hidden = join;
+  $('#nickRules').hidden = !join; $('#nickTip').hidden = !join; $('#pwRules').hidden = !join; $('#pw2Wrap').hidden = !join; $('#pwSafe').hidden = !join; $('#termsWrap').hidden = !join; $('#mockNote').hidden = join; $('#agree').checked = false; $('#forgotBtn').hidden = join; $('#keepWrap').hidden = join;
   $('#authBtn').textContent = join ? '가입하기' : '마을로 들어가기';
   $('#pw').autocomplete = join ? 'new-password' : 'current-password';
   $('#pw').value = ''; $('#pw2').value = '';
