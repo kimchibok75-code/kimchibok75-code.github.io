@@ -554,9 +554,9 @@ export const wishExp = (lv, min) => Math.round(huntIdleExp(lv) / .7 * min / 60);
 export const BUFFS = { gold: { n: '반짝이는 물보라', i: '💰', d: '골드 +30%', fx: { goldP: 30 } }, exp: { n: '맑은 물결', i: '📘', d: '경험치 +30%', fx: { expP: 30 } },
   atk: { n: '용기의 물방울', i: '⚔️', d: '공격력 +20%', fx: { atkP: 20 } }, fish: { n: '물고기의 노래', i: '🎣', d: '물고기 값 +30% · 낚을 확률 +10%p', fx: { fishP: 30, fishZ: 10 } },
   luck: { n: '무지개 축복', i: '🌈', d: '골드 +30% · 경험치 +30% · 치명타 +5%p', fx: { goldP: 30, expP: 30, crit: 5 } } };
-// [무게(%), 결과] — 꽝 30%
-export const WISH_TABLE = [[30, { k: 'none' }], [17, { k: 'gold', m: 5 }], [13, { k: 'exp', m: 5 }], [10, { k: 'buff', b: 'exp', min: 60 }], [10, { k: 'buff', b: 'gold', min: 60 }],
-  [6, { k: 'buff', b: 'atk', min: 60 }], [6, { k: 'buff', b: 'fish', min: 60 }], [5.7, { k: 'pots', n: 5 }], [2, { k: 'rainbow', m: 30, b: 'luck', min: 90 }], [.3, { k: 'jackpot' }]];
+// [무게(%), 결과] — 꽝 50% (2026-11-21 30 → 50, 나머지는 같은 비율로 줄임)
+export const WISH_TABLE = [[50, { k: 'none' }], [12, { k: 'gold', m: 5 }], [9.3, { k: 'exp', m: 5 }], [7, { k: 'buff', b: 'exp', min: 60 }], [7, { k: 'buff', b: 'gold', min: 60 }],
+  [4.3, { k: 'buff', b: 'atk', min: 60 }], [4.3, { k: 'buff', b: 'fish', min: 60 }], [4.3, { k: 'pots', n: 5 }], [1.5, { k: 'rainbow', m: 30, b: 'luck', min: 90 }], [.3, { k: 'jackpot' }]];
 export function rollWish() { let r = Math.random() * WISH_TABLE.reduce((a, [w]) => a + w, 0); for (const [w, o] of WISH_TABLE) { if ((r -= w) < 0) return o; } return WISH_TABLE[0][1]; }
 
 // ───────── 장비 랜덤 옵션 (뽑을 때 붙음) ─────────

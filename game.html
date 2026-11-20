@@ -7772,7 +7772,7 @@ function kingSheet(b, keep, K, tabs, back, url, go) {
 // ───────── 소원 분수 ─────────
 const buffNow = () => { const b = LIFE()?.buff; return b && b.until > Date.now() && BUFFS[b.k] ? b : null; };
 // 2026-11-18 건물 창 틀(bsOpen)로: 머리 → 지갑 → 결과 → 분수 상태(남은 시간 막대) → 잭팟 → 나올 확률 → 역대 당첨자 → 아래 고정 버튼
-// 2026-11-21 개편: 100골드 · 꽝 30% · 사냥 N분어치 골드·경험치 · 60분 버프 · 💰 잭팟 = 분수에 모인 돈 × 1.5 (서버 /api/fountain)
+// 2026-11-21 개편: 100골드 · 꽝 50%(2026-11-21 30 → 50) · 사냥 N분어치 골드·경험치 · 60분 버프 · 💰 잭팟 = 분수에 모인 돈 × 1.5 (서버 /api/fountain)
 const FT = { at: 0, v: null };
 function ftLoad(force) { if (!force && FT.v && Date.now() - FT.at < 15e3) return; FT.at = Date.now(); api('/api/fountain').then(v => { FT.v = v; if (modalHtml.includes('data-ft')) reopen?.(); }).catch(() => {}); }
 function openWish(msg, keep) {
@@ -7780,9 +7780,11 @@ function openWish(msg, keep) {
   reopen = () => openWish(msg, true); ftLoad();
   const L = LIFE(), left = Math.max(0, Math.ceil((L.wishAt + WISH.cd - Date.now()) / 1000)), b = buffNow(), poor = me.gold < WISH.cost;
   const tot = WISH_TABLE.reduce((a, [w]) => a + w, 0), pct = f => +(WISH_TABLE.filter(([, o]) => f(o)).reduce((a, [w]) => a + w, 0) / tot * 100).toFixed(1);
-  const odds = [['💧 꽝', pct(o => o.k === 'none'), '#b9c6d3'], ['🪙 골드', pct(o => o.k === 'gold'), '#f2c14e'], ['📘 경험치', pct(o => o.k === 'exp'), '#7cc1ef'], ['✨ 버프', pct(o => o.k === 'buff'), '#8fd18a'],
-    ['🍹 음료', pct(o => o.k === 'pots'), '#f39ac2'], ['🌈 무지개', pct(o => o.k === 'rainbow'), '#a77be0'], ['💰 잭팟', pct(o => o.k === 'jackpot'), '#e8553a']];
   const n = L.cnt?.wish || 0, F0 = FT.v, g5 = wishGold(me.lv, 5), e5 = wishExp(me.lv, 5);
+  // 2026-11-21 확률이 높은 것부터 (막대·설명 같은 순서)
+  const odds = [['💧 꽝', pct(o => o.k === 'none'), '#b9c6d3', '아무 일도 없음'], ['🪙 골드', pct(o => o.k === 'gold'), '#f2c14e', `${fmtN(g5)} (사냥 5분어치)`], ['📘 경험치', pct(o => o.k === 'exp'), '#7cc1ef', `${fmtN(e5)} (사냥 5분어치)`],
+    ['✨ 버프', pct(o => o.k === 'buff'), '#8fd18a', '60분'], ['🍹 음료', pct(o => o.k === 'pots'), '#f39ac2', '특대 음료 5개'], ['🌈 무지개', pct(o => o.k === 'rainbow'), '#a77be0', '골드 사냥 30분어치 + 축복 90분'],
+    ['💰 잭팟', pct(o => o.k === 'jackpot'), '#e8553a', `모인 돈 × ${WISH.jpMul}`]].sort((a, b) => b[1] - a[1]);
   const wins = F0?.wins || [];
   const body = `${msg ? `<div class="wishres">${msg}</div>` : ''}
     <div class="bs-card hero" data-ft><h4>${left ? '💤 분수가 잔잔해요' : '✨ 분수가 반짝여요'}<small>${left ? `${fmtLeft(left)} 뒤에` : '지금 빌 수 있어요'}</small></h4>
@@ -7792,7 +7794,7 @@ function openWish(msg, keep) {
       <p class="muted">모두가 던진 동전이 분수에 모여요 (지금 ${F0 ? fmtN(F0.pool) : '…'}골드). 잭팟이 나오면 한 번에 받고, 0부터 다시 모여요.</p></div>
     ${b ? `<div class="bs-card"><h4>${BUFFS[b.k].i} ${BUFFS[b.k].n}<small>${fmtLeft(Math.ceil((b.until - Date.now()) / 1000))} 남음</small></h4><p class="muted">${BUFFS[b.k].d} · 지금 받고 있는 축복</p></div>` : ''}
     <div class="bs-card"><h4>🎲 나올 수 있는 것</h4>${oddsBar(odds)}
-      <div class="cs">${chip(`🪙 골드 ${fmtN(g5)} (사냥 5분어치)`)}${chip(`📘 경험치 ${fmtN(e5)} (사냥 5분어치)`)}${chip('✨ 버프 60분')}${chip('🍹 특대 음료 5개')}${chip('🌈 골드 사냥 30분어치 + 무지개 축복 90분')}</div></div>
+      <div class="cs">${odds.filter(o => o[0] !== '💧 꽝').map(([nm, , , d]) => chip(`${nm} · ${d}`)).join('')}</div></div>
     <div class="bs-card"><h4>🏆 역대 잭팟 당첨자<small>최근 10명</small></h4>${wins.length ? `<ol class="jpwins">${wins.map(w => `<li><b>${esc(w.nick)}</b><span>🪙 ${fmtN(w.gold)}</span><small>${fmtT(w.at)}</small></li>`).join('')}</ol>` : `<p class="muted">${F0 ? '아직 당첨자가 없어요. 첫 주인공이 되어 보세요!' : '불러오는 중…'}</p>`}</div>`;
   const help = `<ul><li>꽝은 ${pct(o => o.k === 'none')}%예요. 나머지는 모두 쓸모 있는 것!</li>
     <li>버프: ${Object.values(BUFFS).map(x => `${x.i} ${x.n}(${x.d})`).join(' · ')}</li>
