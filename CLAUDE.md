@@ -453,7 +453,7 @@
 - 스킨샵 칸: 그림 아래에 이름 · 효과를 따로 (`.skgrid.shop`), 값이 0인 레이드 스킨은 가격표 없음
 
 ### 마을 주민 NPC 임무 — 2026-11-17
-- **3시간마다 새 주민 5명** (이름·생김새·임무가 시간으로 정해짐 → 화면·서버 같은 계산). game-rules.js `NPC_BLOCK, NPC_N, NPC_MAX(3), NPC_NAMES, NPC_TASKS, npcList, npcState, npcProg, npcGold, npcExp`
+- **6시간마다 새 주민 5명** (2026-11-20 3 → 6시간) (이름·생김새·임무가 시간으로 정해짐 → 화면·서버 같은 계산). game-rules.js `NPC_BLOCK, NPC_N, NPC_MAX(3), NPC_NAMES, NPC_TASKS, npcList, npcState, npcProg, npcGold, npcExp`
   - 임무 종류: 물고기·목재·석재·작물·물 주기·소원·카페 알바·장비 뽑기(모두 `cnt` 기록으로 셈) + **안부 전하기**(`talk`: 다른 주민을 찾아가 누르기)
   - 저장 `life.npc = { blk, q: { 주민 번호: { b: 받을 때 cnt, s: 0 하는 중 / 1 끝, t: 안부 전함 } } }`. 새 주민이 오면(blk 바뀜) 받은 임무는 사라짐
   - 보상: 골드 `400 + 레벨×80`, 경험치 사냥 방치 3분어치(`huntIdleExp ÷ 20`), 🐚/🌻 1~2
@@ -517,7 +517,7 @@
 - 카페: 내 체력 칸 없앰, 알바가 맨 위
 - 랭킹·낚시터 순위에서 빠지는 계정: 김치복 · 테스트 · zz로 시작 (index.js `RANK_HIDE`)
 - 낚시 입질까지 3~8초(예전 1.5~4초), `fishWait`: 8%는 더 빨리, 7%는 더 오래 (평균 약 5.5초). 손·자동 같이
-- **wrangler 최신(4.163)이 이 컴퓨터에서 묶기 단계에서 조용히 꺼짐** → `npx --yes wrangler@4.45.0 dev/deploy`로. deploy는 끝에 rc 127로 꺼져도 `deployments list`에 새 시각이 있으면 성공
+- **wrangler 최신(4.163)이 이 컴퓨터에서 묶기 단계에서 조용히 꺼짐** → `npx --yes wrangler@4.45.0 dev/deploy`로. deploy는 끝에 rc 127로 꺼져도 `deployments status`의 Created가 새 시각이면 성공 (`deployments list`는 100개까지만 보여서 2026-11-20부터 새 배포가 안 보임)
 
 ### 가챠 결과 · 전투력 · 레이드 인원 · 자동 중 직접 조작 — 2026-11-18 배포
 - 가챠 '지금 낀 장비' → '현재 장비'. 결과 다 고른 뒤 안내는 빨간 강조 "교체되지 않은 결과는 자동으로 분해됩니다." (`.gx-warn`)
