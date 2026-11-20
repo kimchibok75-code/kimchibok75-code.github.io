@@ -66,6 +66,7 @@ export const CLASSES = { sword: { n: '검사', i: '🗡️', st: 'str' }, bow: {
 export const WTYPES = { sword: { n: '검', i: '🗡️', gap: 1.0, m: 1, st: 'str', k: MELEE_K },
   staff: { n: '지팡이', i: '🪄', gap: 1.1, m: .95, sp: STAFF_SP, st: 'int', far: true, k: STAFF_K }, bow: { n: '활', i: '🏹', gap: BOW_GAP, m: BOW_M, st: 'dex', far: true, k: BOW_DEX } };
 // 원거리 무기: 몬스터가 다가오는 시간(초)만큼 먼저 공격, 걸어가는 시간도 줄어듦 (FAR.walk 배)
+export const CLEAVE = { hit: .25, sk: .6, r: 1.6 };   // 2026-11-20 검사 다수 타격: 기본 공격은 주변(r칸) 몬스터에 25%, 공격 스킬은 주변 모두에 60%
 export const FAR = { lead: FAR_LEAD, walk: FAR_WALK, kite: FAR_KITE, kiteMax: FAR_KITE_MAX, back: FAR_BACK };
 // 장비 칸 6개: 무기 3 + 방어구 3. k: 방어구 칸별 수치 배율
 export const SLOTS = { sword: { n: '검', i: '🗡️' }, bow: { n: '활', i: '🏹' }, staff: { n: '지팡이', i: '🪄' }, hat: { n: '모자', i: '⛑️', k: .5 }, armor: { n: '갑옷', i: '🧥', k: 1 }, shoes: { n: '신발', i: '👢', k: .35 } };
@@ -80,8 +81,10 @@ export const ITEM_NAMES = {
 };
 // 단계별 기본 수치 (일반 등급 기준). 무기 공격력 · 방어구 방어 · 방어구 체력
 export const W_ATK = [7, 15, 34, 72, 145, 280], A_DEF = [3, 8, 17, 36, 72, 140], A_HP = [17, 38, 85, 180, 360, 700];
-export const STATS = { str: { n: '힘', i: '💪', d: `검 공격력 +${MELEE_K} · 체력 +5 · 물리 방어 +0.5` }, dex: { n: '민첩', i: '🏃', d: `활 공격력 +${BOW_DEX} · 공격 속도 +0.5% · 회피 +0.2% · 이동 속도 +0.3%` }, int: { n: '지력', i: '🧠', d: `지팡이 마력 +${STAFF_K} · 마법 방어 +0.5 · 필살기 피해 +2% · 확률 +0.1%` }, luk: { n: '운', i: '🍀', d: '치명타 +0.25% · 골드 +1% · 강화 성공 +0.05%p' } };
+export const STATS = { str: { n: '힘', i: '💪', d: `검 공격력 +${MELEE_K} · 체력 +5 · 물리 방어 +0.5` }, dex: { n: '민첩', i: '🏃', d: `활 공격력 +${BOW_DEX} · 공격 속도 +0.5% · 회피 +0.2% · 이동 속도 +0.3%` }, int: { n: '지력', i: '🧠', d: `지팡이 마력 +${STAFF_K} · 마법 방어 +0.5 · 필살기 피해 +2% · 확률 +0.1%` }, luk: { n: '운', i: '🍀', d: '치명타 +0.25% · 골드 +1% (최대 +100%) · 강화 성공 +0.05%p' } };
 // 강화: 장비가 아니라 장비 칸(슬롯)을 강화. 장비를 바꿔도 강화 단계는 그대로
+export const LUK_GOLD_MAX = 100;   // 2026-11-20 운으로 오르는 골드는 최대 +100% (2배)
+export const PRESET_CD = 10 * 60e3;   // 2026-11-20 능력치 프리셋은 10분에 한 번 바꿀 수 있음
 export const ENH_MAX = 20, ENH_STEP = .06;   // 2026-11-20 최대 +10 → +20
 export const ENH_RATE = [100, 95, 90, 80, 70, 60, 50, 40, 35, 30, 27, 24, 21, 18, 15, 12, 10, 8, 6, 5];   // 최소 5%
 // 운이 높으면 강화 성공 확률 증가 (1포인트당 +0.05%p, 최대 +10%p)
@@ -90,17 +93,17 @@ export const ENH_COST = [700, 1400, 2400, 3600, 5600, 8400, 12000, 17000, 22000,
 // fx = 보유 효과 (가지고만 있어도 붙음. 쓰고 있지 않아도 됨)
 // 스킨샵 값 (2026-11-18 평균화): 최소 10,000 · 10k ≈ 효과 3점, 15k ≈ 4점, 20k ≈ 5점, 30k ≈ 7점 (공격·경험치·골드·체력·방어 1% = 1점, 치명타 1%p = 1.5점, 생활 효과는 절반)
 // clear = 투명 모자 (2026-11-19): 아무 효과 없음, 모두 처음부터 가짐(free). 쓰면 머리 장비가 안 보이고 헤어는 그대로
-export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'clear', n: '✨ 투명 모자', price: 0, free: 1 }, { id: 'ribbon', n: '🎀 리본', price: 10000, fx: { expP: 3 } }, { id: 'sprout', n: '🌱 새싹', price: 10000, fx: { farmP: 6 } }, { id: 'cat', n: '🐱 고양이 귀', price: 15000, fx: { crit: 2, expP: 1 } }, { id: 'straw', n: '👒 밀짚모자', price: 15000, fx: { fishP: 8 } }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 20000, fx: { atkP: 3, goldP: 2 } },
-  { id: 'rdragon', n: '🐉 용의 뿔', price: 0, raid: 'rdragon', fx: { atkP: 5, crit: 2 } },
+export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'clear', n: '✨ 투명 모자', price: 0, free: 1 }, { id: 'ribbon', n: '🎀 리본', price: 10000, fx: { expP: 3 } }, { id: 'sprout', n: '🌱 새싹', price: 10000, fx: { farmP: 6 } }, { id: 'cat', n: '🐱 고양이 귀', price: 15000, fx: { crit: 2, expP: 1 } }, { id: 'straw', n: '👒 밀짚모자', price: 15000, fx: { fishP: 8 } }, { id: 'kimchi', n: '🥬 김치 머리띠', price: 20000, fx: { atkP: 2, goldP: 2 } },
+  { id: 'rdragon', n: '🐉 용의 뿔', price: 0, raid: 'rdragon', fx: { atkP: 4, crit: 2 } },
   { id: 'ogre', n: '👹 오우거 투구', price: 0, raid: 'ogre', fx: { hpP: 5, defP: 4 } },
   { id: 'magic', n: '💗 마법소녀 왕관', price: 30000, fx: { expP: 4, crit: 2 } },
   { id: 'fishking', n: '🎣 낚시왕 모자', price: 0, fk: 1, fx: { fishP: 8, fishZ: 2 } },
   { id: 'mineking', n: '⛏️ 채굴왕 헬멧', price: 0, fk: 1, fx: { gather: 1, hpP: 3 } },
   { id: 'farmking', n: '🌾 농사왕 밀짚모자', price: 0, fk: 1, fx: { farmP: 8, goldP: 2 } }];   // fk = 낚시점 '낚시왕' 보상 (2026-11-19, 상점에 안 팖)   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
 // 눈 모양 스킨 (가진 것은 hats 목록에 'eye:별' 처럼 저장). dot은 기본
-export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 10000, fx: { defP: 3 } }, { id: 'star', n: '⭐ 별 눈', price: 10000, fx: { expP: 3 } }, { id: 'wink', n: '😉 윙크', price: 15000, fx: { crit: 2, atkP: 1 } }, { id: 'heart', n: '💗 하트 눈', price: 15000, fx: { hpP: 4 } }, { id: 'cat', n: '🐱 고양이 눈', price: 15000, fx: { fishC: 8 } }, { id: 'big', n: '✨ 반짝 큰 눈', price: 20000, fx: { goldP: 5 } },
+export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 10000, fx: { defP: 3 } }, { id: 'star', n: '⭐ 별 눈', price: 10000, fx: { expP: 3 } }, { id: 'wink', n: '😉 윙크', price: 15000, fx: { crit: 2, atkP: 0.5 } }, { id: 'heart', n: '💗 하트 눈', price: 15000, fx: { hpP: 4 } }, { id: 'cat', n: '🐱 고양이 눈', price: 15000, fx: { fishC: 8 } }, { id: 'big', n: '✨ 반짝 큰 눈', price: 20000, fx: { goldP: 5 } },
   { id: 'rdragon', n: '🐉 용의 눈', price: 0, raid: 'rdragon', fx: { crit: 3, expP: 5 } },
-  { id: 'ogre', n: '👹 오우거 눈', price: 0, raid: 'ogre', fx: { atkP: 3, hpP: 3 } },
+  { id: 'ogre', n: '👹 오우거 눈', price: 0, raid: 'ogre', fx: { atkP: 2, hpP: 3 } },
   { id: 'magic', n: '💗 반짝 마법 눈', price: 30000, fx: { crit: 2, goldP: 3 } },
   { id: 'fishking', n: '🎣 낚시왕 눈', price: 0, fk: 1, fx: { crit: 2, fishZ: 2 } },
   { id: 'mineking', n: '⛏️ 채굴왕 눈', price: 0, fk: 1, fx: { crit: 2, defP: 2 } },
@@ -114,7 +117,7 @@ export const SUITS = [
   { id: 'knight', n: '🛡️ 기사 망토', price: 20000, fx: { defP: 5 } },
   { id: 'cabbage', n: '🥬 배추 옷', price: 25000, fx: { hpP: 4, expP: 3 } },
   { id: 'rdragon', n: '🐉 레드 드래곤 갑옷', price: 0, raid: 'rdragon', fx: { hpP: 8, defP: 6 } },
-  { id: 'ogre', n: '👹 오우거 가죽 갑옷', price: 0, raid: 'ogre', fx: { hpP: 6, atkP: 3 } },
+  { id: 'ogre', n: '👹 오우거 가죽 갑옷', price: 0, raid: 'ogre', fx: { hpP: 6, atkP: 2 } },
   { id: 'magic', n: '💗 마법소녀 드레스', price: 30000, fx: { hpP: 5, expP: 3 } },
   { id: 'fishking', n: '🎣 낚시왕 조끼', price: 0, fk: 1, fx: { hpP: 4, fishC: 10 } },
   { id: 'mineking', n: '⛏️ 채굴왕 작업복', price: 0, fk: 1, fx: { defP: 5, hpP: 3 } },
@@ -127,37 +130,37 @@ export const WSKINS = [
   { t: 'sword', id: 'candy', n: '🍓 사탕 검', price: 15000, fx: { expP: 4 } },
   { t: 'sword', id: 'bamboo', n: '🌲 대나무 검', price: 15000, fx: { eva: 2 } },
   { t: 'sword', id: 'ladle', n: '⭐ 국자 검', price: 15000, fx: { goldP: 4 } },
-  { t: 'sword', id: 'laser', n: '⚡ 광선검', price: 20000, fx: { atkP: 5 } },
+  { t: 'sword', id: 'laser', n: '⚡ 광선검', price: 20000, fx: { atkP: 4 } },
   { t: 'bow', id: 'leaf', n: '🌱 나뭇잎 활', price: 10000, fx: { gather: 5 } },
   { t: 'bow', id: 'bone', n: '🎯 뼈 활', price: 15000, fx: { bossP: 6 } },
   { t: 'bow', id: 'candy', n: '🍓 사탕 활', price: 15000, fx: { expP: 4 } },
   { t: 'bow', id: 'ice', n: '❄️ 얼음 활', price: 15000, fx: { crit: 3 } },
   { t: 'bow', id: 'rainbow', n: '🌈 무지개 활', price: 15000, fx: { goldP: 4 } },
-  { t: 'bow', id: 'star', n: '🌟 별빛 활', price: 20000, fx: { atkP: 5 } },
+  { t: 'bow', id: 'star', n: '🌟 별빛 활', price: 20000, fx: { atkP: 4 } },
   { t: 'staff', id: 'candle', n: '🔥 촛불 지팡이', price: 10000, fx: { hpP: 3 } },
   { t: 'staff', id: 'mushroom', n: '🍀 버섯 지팡이', price: 10000, fx: { farmP: 6 } },
   { t: 'staff', id: 'heart', n: '💗 하트 지팡이', price: 15000, fx: { hpP: 4 } },
   { t: 'staff', id: 'moon', n: '🌙 달 지팡이', price: 15000, fx: { expP: 4 } },
   { t: 'staff', id: 'paw', n: '🐱 고양이 발 지팡이', price: 15000, fx: { fishC: 8 } },
-  { t: 'staff', id: 'cabbage', n: '🥬 배추 지팡이', price: 20000, fx: { atkP: 5 } },
-  { t: 'sword', id: 'rdragon', n: '🐉 레드 드래곤 검', price: 0, raid: 'rdragon', fx: { atkP: 5, bossP: 5 } },
-  { t: 'bow', id: 'rdragon', n: '🐉 레드 드래곤 활', price: 0, raid: 'rdragon', fx: { atkP: 5, bossP: 5 } },
-  { t: 'staff', id: 'rdragon', n: '🐉 레드 드래곤 지팡이', price: 0, raid: 'rdragon', fx: { atkP: 5, bossP: 5 } },
-  { t: 'sword', id: 'magic', n: '💗 하트 날개 검', price: 30000, fx: { atkP: 5, expP: 2 } },
-  { t: 'bow', id: 'magic', n: '💗 꽃 날개 활', price: 30000, fx: { atkP: 5, expP: 2 } },
-  { t: 'staff', id: 'magic', n: '💗 달빛 요술봉', price: 30000, fx: { atkP: 5, expP: 2 } },
-  { t: 'sword', id: 'ogre', n: '👹 오우거 돌칼', price: 0, raid: 'ogre', fx: { atkP: 4, hpP: 3 } },
-  { t: 'bow', id: 'ogre', n: '👹 오우거 뼈활', price: 0, raid: 'ogre', fx: { atkP: 4, hpP: 3 } },
-  { t: 'staff', id: 'ogre', n: '👹 오우거 돌 지팡이', price: 0, raid: 'ogre', fx: { atkP: 4, hpP: 3 } },
-  { t: 'sword', id: 'fishking', n: '🎣 낚시왕 검', price: 0, fk: 1, fx: { atkP: 4, fishP: 4 } },
-  { t: 'bow', id: 'fishking', n: '🎣 낚시왕 활', price: 0, fk: 1, fx: { atkP: 4, fishP: 4 } },
-  { t: 'staff', id: 'fishking', n: '🎣 낚시왕 지팡이', price: 0, fk: 1, fx: { atkP: 4, fishP: 4 } },
-  { t: 'sword', id: 'mineking', n: '⛏️ 채굴왕 검', price: 0, fk: 1, fx: { atkP: 4, defP: 3 } },
-  { t: 'bow', id: 'mineking', n: '⛏️ 채굴왕 활', price: 0, fk: 1, fx: { atkP: 4, defP: 3 } },
-  { t: 'staff', id: 'mineking', n: '⛏️ 채굴왕 지팡이', price: 0, fk: 1, fx: { atkP: 4, defP: 3 } },
-  { t: 'sword', id: 'farmking', n: '🌾 농사왕 검', price: 0, fk: 1, fx: { atkP: 4, farmP: 4 } },
-  { t: 'bow', id: 'farmking', n: '🌾 농사왕 활', price: 0, fk: 1, fx: { atkP: 4, farmP: 4 } },
-  { t: 'staff', id: 'farmking', n: '🌾 농사왕 지팡이', price: 0, fk: 1, fx: { atkP: 4, farmP: 4 } },
+  { t: 'staff', id: 'cabbage', n: '🥬 배추 지팡이', price: 20000, fx: { atkP: 4 } },
+  { t: 'sword', id: 'rdragon', n: '🐉 레드 드래곤 검', price: 0, raid: 'rdragon', fx: { atkP: 4, bossP: 5 } },
+  { t: 'bow', id: 'rdragon', n: '🐉 레드 드래곤 활', price: 0, raid: 'rdragon', fx: { atkP: 4, bossP: 5 } },
+  { t: 'staff', id: 'rdragon', n: '🐉 레드 드래곤 지팡이', price: 0, raid: 'rdragon', fx: { atkP: 4, bossP: 5 } },
+  { t: 'sword', id: 'magic', n: '💗 하트 날개 검', price: 30000, fx: { atkP: 4, expP: 2 } },
+  { t: 'bow', id: 'magic', n: '💗 꽃 날개 활', price: 30000, fx: { atkP: 4, expP: 2 } },
+  { t: 'staff', id: 'magic', n: '💗 달빛 요술봉', price: 30000, fx: { atkP: 4, expP: 2 } },
+  { t: 'sword', id: 'ogre', n: '👹 오우거 돌칼', price: 0, raid: 'ogre', fx: { atkP: 3, hpP: 3 } },
+  { t: 'bow', id: 'ogre', n: '👹 오우거 뼈활', price: 0, raid: 'ogre', fx: { atkP: 3, hpP: 3 } },
+  { t: 'staff', id: 'ogre', n: '👹 오우거 돌 지팡이', price: 0, raid: 'ogre', fx: { atkP: 3, hpP: 3 } },
+  { t: 'sword', id: 'fishking', n: '🎣 낚시왕 검', price: 0, fk: 1, fx: { atkP: 3, fishP: 4 } },
+  { t: 'bow', id: 'fishking', n: '🎣 낚시왕 활', price: 0, fk: 1, fx: { atkP: 3, fishP: 4 } },
+  { t: 'staff', id: 'fishking', n: '🎣 낚시왕 지팡이', price: 0, fk: 1, fx: { atkP: 3, fishP: 4 } },
+  { t: 'sword', id: 'mineking', n: '⛏️ 채굴왕 검', price: 0, fk: 1, fx: { atkP: 3, defP: 3 } },
+  { t: 'bow', id: 'mineking', n: '⛏️ 채굴왕 활', price: 0, fk: 1, fx: { atkP: 3, defP: 3 } },
+  { t: 'staff', id: 'mineking', n: '⛏️ 채굴왕 지팡이', price: 0, fk: 1, fx: { atkP: 3, defP: 3 } },
+  { t: 'sword', id: 'farmking', n: '🌾 농사왕 검', price: 0, fk: 1, fx: { atkP: 3, farmP: 4 } },
+  { t: 'bow', id: 'farmking', n: '🌾 농사왕 활', price: 0, fk: 1, fx: { atkP: 3, farmP: 4 } },
+  { t: 'staff', id: 'farmking', n: '🌾 농사왕 지팡이', price: 0, fk: 1, fx: { atkP: 3, farmP: 4 } },
 ];
 // 낚시왕 보상 (2026-11-19, 낚시점 '낚시왕' 탭): 물고기 50마리마다 한 부위씩, '받기'를 눌러야 받음. 순서 = 모자 · 의상 · 눈 · 검 · 활 · 지팡이
 // '왕' 세트 (2026-11-19): 낚시왕(낚시점, 물고기 50마리마다) · 채굴왕(채석장, 손으로 캔 석재 100개마다). cnt = life.cnt 의 어느 값으로 셈
@@ -276,8 +279,8 @@ export function derive(c) {
   return { god, b, str, dex, int, luk, atk, mag, hit: staff ? mag : atk, magic: staff, far: !!wt.far, wt: cls, cls, fx, skills: mySkills(c, cls),
     def: Math.round((def + str * .5) * (1 + (fx.defP || 0) / 100)), mdef: Math.round((def * .5 + int * .5) * (1 + ((fx.defP || 0) + (fx.mdefP || 0)) / 100)), maxHp: Math.round((100 + c.lv * 20 + str * 5 + hp) * (1 + (fx.hpP || 0) / 100)),
     gap: wt.gap / Math.min(2, 1 + dex * .005) / (1 + (fx.aspd || 0) / 100), spd: Math.min(1.8, (1 + dex * .003) * (1 + (fx.spdP || 0) / 100)), crit: Math.min(70, 5 + luk * .25 + (fx.crit || 0)), critM: 1.5 + (fx.critD || 0) / 100,
-    eva: Math.min(45, dex * .2 + (fx.eva || 0)), sp: 5 + int * .1 + (fx.sp || 0), spMul: (2 + int * .02) * (wt.sp || 1), goldB: luk + (fx.goldP || 0), expB: fx.expP || 0, enhB: Math.min(15, luk * .05 + (fx.enhB || 0)),
-    bossP: fx.bossP || 0, steal: fx.steal || 0, regen: HUNT.huntRegen + (fx.regen || 0) / 100, potP: fx.potP || 0 };
+    eva: Math.min(45, dex * .2 + (fx.eva || 0)), sp: 5 + int * .1 + (fx.sp || 0), spMul: (2 + int * .02) * (wt.sp || 1), goldB: Math.min(LUK_GOLD_MAX, luk) + (fx.goldP || 0), expB: fx.expP || 0, enhB: Math.min(15, luk * .05 + (fx.enhB || 0)),
+    bossP: fx.bossP || 0, steal: fx.steal || 0, cleave: cls === 'sword' ? CLEAVE.hit : 0, cleaveSk: cls === 'sword' ? CLEAVE.sk : 0, regen: HUNT.huntRegen + (fx.regen || 0) / 100, potP: fx.potP || 0 };
 }
 
 // 새 캐릭터 기본값: 무기 3개(1단계 일반) 모두 낌, 클래스는 검사
@@ -308,16 +311,16 @@ export const MONS = {
   eagle: M('협곡 독수리', 27, 900, 55, 150, 45, '#9b6a3d', 1, 'wing', true, 'eagle'), turtle: M('돌 거북', 33, 1500, 60, 210, 60, '#a3b07a', 1.1, 'shell', false, 'turtle'), golem: M('바위 골렘', 38, 2200, 85, 280, 75, '#9a958c', 1.25, 'rock', false, 'golem'),
   drone: M('녹슨 드론', 42, 2800, 110, 360, 95, '#b58a5a', .9, 'bot', true, 'drone'), guard: M('경비 로봇', 48, 4000, 140, 470, 120, '#7f8fa3', 1.15, 'bot', false, 'guard'), fixbot: M('폭주 수리봇', 53, 5500, 170, 600, 150, '#e0a63a', 1.1, 'bot', true, 'fixbot'),
   // 2026-11-20 폐광 · 늪지 (최고 레벨 뒤의 사냥터: 더 세고 골드가 많음)
-  bat: M('폐광 박쥐', 55, 7000, 195, 700, 175, '#6b5277', .9, 'wing', false, 'bat'), spider: M('폐광 거미', 58, 8500, 225, 820, 205, '#6e4a36', 1, 'ears', false, 'spider'), ogolem: M('광석 골렘', 61, 10500, 255, 950, 235, '#8f8a92', 1.25, 'rock', true, 'ogolem'),
-  snake: M('독 뱀', 63, 12500, 285, 1100, 270, '#6a3f7a', .95, 'ears', true, 'snake'), croc: M('늪지 악어', 66, 15500, 320, 1280, 310, '#5f7a3a', 1.15, 'ears', false, 'croc'), slime: M('독성 슬라임', 69, 18500, 350, 1450, 350, '#9bd13a', 1, 'cap', true, 'slime'),
+  bat: M('폐광 박쥐', 59, 9000, 225, 820, 205, '#6b5277', .9, 'wing', false, 'bat'), spider: M('폐광 거미', 63, 11000, 260, 960, 240, '#6e4a36', 1, 'ears', false, 'spider'), ogolem: M('광석 골렘', 67, 13500, 295, 1120, 275, '#8f8a92', 1.25, 'rock', true, 'ogolem'),
+  snake: M('독 뱀', 74, 17500, 345, 1350, 320, '#6a3f7a', .95, 'ears', true, 'snake'), croc: M('늪지 악어', 78, 21500, 390, 1550, 365, '#5f7a3a', 1.15, 'ears', false, 'croc'), slime: M('독성 슬라임', 82, 26000, 430, 1750, 410, '#9bd13a', 1, 'cap', true, 'slime'),
 };
 export const FIELDS = [
   { id: 'plain', n: '바람 들판', i: '🌾', min: 1, max: 10, tier: 0, mons: ['rat', 'hen', 'boar'], boss: M('왕 멧돼지', 12, 2000, 40, 400, 300, '#7d4f33', 2, 'snout', false, 'kingboar'), g: ['#9ad27f', '#91ca75'], deco: 'flower' },
   { id: 'forest', n: '깊은 숲', i: '🌲', min: 10, max: 25, tier: 1, mons: ['wolf', 'shroom', 'vine'], boss: M('숲의 거대 곰', 27, 12000, 120, 2500, 1500, '#6b4a33', 2.2, 'ears', false, 'bear'), g: ['#5f9e58', '#589651'], deco: 'tree' },
   { id: 'canyon', n: '바위 협곡', i: '⛰️', min: 25, max: 40, tier: 2, mons: ['eagle', 'turtle', 'golem'], boss: M('협곡의 주인', 42, 50000, 260, 9000, 4000, '#7a746b', 2.3, 'rock', true, 'lord'), g: ['#d2b48a', '#c9ab80'], deco: 'rock' },
   { id: 'factory', n: '고장 난 공장', i: '🏚️', min: 40, max: 55, tier: 3, mons: ['drone', 'guard', 'fixbot'], boss: M('공장장 기계', 57, 160000, 520, 25000, 10000, '#5e6b7d', 2.4, 'bot', true, 'boss'), g: ['#a3abb5', '#9aa2ad'], deco: 'pipe' },
-  { id: 'mine', n: '버려진 폐광', i: '⛏️', min: 50, max: 62, tier: 4, mons: ['bat', 'spider', 'ogolem'], boss: M('거대 두더지', 64, 240000, 680, 34000, 14000, '#7a5640', 2.3, 'snout', false, 'mole'), g: ['#6d6359', '#655b52'], deco: 'rock' },
-  { id: 'swamp', n: '독안개 늪지', i: '🐊', min: 55, max: 72, tier: 5, mons: ['snake', 'croc', 'slime'], boss: M('거대 코브라', 72, 380000, 860, 50000, 20000, '#5c3a6e', 2.4, 'ears', true, 'cobra'), g: ['#5d7a4a', '#566f44'], deco: 'tree' },
+  { id: 'mine', n: '버려진 폐광', i: '⛏️', min: 55, max: 70, tier: 4, mons: ['bat', 'spider', 'ogolem'], boss: M('거대 두더지', 72, 320000, 790, 42000, 17000, '#7a5640', 2.3, 'snout', false, 'mole'), g: ['#6d6359', '#655b52'], deco: 'rock' },
+  { id: 'swamp', n: '독안개 늪지', i: '🐊', min: 70, max: 85, tier: 5, mons: ['snake', 'croc', 'slime'], boss: M('거대 코브라', 87, 520000, 1050, 62000, 25000, '#5c3a6e', 2.4, 'ears', true, 'cobra'), g: ['#5d7a4a', '#566f44'], deco: 'tree' },
 ];
 // 내 레벨이 몬스터보다 10 이상 높으면 경험치 줄어듦
 export const expPenalty = (lv, mlv) => { const d = lv - mlv; return d >= 10 ? Math.max(.2, 1 - (d - 9) * .1) : 1; };
@@ -368,7 +371,7 @@ export const FISH_BY = Object.fromEntries(FISH_LIST.map(f => [f.id, f]));
 const byWater = sea => Object.fromEntries(FG_KEYS.map(g => [g, FISH_LIST.filter(f => f.sea === sea && f.grade === g)]));
 export const FISH_RIVER = byWater(false), FISH_SEA = byWater(true);
 export const fishByName = (n, g) => FISH_LIST.find(f => f.n === n && (!g || f.grade === g));
-export const FISH_PRICE_MAX = 10e6, FISH_LEGEND_MIN = 10e3, FISH_BAG = 50;
+export const FISH_PRICE_MAX = 5e6, FISH_LEGEND_MIN = 5e3, FISH_BAG = 50;
 // 낚싯대 10단계: [이름, 가장 큰 크기 cm, 낚을 확률, 그 단계로 올리는 값(골드), 필요한 낚시 횟수]
 export const RODS = [['낡은 낚싯대', 30, .6, 0, 0], ['대나무 낚싯대', 60, .65, 300, 20], ['튼튼한 낚싯대', 120, .7, 1000, 70], ['강철 낚싯대', 250, .75, 4000, 180], ['강화 낚싯대', 500, .8, 15000, 400],
   ['합금 낚싯대', 1000, .85, 25000, 700], ['티타늄 낚싯대', 2000, .9, 70000, 1200], ['장인의 낚싯대', 5000, .93, 200000, 2000], ['전설의 낚싯대', 15000, .96, 900000, 3500], ['신화의 낚싯대', 30000, .99, 3000000, 6000]];
@@ -473,7 +476,7 @@ export const CROP_LIST = CROP_TABLE.map(([id, grade, i, n, min, max, base, hoe, 
 export const CROP_BY = Object.fromEntries(CROP_LIST.map(x => [x.id, x]));
 // 호미 [이름, 최대 무게 g, 밭 칸 수, 자라는 시간 줄임, 값, 필요 누적 수확] · 비료 [이름, 일반 %, 희귀 %, 전설 %, 값, 필요 누적 수확] (둘 다 10단계, 저장은 0~9)
 export const HOES = HOE_TABLE, FERTS = FERT_TABLE;
-export const FARM = { growMin: 180, growMax: 180, maxPlots: 9, priceMin: 2, priceMax: 1e7, bag: 200, big: .7 };
+export const FARM = { growMin: 180, growMax: 180, maxPlots: 9, priceMin: 2, priceMax: 5e6, bag: 200, big: .7 };
 const lv9 = v => Math.max(0, Math.min(9, v | 0));
 export const farmPlots = hoe => HOES[lv9(hoe)][2];
 export const newFarm = () => ({ v: 2, hoe: 0, fert: 0, plots: Array(9).fill(null), bag: [] });
@@ -882,24 +885,24 @@ export function worldFx(w, t) {
 // r: 희귀도 1 보통 · 2 희귀 · 3 전설 (뽑기 확률이 다름)
 const SK = (id, cls, n, i, r, cd, k, o, d) => ({ id, cls, n, i, r, cd, k, ...o, d });
 export const SKILLS = [
-  SK('s_bash', 'sword', '돌진 베기', '🏃', 1, 6, 'hit', { m: 2.1, stun: .5, dash: 1 }, '멀리 있는 몬스터에게 순식간에 달려들어 베고 잠깐 휘청이게 함'),
-  SK('s_whirl', 'sword', '회오리 베기', '⚔️', 1, 10, 'hit', { m: .75, x: 3 }, '몸을 돌리며 빠르게 세 번 벰'),
+  SK('s_bash', 'sword', '돌진 베기', '🏃', 1, 6, 'hit', { m: 2.1, stun: .5, dash: 1 }, '멀리 있는 몬스터에게 순식간에 달려들어 베고 잠깐 휘청이게 함 (주변 몬스터도 함께)'),
+  SK('s_whirl', 'sword', '회오리 베기', '⚔️', 1, 10, 'hit', { m: .75, x: 3 }, '몸을 돌리며 빠르게 세 번 벰 (주변 몬스터 모두)'),
   SK('s_guard', 'sword', '철벽 방패', '🛡️', 2, 15, 'shield', { x: 2 }, '방패를 들어 다음 공격을 막음'),
   SK('s_roar', 'sword', '전투 함성', '📣', 2, 20, 'buff', { atk: 30, dur: 6 }, '함성을 질러 잠깐 공격력이 오름'),
-  SK('s_quake', 'sword', '대지 가르기', '⛰️', 3, 18, 'hit', { m: 3.2, stun: 1.5 }, '땅을 갈라 큰 피해를 주고 몬스터를 멈추게 함'),
+  SK('s_quake', 'sword', '대지 가르기', '⛰️', 3, 18, 'hit', { m: 4.6, stun: 1.5 }, '땅을 갈라 주변 몬스터 모두에게 큰 피해를 주고 멈추게 함'),
   SK('s_will', 'sword', '불굴의 의지', '❤️', 3, 26, 'heal', { v: 22 }, '이를 악물고 체력을 크게 회복'),
   SK('b_multi', 'bow', '연속 사격', '🏹', 1, 6, 'hit', { m: .8, x: 3 }, '화살 세 발을 빠르게 연달아 쏨'),
   SK('b_poison', 'bow', '독화살', '🧪', 1, 9, 'hit', { m: 1, dot: 1.6 }, '독 묻은 화살. 맞은 몬스터가 몇 초 동안 독 피해를 입음'),
   SK('b_roll', 'bow', '뒤로 구르기', '💨', 2, 13, 'shield', { x: 2 }, '재빨리 굴러서 다음 공격을 피함'),
   SK('b_eye', 'bow', '매의 눈', '👀', 2, 20, 'buff', { crit: 35, dur: 7 }, '약점을 노려 잠깐 치명타 확률이 크게 오름'),
-  SK('b_pierce', 'bow', '관통 화살', '🎯', 3, 15, 'hit', { m: 3.6 }, '힘껏 당겨 쏘는 묵직한 한 발'),
-  SK('b_rain', 'bow', '화살비', '🌧️', 3, 22, 'hit', { m: .9, x: 5 }, '하늘에서 화살이 다섯 번 쏟아짐'),
+  SK('b_pierce', 'bow', '관통 화살', '🎯', 3, 15, 'hit', { m: 5 }, '힘껏 당겨 쏘는 묵직한 한 발'),
+  SK('b_rain', 'bow', '화살비', '🌧️', 3, 22, 'hit', { m: 1.25, x: 5 }, '하늘에서 화살이 다섯 번 쏟아짐'),
   SK('m_fire', 'staff', '불덩이', '🔥', 1, 6, 'hit', { m: 2.1 }, '뜨거운 불덩이를 날림'),
   SK('m_ice', 'staff', '얼음 창', '❄️', 1, 10, 'hit', { m: 1.6, stun: 2 }, '얼음 창으로 찌르고 몬스터를 얼려 멈추게 함'),
   SK('m_shield', 'staff', '마법 보호막', '🔮', 2, 16, 'shield', { x: 3 }, '보호막이 다음 공격 세 번을 막음'),
   SK('m_bolt', 'staff', '번개 사슬', '⚡', 2, 12, 'hit', { m: .85, x: 4 }, '번개가 튀며 네 번 때림'),
   SK('m_heal', 'staff', '치유의 빛', '✨', 3, 22, 'heal', { v: 25 }, '따뜻한 빛으로 체력을 크게 회복'),
-  SK('m_meteor', 'staff', '메테오', '☄️', 3, 30, 'hit', { m: 6, stun: 1 }, '하늘에서 운석을 떨어뜨림'),
+  SK('m_meteor', 'staff', '메테오', '☄️', 3, 30, 'hit', { m: 8.5, stun: 1 }, '하늘에서 운석을 떨어뜨림'),
 ];
 export const skillOf = id => SKILLS.find(s => s.id === id);
 export const SK_RARE = { 1: { n: '보통', c: '#5d6b7e' }, 2: { n: '희귀', c: '#2f6fd0' }, 3: { n: '전설', c: '#e0731c' } };

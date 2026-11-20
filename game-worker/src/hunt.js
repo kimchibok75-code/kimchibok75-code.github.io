@@ -15,6 +15,8 @@ function fight(st, D, mon, boss) {
   const cd = st.cd ||= {};
   const tick = dt => { for (const k of sk) cd[k.s.id] = (cd[k.s.id] || 0) - dt; if (st.bt > 0) st.bt -= dt; };
   tick(t);
+  if (!boss && st.pre > 0) hp -= Math.min(st.pre, mon.hp);   // 2026-11-20 검사 다수 타격: 앞 싸움에서 주변 몬스터가 이미 맞은 피해
+  st.pre = 0;
   const heal = () => { st.hp = Math.min(D.maxHp, st.hp + (t - healed) * regen); healed = t; };   // 사냥 중에도 체력이 천천히 참
   const roll = (m = 1) => {   // 피해 한 번 (스킬은 m 배)
     let dmg = D.hit * m * (.9 + Math.random() * .2) * (1 + (st.bt > 0 ? st.batk : 0) / 100);
@@ -22,6 +24,7 @@ function fight(st, D, mon, boss) {
     if (Math.random() * 100 < D.crit + (st.bt > 0 ? st.bcrit : 0)) dmg *= D.critM;
     if (boss) dmg *= 1 + D.bossP / 100;
     dmg = Math.max(1, Math.round(dmg)); hp -= dmg;
+    if (!boss && D.cleave) st.pre = (st.pre || 0) + dmg * (m === 1 ? D.cleave : D.cleaveSk);   // 주변 몬스터도 같이 맞음
     if (D.steal) st.hp = Math.min(D.maxHp, st.hp + dmg * D.steal / 100);   // 흡혈
   };
   while (hp > 0 && steps++ < 20000) {

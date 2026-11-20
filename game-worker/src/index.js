@@ -4,7 +4,7 @@ import { jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, GUIDE_MARKS, guideQ, guideP
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
-  offlineLife, offlineHuntAway, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait, fishCasts } from '../../assets/js/game-rules.js';
+  offlineLife, offlineHuntAway, PRESET_CD, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait, fishCasts } from '../../assets/js/game-rules.js';
 import { isSolid, NODES, BACK, tileAt, WATER, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
 import { canHouseD } from '../../assets/js/game-dong.js';
 import { scanBad } from './filter.js';
@@ -491,6 +491,9 @@ const GAME = {
   '/api/preset/use'(c, b) {
     const i = Number(b.i); if (!Number.isInteger(i) || i < 0 || i >= PRESETS) fail(400, '없는 프리셋이에요');
     if (i === c.preset) return;
+    const left = (c.life.pAt || 0) + PRESET_CD - Date.now();   // 2026-11-20 10분에 한 번
+    if (left > 0) fail(400, `프리셋은 10분에 한 번 바꿀 수 있어요 (${Math.ceil(left / 60e3)}분 뒤)`);
+    c.life.pAt = Date.now();
     c.presets[c.preset].s = [c.str, c.dex, c.int, c.luk];
     [c.str, c.dex, c.int, c.luk] = c.presets[i].s; c.preset = i;
     c.points = Math.max(0, totalPoints(c.lv) - spentPoints(c)); c.hp = Math.min(c.hp, derive(c).maxHp);

@@ -1425,7 +1425,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { CLEAVE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
@@ -4362,7 +4362,12 @@ function updateHunt(dt) {
   if (me.hp <= 0 && !HT.dying) huntDie();
 }
 // 근접: 앞으로 살짝 튀어나가며 베기
-function hitMon(m, D) { me.swing = .18; me.lunge = .12; applyHit(m, rollHit(D, m), D, 'melee'); }
+function hitMon(m, D) { me.swing = .18; me.lunge = .12; const h = rollHit(D, m); applyHit(m, h, D, 'melee'); cleaveAround(m, h.dmg * (D.cleave || 0), D); }
+// 2026-11-20 검사 다수 타격: 맞은 몬스터 주변(CLEAVE.r칸)의 몬스터도 같이 맞음 (보스는 빼고). 서버 hunt.js도 같은 비율로 계산
+function cleaveAround(m, dmg, D) {
+  if (!(dmg > 0) || m.boss) return;
+  for (const o of HT.mons) if (o !== m && !o.dead && !o.boss && Math.hypot(o.x - m.x, o.y - m.y) < CLEAVE.r * T) applyHit(o, { dmg: Math.max(1, Math.round(dmg)), kind: '' }, D, 'melee');
+}
 function applyHit(m, h, D, src) {
   if (m.dead) return;
   const big = !!h.kind, cy = m.y - 18 * m.d.s, c = h.kind === 'sk' ? '#ffcf8a' : h.kind === 'sp' ? '#e2c6ff' : h.kind === 'crit' ? '#ffd166' : FXC[src];
@@ -4404,7 +4409,7 @@ function castSkill({ s, p }, tg, D) {
       const m = !tg.dead ? tg : HT.mons.find(x => !x.dead && Math.hypot(x.x - me.x, x.y - me.y) < 6 * T); if (!m) return;
       const h = skHit(m, D, p.m);
       if (meteor) { fxBurst(m.x, m.y - 10, '#ff9f43', 40, 360, 5); fxBurst(m.x, m.y - 10, '#ffd34d', 20, 220, 3); fxRing(m.x, m.y, '#ffb36b', 90, .5); fxShake(12); applyHit(m, h, D, 'magic'); }
-      else if (s.cls === 'sword') { me.lunge = .12; applyHit(m, h, D, 'melee'); fxSlash(m.x, cy(m.y), -(me.dir || 1), col, true); }
+      else if (s.cls === 'sword') { me.lunge = .12; applyHit(m, h, D, 'melee'); cleaveAround(m, h.dmg * (D.cleaveSk || 0), D); fxSlash(m.x, cy(m.y), -(me.dir || 1), col, true); }
       else { const sx = me.x + (me.dir || 1) * 16, sy = me.y - 30; HT.shots.push({ k: s.cls === 'staff' ? 'magic' : 'arrow', x: sx, y: sy, m, h, sp: 620, t: 0, a: 0 }); }
       if (i === 0 && p.stun) { m.atkT += p.stun; m.gT += p.stun; if (m.g?.ph === 'warn') { m.g = null; floatText(m.x, m.y - 64 * m.d.s, '기믹 끊음!', '#9fe0ff', 13, 1); } floatText(m.x, m.y - 50 * m.d.s, s.id === 'm_ice' ? '❄️ 얼음!' : '💫 기절!', '#9fe0ff', 14, 1); fxRing(m.x, m.y, '#9fe0ff', 30, .5); }
       if (s.id === 's_quake') { fxBurst(m.x, m.y, '#b08a5a', 24, 260, 4); fxShake(9); }
@@ -6304,6 +6309,8 @@ $('#presetBar').addEventListener('click', async e => {
   const v = e.target.closest('[data-pr]')?.dataset.pr; if (v == null) return;
   if (v === 'name') return formSheet('✏️ 프리셋 이름', [['presetName', '이름 (10글자까지)', 'text', me.presets[me.preset].n]], '저장', async o => { took(await api('/api/preset/name', { i: me.preset, n: o.presetName })); toast('이름을 바꿨어요'); });
   if (+v === me.preset) return;
+  const left = (me.life?.pAt || 0) + PRESET_CD - srvNow();
+  if (left > 0) return toast(`📋 프리셋은 10분에 한 번 바꿀 수 있어요 (${Math.ceil(left / 60e3)}분 뒤)`);
   const j = await act('/api/preset/use', { i: +v }); if (j) toast(`📋 ${me.presets[me.preset].n}(으)로 바꿨어요`);
 });
 // 스킨 미리보기: 정사각형 칸에 내 캐릭터 얼굴이 그 스킨을 쓴 모습
