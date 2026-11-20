@@ -1012,7 +1012,7 @@ async function fishOnce(c, b, at, env, user, now) {
 const jx = (col, path) => `COALESCE(CASE WHEN json_valid(${col}) THEN json_extract(${col}, '${path}') END, 0)`;
 const ENH_SUM = ['sword', 'bow', 'staff', 'hat', 'armor', 'shoes'].map(k => jx('c.enh', '$.' + k)).join(' + ');
 const RANK = {
-  lv: { v: 'c.lv', t: 'c.exp' },
+  lv: { v: 'c.lv', t: 'c.exp', min: 10 },   // 2026-11-20 사용자 요청: 레벨 랭킹은 Lv.10부터
   earn: { v: jx('c.life', '$.earn'), t: 'c.lv' },
   fishp: { v: 'COALESCE(f.best_price, 0)', t: 'COALESCE(f.count, 0)', i: 'f.best_price_fish' },   // 제일 비싼 물고기
   fishl: { v: 'COALESCE(f.best_len, 0)', t: 'COALESCE(f.count, 0)', i: 'f.best_len_fish' },       // 제일 큰 물고기
@@ -1032,7 +1032,7 @@ async function rankList(env, user, k) {
   const R = RANK[k], from = 'FROM characters c JOIN users u ON u.id = c.user_id' + (k.startsWith('fish') ? ' LEFT JOIN fishing f ON f.user_id = c.user_id' : '') + (k === 'give' ? ' LEFT JOIN village_give g ON g.user_id = c.user_id' : '') + ' WHERE u.banned = 0 AND ' + RANK_HIDE;
   let M = RANK_MEM[k];
   if (!M || now() - M.at > 60e3) {
-    const r = await env.DB.prepare(`SELECT u.id, u.nick, c.lv, c.cls, c.title, ${R.v} AS v, ${R.t} AS t, ${R.i || 'NULL'} AS i ${from} AND ${R.v} > 0 ORDER BY v DESC, t DESC, u.id LIMIT 3000`).all();
+    const r = await env.DB.prepare(`SELECT u.id, u.nick, c.lv, c.cls, c.title, ${R.v} AS v, ${R.t} AS t, ${R.i || 'NULL'} AS i ${from} AND ${R.min ? `${R.v} >= ${R.min}` : `${R.v} > 0`} ORDER BY v DESC, t DESC, u.id LIMIT 3000`).all();
     const all = r.results; M = RANK_MEM[k] = { at: now(), all, pos: new Map(all.map((x, i) => [x.id, i])), list: all.slice(0, 50).map(x => ({ id: x.id, nick: x.nick, lv: x.lv, cls: x.cls, title: x.title, v: x.v, f: rankFish(x.i) })) };
   }
   const i = M.pos.get(user.id), mine = i === undefined ? null : M.all[i];

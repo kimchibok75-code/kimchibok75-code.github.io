@@ -368,6 +368,9 @@
 - `game.webmanifest`(이름 치복 타운, 시작 `game.html`, 범위 `./game.html`이라 홈페이지 앱과 따로, 전체 화면). game.html `<head>`에서 연결
 - 아이콘 `assets/img/game-192.png`, `game-512.png`: 김치복 얼굴 + 마을 배경. 임시 HTML을 크롬 headless `--screenshot`으로 찍어서 만듦
 - 설치: 휴대폰 크롬 → 게임 주소 → ⋮ → 앱 설치. 게임을 고치면 앱도 바로 바뀜 (다시 설치할 필요 없음)
+- 2026-11-20 크롬이 들어오자마자 띄우는 설치 안내는 막음 (사용자: 낯설어 보임). game.html `<head>`의 작은 스크립트가 `beforeinstallprompt`를 `preventDefault`하고 `window.__pwa`에 둠
+  - 대신 초보자 가이드(두 탭 맨 아래 카드 `appCard`)와 📖 가이드('📲 앱으로 설치하기', `APP_STEPS`)에 설치 방법을 안내함. 안드로이드 크롬 · 아이폰 사파리 · PC가 따로, 이미 설치했으면 '설치됨'. 설치 가능하면 '📲 지금 설치하기' 버튼(`appInstall`)
+- 🏆 랭킹의 레벨 종목은 Lv.10 이상만 (index.js `RANK.lv.min`)
 - 진짜 APK 파일(플레이스토어 등)이 필요하면 Bubblewrap(TWA)로 만들 수 있음 — JDK·Android SDK·서명 키 필요
 
 ### 낚시 다시 만들기 · 가이드 — 2026-11-16 배포

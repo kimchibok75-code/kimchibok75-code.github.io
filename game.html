@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#cfe8f3">
 <link rel="icon" href="assets/img/game-192.png">
 <link rel="manifest" href="game.webmanifest">
+<script>/* 2026-11-20 크롬이 들어오자마자 띄우는 "앱 설치" 안내를 막음 (낯설어 보여서). 가이드의 설치 버튼에서만 씀 */addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); window.__pwa = e; }); addEventListener("appinstalled", function () { window.__pwa = null; });</script>
 <link rel="apple-touch-icon" href="assets/img/game-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
@@ -512,6 +513,9 @@ body.hunting .side { display: none; }
 .guide li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 10px; border-radius: 10px; background: #fff; border: 1px solid var(--line); font-size: calc(14px * var(--fs)); overflow-wrap: anywhere; }
 .guide li.ok { background: #eef7ec; border-color: #b9dbb5; }
 .guide li small { color: var(--ink-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.app-steps { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 5px; }   /* 2026-11-20 앱 설치 안내 */
+.app-steps li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 6px; align-items: start; font-size: calc(13.5px * var(--fs)); }
+.app-steps li > span:first-child { display: grid; place-items: center; min-height: 22px; border-radius: 999px; background: #e7f0ff; color: #2f5fb8; font-weight: 800; font-size: 12px; white-space: nowrap; }
 .guide .tips li { grid-template-columns: minmax(64px, auto) minmax(0, 1fr); background: #fbfcf7; }
 .guide kbd { display: inline-block; padding: 1px 7px; border: 1px solid #b9c4b4; border-bottom-width: 3px; border-radius: 6px; background: #fff; font: 700 calc(12.5px * var(--fs)) var(--font-body); white-space: nowrap; }
 .guide .skip { display: flex; gap: 8px; align-items: center; font-size: calc(14px * var(--fs)); cursor: pointer; }
@@ -5681,6 +5685,19 @@ const BG_SYS = [
   ['👋', '함께 놀기', '채팅 · 이모트 · 소원 분수 · 공동 건설'],
   ['💤', '쉬는 동안에도', '게임을 닫아도 최대 4시간 조금씩 성장'],
 ];
+// 2026-11-20 📲 앱으로 설치 안내 (크롬의 자동 설치 안내는 막고, 가이드에서만 알려 줌)
+const APP_ON = () => matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches || navigator.standalone === true;
+const IS_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+const APP_STEPS = () => APP_ON() ? [['✅ 설치됨', '지금 앱으로 보고 있어요. 다음부터 홈 화면 아이콘을 눌러 들어오면 돼요.']]
+  : IS_IOS ? [['1', '사파리에서 이 게임 주소를 열어요.'], ['2', '아래 가운데 공유 버튼(네모에 위 화살표)을 눌러요.'], ['3', '"홈 화면에 추가" → "추가"를 누르면 홈 화면에 치복 타운 아이콘이 생겨요.']]
+  : PHONE ? [['1', '크롬 브라우저에서 이 게임 주소를 열어요.'], ['2', '오른쪽 위 ⋮ (점 세 개)를 눌러요.'], ['3', '"앱 설치" 또는 "홈 화면에 추가" → "설치"를 눌러요.'], ['4', '홈 화면의 치복 타운 아이콘으로 들어오면 주소창 없이 전체 화면으로 즐길 수 있어요.']]
+  : [['1', '크롬이나 엣지에서 이 게임 주소를 열어요.'], ['2', '주소창 오른쪽의 설치 아이콘(모니터에 화살표)이나 ⋮ → "치복 타운 설치"를 눌러요.'], ['3', '바탕화면·시작 메뉴의 치복 타운 아이콘으로 창처럼 열 수 있어요.']];
+const appCard = () => `<div class="bs-card"><h4>📲 앱으로 설치하기 <small>${APP_ON() ? '설치됨' : '홈 화면에 아이콘'}</small></h4><p class="muted">따로 내려받는 파일 없이, 브라우저에서 바로 설치돼요. 게임이 바뀌면 앱도 저절로 바뀌어요.</p>
+  <ul class="app-steps">${APP_STEPS().map(([a, b]) => `<li><span>${a}</span><span>${b}</span></li>`).join('')}</ul>${!APP_ON() && window.__pwa ? bbtn('install', '📲 지금 설치하기', '', { wide: true, main: true }) : ''}</div>`;
+async function appInstall() {
+  const e = window.__pwa; if (!e) return toast('브라우저 메뉴(⋮)에서 "앱 설치"를 눌러 주세요');
+  e.prompt(); try { const r = await e.userChoice; if (r?.outcome === 'accepted') { window.__pwa = null; toast('📲 설치했어요! 홈 화면의 치복 타운 아이콘으로 들어오세요'); } } catch {}
+}
 function beginnerSheet(b, keep) {
   reopen = () => beginnerSheet(b, true);
   const tab = btab('beginner', 'start', ['start', 'sys']), gi = me.life?.gq?.i ?? 0, idx = id => GUIDE_Q.findIndex(q => q[0] === id), cur = GUIDE_Q[gi];
@@ -5691,13 +5708,14 @@ function beginnerSheet(b, keep) {
     const list = ks.map(k => { const q = GUIDE_Q[k], st = k < gi ? 'ok' : k === gi ? 'now' : ''; return `<li class="${st}"><span>${st === 'ok' ? '✓' : q[1]}</span>${esc(q[2])}</li>`; }).join('');
     return `<details class="bg-ch${all ? ' done' : ''}"${open ? ' open' : ''}><summary><span class="bg-i">${i}</span><div><b>${c + 1}장 · ${n}</b><small>${d}</small></div><em>${all ? '✓ 완료' : `${done} / ${ks.length}`}</em></summary><ul>${list}</ul></details>`;
   }).join('');
-  const body = tab === 'start' ? now + `<div class="bg-chs">${ch}</div>`
-    : `<div class="bg-sys">${BG_SYS.map(([i, t, d]) => `<div class="bg-card"><span class="bg-i">${i}</span><div><b>${t}</b><small>${d}</small></div></div>`).join('')}</div>`;
+  const body = tab === 'start' ? now + `<div class="bg-chs">${ch}</div>` + appCard()
+    : `<div class="bg-sys">${BG_SYS.map(([i, t, d]) => `<div class="bg-card"><span class="bg-i">${i}</span><div><b>${t}</b><small>${d}</small></div></div>`).join('')}</div>` + appCard();
   bsOpen(b, {
     tag: '처음이라면 여기부터!', tabs: [['start', '👣 차례대로'], ['sys', '🗺️ 한눈에 보기']], tab, body,
     foot: (cur ? bbtn('gq', '📘 지금 할 일 하러 가기', '', { wide: true, main: true }) : '') + bbtn('book', '📖 자세한 가이드', '', { wide: true }),
   }, x => {
     if (x === 'book') return openGuideBook();
+    if (x === 'install') return appInstall();
     if (x === 'gq') { closeModal(); return openGuideQ(); }
   }, keep);
 }
@@ -8530,6 +8548,7 @@ const GUIDE = () => [
     ['치지직 채팅', '치지직 닉네임이 게임 닉네임과 같고 광장 근처에 있으면, 방송 채팅이 마을에도 떠요.'],
     ['분수', '5분에 한 번 소원을 빌면 골드나 버프가 나올 수 있어요.'],
   ]],
+  ['📲', '앱으로 설치하기', APP_STEPS()],   // 2026-11-20
   ['🏅', '칭호', [
     ['얻기', '사냥·낚시·텃밭 등을 하다 보면 칭호를 얻어요. 이름표 위에 하나를 달 수 있고, 가진 칭호마다 효과가 붙어요.'],
   ]],
@@ -8552,8 +8571,8 @@ async function openRank(k = RK.k) {
   const fresh = d && Date.now() - d.got < 30e3;
   const rows = !d ? '<p class="muted" style="text-align:center;padding:20px 0">순위를 불러오는 중…</p>' : d.error ? `<p class="muted">${esc(d.error)}</p>` : !d.list.length ? '<p class="muted" style="text-align:center;padding:20px 0">아직 기록이 없어요. 첫 1등이 되어 보세요!</p>'
     : `<ol class="rk-list">${d.list.map((x, i) => `<li class="${x.id === me.uid ? 'mine' : ''}${i < 3 ? ' top' : ''}"><span class="rk-n">${['🥇', '🥈', '🥉'][i] || i + 1}</span><span class="rk-who"><b>${esc(x.nick)}</b><small>Lv.${x.lv} · ${CLASSES[x.cls]?.i || ''} ${CLASSES[x.cls]?.n || ''}${x.title && x.title !== 'new' ? ` · 「${esc(titleName(x.title))}」` : ''}</small></span><span class="rk-v">${R[2](x.v)}${x.f ? `<small>${x.f.i} ${esc(x.f.n)}</small>` : ''}</span></li>`).join('')}</ol>`;
-  const mine = d && !d.error ? `<div class="rk-me"><span>내 순위</span><b>${d.me.rank ? `${d.me.rank}위` : '순위 없음'}</b><span class="rk-v">${R[2](d.me.v)}${d.me.f ? `<small>${d.me.f.i} ${esc(d.me.f.n)}</small>` : ''}</span></div>` : '';
-  openModal(bsWrap({ id: 'rank', icon: '🏆', name: '랭킹' }, { tag: k === 'earn' ? '' : k === 'give' ? '공동 건설에 기부한 점수를 모두 더해요' : k === 'enh' ? '장비 칸 6개의 강화 단계를 모두 더해요' : k === 'fishp' ? '지금까지 낚은 물고기 중 가장 비싸게 팔린 한 마리' : k === 'fishl' ? '지금까지 낚은 물고기 중 가장 큰 한 마리' : k === 'fishn' ? '지금까지 낚은 물고기 수' : '레벨이 같으면 경험치가 많은 순서',
+  const mine = d && !d.error ? `<div class="rk-me"><span>내 순위</span><b>${d.me.rank ? `${d.me.rank}위` : '순위 없음'}</b><span class="rk-v">${k === 'lv' && !d.me.rank ? '<small>Lv.10부터 순위에 올라요</small>' : R[2](d.me.v)}${d.me.f ? `<small>${d.me.f.i} ${esc(d.me.f.n)}</small>` : ''}</span></div>` : '';
+  openModal(bsWrap({ id: 'rank', icon: '🏆', name: '랭킹' }, { tag: k === 'earn' ? '' : k === 'give' ? '공동 건설에 기부한 점수를 모두 더해요' : k === 'enh' ? '장비 칸 6개의 강화 단계를 모두 더해요' : k === 'fishp' ? '지금까지 낚은 물고기 중 가장 비싸게 팔린 한 마리' : k === 'fishl' ? '지금까지 낚은 물고기 중 가장 큰 한 마리' : k === 'fishn' ? '지금까지 낚은 물고기 수' : 'Lv.10부터 · 레벨이 같으면 경험치가 많은 순서',
     tabs: RANKS.map(([id, n]) => [id, n]), tab: k, body: rows, foot: mine }), el => {
     el.querySelector('.bs-tabs').onclick = e => { const t = e.target.closest('[data-tab]')?.dataset.tab; if (t && t !== RK.k) { openRank(t); sheet.scrollTop = 0; } };
     el.querySelector('.bs')?.classList.add('rk');
