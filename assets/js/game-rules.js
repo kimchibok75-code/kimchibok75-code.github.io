@@ -74,7 +74,7 @@ export const STAFF_WALK = .8;   // 2026-11-20 마법사는 멀리서 마법을 �
 export const CHAIN = { r: 3, k: .7 };   // 2026-11-20 번개 사슬 연쇄: r칸 안 다른 몬스터로 튐. 서버는 튄 피해 × k를 다음 몬스터에 미리 넣음 (주변 몬스터가 늘 다 있진 않으니 조금 깎음)
 // 2026-11-20 궁수 관통 화살: 기본 공격·화살 스킬이 맞은 몬스터 뒤(r칸 안) 몬스터 하나에 k만큼 더 (보스 빼고). 서버는 다음 몬스터에 미리 넣음
 export const PIERCE = { k: .3, r: 3 };
-export const CLEAVE = { hit: .25, sk: .6, r: 1.6 };   // 2026-11-20 검사 다수 타격: 기본 공격은 주변(r칸) 몬스터에 25%, 공격 스킬은 주변 모두에 60%
+export const CLEAVE = { hit: .35, sk: .6, r: 1.6 };   // 2026-11-20 검사 다수 타격: 기본 공격은 주변(r칸) 몬스터에 35% (100레벨 시험 뒤 25 → 35), 공격 스킬은 주변 모두에 60%
 export const FAR = { lead: FAR_LEAD, walk: FAR_WALK, kite: FAR_KITE, kiteMax: FAR_KITE_MAX, back: FAR_BACK };
 // 장비 칸 6개: 무기 3 + 방어구 3. k: 방어구 칸별 수치 배율
 export const SLOTS = { sword: { n: '검', i: '🗡️' }, bow: { n: '활', i: '🏹' }, staff: { n: '지팡이', i: '🪄' }, hat: { n: '모자', i: '⛑️', k: .5 }, armor: { n: '갑옷', i: '🧥', k: 1 }, shoes: { n: '신발', i: '👢', k: .35 } };
