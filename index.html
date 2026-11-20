@@ -24,7 +24,7 @@
   <header class="nav glass">
     <a class="brand" href="./"><img src="assets/img/profile.jpg" alt="" width="32" height="32"><span>김치복</span></a>
     <nav class="nav-links" aria-label="메뉴">
-      <a href="./#videos">영상</a><a href="schedule.html">방송 일정</a><a href="mods.html">모드 추천</a><a href="weekly.html">주간 모드 순위</a><a href="community.html">커뮤니티</a><a href="game.html">🎮 치복 타운</a>
+      <a href="./#videos">영상</a><a href="schedule.html">방송 일정</a><a href="mods.html">모드 추천</a><a href="weekly.html">주간 모드 순위</a><a href="read.html">읽을 거리</a><a href="community.html">커뮤니티</a><a href="game.html">🎮 치복 타운</a>
     </nav>
     <div class="nav-actions">
       <button class="icon-btn" id="themeBtn" aria-label="테마 전환"></button>
@@ -55,6 +55,15 @@
         <div class="week-head"><strong>이번 주 방송</strong><a href="schedule.html">달력 보기 →</a></div>
         <ol class="week-strip" id="weekList"></ol>
       </div>
+    </section>
+
+    <!-- 읽을 거리: 최신 글 3개 -->
+    <section id="reads" class="section" hidden>
+      <div class="section-head">
+        <div><h2>읽을 거리</h2><p class="muted">림월드 이야기와 정보</p></div>
+        <a class="btn btn-ghost btn-sm" href="read.html">전체 보기 →</a>
+      </div>
+      <div class="read-grid" id="homeReads"></div>
     </section>
 
     <!-- 영상 -->

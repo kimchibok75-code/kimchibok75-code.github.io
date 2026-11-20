@@ -1,0 +1,13 @@
+{
+  "posts": [
+    {
+      "id": "biotech-comms",
+      "title": "바이오테크 세력에게 통신하면 나오는 말 모음",
+      "author": "뿔베리",
+      "date": "2026-11-20",
+      "tags": ["바이오테크", "세력", "정보"],
+      "cover": "assets/img/posts/biotech-comms/7.webp",
+      "excerpt": "바이오테크에서 추가된 세력들에게 통신기로 연락하면 나오는 말들이 재밌어서 정리해 봤습니다."
+    }
+  ]
+}

@@ -95,7 +95,7 @@ jobs:
           echo "$GV" > game-version.txt
           sed -i "s/__GAMEV__/$GV/g" game.html
       - name: 캐시 무효화용 버전 번호 넣기
-        run: sed -i "s/__BUILD__/${GITHUB_SHA::8}/g" index.html mods.html weekly.html schedule.html community.html game.html
+        run: sed -i "s/__BUILD__/${GITHUB_SHA::8}/g" index.html mods.html weekly.html schedule.html community.html read.html post.html game.html
       - name: 기획 문서(plan)와 서버 코드(worker, game-worker)는 사이트에 안 올림
         run: rm -rf plan worker game-worker scripts CLAUDE.md "텍스쳐 템플릿" windows-app
       - uses: actions/configure-pages@v5

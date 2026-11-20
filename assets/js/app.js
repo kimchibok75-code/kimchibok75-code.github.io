@@ -634,12 +634,13 @@ function injectShell() {
     <symbol id="i-trophy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 21h8"/></symbol>
     <symbol id="i-puzzle-f" viewBox="0 0 24 24"><path fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M10 4a2 2 0 1 1 4 0v2h4v4h-2a2 2 0 1 0 0 4h2v4h-4v-2a2 2 0 1 0-4 0v2H6v-4H4a2 2 0 1 1 0-4h2V6h4z"/></symbol>
     <symbol id="i-trophy-f" viewBox="0 0 24 24"><g stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path fill="currentColor" d="M7 4h10v5a5 5 0 0 1-10 0zM10 20.5l1-6.5h2l1 6.5z"/><path fill="none" d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M8 21h8"/></g></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5M8 7h8M8 11h6"/></symbol>
     <symbol id="i-chat" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 5h16v11H9l-5 4z"/></symbol>
     <symbol id="i-game" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a4 4 0 0 1 4 4v1.5a3.5 3.5 0 0 1-6.3 2.1L13.5 14h-3l-1.2 1.6A3.5 3.5 0 0 1 3 13.5V12a4 4 0 0 1 4-4z"/><path d="M8 11v3M6.5 12.5h3"/><circle cx="16" cy="11.5" r=".6" fill="currentColor"/><circle cx="17.5" cy="13" r=".6" fill="currentColor"/></g></symbol>
   </svg>`);
   // 모바일 하단 메뉴 (화면이 좁을 때만 보임)
-  const tabs = [['home', './', 'i-home', '홈'], ['schedule', 'schedule.html', 'i-cal', '방송 일정'], ['mods', 'mods.html', 'i-puzzle', '모드'], ['weekly', 'weekly.html', 'i-trophy', '주간 순위'], ['community', 'community.html', 'i-chat', '커뮤니티'], ['game', 'game.html', 'i-game', '치복 타운']];
-  document.body.insertAdjacentHTML('beforeend', `<nav class="tabbar glass" aria-label="모바일 메뉴">${tabs.map(([k, href, ic, label]) => `<a href="${href}" class="${k === PAGE ? 'on' : ''}"${k === PAGE ? ' aria-current="page"' : ''}><svg><use href="#${ic}"/></svg><span>${label}</span></a>`).join('')}</nav>`);
+  const tabs = [['home', './', 'i-home', '홈'], ['schedule', 'schedule.html', 'i-cal', '방송 일정'], ['mods', 'mods.html', 'i-puzzle', '모드'], ['weekly', 'weekly.html', 'i-trophy', '주간 순위'], ['read', 'read.html', 'i-book', '읽을 거리'], ['community', 'community.html', 'i-chat', '커뮤니티'], ['game', 'game.html', 'i-game', '치복 타운']];
+  document.body.insertAdjacentHTML('beforeend', `<nav class="tabbar glass" aria-label="모바일 메뉴">${tabs.map(([k, href, ic, label]) => `<a href="${href}" class="${(k === PAGE || (k === 'read' && PAGE === 'post')) ? 'on' : ''}"${(k === PAGE || (k === 'read' && PAGE === 'post')) ? ' aria-current="page"' : ''}><svg><use href="#${ic}"/></svg><span>${label}</span></a>`).join('')}</nav>`);
   document.body.insertAdjacentHTML('beforeend', `
   <footer class="footer">
     <p>© 김치복 · 영상 · 방송 · 모드 정보는 유튜브, 치지직, 스팀에서 자동으로 가져옵니다.</p>
@@ -681,20 +682,74 @@ async function refreshLive() {
   if (PAGE === 'schedule' && prev !== l.open) { renderCalendar(); tickNext(); }
   if (prev === false && l.open) toast('🔴 김치복 생방송이 시작됐어요!');
 }
+// ───────── 읽을 거리 (블로그) ─────────
+// 목록: data/posts.json, 본문: posts/<id>.html (Claude가 직접 써서 올림)
+const postsSorted = () => [...(S.posts?.posts || [])].sort((a, b) => (b.date || '').localeCompare(a.date || '') || 0);
+const pdate = d => { const [y, m, dd] = String(d || '').split('-').map(Number); return y ? `${y}. ${m}. ${dd}.` : ''; };
+function readCard(p) {
+  return `<a class="rcard glass" href="post.html?id=${encodeURIComponent(p.id)}">
+    <span class="rcard-img">${p.cover ? `<img src="${esc(p.cover)}" alt="" loading="lazy">` : ''}</span>
+    <span class="rcard-body">
+      <strong>${esc(p.title)}</strong>
+      <small class="muted">${esc(p.author || '')}${p.author ? ' · ' : ''}${pdate(p.date)}</small>
+      ${p.tags?.length ? `<span class="rtags">${p.tags.map(t => `<em>#${esc(t)}</em>`).join('')}</span>` : ''}
+    </span>
+  </a>`;
+}
+function renderHomeReads() {
+  const list = postsSorted().slice(0, 3);
+  if (!list.length) return;
+  $('#reads').hidden = false;
+  $('#homeReads').innerHTML = list.map(readCard).join('');
+}
+function initRead() {
+  const all = postsSorted();
+  const count = {};
+  all.forEach(p => (p.tags || []).forEach(t => { count[t] = (count[t] || 0) + 1; }));
+  const tags = Object.keys(count).sort((a, b) => count[b] - count[a] || a.localeCompare(b, 'ko'));
+  let sel = new URLSearchParams(location.search).get('tag') || '';
+  if (sel && !count[sel]) sel = '';
+  const draw = () => {
+    $('#readTags').innerHTML = [`<button class="chip${sel ? '' : ' on'}" data-t="">전체 <small>${all.length}</small></button>`]
+      .concat(tags.map(t => `<button class="chip${t === sel ? ' on' : ''}" data-t="${esc(t)}">#${esc(t)} <small>${count[t]}</small></button>`)).join('');
+    const list = sel ? all.filter(p => (p.tags || []).includes(sel)) : all;
+    $('#readList').innerHTML = list.length ? list.map(readCard).join('') : '<p class="muted">아직 글이 없어요.</p>';
+  };
+  $('#readTags').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    sel = b.dataset.t;
+    history.replaceState(null, '', sel ? `?tag=${encodeURIComponent(sel)}` : location.pathname);
+    draw();
+  };
+  draw();
+}
+async function initPost() {
+  const id = new URLSearchParams(location.search).get('id');
+  const p = (S.posts?.posts || []).find(x => x.id === id);
+  if (!p || !/^[a-z0-9-]+$/.test(id)) { $('#artTitle').textContent = '글을 찾을 수 없어요'; return; }
+  document.title = `${p.title} | 김치복`;
+  $('#artTitle').textContent = p.title;
+  $('#artMeta').textContent = `${p.author || ''}${p.author ? ' · ' : ''}${pdate(p.date)}`;
+  $('#artTags').innerHTML = (p.tags || []).map(t => `<a href="read.html?tag=${encodeURIComponent(t)}">#${esc(t)}</a>`).join('');
+  const html = await fetch(`posts/${id}.html${bust()}`).then(r => (r.ok ? r.text() : '')).catch(() => '');
+  $('#artBody').innerHTML = html || '<p class="muted">본문을 불러오지 못했어요.</p>';
+  // 사진을 누르면 크게 보기
+  $('#artBody').onclick = e => { const img = e.target.closest('figure img'); if (img) window.open(img.src, '_blank', 'noopener'); };
+}
 const PAGE = document.body.dataset.page || 'home';
 async function main() {
   injectShell();
   initTheme();
   // 페이지마다 필요한 데이터만 불러옴
-  const need = { home: ['youtube', 'live', 'schedule'], community: ['cafe'], schedule: ['youtube', 'live', 'schedule'], mods: ['mods'], weekly: ['workshop'] }[PAGE] || [];
+  const need = { home: ['youtube', 'live', 'schedule', 'posts'], community: ['cafe'], schedule: ['youtube', 'live', 'schedule'], mods: ['mods'], weekly: ['workshop'], read: ['posts'], post: ['posts'] }[PAGE] || [];
   const get = name => (need.includes(name) ? load(`data/${name}.json`) : null);
-  [S.cfg, S.yt, S.live, S.mods, S.ws, S.sched, S.cafe] = await Promise.all([
-    load('config/site.json'), get('youtube'), get('live'), get('mods'), get('workshop'), get('schedule'), get('cafe'),
+  [S.cfg, S.yt, S.live, S.mods, S.ws, S.sched, S.cafe, S.posts] = await Promise.all([
+    load('config/site.json'), get('youtube'), get('live'), get('mods'), get('workshop'), get('schedule'), get('cafe'), get('posts'),
   ]);
   if (!S.cfg) { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:20px">설정 파일을 불러오지 못했어요. 로컬에서는 <code>npm run dev</code>로 열어 주세요.</p>'); return; }
   if (PAGE === 'home') {
     renderHero(); renderLive();
-    renderVideoTabs(); renderVideos(); renderPosts(); commCards();
+    renderHomeReads(); renderVideoTabs(); renderVideos(); renderPosts(); commCards();
     renderWeek(); initNav();
     setInterval(tickBoard, 1000);
     refreshLive(); setInterval(refreshLive, 60e3);
@@ -708,6 +763,10 @@ async function main() {
   } else if (PAGE === 'weekly') {
     $('#workshopLink').href = S.cfg.workshop.url;
     renderWeekly();
+  } else if (PAGE === 'read') {
+    initRead();
+  } else if (PAGE === 'post') {
+    initPost();
   }
   initNotify();
   const times = [S.yt, S.live, S.ws, S.mods].map(x => x?.updatedAt || 0);

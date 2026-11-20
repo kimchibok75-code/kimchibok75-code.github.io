@@ -52,6 +52,14 @@
     - `GET /api/whoami` → `{nick, admin}` (게임 정산 없이 확인만)
     - 내 컴퓨터 시험: 위 "내 컴퓨터에서 서버까지 시험하기"처럼 wrangler dev → `mods.html?api=http://localhost:8787&edit`
 
+## 읽을 거리 (블로그) — 2026-11-20
+- 메뉴 '읽을 거리'(주간 모드 순위 오른쪽, 모바일 탭바에도). 목록 `read.html`(태그 칩으로 거르기, `?tag=`), 글 `post.html?id=글id`. 홈은 방송 일정과 영상 사이 `#reads`에 최신 3개 (`renderHomeReads`)
+- 글쓰기 화면은 없음 → **사용자가 PDF·문서를 주면 Claude가 올림**: 불필요한 것(네이버 편집기 찌꺼기 "사진 삭제 / AI 활용 설정 / 사진 설명을 입력하세요" 등)은 지우고 **맞춤법만** 고침 (내용·말투는 그대로)
+  1. 이미지: PDF에서 뽑아(`pymupdf`) webp로 `assets/img/posts/<글id>/1.webp…`
+  2. 본문: `posts/<글id>.html` (조각 HTML: `p`, `h2`, 세력 꼬리표 `.fac`, 사진 3장 묶음 `.shots > figure > img + figcaption`, 인용 `q`)
+  3. 목록: `data/posts.json`의 `posts`에 `{id, title, author, date, tags, cover, excerpt}` 추가. 날짜 순으로 정렬됨
+- **작성자는 글마다 다름** → 모르면 사용자에게 물어보기. 태그는 내용 보고 정함
+
 ## 모드 URL을 받으면 (사용자가 스팀 창작마당 링크만 줌)
 묻지 말고 알아서 처리:
 1. `node scripts/add-mod.mjs --info "<url>"` 실행 → 제목, 태그, 설명을 확인
