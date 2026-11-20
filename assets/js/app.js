@@ -684,7 +684,8 @@ async function refreshLive() {
 }
 // ───────── 읽을 거리 (블로그) ─────────
 // 목록: data/posts.json, 본문: posts/<id>.html (Claude가 직접 써서 올림)
-const postsSorted = () => [...(S.posts?.posts || [])].sort((a, b) => (b.date || '').localeCompare(a.date || '') || 0);
+// 날짜가 같으면 posts.json에서 위에 있는 글이 먼저 (새 글은 맨 위에 넣기)
+const postsSorted = () => (S.posts?.posts || []).map((p, i) => [p, i]).sort((a, b) => (b[0].date || '').localeCompare(a[0].date || '') || a[1] - b[1]).map(x => x[0]);
 const pdate = d => { const [y, m, dd] = String(d || '').split('-').map(Number); return y ? `${y}. ${m}. ${dd}.` : ''; };
 function readCard(p) {
   return `<a class="rcard glass" href="post.html?id=${encodeURIComponent(p.id)}">

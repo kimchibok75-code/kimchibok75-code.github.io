@@ -715,3 +715,17 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
 .lightbox img { max-width: min(1200px, 100%); max-height: calc(100vh - 120px); object-fit: contain; border-radius: 10px; cursor: default; }
 .lightbox figcaption { color: #fff; font-size: 15px; opacity: .85; }
 .lightbox .lb-x { position: fixed; top: 14px; right: 14px; z-index: 1; color: #fff; background: rgba(255, 255, 255, .14); }
+.art-body h3 { font-size: 20px; letter-spacing: -.02em; margin: 26px 0 10px; }
+.art-body .ico-h { display: flex; align-items: center; gap: 12px; }
+.art-body .ico-h img { width: 64px; height: 64px; flex: none; object-fit: contain; }
+.art-body h3.ico-h img { width: 48px; height: 48px; }
+.art-body h2 > span, .art-body h3 > span { color: var(--muted); font-weight: 600; font-size: .75em; }
+.art-body .ety { display: inline-block; font-family: ui-monospace, Consolas, monospace; font-size: 15px; padding: 3px 10px; border-radius: 8px; background: var(--glass); border: 1px solid var(--stroke); }
+.art-body figure.one { margin: 6px 0 18px; }
+.art-body figure.one img { width: auto; max-width: 100%; }
+.art-body figure.one figcaption { text-align: left; }
+.art-body blockquote { margin: 0 0 16px; padding: 14px 18px; border-left: 4px solid var(--accent); background: var(--glass); border-radius: 0 12px 12px 0; font-size: 16.5px; }
+.art-body blockquote p:last-child, .art-body blockquote ul:last-child { margin-bottom: 0; }
+.art-body blockquote ul { margin: 0 0 12px; padding-left: 20px; }
+.art-body blockquote cite { display: block; margin-top: 8px; color: var(--muted); font-size: 14.5px; font-style: italic; }
+.art-body .src { font-size: 14.5px; margin-top: 30px; }

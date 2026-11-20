@@ -57,7 +57,8 @@
 - 글쓰기 화면은 없음 → **사용자가 PDF·문서를 주면 Claude가 올림**: 불필요한 것(네이버 편집기 찌꺼기 "사진 삭제 / AI 활용 설정 / 사진 설명을 입력하세요" 등)은 지우고 **맞춤법만** 고침 (내용·말투는 그대로)
   1. 이미지: PDF에서 뽑아(`pymupdf`) webp로 `assets/img/posts/<글id>/1.webp…`
   2. 본문: `posts/<글id>.html` (조각 HTML: `p`, `h2`, 세력 꼬리표 `.fac`, 사진 3장 묶음 `.shots > figure > img + figcaption`, 인용 `q`)
-  3. 목록: `data/posts.json`의 `posts`에 `{id, title, author, date, tags, cover, excerpt}` 추가. 날짜 순으로 정렬됨
+  3. 목록: `data/posts.json`의 `posts`에 `{id, title, author, date, tags, cover, excerpt}` **맨 위에** 추가. 날짜 순으로 정렬되고, 날짜가 같으면 위에 있는 글이 먼저
+  - 메카노이드 글처럼 항목마다 작은 아이콘이 있으면 `<h2 class="ico-h"><img …>이름 <span>(영문)</span></h2>`, 어원 `p.ety`, 인용 `blockquote`(+`cite`), 큰 사진 한 장은 `figure.one`
 - **작성자는 글마다 다름** → 모르면 사용자에게 물어보기. 태그는 내용 보고 정함
 
 ## 모드 URL을 받으면 (사용자가 스팀 창작마당 링크만 줌)
