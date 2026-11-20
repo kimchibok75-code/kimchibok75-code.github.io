@@ -331,6 +331,12 @@
       "ko": "Vanilla Factions Expanded - Pirates를 위한 새로운 스페이서 등급 전쟁통입니다.",
       "at": 1794901758368
     },
+    "3841240775": {
+      "src": "Some of you might remember my old Resurrect Enemy Mechanoids - The Big Three Patch, which I originally made because the author of Resurrect Enemy Mechanoids somehow managed to make a mechanoid resurre",
+      "full": "여러분 중 일부는 Resurrent Enemy Mechanoids의 저자가 어떻게든 메카노이드를 부활시킬 수 있었기 때문에 원래 만들었던 나의 오래된 Resurrent Enemy Mechanoids - The Big Three Patch를 기억하실 것입니다.",
+      "ko": "여러분 중 일부는 Resurrent Enemy Mechanoids의 저자가 어떻게든 메카노이드를 부활시킬 수 있었기 때문에 원래 만들었던 나의 오래된 Resurrent Enemy Mechanoids - The Big Three Patch를 기억하실 것입니다.",
+      "at": 1795169065170
+    },
     "3841376089": {
       "src": "Adds a reloadable glue trap that lures and immobilizes animals with a body size of 0.",
       "full": "신체 크기가 0인 동물을 유인하고 고정시키는 재장전 가능한 접착제 트랩을 추가합니다.",
@@ -360,6 +366,12 @@
       "full": "Vehicle Map Framework를 사용하여 생성된 4대의 차량을 중심으로 RimWorld에 해양 콘텐츠를 추가하는 주요 확장 모드입니다.",
       "ko": "Vehicle Map Framework를 사용하여 생성된 4대의 차량을 중심으로 RimWorld에 해양 콘텐츠를 추가하는 주요 확장 모드입니다.",
       "at": 1795066609153
+    },
+    "3842486043": {
+      "src": "One day, I built a castle. It was a beautiful castle... until I realized I'd built it way too close to the map border.",
+      "full": "어느 날 나는 성을 쌓았습니다. 그것은 아름다운 성이었습니다... 지도 경계에 너무 가깝게 지었다는 것을 깨닫기 전까지는요.",
+      "ko": "어느 날 나는 성을 쌓았습니다. 그것은 아름다운 성이었습니다... 지도 경계에 너무 가깝게 지었다는 것을 깨닫기 전까지는요.",
+      "at": 1795169063533
     }
   }
 }
