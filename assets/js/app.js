@@ -734,7 +734,15 @@ async function initPost() {
   const html = await fetch(`posts/${id}.html${bust()}`).then(r => (r.ok ? r.text() : '')).catch(() => '');
   $('#artBody').innerHTML = html || '<p class="muted">본문을 불러오지 못했어요.</p>';
   // 사진을 누르면 크게 보기
-  $('#artBody').onclick = e => { const img = e.target.closest('figure img'); if (img) window.open(img.src, '_blank', 'noopener'); };
+  const lb = $('#lightbox');
+  $('#artBody').onclick = e => {
+    const img = e.target.closest('figure img'); if (!img) return;
+    $('#lbImg').src = img.src; $('#lbImg').alt = img.alt;
+    $('#lbCap').textContent = img.closest('figure').querySelector('figcaption')?.textContent || '';
+    lb.showModal();
+  };
+  // 사진 말고 다른 곳(바깥·글자·X)을 누르면 닫힘
+  lb.onclick = e => { if (e.target.id !== 'lbImg') lb.close(); };
 }
 const PAGE = document.body.dataset.page || 'home';
 async function main() {
