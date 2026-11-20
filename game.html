@@ -240,7 +240,7 @@ canvas.bdg { width: 44px; height: 44px; } canvas.bdg.big, .bdg.big { width: 58px
 .sg-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
 .sg-lock { display: flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; } .sg-lock small { font-weight: 400; color: var(--muted, #6b7280); }
 .sg-n { font-size: calc(12px * var(--fs)); color: var(--muted, #6b7280); } .sg-n.full { color: #d33; font-weight: 700; }
-.sg-alt { font-size: calc(13px * var(--fs)); line-height: 1.5; } .sg-alt a { color: var(--bc); font-weight: 700; }
+.sg-alt { display: flex; align-items: center; gap: 8px; padding: 9px 12px; font-size: calc(13px * var(--fs)); line-height: 1.5; } .sg-alt a { color: var(--bc); font-weight: 700; } .sg-ai { flex: none; font-size: 1.2em; line-height: 1; }   /* 2026-11-20 bs-card가 grid라 글·링크가 한 줄씩 끊겼음 */
 .sg-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .sg-list li { border: 1.5px solid var(--line); border-radius: 12px; padding: 9px 12px; background: #fff; }
 .sg-list li.priv { background: #f6f3fb; } .sg-list li.mine { border-color: color-mix(in srgb, var(--bc) 55%, #fff); }
@@ -772,6 +772,10 @@ body.hunting .side { display: none; }
 .skgrid.shop small { position: static; display: grid; gap: 2px; background: none; white-space: normal; overflow: visible; text-overflow: clip; padding: 6px 4px 7px; border-top: 1.5px solid var(--line); font-size: calc(13px * min(var(--fs), 1.15)); line-height: 1.3; word-break: keep-all; }
 .skgrid.shop .skfx { font-size: calc(12px * min(var(--fs), 1.15)); }
 .housetier { background: #fff8ec; border: 1.5px solid #ecd3a6; border-radius: 12px; padding: 8px 10px; margin: 8px 0; display: grid; gap: 6px; } .housetier p { margin: 0; }
+.kbset { display: grid; gap: 8px; margin: 8px 0; } .kbrow { display: grid; grid-template-columns: 6.5em 1fr; align-items: center; gap: 10px; }
+.kbkey { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; } .kbkey kbd { font-size: 1.05em; padding: 3px 10px; } .kbkey small { opacity: .6; } .kbkey.wait { outline: 2px dashed var(--kimchi, #d33); color: var(--kimchi, #d33); justify-content: center; animation: kbblink 1s infinite; }
+@keyframes kbblink { 50% { opacity: .55; } }
+.kbwarn { margin: 6px 0 10px; padding: 10px 12px 10px 28px; background: #fff4e5; border-radius: 10px; font-size: .92em; line-height: 1.5; display: grid; gap: 4px; } .kbtip { margin: 4px 0 10px; }
 .sndset { display: grid; gap: 8px; background: var(--paper-2, #f6efe2); border-radius: 12px; padding: 10px 12px; margin: 6px 0 10px; }
 .sndset label { display: grid; grid-template-columns: 7.5em 1fr; align-items: center; gap: 8px; font-weight: 700; }
 .sndset label.chk { display: flex; gap: 6px; font-weight: 600; }
@@ -3591,7 +3595,7 @@ function raidHud() {
   $('#raidHp').style.width = `${(k * 100).toFixed(1)}%`;
   $('#raidHpT').textContent = RD.ended ? '처치!' : e < 0 ? `${Math.ceil(-e)}초 뒤 시작` : `${Math.ceil(k * 100)}%`;
   $('#raidN').textContent = `${RD.ps.size + 1}명`;
-  $('#raidMsg').textContent = RD.ended ? `🎉 ${RB().obj} 쓰러뜨렸어요!` : RD.dead ? '💤 쓰러졌어요… 끝날 때까지 응원해 주세요 (보상은 받아요)' : e < 0 ? `곧 ${RB().n} 보스가 깨어나요! 바닥이 빨개지면 피하세요` : `바닥이 빨개지면 피하세요! 공격·스킬은 자동이에요 (${PHONE ? '바닥을 눌러 이동' : '화살표·WASD·클릭으로 이동, C 점프'})`;
+  $('#raidMsg').textContent = RD.ended ? `🎉 ${RB().obj} 쓰러뜨렸어요!` : RD.dead ? '💤 쓰러졌어요… 끝날 때까지 응원해 주세요 (보상은 받아요)' : e < 0 ? `곧 ${RB().n} 보스가 깨어나요! 바닥이 빨개지면 피하세요` : `바닥이 빨개지면 피하세요! 공격·스킬은 자동이에요 (${PHONE ? '바닥을 눌러 이동' : `화살표·WASD·클릭으로 이동, ${KN('jump')} 점프`})`;
 }
 // 보스 공격이 닿는 곳인지 (x, y = 픽셀)
 function raidIn(p, x, y) {
@@ -4845,15 +4849,70 @@ function steerTick(dt) {
   if (vy && ok(me.x, me.y + vy)) { me.y += vy; moved = true; }
   me.moving = moved; if (Math.abs(d[0]) > .15) me.dir = d[0] < 0 ? -1 : 1;
 }
+// ───────── 키 설정 (PC, 2026-11-20): 공격·점프 키를 바꿀 수 있음. 이 기기에만 저장 (localStorage cbt-keys) ─────────
+// Ctrl·Alt(왼쪽)도 됨. 그 키를 누른 채 걷기·다른 키도 되게 하고, 브라우저 동작(Alt 메뉴·Alt+← 뒤로 가기·Ctrl+D·Ctrl+휠 확대)은 막음
+// Ctrl+W(탭 닫기)는 브라우저 규칙이라 못 막음 → Ctrl을 누른 지 2초 안에 페이지를 떠나려 하면 '나가시겠습니까?' 창
+const KEY_DEF = { atk: 'KeyZ', jump: 'KeyC' }, KEY_ACT = { atk: '⚔️ 공격', jump: '🦘 점프' };
+const KB = (() => { const o = { ...KEY_DEF }; try { const j = JSON.parse(localStorage.getItem('cbt-keys') || '{}'); for (const k in o) if (typeof j[k] === 'string' && j[k]) o[k] = j[k]; } catch {} if (o.atk === o.jump) Object.assign(o, KEY_DEF); return o; })();
+const kbSave = () => { try { localStorage.setItem('cbt-keys', JSON.stringify(KB)); } catch {} };
+const KEY_NM = { ControlLeft: '왼쪽 Ctrl', ControlRight: '오른쪽 Ctrl', AltLeft: '왼쪽 Alt', AltRight: '오른쪽 Alt', Backquote: '`', Minus: '-', Equal: '=', BracketLeft: '[', BracketRight: ']', Backslash: '\\', Semicolon: ';', Quote: "'", Comma: ',', Period: '.', Slash: '/', IntlBackslash: '\\' };
+function keyName(c) { if (!c) return '?'; if (KEY_NM[c]) return KEY_NM[c]; let r; if ((r = /^Key([A-Z])$/.exec(c))) return r[1]; if ((r = /^Digit(\d)$/.exec(c))) return r[1]; if ((r = /^Numpad(.+)$/.exec(c))) return '숫자패드 ' + r[1]; return c; }
+const KN = k => keyName(KB[k]);   // 안내 글에 쓰는 지금 키 이름 (k: atk | jump)
+function keyBan(c) {   // 못 쓰는 키면 이유
+  if (KEYDIR[c]) return '걷기 키(화살표·WASD)예요';
+  if (c === 'Space') return '스페이스바는 이용 키예요';
+  if (c === 'Enter' || c === 'NumpadEnter') return 'Enter는 채팅 키예요';
+  if (c === 'Escape') return 'Esc는 창 닫기 키예요';
+  if (c === 'Tab') return 'Tab은 쓸 수 없어요';
+  if (/^Shift/.test(c)) return 'Shift를 5번 연달아 누르면 윈도우 「고정 키」 창이 떠서 못 써요';
+  if (c === 'AltRight' || c === 'ControlRight' || /^Lang|Hangul|Hanja|Kana|Convert/.test(c)) return '오른쪽 Alt·Ctrl은 한/영·한자 키라서 못 써요 (왼쪽을 쓰세요)';
+  if (/^Meta|^OS|ContextMenu/.test(c)) return '윈도우 키·메뉴 키는 쓸 수 없어요';
+  if (/^F\d+$/.test(c)) return 'F1~F12는 브라우저가 써요 (새로 고침·전체 화면 등)';
+  if (/CapsLock|NumLock|ScrollLock|Pause|PrintScreen|Unidentified/.test(c)) return '이 키는 쓸 수 없어요';
+  return '';
+}
+const kbMod = p => KB.atk.startsWith(p) || KB.jump.startsWith(p);   // p: 'Control' | 'Alt'
+let ctrlAt = 0;
+const kbHold = e => { if (!$('#app').hidden && (e.code === KB.atk || e.code === KB.jump) && /^(Alt|Control)/.test(e.code)) e.preventDefault(); };   // Alt를 떼면 브라우저 메뉴로 가는 것 막기
+addEventListener('keyup', kbHold);
+addEventListener('beforeunload', e => { if (kbMod('Control') && Date.now() - ctrlAt < 2000 && !$('#app').hidden && token) { e.preventDefault(); e.returnValue = ''; } });   // Ctrl+W 실수 막기
+addEventListener('wheel', e => { if (e.ctrlKey && kbMod('Control') && !$('#app').hidden) e.preventDefault(); }, { passive: false });   // Ctrl+휠 = 브라우저 확대 막기
+// 키 설정 창
+const KBW = { k: null };
+function keySheet(keep) {
+  const W = [kbMod('Control') && '<li><b>Ctrl</b>을 누른 채 <b>W</b>를 누르면 브라우저 탭이 닫혀요. 브라우저 규칙이라 게임이 막을 수 없어서, Ctrl을 쓸 땐 <b>화살표로 걷기</b>를 추천해요. 실수로 닫으려 하면 「사이트에서 나가시겠습니까?」 창이 한 번 더 물어봐요.</li>',
+    kbMod('Control') && '<li>Ctrl+D(즐겨찾기) · Ctrl+마우스 휠(화면 확대)은 게임 안에서 막아 뒀어요.</li>',
+    kbMod('Alt') && '<li>Alt를 뗄 때 브라우저 메뉴로 가는 것 · Alt+←(뒤로 가기)는 막아 뒀어요. <b>Alt+Tab · Alt+F4</b>는 윈도우 키라서 그대로 동작해요.</li>'].filter(Boolean);
+  openModal(`<h3>⌨️ 키 설정</h3><p class="muted">이 기기(브라우저)에만 저장돼요. 걷기(화살표·WASD) · 이용(Space) · 채팅(Enter) · 닫기(Esc)는 바꿀 수 없어요.</p>
+    <div class="kbset">${Object.keys(KEY_ACT).map(k => `<div class="kbrow"><b>${KEY_ACT[k]}</b><button class="btn kbkey${KBW.k === k ? ' wait' : ''}" data-k="${k}">${KBW.k === k ? '바꿀 키를 누르세요… (Esc 취소)' : `<kbd>${esc(KN(k))}</kbd><small>바꾸기</small>`}</button></div>`).join('')}</div>
+    ${W.length ? `<ul class="kbwarn">${W.join('')}</ul>` : '<p class="muted kbtip">💡 왼쪽 Ctrl · 왼쪽 Alt도 쓸 수 있어요. 고정 키 창이 뜨는 Shift, 한/영 키인 오른쪽 Alt는 못 써요.</p>'}
+    <div class="row2"><button class="btn" data-k="reset">기본값 (Z · C)</button><button class="btn main" data-close>다 했어요</button></div>`, el => {
+    el.onclick = e => { const k = e.target.closest('[data-k]')?.dataset.k; if (!k) return;
+      if (k === 'reset') { Object.assign(KB, KEY_DEF); kbSave(); KBW.k = null; toast('기본 키(Z 공격 · C 점프)로 돌렸어요'); } else KBW.k = KBW.k === k ? null : k;
+      keySheet(true); };
+  }, keep);
+}
+addEventListener('keydown', e => {   // 키 설정 창에서 바꿀 키 받기 (다른 키 처리보다 먼저)
+  if (!KBW.k) return; if (modal.hidden) { KBW.k = null; return; }
+  e.preventDefault(); e.stopImmediatePropagation(); if (e.repeat || !e.code) return;
+  const c = e.code;
+  if (c === 'Escape') { KBW.k = null; return keySheet(true); }
+  const why = keyBan(c); if (why) return toast(`⚠️ ${keyName(c)}: ${why}`);
+  const o = KBW.k === 'atk' ? 'jump' : 'atk'; if (KB[o] === c) KB[o] = KB[KBW.k];   // 다른 동작이 쓰던 키면 서로 바꿈
+  KB[KBW.k] = c; KBW.k = null; kbSave(); sfx('coin'); keySheet(true);
+}, true);
 addEventListener('keydown', e => {
-  const act = e.code === 'KeyC' || e.code === 'KeyZ' || e.code === 'Space';
-  if (!KEYDIR[e.code] && !act || e.ctrlKey || e.altKey || e.metaKey || $('#app').hidden || !modal.hidden) return;
+  const c = e.code; if (c.startsWith('Control')) ctrlAt = Date.now();
+  kbHold(e);
+  const act = c === KB.atk || c === KB.jump || c === 'Space';
+  if (!KEYDIR[c] && !act) return;
+  if ((e.ctrlKey && !kbMod('Control')) || (e.altKey && !kbMod('Alt')) || e.metaKey || $('#app').hidden || !modal.hidden) return;   // 공격·점프가 Ctrl·Alt면 누른 채로도 걷기·다른 키 됨
   const el = document.activeElement; if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return;
   e.preventDefault();
-  if (e.code === 'KeyC') { if (!e.repeat) myJump(); return; }
-  if (e.code === 'KeyZ') { if (!e.repeat || HT) myAttack(); return; }   // 사냥터에서는 꾹 누르고 있으면 계속 공격
-  if (e.code === 'Space') { if (!e.repeat) spaceAct(); return; }   // 가까이 있는 것 누르기
-  STEER.key.add(e.code);
+  if (c === KB.jump) { if (!e.repeat) myJump(); return; }
+  if (c === KB.atk) { if (!e.repeat || HT) myAttack(); return; }   // 사냥터에서는 꾹 누르고 있으면 계속 공격
+  if (c === 'Space') { if (!e.repeat) spaceAct(); return; }   // 가까이 있는 것 누르기
+  STEER.key.add(c);
 });
 // ───────── 점프 (C) · 더블 점프 (공중에서 C 한 번 더) — 2026-11-18 ─────────
 // 화살표를 누른 채 C = 그 방향으로 뛰며 점프. 더블 점프 중에는 건물·나무·물도 넘어감 (땅에 닿을 때 막힌 곳이면 가장 가까운 빈 곳으로)
@@ -5068,7 +5127,7 @@ function setManual(on, why) {
   $('#hbManT').textContent = HT.manual ? '' : '자동 전투 중';
   document.body.classList.toggle('hunt-man', HT.manual);
   if (why === 'idle') toast('🤖 1분 동안 조작이 없어서 자동 전투로 바꿨어요');
-  else toast(HT.manual ? (PC_KEYS ? '🎮 수동 전투: 화살표 이동 · Z 공격 · C 점프' : '🎮 수동 전투: 끌어서 이동 · 몬스터를 눌러 공격') : '🤖 자동 전투로 바꿨어요');
+  else toast(HT.manual ? (PC_KEYS ? `🎮 수동 전투: 화살표 이동 · ${KN('atk')} 공격 · ${KN('jump')} 점프` : '🎮 수동 전투: 끌어서 이동 · 몬스터를 눌러 공격') : '🤖 자동 전투로 바꿨어요');
 }
 const manInput = () => { if (HT?.manual) HT.mIn = performance.now(); };
 let autoHintAt = 0;
@@ -5651,7 +5710,7 @@ function suggestSheet(b, keep) {
   const write = `<div class="bs-card"><label class="sg-lab" for="sgText">김치복에게 하고 싶은 말, 고쳤으면 하는 점, 새 아이디어를 적어 주세요</label>
       <textarea id="sgText" class="sg-text" maxlength="${SG.max}" rows="6" placeholder="예) 낚시터에 의자가 있으면 좋겠어요!">${esc(SG.draft)}</textarea>
       <div class="sg-row"><label class="sg-lock"><input type="checkbox" id="sgPriv"${SG.priv ? ' checked' : ''}> 🔒 비공개 <small>(나와 김치복만 볼 수 있어요)</small></label><span class="sg-n${n > SG.max ? ' full' : ''}" id="sgN">${n} / ${SG.max}</span></div></div>
-    <div class="bs-card sg-alt">💬 길게 쓰거나 사진을 보내고 싶으면 <a href="${SG_LINKS.cafe}" target="_blank" rel="noopener">네이버 카페</a>나 <a href="${SG_LINKS.discord}" target="_blank" rel="noopener">디스코드</a>로 알려 줘도 좋아요!</div>`;
+    <div class="bs-card sg-alt"><span class="sg-ai">💬</span><span>길게 쓰거나 사진을 보내고 싶으면 <a href="${SG_LINKS.cafe}" target="_blank" rel="noopener">네이버 카페</a>나 <a href="${SG_LINKS.discord}" target="_blank" rel="noopener">디스코드</a>로 알려 줘도 좋아요!</span></div>`;
   const list = SG.err ? `<p class="muted">불러오지 못했어요: ${esc(SG.err)}</p>` : !SG.list ? '<p class="muted">불러오는 중…</p>' : !SG.list.length ? '<p class="muted">아직 건의 글이 없어요. 첫 글을 써 주세요!</p>'
     : `<ul class="sg-list">${SG.list.map(r => `<li class="${r.priv ? 'priv' : ''}${r.mine ? ' mine' : ''}"><div class="sg-meta"><b>${esc(r.nick)}</b>${r.priv ? chip('🔒 비공개', 'lk') : ''}${r.mine ? chip('내 글', 'up') : ''}<small>${sgTime(r.at)}</small>${r.mine || SG.admin ? `<button class="mini" data-x="del:${r.id}">지우기</button>` : ''}</div><p>${esc(r.body)}</p></li>`).join('')}</ul>`;
   bsOpen(b, {
@@ -6651,7 +6710,7 @@ async function addStat(k, n = 1) {
 }
 
 $('#setBtn').onclick = () => openModal(`<h3>⚙️ 설정</h3>${soundSetHtml()}${sizeSetHtml()}<div class="actions">
-  ${actBtn('intro', '✏️ 한 줄 소개 바꾸기')}${actBtn('pw', '🔑 비밀번호 바꾸기')}${actBtn('code', '🧾 복구 코드 새로 받기', '지금 비밀번호 필요')}
+  ${PC_KEYS ? actBtn('keys', '⌨️ 키 설정', `공격 ${KN('atk')} · 점프 ${KN('jump')}`) : ''}${actBtn('intro', '✏️ 한 줄 소개 바꾸기')}${actBtn('pw', '🔑 비밀번호 바꾸기')}${actBtn('code', '🧾 복구 코드 새로 받기', '지금 비밀번호 필요')}
   ${actBtn('blocks', '🙈 차단 목록', `${S.blocked.size}명`)}${me.admin ? actBtn('admin', '🛡️ 관리자 화면', '신고·채팅 기록·사람 찾기·공지') : ''}${actBtn('out', '🚪 로그아웃')}${actBtn('reset', '⚠️ 계정 초기화', '되돌릴 수 없어요').replace('class="btn"', 'class="btn danger"')}</div><p class="muted">닉네임: <b>${esc(me.name)}</b> · 저장은 자동으로 돼요</p><button class="close" data-close>닫기</button>`, el => { wireSizeSet(el); el.querySelector('.actions').addEventListener('click', e => {
   const a = e.target.closest('[data-a]')?.dataset.a; if (!a) return;
   if (a === 'intro') return formSheet('✏️ 한 줄 소개', [['introNew', '한 줄 소개 (30글자까지)', 'text', me.intro]], '저장', async v => { const j = await api('/api/character', { intro: v.introNew }); applyMe(j.me); syncMe(); toast('소개를 바꿨어요'); });
@@ -6664,6 +6723,7 @@ $('#setBtn').onclick = () => openModal(`<h3>⚙️ 설정</h3>${soundSetHtml()}$
     openModal(`<h3>🧾 새 복구 코드</h3><p class="muted">예전 코드는 이제 못 써요. 이 코드를 꼭 저장하세요. <b>지금 한 번만</b> 보여 줘요.</p><div class="code-box">${j.code}</div><button class="btn main" data-close>저장했어요</button>`);
     return true;
   });
+  if (a === 'keys') return keySheet();
   if (a === 'blocks') return openBlocks();
   if (a === 'admin') return openAdmin('reports');
   if (a === 'reset') return resetSheet();
@@ -8476,7 +8536,7 @@ const liveOn = () => S.live || !!me.world?.live;
 const GUIDE = () => [
   ['🚶', '처음 시작', [
     ['걷기', isPC() ? '바닥을 누르거나 화살표·WASD로 걸어요.' : '바닥을 누르거나, 화면을 끌면 그 방향으로 계속 걸어요.'],
-    ...(isPC() ? [['점프 · 공격', 'C = 점프, 공중에서 C 한 번 더 = 더블 점프(건물·나무도 넘어가요). 화살표를 누른 채 C면 그쪽으로 뛰어요. Z = 공격(마을에선 바라보는 쪽, 사냥터에선 가까운 몬스터에게 · 쿨타임 찬 스킬부터 순서대로). 스페이스바 = 가까이 있는 건물·주민·나무·바위·물가를 누른 것처럼 이용.']] : []),
+    ...(isPC() ? [['점프 · 공격', `${KN('jump')} = 점프, 공중에서 한 번 더 = 더블 점프(건물·나무도 넘어가요). 화살표를 누른 채 점프하면 그쪽으로 뛰어요. ${KN('atk')} = 공격(키는 설정 → 키 설정에서 바꿀 수 있어요. 마을에선 바라보는 쪽, 사냥터에선 가까운 몬스터에게 · 쿨타임 찬 스킬부터 순서대로). 스페이스바 = 가까이 있는 건물·주민·나무·바위·물가를 누른 것처럼 이용.`]] : []),
     ['건물 이용', '건물을 누르면 그 앞까지 걸어가서 바로 창이 열려요.'],
     ['📘 가이드 퀘스트', '왼쪽 위 파란 칸. 마을의 놀거리를 차례대로 한 번씩 해 보는 퀘스트예요. 단계마다 보상이 있고, 다 끝내면 칭호를 받아요.'],
     ['🔰 초보자 가이드 · 📮 건의 게시판', '광장 남쪽 팻말 두 개. 처음 할 일을 차례대로 알려 주고, 김치복에게 바라는 점을 글로 남길 수 있어요(🔒 비공개도 돼요).'],
@@ -8621,7 +8681,7 @@ function showGuide(keep) {
       <div class="bs-sec">👉 오른쪽 버튼 (눌러서 바로 열기)</div>
       <ul class="bs-list gd">${btn.map(([x, i, n, t]) => `<li><button class="gd-row" data-x="${x}"><span>${i}</span><div><b class="t">${n}</b><small class="d">${t}</small></div><small class="go">›</small></button></li>`).join('')}</ul>`;
   } else {
-    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 보낸 뒤에도 계속 칠 수 있어요 · 빈 칸에서 Enter나 Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>C</kbd>', '점프 · 공중에서 한 번 더 누르면 더블 점프(건물도 넘어가요) · 화살표와 같이 누르면 그쪽으로 뛰어요'], ['<kbd>Space</kbd>', '가까이 있는 건물 · 주민 · 나무 · 바위 · 물가 등을 누른 것처럼 이용'], ['<kbd>Z</kbd>', '공격 · 마을에선 바라보는 쪽으로, 사냥터에선 가까운 몬스터에게 (쿨타임 찬 스킬부터)'], ['⚔️ 레이드', '공격·스킬은 자동 · 화살표·클릭으로 움직여 빨간 공격만 피하기'], ['<kbd>Esc</kbd>', '창 닫기'], ['창에서 <kbd>←↑↓→</kbd>', '버튼 고르기 · <kbd>Enter</kbd>나 <kbd>Space</kbd>로 누르기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
+    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 보낸 뒤에도 계속 칠 수 있어요 · 빈 칸에서 Enter나 Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], [`<kbd>${esc(KN('jump'))}</kbd>`, '점프 · 공중에서 한 번 더 누르면 더블 점프(건물도 넘어가요) · 화살표와 같이 누르면 그쪽으로 뛰어요'], ['<kbd>Space</kbd>', '가까이 있는 건물 · 주민 · 나무 · 바위 · 물가 등을 누른 것처럼 이용'], [`<kbd>${esc(KN('atk'))}</kbd>`, '공격 · 마을에선 바라보는 쪽으로, 사냥터에선 가까운 몬스터에게 (쿨타임 찬 스킬부터)'], ['⚔️ 레이드', '공격·스킬은 자동 · 화살표·클릭으로 움직여 빨간 공격만 피하기'], ['<kbd>Esc</kbd>', '창 닫기'], ['창에서 <kbd>←↑↓→</kbd>', '버튼 고르기 · <kbd>Enter</kbd>나 <kbd>Space</kbd>로 누르기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
       : [['끌기', '화면을 끌면 그 방향으로 걸어요'], ['누르기', '바닥 · 건물 · 사람을 누르면 그곳으로'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅 기록 펼치기 · ⚙️로 글씨 크기'], ['⚙️', '설정: 내 정보 · 비밀번호 · 차단 목록']];
     body = `<ul class="bs-list gd">${tips.map(([k, t]) => `<li class="gd-key"><span>${k}</span><span>${t}</span></li>`).join('')}</ul>`;
   }
