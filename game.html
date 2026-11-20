@@ -450,7 +450,10 @@ h1, h2, h3, .display { font-family: var(--font-display); font-weight: 400; lette
 .chip.clock { font-variant-numeric: tabular-nums; }
 .chztag { display: inline-block; background: #00ffa3; color: #0b1a14; font-weight: 800; font-size: .78em; border-radius: 6px; padding: 0 5px; margin-right: 4px; vertical-align: 1px; }
 .livebox { position: relative; width: 100%; aspect-ratio: 16 / 9; border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; background: #000; }
-.livebox iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.livebox { display: block; } .livebox img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.live-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 64px; height: 64px; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; font-size: 28px; display: grid; place-items: center; padding-left: 4px; }
+.live-tag { position: absolute; left: 10px; top: 10px; background: #e53935; color: #fff; font-weight: 800; font-size: 12px; padding: 2px 8px; border-radius: 6px; }
+.livebox:hover .live-play { background: #00c73c; }
 button.chip { cursor: pointer; font: inherit; font-weight: 700; }
 .fishdex { border: 1.5px solid var(--line); border-radius: 12px; background: #fff; padding: 8px 10px; margin: 8px 0; } .fishdex summary { cursor: pointer; font-weight: 700; }
 .fdx { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .fdx p { margin: 4px 0; font-size: calc(13px * var(--fs)); line-height: 1.45; } @media (max-width: 520px) { .fdx { grid-template-columns: 1fr; } }
@@ -2744,7 +2747,7 @@ function boardText() {
   const l = Math.max(0, Math.floor((at - Date.now()) / 1000)), dd = Math.floor(l / 86400), p = n => String(n).padStart(2, '0');
   return `다음 방송까지 ${dd ? dd + '일 ' : ''}${p(Math.floor(l % 86400 / 3600))}:${p(Math.floor(l % 3600 / 60))}:${p(l % 60)}`;
 }
-// 광장 대형 전광판 (광장 북쪽, 늘 보임): 방송 중이면 썸네일(1분마다 새로) + LIVE, 누르면 창에서 같이 보기. 아니면 다음 방송까지
+// 광장 대형 전광판 (광장 북쪽, 늘 보임): 방송 중이면 썸네일(1분마다 새로) + LIVE, 누르면 치지직 새 탭으로. 아니면 다음 방송까지
 const screenRect = s => { const w = s.w * T, W = w - 16, H = Math.round(W * 9 / 16), base = (s.y + s.h) * T - 4; return { x: s.x * T + 8, y: base - 30 - H, w: W, h: H, base }; };
 const PROFILE_IMG = new Image(); PROFILE_IMG.src = 'assets/img/profile.jpg';
 function drawScreen(s, now) {
@@ -2769,7 +2772,7 @@ function drawScreen(s, now) {
     }
   }
   ctx.fillStyle = 'rgba(255,255,255,.05)'; for (let y = r.y; y < r.y + r.h; y += 3) ctx.fillRect(r.x, y, r.w, 1);   // 전광판 줄무늬
-  if (S.live) { ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(r.x, r.y + r.h - 20 * K, r.w, 20 * K); ctx.fillStyle = '#fff'; ctx.font = f(700, 11); ctx.fillText('▶ 눌러서 같이 보기', r.x + r.w / 2, r.y + r.h - 10 * K); }
+  if (S.live) { ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(r.x, r.y + r.h - 20 * K, r.w, 20 * K); ctx.fillStyle = '#fff'; ctx.font = f(700, 11); ctx.fillText('▶ 눌러서 방송 보기', r.x + r.w / 2, r.y + r.h - 10 * K); }
   ctx.restore();
   const bw = 42 * K, bh = 16 * K; ctx.fillStyle = S.live ? (Math.floor(now / 600) % 2 ? '#ff3b3b' : '#ff6b6b') : '#5d6b7e'; rr(ctx, r.x + 8, r.y + 8, bw, bh, 5 * K); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.font = f(800, 10); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(S.live ? '● LIVE' : 'OFF AIR', r.x + 8 + bw / 2, r.y + 8 + bh / 2 + .5);
@@ -6106,13 +6109,14 @@ function openSpot(s) {
   if (s.id === 'farm') return openFarm();
   if (s.id === 'fountain') return openWish();
   if (s.id === 'screen' && S.live) {
-    const src = `https://chzzk.naver.com/embed/live/${(liveInfo?.url || '').split('/live/')[1] || CHZZK_ID}`;
+    // 2026-11-20 치지직은 다른 사이트에 방송을 넣는(임베드) 공식 기능이 없음 → 창 안 재생 대신 썸네일을 누르면 치지직 새 탭
+    const url = liveInfo?.url || `https://chzzk.naver.com/live/${CHZZK_ID}`;
     return openModal(`<h3>🔴 김치복 생방송</h3>${liveInfo?.title ? `<p style="margin:0 0 6px"><b>${esc(liveInfo.title)}</b></p>` : ''}
-      <div class="livebox"><iframe src="${src}" title="김치복 치지직 생방송" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <a class="livebox" href="${url}" target="_blank" rel="noopener" aria-label="치지직에서 생방송 보기">${LIVE_IMG.src ? `<img src="${esc(LIVE_IMG.src)}" alt="">` : ''}<span class="live-play">▶</span><span class="live-tag">LIVE</span></a>
       <p class="muted">광장 근처에 있으면, 치지직 채팅에 <b>게임 닉네임과 똑같은 닉네임</b>으로 쓴 말이 마을 채팅과 말풍선으로도 보여요. 방송 중에는 마을 모두 경험치·골드 2배!</p>
-      <div class="actions"><a class="btn" href="${(liveInfo?.url) || `https://chzzk.naver.com/live/${CHZZK_ID}`}" target="_blank" rel="noopener">치지직에서 크게 보기 · 채팅하기</a></div><button class="close" data-close>닫기</button>`);
+      <div class="actions"><a class="btn main" href="${url}" target="_blank" rel="noopener">▶ 치지직에서 보기 · 채팅하기</a></div><p class="muted" style="font-size:13px">새 탭에서 열려요. 게임은 이 탭에서 그대로 돌아가요.</p><button class="close" data-close>닫기</button>`);
   }
-  if (s.id === 'screen') return openModal(`<h3>📺 광장 대형 전광판</h3><p>김치복님이 방송을 켜면 이 전광판에서 <b>마을 사람들과 같이</b> 볼 수 있어요.</p><p><b>${boardText()}</b></p><p class="muted">방송 중에 광장 근처에 있으면, 치지직 채팅에 게임 닉네임과 똑같은 닉네임으로 쓴 말이 마을 채팅에도 보여요.</p><button class="close" data-close>닫기</button>`);
+  if (s.id === 'screen') return openModal(`<h3>📺 광장 대형 전광판</h3><p>김치복님이 방송을 켜면 이 전광판에 방송 화면이 떠요. 누르면 치지직에서 볼 수 있어요.</p><p><b>${boardText()}</b></p><p class="muted">방송 중에 광장 근처에 있으면, 치지직 채팅에 게임 닉네임과 똑같은 닉네임으로 쓴 말이 마을 채팅에도 보여요.</p><button class="close" data-close>닫기</button>`);
 }
 function addGold(n) { me.gold += n; syncBars(); }
 function logAct(t) { S.log.unshift(t); S.log = S.log.slice(0, 6); }   // 2026-11-20 가방의 '최근 일' 칸은 없앰 (기록만 남김)
