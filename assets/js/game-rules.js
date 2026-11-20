@@ -44,7 +44,9 @@ export const allOk = o => Object.values(o).every(Boolean);
 
 // ───────── 성장 (기획서 3장) ─────────
 export const pick = a => a[Math.floor(Math.random() * a.length)];
-export const needExp = L => Math.round(100 * Math.pow(L, 2));   // 2026-11-19: 50 → 100 (레벨업 경험치 2배, 사용자 요청)
+// 2026-11-20 사용자 요청: 저레벨은 그대로, 15레벨부터 1레벨마다 필요 경험치 +1% (20 ×1.05 · 30 ×1.15 · 40 ×1.25 · 50 ×1.35 · 55부터 ×1.4 고정)
+export const expCurve = L => 1 + Math.max(0, Math.min(L, 55) - 15) * .01;
+export const needExp = L => Math.round(100 * Math.pow(L, 2) * expCurve(L));   // 2026-11-19: 50 → 100 (레벨업 경험치 2배, 사용자 요청)
 // ───────── 장비 (뽑기로만 얻음, 기획서 3-2) ─────────
 // 등급 7개. m: 수치 배율, p: 뽑기 확률(%), d: 분해할 때 골드 배율
 // 단계(1~6)가 등급보다 훨씬 중요함: 한 단계 위의 '빈약'이 아래 단계 '신화'보다 셈
@@ -783,6 +785,7 @@ export const npcGold = lv => 400 + lv * 80;
 export const GUIDE_Q = [
   ['move', '🚶', '마을 걸어 보기', '바닥을 누르면 그곳으로 걸어가요. PC는 방향키·WASD, 휴대폰은 화면을 끌어도 돼요.', 'gMove', 1, '', 0, { gold: 200 }],
   ['bld', '🏠', '건물 하나 눌러 보기', '카페·대장간 같은 건물을 누르면 그 건물 창이 열려요. 아무 건물이나 눌러 보세요.', 'gBld', 1, '광장', 0, { gold: 200 }],
+  ['look', '💇', '내 모습 꾸미기', '왼쪽 캐릭터창을 펼치고 → 스킨 탭에서 헤어스타일·헤어 색·얼굴 색·옷 색을 바꿔 보세요. 언제든 무료예요.', 'gLook', 1, '', 0, { gold: 200 }],   // 2026-11-20 사용자 요청
   ['npcTake', '❗', '주민 임무 받기', '머리 위에 ❗가 뜬 주민을 눌러 임무를 받아요. 받은 임무는 왼쪽 위 임무창에서 볼 수 있어요.', 'npcTake', 1, '광장', 0, { gold: 300 }],
   ['wish', '⛲', '분수에 동전 던지기', '광장 가운데 분수를 누르고 동전을 던지면 좋은 버프가 생겨요.', 'wish', 1, '광장', 1, { gold: 300 }],
   ['warp', '🏘️', '바로가기 써 보기', '오른쪽 🏘️ 바로가기 버튼을 누르고 가고 싶은 곳을 고르면 바로 이동해요.', 'gWarp', 1, '', 0, { gold: 200 }],
@@ -808,7 +811,7 @@ export const GUIDE_Q = [
   ['house', '🏡', '치복동에 내 집 짓기', '마을회관 → 내 집에서 치복동 자리를 골라 지어요. 기부 보상으로 받은 재료로 지을 수 있어요.', 'house', 1, '회관', 1, { gold: 2000 }],
   ['raid', '🐉', '레이드 참여하기', '30분마다 레이드가 열려요 (정각 드래곤 · 30분 오우거). 모집 창이 뜨면 참가하세요.', 'raid', 1, '', 0, { gold: 5000 }],
 ];
-export const GUIDE_MARKS = ['gMove', 'gBld', 'gWarp', 'gHall', 'gDong', 'gSkin', 'gDex', 'gAuto'];
+export const GUIDE_MARKS = ['gMove', 'gBld', 'gWarp', 'gHall', 'gDong', 'gSkin', 'gDex', 'gAuto', 'gLook'];
 // 예전(v1) 순서 → 같은 id가 있으면 그 단계로 옮겨 줌
 const GUIDE_V1 = ['wish', 'wood', 'stone', 'hire', 'fish', 'fishSold', 'plant', 'crops', 'cropSold', 'job', 'npc', 'kills', 'gacha', 'enhTry', 'skillPull', 'boss', 'badge', 'give', 'house', 'raid'];
 export const guideQ = c => { const g = c.life?.gq; return g && g.i < GUIDE_Q.length ? GUIDE_Q[g.i] : null; };

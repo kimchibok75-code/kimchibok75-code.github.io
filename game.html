@@ -222,6 +222,7 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 /* 캐릭터창 칭호 줄: 뱃지 + 칭호 가운데 (2026-11-20) */
 .meTitleRow { justify-content: center; align-items: center; gap: 6px; } .meBadge { width: 30px; height: 30px; cursor: pointer; flex: none; } .meBadge[hidden] { display: none; }
 /* 도감 센터 (2026-11-20) */
+.dexhero { min-width: 0; } .dexhero .c, .dexsk .c { white-space: normal; max-width: 100%; line-height: 1.35; }   /* 2026-11-20 휴대폰: 긴 도감 효과 꼬리표가 줄바꿈이 안 돼 창이 옆으로 넘치던 것 */
 .dexms { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; } .c.lk { background: #eef0f3; color: #8a93a0; }
 .dexsk { display: flex; flex-wrap: wrap; gap: 5px; }
 .bdgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; }
@@ -1790,7 +1791,8 @@ const RAID_FX = {
   rdragon: { img: 'fx-dragon', c: ['#ff7a45', '#e8202a', '#a30d1e'], glow: 'rgba(255,40,30,.9)' },
   ogre: { img: 'fx-ogre', c: ['#b8f06a', '#4fbf2e', '#1f7a1e'], glow: 'rgba(80,230,60,.9)' },
 };
-const raidFxOf = c => { for (const k in RAID_FX) if (c.hat === k && c.eyes === k && c.suit === k && c.wsk?.[c.cls || 'sword'] === k) return k; return null; };
+// 2026-11-20 사용자 요청: 모자·눈·의상·지금 클래스 무기 4개 중 3개만 그 레이드 세트여도 이펙트
+const raidFxOf = c => { for (const k in RAID_FX) if ((c.hat === k) + (c.eyes === k) + (c.suit === k) + (c.wsk?.[c.cls || 'sword'] === k) >= 3) return k; return null; };
 const AURA_C = {};
 function setAura(g, k, t) {
   const R = RAID_FX[k], im = ART[R.img]; if (!im) return;
@@ -3486,7 +3488,7 @@ function raidSheet() {
         <span>✨<b>${fmtN(R.exp)}</b><small>경험치 약</small></span>
         <span class="sk">${B.i}<b>스킨 1개 확정</b><small>30% 확률로 2개!</small></span>
       </div>
-      <ul class="rq-tips"><li>⚔️ 공격·스킬은 <b>자동</b>이에요. 바닥을 눌러 빨간 공격만 피하세요</li><li>👥 10레벨 이상 한 명마다 보상 +3% (최대 +60%)${bonus ? ` · 내가 들어가면 +${bonus}%` : ''} ${itip('🔥 바닥이 빨개지면 피하세요\n💤 쓰러져도 끝까지 있으면 보상을 받아요\n🚪 중간에 나가면 그 레이드 보상은 없어요')}</li></ul>`,
+      <ul class="rq-tips"><li>⚔️ 공격·스킬은 <b>자동</b>이에요. ${RAID_MOVE()} 빨간 공격만 피하세요</li><li>👥 10레벨 이상 한 명마다 보상 +3% (최대 +60%)${bonus ? ` · 내가 들어가면 +${bonus}%` : ''} ${itip('🔥 바닥이 빨개지면 피하세요\n💤 쓰러져도 끝까지 있으면 보상을 받아요\n🚪 중간에 나가면 그 레이드 보상은 없어요')}</li></ul>`,
     foot: `<div class="bs-two">${bbtn('no', '나중에')}${bbtn('join', '⚔️ 참여하기', '하던 사냥·낚시는 멈춰요', { main: true })}</div>`,
     ready: el => {
       clearInterval(RAIDQ.tick);
@@ -3527,7 +3529,7 @@ async function raidJoin(start) {
 }
 function enterRaid(start, boss) {
   loadRaidArt();
-  bgm('raid-' + (boss || raidBossOf(start))); sfx('roar'); toast('⚔️ 레이드는 공격·스킬이 자동이에요. 바닥을 눌러 빨간 공격만 피하세요!');   // 2026-11-20 안내
+  bgm('raid-' + (boss || raidBossOf(start))); sfx('roar'); toast(`⚔️ 레이드는 공격·스킬이 자동이에요. ${RAID_MOVE()} 빨간 공격만 피하세요!`);   // 2026-11-20 안내
   boss = RAID_BOSS[boss] ? boss : raidBossOf(start);
   try { localStorage.setItem('cbt-raid', String(start)); } catch {}
   RD = { start, boss, club: 0, back: { x: me.x, y: me.y }, ps: new Map(), hp: 1, max: 1, pat: raidPattern(start, boss), hits: new Set(), fx: [], floats: [], parts: [], atkT: 1, sendT: 0, acc: 0,
@@ -3547,6 +3549,8 @@ function raidConnect() {
   ws.onmessage = e => { let m; try { m = JSON.parse(e.data); } catch { return; } raidMsg(m); };
   ws.onclose = ev => { if (RD && RD.ws === ws && !RD.ended && ev.code !== 4403 && RD.tries++ < 5) setTimeout(raidConnect, 1500); };
 }
+// 레이드 이동 안내: 휴대폰은 바닥 누르기, PC는 화살표·클릭 (2026-11-20)
+function RAID_MOVE() { return PHONE ? '바닥을 눌러' : '화살표(WASD)나 바닥 클릭으로 움직여'; }
 function raidMsg(m) {
   if (!RD) return;
   if (m.now) RAIDQ.skew = m.now - Date.now();
@@ -3587,7 +3591,7 @@ function raidHud() {
   $('#raidHp').style.width = `${(k * 100).toFixed(1)}%`;
   $('#raidHpT').textContent = RD.ended ? '처치!' : e < 0 ? `${Math.ceil(-e)}초 뒤 시작` : `${Math.ceil(k * 100)}%`;
   $('#raidN').textContent = `${RD.ps.size + 1}명`;
-  $('#raidMsg').textContent = RD.ended ? `🎉 ${RB().obj} 쓰러뜨렸어요!` : RD.dead ? '💤 쓰러졌어요… 끝날 때까지 응원해 주세요 (보상은 받아요)' : e < 0 ? `곧 ${RB().n} 보스가 깨어나요! 바닥이 빨개지면 피하세요` : '바닥이 빨개지면 피하세요! 공격·스킬은 자동이에요';
+  $('#raidMsg').textContent = RD.ended ? `🎉 ${RB().obj} 쓰러뜨렸어요!` : RD.dead ? '💤 쓰러졌어요… 끝날 때까지 응원해 주세요 (보상은 받아요)' : e < 0 ? `곧 ${RB().n} 보스가 깨어나요! 바닥이 빨개지면 피하세요` : `바닥이 빨개지면 피하세요! 공격·스킬은 자동이에요 (${PHONE ? '바닥을 눌러 이동' : '화살표·WASD·클릭으로 이동, C 점프'})`;
 }
 // 보스 공격이 닿는 곳인지 (x, y = 픽셀)
 function raidIn(p, x, y) {
@@ -5672,7 +5676,7 @@ function suggestSheet(b, keep) {
 // 초보자 가이드 (2026-11-20 새로): 가이드 퀘스트 순서를 4개 장으로 묶어 보여 줌 (한 것 ✓ · 지금 할 일 강조 · 앞으로 할 일)
 // 장 = [아이콘, 이름, 한 줄 설명, 가이드 퀘스트 id 목록]. 가이드 퀘스트(GUIDE_Q)에 단계를 넣으면 여기 장에도 id를 넣을 것
 const BG_CH = [
-  ['👣', '마을 익히기', '걷고, 건물을 누르고, 주민과 친해져요', ['move', 'bld', 'npcTake', 'wish', 'warp']],
+  ['👣', '마을 익히기', '걷고, 건물을 누르고, 주민과 친해져요', ['move', 'bld', 'look', 'npcTake', 'wish', 'warp']],
   ['⚔️', '사냥으로 크기', '사냥 → 레벨업 → 능력치 → 장비를 키워요', ['huntGo', 'kills', 'statUp', 'gacha', 'enhTry']],
   ['🎣', '마을 일 해 보기', '나무·돌·물고기·작물을 모아 골드로 바꿔요', ['wood', 'stone', 'fish', 'fishSold', 'plant', 'crops', 'cropSold', 'job', 'auto']],
   ['🏡', '마을의 주민 되기', '기부하고, 집을 짓고, 다 같이 레이드!', ['hall', 'give', 'dong', 'skin', 'dex', 'house', 'raid']],
@@ -6613,7 +6617,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // 겉모습 저장 (색을 여러 번 눌러도 마지막 것만)
 let lookT = null;
 function saveLook() {
-  clearTimeout(lookT);
+  clearTimeout(lookT); guideMark('gLook');   // 가이드: 내 모습 꾸미기
   lookT = setTimeout(() => api('/api/character', { face: me.face, body: me.body, eyes: me.eyes, hat: me.hat, hair: me.hair, hairC: me.hairC, hatHair: me.hatHair !== false, suit: me.suit || '', wsk: me.wsk || {} }).catch(e => toast(e.message)), 700);
 }
 // 실제 김치복 방송 상태 (홈페이지와 같은 Worker)
@@ -7613,7 +7617,7 @@ function dexHero(k) {
   const n = dexN(me, k), all = k === 'fish' ? FISH_LIST.length : k === 'crop' ? CROP_LIST.length : DEX_SKINS().length, st = Math.floor(n / DEX_STEP), L = DEX_FX[k], fx = {};
   L.slice(0, st).forEach(o => { for (const [a, v] of Object.entries(o)) fx[a] = +((fx[a] || 0) + v).toFixed(2); });
   const nx = st < L.length ? (st + 1) * DEX_STEP : 0;
-  return `<div class="bs-card hero"><h4>${k === 'fish' ? '🐟 물고기 도감' : k === 'crop' ? '🌾 작물 도감' : '👕 스킨 도감'}<small>${n} / ${all}</small></h4>${thinBar(n / all)}
+  return `<div class="bs-card hero dexhero"><h4>${k === 'fish' ? '🐟 물고기 도감' : k === 'crop' ? '🌾 작물 도감' : '👕 스킨 도감'}<small>${n} / ${all}</small></h4>${thinBar(n / all)}
     <div class="cs">${chip(`✨ 도감 효과: ${fxText(fx) || '아직 없어요'}`, st ? 'up' : '')}${nx ? chip(`다음 ${nx}개 (${nx - n}개 남음): ${fxText(L[st])}`, 'gold') : chip('🏆 도감 효과를 모두 받았어요', 'gold')}</div>
     <div class="dexms">${L.map((o, i) => `<span class="c ${n >= (i + 1) * DEX_STEP ? 'up' : 'lk'}">${(i + 1) * DEX_STEP}개 · ${fxText(o)}</span>`).join('')}</div></div>`;
 }
@@ -8610,7 +8614,7 @@ function showGuide(keep) {
       <div class="bs-sec">👉 오른쪽 버튼 (눌러서 바로 열기)</div>
       <ul class="bs-list gd">${btn.map(([x, i, n, t]) => `<li><button class="gd-row" data-x="${x}"><span>${i}</span><div><b class="t">${n}</b><small class="d">${t}</small></div><small class="go">›</small></button></li>`).join('')}</ul>`;
   } else {
-    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 보낸 뒤에도 계속 칠 수 있어요 · 빈 칸에서 Enter나 Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>C</kbd>', '점프 · 공중에서 한 번 더 누르면 더블 점프(건물도 넘어가요) · 화살표와 같이 누르면 그쪽으로 뛰어요'], ['<kbd>Space</kbd>', '가까이 있는 건물 · 주민 · 나무 · 바위 · 물가 등을 누른 것처럼 이용'], ['<kbd>Z</kbd>', '공격 · 마을에선 바라보는 쪽으로, 사냥터에선 가까운 몬스터에게 (쿨타임 찬 스킬부터)'], ['<kbd>Esc</kbd>', '창 닫기'], ['창에서 <kbd>←↑↓→</kbd>', '버튼 고르기 · <kbd>Enter</kbd>나 <kbd>Space</kbd>로 누르기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
+    const tips = pc ? [['<kbd>Enter</kbd>', '채팅 시작 · 보낸 뒤에도 계속 칠 수 있어요 · 빈 칸에서 Enter나 Esc → 다시 걷기'], ['<kbd>←↑↓→</kbd><kbd>WASD</kbd>', '걷기 (바닥을 눌러도 돼요)'], ['<kbd>C</kbd>', '점프 · 공중에서 한 번 더 누르면 더블 점프(건물도 넘어가요) · 화살표와 같이 누르면 그쪽으로 뛰어요'], ['<kbd>Space</kbd>', '가까이 있는 건물 · 주민 · 나무 · 바위 · 물가 등을 누른 것처럼 이용'], ['<kbd>Z</kbd>', '공격 · 마을에선 바라보는 쪽으로, 사냥터에선 가까운 몬스터에게 (쿨타임 찬 스킬부터)'], ['⚔️ 레이드', '공격·스킬은 자동 · 화살표·클릭으로 움직여 빨간 공격만 피하기'], ['<kbd>Esc</kbd>', '창 닫기'], ['창에서 <kbd>←↑↓→</kbd>', '버튼 고르기 · <kbd>Enter</kbd>나 <kbd>Space</kbd>로 누르기'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅창 오른쪽 위 손잡이로 크기 조절'], ['⚙️', '설정: 화면 · 글씨 크기']]
       : [['끌기', '화면을 끌면 그 방향으로 걸어요'], ['누르기', '바닥 · 건물 · 사람을 누르면 그곳으로'], ['＋ －', '지도 크게 · 작게'], ['💬', '채팅 기록 펼치기 · ⚙️로 글씨 크기'], ['⚙️', '설정: 내 정보 · 비밀번호 · 차단 목록']];
     body = `<ul class="bs-list gd">${tips.map(([k, t]) => `<li class="gd-key"><span>${k}</span><span>${t}</span></li>`).join('')}</ul>`;
   }
