@@ -743,6 +743,14 @@ body.hunting .side { display: none; }
 .arrows { display: grid; gap: 6px; }
 .arow { display: grid; grid-template-columns: minmax(64px, auto) 32px minmax(0, 1fr) 32px; gap: 6px; align-items: center; }
 .arow > b { font-size: calc(14px * var(--fs)); white-space: nowrap; }
+#saver { position: fixed; inset: 0; z-index: 9000; display: grid; place-items: center; background: radial-gradient(circle at 50% 45%, rgba(24,32,48,.93), rgba(6,9,15,.985)); color: #fff; cursor: pointer; user-select: none; }
+#saver[hidden] { display: none; }
+.sv-in { display: grid; justify-items: center; gap: 10px; padding: 24px; text-align: center; }
+.sv-ic { font-size: 64px; line-height: 1; animation: svBob 3s ease-in-out infinite; } .sv-ic svg, .sv-ic img { width: 72px; height: 72px; }
+.sv-tx { font-size: calc(30px * var(--fs, 1)); font-weight: 800; letter-spacing: -.5px; } .sv-dot i { font-style: normal; animation: svDot 1.5s infinite; } .sv-dot i:nth-child(2) { animation-delay: .25s; } .sv-dot i:nth-child(3) { animation-delay: .5s; }
+.sv-where { font-size: 16px; opacity: .8; } .sv-time { font-size: 15px; opacity: .7; } .sv-got { font-size: 15px; color: #ffe9a8; min-height: 1.4em; } .sv-raid { font-size: 14px; color: #ffb3a8; font-weight: 700; }
+.sv-foot { margin-top: 18px; font-size: 13px; opacity: .55; }
+@keyframes svBob { 50% { transform: translateY(-8px); } } @keyframes svDot { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
 #rlBox { position: fixed; left: 50%; top: 16px; transform: translateX(-50%); z-index: 9999; display: flex; align-items: center; gap: 14px; width: min(560px, calc(100vw - 24px)); padding: 16px 18px; border-radius: 18px;
   background: #1f2a3a; color: #fff; box-shadow: 0 12px 40px rgba(0,0,0,.45), 0 0 0 3px #ffd166; animation: rlIn .35s ease-out; }
 #rlBox .rl-ic { font-size: 34px; animation: rlSpin 2s linear infinite; } #rlBox .rl-ic img { width: 38px; height: 38px; }
@@ -1435,7 +1443,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { CHAIN, CLEAVE, PIERCE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { SAVER, CHAIN, CLEAVE, PIERCE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
@@ -2941,7 +2949,7 @@ addEventListener('error', e => showErr(e.error || e.message));
 addEventListener('unhandledrejection', e => showErr(e.reason));
 function frame(now) {
   const dt = Math.min(.05, (now - last) / 1000); last = now; clock += dt;
-  if (!$('#app').hidden && !S.away) { try { update(dt, now); render(now); drawStick(); } catch (e) { showErr(e); } }   // 오류가 나도 게임이 멈추지 않게
+  if (!$('#app').hidden && !S.away && !SV.on) { try { update(dt, now); render(now); drawStick(); } catch (e) { showErr(e); } }   // 화면 보호기 중에는 안 그림   // 오류가 나도 게임이 멈추지 않게
   requestAnimationFrame(frame);
 }
 // 화면 이동은 실제 화면 점(기기 픽셀) 단위로 맞춤: 배율 125%·150% 화면에서 1칸·2칸씩 들쭉날쭉 움직이며 떨리던 것 해결
@@ -3514,7 +3522,7 @@ function raidChip() {
 $('#raidChip').onclick = () => raidSheet();
 setInterval(raidChip, 1000);
 setInterval(async () => {
-  if (!RAIDQ.open || RD || document.visibilityState !== 'visible') return;
+  if (!RAIDQ.open || RD || SV.on || document.visibilityState !== 'visible') return;
   try { const j = await api('/api/raid'); if (j.open !== RAIDQ.open) return; RAIDQ.joined = j.joined || 0; RAIDQ.j10 = j.joined10 ?? RAIDQ.joined;
     const a = document.getElementById('raidJoined'), b = document.getElementById('raidBonus');
     if (a) a.textContent = RAIDQ.joined + '명'; if (b) b.textContent = RAIDQ.joined ? `인원 보너스 +${Math.round((raidCrowd(RAIDQ.j10) - 1) * 100)}%` : '첫 번째로 참여해 보세요!';
@@ -4244,7 +4252,7 @@ async function huntDie() {
   catch (x) { toast(x.message); if (HT) { HT.dying = false; me.hp = 1; } }
 }
 async function huntSync() {
-  if (!HT || HT.dying || huntBusy || S.away || document.visibilityState === 'hidden') return;
+  if (SV.on || !HT || HT.dying || huntBusy || S.away || document.visibilityState === 'hidden') return;
   try { took(await api('/api/hunt/sync', {})); } catch (x) { if (x.status === 401) location.reload(); }
 }
 function spawnMon(boss) {
@@ -6693,6 +6701,7 @@ const LIVE_IMG = new Image(); let liveInfo = null;
 const LIVE_FIX = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('live') === '1';   // 시험용: 방송 중처럼 보기
 const CHZZK_ID = 'd44a982c742226605f4fcf3b6b4e7629';
 async function checkLive() {
+  if (SV.on) return;   // 화면 보호기 중에는 안 물어봄
   try { const j = await (await fetch(LIVE_API, { cache: 'no-store' })).json(); if (LIVE_FIX) j.open = true; liveInfo = j;
     if (j.open && j.thumb) { const u = j.thumb + (j.thumb.includes('?') ? '&' : '?') + 't=' + Math.floor(Date.now() / 60e3); if (LIVE_IMG.src !== u) LIVE_IMG.src = u; } if (!!j.open !== S.live) { S.live = !!j.open; $('#liveBanner').hidden = !S.live; if (S.live) sysMsg(`🔴 김치복님 생방송 중! ${j.title || ''} · 방송 중에는 마을 모두 경험치·골드 2배!`); } } catch {}
   liveCheckin();
@@ -6864,8 +6873,53 @@ function awaySheet(a) {
 }
 // 화면이 켜져 있다는 신호 (2분마다). 화면을 다시 볼 때도 바로 보내서 자리 비운 결과를 받음
 let seenAt = 0;
+// ───────── 화면 보호기 (2026-11-20): 5분 동안 아무 조작이 없으면 '⚔️ 자동 사냥 중… / 🧺 자동 생활 중… / 💤 쉬는 중…' ─────────
+// 보호기 중에는 그리기·위치·접속 확인·방송 확인·레이드 확인을 멈추고 4분마다 /api/saver 신호만 보냄 (요청 줄이기)
+// 신호가 오는 동안 서버가 효율 100%로 계산: 사냥은 settle, 자동 생활은 saverLife. 아무 키나 누르거나 화면을 누르면 돌아옴
+const SV = { on: false, k: '', at: 0, beatT: null, tick: null, got: {}, hunt: { kills: 0, exp: 0, gold: 0 }, input: performance.now(), mx: 0, my: 0 };
+const SV_TXT = { hunt: ['⚔️', '자동 사냥 중'], life: ['🧺', '자동 생활 중'], idle: ['💤', '쉬는 중'] };
+function svPoke() { SV.input = performance.now(); if (SV.on) svWake(); }
+for (const t of ['keydown', 'pointerdown', 'wheel', 'touchstart']) addEventListener(t, e => { if (SV.on) { e.preventDefault(); e.stopImmediatePropagation(); } svPoke(); }, { capture: true, passive: false });
+addEventListener('pointermove', e => { if (Math.hypot(e.clientX - SV.mx, e.clientY - SV.my) > 12) { SV.mx = e.clientX; SV.my = e.clientY; svPoke(); } }, true);
+setInterval(() => {   // 5분 동안 조작이 없으면 보호기
+  if (SV.on || !token || $('#app').hidden || S.away || RD || S.place || performance.now() - SV.input < SAVER.idle) return;
+  svStart(HT ? 'hunt' : AU.on ? 'life' : 'idle');
+}, 5000);
+function svBeat(on) { return api('/api/saver', { k: SV.k, on }).then(j => { if (j.hunt && SV.on) for (const x of ['kills', 'exp', 'gold']) SV.hunt[x] += j.hunt[x] || 0; if (j.saver?.got) SV.got = j.saver.got; took(j); return j; }); }
+function svStart(k) {
+  SV.on = true; SV.k = k; SV.at = Date.now(); SV.got = {}; SV.hunt = { kills: 0, exp: 0, gold: 0 };
+  STEER.key.clear(); STEER.drag = null;
+  let el = $('#saver'); if (!el) { el = document.createElement('div'); el.id = 'saver'; document.body.append(el); }
+  const [ic, tx] = SV_TXT[k], where = k === 'hunt' && HT?.f ? `${HT.f.i || ''} ${HT.f.n}` : '';
+  el.innerHTML = `<div class="sv-in"><div class="sv-ic">${ic}</div><div class="sv-tx">${tx}<span class="sv-dot"><i>.</i><i>.</i><i>.</i></span></div>${where ? `<div class="sv-where">${where}</div>` : ''}
+    <div class="sv-time" id="svTime"></div><div class="sv-got" id="svGot"></div><div class="sv-raid" id="svRaid" hidden></div>
+    <div class="sv-foot">${PHONE ? '화면을 누르면' : '아무 키나 누르거나 화면을 누르면'} 돌아와요</div></div>`;
+  iconize(el); el.hidden = false; document.body.classList.add('saver');
+  svBeat(1).catch(() => {}); clearInterval(SV.beatT); SV.beatT = setInterval(() => svBeat(1).catch(() => {}), SAVER.beat);
+  clearInterval(SV.tick); SV.tick = setInterval(svDraw, 1000); svDraw();
+}
+function svDraw() {
+  const m = Math.floor((Date.now() - SV.at) / 60e3), t = $('#svTime'); if (!t) return;
+  t.textContent = m < 1 ? '방금 시작했어요' : `${m >= 60 ? `${Math.floor(m / 60)}시간 ` : ''}${m % 60}분째`;
+  const g = SV.k === 'hunt' ? SV.hunt : SV.got, n = v => (v || 0).toLocaleString();
+  $('#svGot').innerHTML = SV.k === 'hunt' ? (g.kills ? `처치 ${n(g.kills)} · ✨ +${n(g.exp)} · 🪙 +${n(g.gold)}` : '') : SV.k === 'life' ? (g.exp ? `✨ +${n(g.exp)} · 🪙 +${n(g.gold)} · 🪵 +${n(g.wood)} · 🪨 +${n(g.stone)}` : '') : '';
+  const r = $('#svRaid'); r.hidden = !RAIDQ.open; if (RAIDQ.open) r.textContent = `${RB().i} ${RB().n} 레이드 모집 중! 돌아와서 참여하세요`;
+}
+async function svWake() {
+  if (!SV.on) return; SV.on = false; clearInterval(SV.beatT); clearInterval(SV.tick);
+  const k = SV.k, h = { ...SV.hunt }; $('#saver').hidden = true; document.body.classList.remove('saver'); SV.input = performance.now();
+  let j = null; try { j = await svBeat(0); } catch {}
+  const s = j?.saver; if (!s || s.sec < 60) return;
+  const g = k === 'hunt' ? { ...h, ...(j.hunt ? { kills: h.kills + (j.hunt.kills || 0), exp: h.exp + (j.hunt.exp || 0), gold: h.gold + (j.hunt.gold || 0) } : {}) } : s.got || {}, n = v => (v || 0).toLocaleString();
+  if (k === 'idle') return;
+  const rows = k === 'hunt' ? [['처치', `${n(g.kills)}마리`], ['경험치', `+${n(g.exp)}`], ['골드', `+${n(g.gold)}`]]
+    : [['생활 경험치', `+${n(g.exp)}${g.up ? ` (레벨 +${g.up})` : ''}`], ['골드 (물고기·작물 판 값)', `+${n(g.gold)}`], ['목재 · 석재', `🪵 +${n(g.wood)} · 🪨 +${n(g.stone)}`], ['낚은 물고기 · 수확한 작물', `${n(g.fish)}마리 · ${n(g.crop)}포기`]];
+  if (!modal.hidden) return;
+  openModal(`<h3>${SV_TXT[k][0]} ${SV_TXT[k][1].replace(' 중', '')} 결과</h3><p>화면 보호기 동안 (${awayHM(s.sec)}) 모은 것이에요. 효율 100%로 계산했어요.</p>
+    <table class="ruletable"><tbody>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</tbody></table><button class="btn main" data-close>좋아요</button>`);
+}
 function sendSeen(force) {
-  if (!token || $('#app').hidden || S.away || document.visibilityState !== 'visible' || Date.now() - seenAt < 20e3) return;
+  if (SV.on || !token || $('#app').hidden || S.away || document.visibilityState !== 'visible' || Date.now() - seenAt < 20e3) return;
   if (!force && Date.now() - apiAt < 100e3) return;   // 2026-11-20 방금 다른 요청(위치 저장 등)이 갔으면 안 보냄 (서버 쓰기 줄이기)
   seenAt = Date.now(); api('/api/seen', {}).then(took).catch(() => {});
 }

@@ -80,10 +80,10 @@ export function startHunt(c, fi, at) {
 }
 
 // 마지막 정산 뒤 흐른 시간만큼 계산. 결과(이번에 늘어난 것)를 돌려줌
-export function settle(c, at) {
+export function settle(c, at, onGap = HUNT.onlineGap) {   // onGap: 100%로 쳐 주는 시간 (화면 보호기 중이면 더 김)
   const h = c.hunt; if (!h) return null;
   const gap = Math.max(0, (at - h.last) / 1000);
-  const online = Math.min(gap, HUNT.onlineGap), offline = Math.min(gap - online, HUNT.offlineMax);
+  const online = Math.min(gap, onGap), offline = Math.min(gap - online, HUNT.offlineMax);
   // 화면을 닫은 시간은 50% 효율(경험치만 10%), 최대 4시간. 그중 절반(offlineHunt)은 사냥, 나머지는 마을 일(offlineLife: 생활 경험치·골드·자원)
   // debt: 지난번에 미리 당겨 쓴 시간 (자주 불러도 빨라지지 않게)
   const offEff = offline * HUNT.offlineEff;

@@ -1062,6 +1062,22 @@ export function autoSettle(c, now) {
 
 // ───────── 화면을 닫은 동안 (2026-11-17): 효율 50% 중 절반은 사냥(settle), 절반은 마을 일 ─────────
 // 1시간어치(효율 적용 뒤) 마을 일로 받는 것: 경험치·골드는 사냥 1시간과 비슷, 그리고 자원·코인
+// ───────── 화면 보호기 (2026-11-20): 5분 동안 아무 조작이 없으면 화면이 '자동 사냥 중… / 자동 생활 중…'으로 바뀌고 요청을 멈춤 ─────────
+// 화면은 4분마다 신호(/api/saver)만 보냄. 신호가 오는 동안은 효율 100% (사용자 결정): 사냥은 settle의 100% 구간을 gap초까지, 자동 생활은 서버가 시간으로 계산
+// 신호가 끊기면(화면을 닫으면) 원래 자리 비움 규칙. life: 자동 생활 1시간에 하는 양 (나무·바위 캐기 횟수, 낚시 던지기, 텃밭 칸마다 수확)
+export const SAVER = { idle: 300e3, beat: 240e3, gap: 330, life: { trees: 80, rocks: 80, casts: 130, harvest: 12 } };
+export function saverLife(c, sec) {
+  if (!(sec >= 1)) return null;
+  const D = derive(c), fx = D.fx || {}, h = sec / 3600, L = c.life, S = SAVER.life, R = n => Math.floor(n) + (Math.random() < n % 1 ? 1 : 0);
+  const rod = L.fish?.rod || 0, bait = L.fish?.bait || 0, hoe = L.farm?.hoe || 0, fert = L.farm?.fert || 0;
+  let fv = 0, cv = 0; for (let i = 0; i < 24; i++) { fv += rollFish(rod, bait, i % 2 === 1).price; cv += rollCrop(hoe, fert)?.p || 0; } fv /= 24; cv /= 24;   // 지금 장비로 낚는·키우는 평균 값
+  const caught = S.casts * h * fishHit(rod, fx), crops = S.harvest * farmPlots(hoe) * h, avg = a => (a[0] + a[1]) / 2;
+  const got = { wood: R(S.trees * h * avg(GATHER.tree.amt)), stone: R(S.rocks * h * avg(GATHER.rock.amt)), fish: Math.round(caught), crop: Math.round(crops) };
+  got.gold = Math.round(caught * fv * (1 + ((fx.fishP || 0) + (fx.fishC || 0)) / 100) + crops * cv * (1 + (fx.farmP || 0) / 100));   // 물고기·작물은 판 값으로
+  got.exp = Math.round(lifeExpHour(c.lv) * ((S.trees + S.rocks) * h / LIFE_EXP_DIV.gather + caught / LIFE_EXP_DIV.fish + crops / LIFE_EXP_DIV.crop) * (1 + (D.expB || 0) / 100));
+  L.res.wood += got.wood; L.res.stone += got.stone; c.gold += got.gold; got.up = addExp(c, got.exp);
+  return got;
+}
 export const OFFLINE_LIFE = lv => ({ exp: huntIdleExp(lv) / .7, gold: (1500 * lv + 8000) * .3 + 1100, wood: 40, stone: 28, fish: 0, farm: 0 });   // 2026-11-20 텃밭 코인 5 → 골드 500   // 2026-11-20 낚시 코인 6 → 골드 600
 export function offlineLife(c, sec) {
   if (sec < 1) return null;

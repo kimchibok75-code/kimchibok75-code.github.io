@@ -1,6 +1,6 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, GUIDE_MARKS, guideQ, guideProg, guideInit, guideNext, npcExp as guideExp, TAG_COLORS, RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
+import { SAVER, saverLife, jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, GUIDE_MARKS, guideQ, guideProg, guideInit, guideNext, npcExp as guideExp, TAG_COLORS, RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
@@ -336,7 +336,7 @@ async function play(env, user, fn) {
     if (!c.hunt) {   // 마을: 체력이 1초에 2%씩 참
       const max = derive(c).maxHp;
       c.hp = Math.min(max, Math.round(c.hp + Math.max(0, (at - (c.hpAt || at)) / 1000) * max * HUNT.townRegen)); c.hpAt = at;
-    } else out.hunt = settle(c, at);
+    } else out.hunt = settle(c, at, svLive(c, at) ? SAVER.gap : undefined);   // 화면 보호기 신호가 오는 동안은 100% 구간이 더 김
     // 2026-11-18 마을에서 화면을 닫아도 자리 비움: 마지막 접속 신호(life.seen) 뒤 5분 넘게 비었으면 효율 50%(경험치 10%)로 마을 일 + 사냥 반반 (최대 4시간)
     if (!c.hunt && !out.hunt) { const gap = c.life.seen ? (at - c.life.seen) / 1000 : 0;
       if (gap >= AWAY_MIN) { const off = Math.min(gap - HUNT.onlineGap, HUNT.offlineMax), eff = off * HUNT.offlineEff, life = offlineLife(c, eff * (1 - HUNT.offlineHunt)), hunt = offlineHuntAway(c, eff * HUNT.offlineHunt); if (life || hunt) out.away = { sec: Math.round(gap), off: Math.round(off), life, hunt }; } }   // 절반은 마을 일, 절반은 사냥
@@ -379,6 +379,7 @@ const townOnly = c => { if (c.hunt) fail(400, '사냥 중에는 할 수 없어�
 const notWorking = c => { if (c.jobAt) fail(400, '카페 알바 중이에요. 알바를 끝내거나 그만둔 뒤에 해 주세요'); };
 
 // 2단계 기능들: (캐릭터, 보낸 내용, 지금 시각, 사냥 정산 결과) → 캐릭터를 바꾸고, 화면에 알려 줄 것을 돌려줌
+const svLive = (c, at) => !!c.life?.sv && at - c.life.sv.last <= (SAVER.gap + 10) * 1000;   // 2026-11-20 화면 보호기 신호가 아직 오는 중
 const AWAY_MIN = 300;   // 화면이 켜져 있으면 2분마다 /api/seen 신호가 옴
 // '왕' 세트 보상 받기: 아직 없는 첫 부위를 찾아 (순서 + 1) × every 만큼 셌으면 hats에 넣음
 function kingClaim(c, kind, b) {
@@ -389,7 +390,14 @@ function kingClaim(c, kind, b) {
   return { fk: next, log: [kind + '-king', next], chron: !kingNext(K, c.hats) ? [kind, `${K.n} 세트를 모두 모았어요!`] : null };
 }
 const GAME = {
-  '/api/seen'() {},   // 화면이 켜져 있다는 신호 (자리 비움 계산용)
+  '/api/seen'() {},
+  // 화면 보호기 (2026-11-20): on 1 = 시작·4분마다 신호, on 0 = 돌아옴. 자동 생활이면 신호 사이 시간만큼 서버가 계산 (효율 100%, 최대 SAVER.gap초씩)
+  '/api/saver'(c, b, at) {
+    const L = c.life, k = ['hunt', 'life', 'idle'].includes(b.k) ? b.k : 'idle', sv = L.sv, live = svLive(c, at);
+    if (live && sv.k === 'life' && !c.hunt && !c.jobAt) { const g = saverLife(c, Math.min((at - sv.last) / 1000, SAVER.gap)); if (g) for (const x in g) sv.got[x] = (sv.got[x] || 0) + g[x]; }
+    if (b.on) { L.sv = live ? { ...sv, k, last: at } : { k, at, last: at, got: {} }; return { saver: { k, sec: Math.round((at - L.sv.at) / 1000), got: L.sv.got } }; }
+    delete L.sv; return { saver: live ? { k: sv.k, sec: Math.round((at - sv.at) / 1000), got: sv.got || {} } : null };
+  },   // 화면이 켜져 있다는 신호 (자리 비움 계산용)
   // 사냥
   '/api/hunt/start'(c, b, at) {
     if (c.hunt) fail(400, '이미 사냥 중이에요');
