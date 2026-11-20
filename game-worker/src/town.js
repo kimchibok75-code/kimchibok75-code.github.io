@@ -56,6 +56,11 @@ export class Town extends DurableObject {
     const url = new URL(req.url);
     if (url.pathname === '/admin') return this.admin(await req.json());
     if (url.pathname === '/chzzk') return this.chzzk(await req.json());
+    if (url.pathname === '/where') {   // 2026-11-20 치지직 연동 확인: 이 사람이 여기 있으면 지금 연동되는 자리인지
+      const id = Number(url.searchParams.get('id')), w = this.members().find(w => this.info(w).id === id); if (!w) return Response.json(null);
+      const a = this.info(w), x = a.tx ?? a.x, y = a.ty ?? a.y;
+      return Response.json({ ch: a.room, n: a.n, near: Number.isFinite(x) && nearPlaza(x, y), hunt: !!a.hunt, room: a.room2 || 0, mute: a.mute > now(), limited: !!a.limited });
+    }
     if (url.pathname === '/has') {   // 다른 채널에서 물어봄: 이 사람이 여기 접속해 있나? (어느 기기인지)
       const id = Number(url.searchParams.get('id')), w = this.members().find(w => this.info(w).id === id);
       return Response.json(w ? { dev: this.info(w).dev, kind: this.info(w).kind } : null);
@@ -89,6 +94,7 @@ export class Town extends DurableObject {
     Object.assign(a, { pending: false, dev, kind, id: u.id, n: u.nick, adm: !!u.is_admin, joined: u.created_at, mute: u.mute_until || 0, limited: (rep?.n || 0) >= 3,
       look: lookRow(c), x: c.x, y: c.y, tx: c.x, ty: c.y, hunt: !!c.hunt, sit: -1, room2: 0, sent: [], last: [], cool: 0, lookAt: 0, emoAt: 0, houseAt: 0 });
     this.save(ws, a);
+    this.ctx.waitUntil(this.env.CHZZK?.get(this.env.CHZZK.idFromName('main')).fetch('https://chzzk/nick').catch(() => {}));   // 2026-11-20 새로 들어온 사람도 치지직 채팅이 바로 이어지게 (닉네임 기억 비움)
     this.send(ws, { t: 'hi', id: a.id, ch: a.room, list: others.map(w => this.pub(this.info(w))) });
     this.all({ t: 'join', p: this.pub(a) }, ws);
   }
@@ -230,12 +236,12 @@ export class Town extends DurableObject {
   // 치지직 채팅: 닉네임이 완전히 같고, 마을 광장 근처에 있는 사람(사냥·집 안 X)의 말만 이 채널 모두에게 보여 줌
   async chzzk(list) {
     if (!Array.isArray(list)) return new Response('bad', { status: 400 });
-    const byNick = new Map(); for (const w of this.members()) { const a = this.info(w); if (a.n) byNick.set(a.n, a); }
+    const byNick = new Map(); for (const w of this.members()) { const a = this.info(w); if (a.n) byNick.set(a.n.trim().toLowerCase(), a); }   // 2026-11-20 대소문자·앞뒤 띄어쓰기는 같게 봄
     const nicks = Response.json({ nicks: [...byNick.keys()] });   // 2026-11-20 접속한 닉네임 목록을 돌려줌 → 치지직 쪽이 상관없는 채널은 건너뜀
     if (!byNick.size) return nicks;
     const t = now(), rows = [];
     for (const m of list.slice(0, 200)) {
-      const a = byNick.get(String(m.n)); if (!a) continue;
+      const a = byNick.get(String(m.n).trim().toLowerCase()); if (!a) continue;
       const x = a.tx ?? a.x, y = a.ty ?? a.y;
       if (a.hunt || a.room2 || a.mute > t || a.limited || !Number.isFinite(x) || !nearPlaza(x, y)) continue;
       const r = cleanChat(String(m.text || '')); if (!r.ok) continue;   // 금칙어·링크·개인정보 검사는 마을 채팅과 같음 (경고는 없음)

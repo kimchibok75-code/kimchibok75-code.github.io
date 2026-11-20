@@ -329,7 +329,9 @@ export const HOUSE_W = 3, HOUSE_H = 2;
 // 집 안 (방 하나). 위쪽 2줄은 벽
 export const ROOM_W = 11, ROOM_H = 8, ROOM_DOOR = { x: 5, y: 7 };
 // 물가: 이 칸 둘레(8방향)에 물이 있으면 낚시할 수 있음
-export const nearWater = (tx, ty) => tileAt(tx, ty) !== WATER && [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]].some(([a, b]) => tileAt(tx + a, ty + b) === WATER);
+// 2026-11-20 지도 안의 진짜 물만 (tileAt은 지도 밖을 물로 쳐서, 맵 가장자리에서 바깥을 눌러 낚시가 됐음)
+export const waterIn = (tx, ty) => tx >= 0 && ty >= 0 && tx < MW && ty < MH && tileAt(tx, ty) === WATER;
+export const nearWater = (tx, ty) => tileAt(tx, ty) !== WATER && [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]].some(([a, b]) => waterIn(tx + a, ty + b));
 // 물을 누른 자리(픽셀)에서 가장 가까운, 걸을 수 있는 물가 칸
 export function shoreNear(px, py, r = 9) {
   const cx = px / T, cy = py / T; let best = null, bd = 1e9;

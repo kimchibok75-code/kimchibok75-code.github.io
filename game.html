@@ -754,6 +754,8 @@ body.hunting .side { display: none; }
 .sv-where { font-size: 16px; opacity: .8; } .sv-time { font-size: 15px; opacity: .7; } .sv-got { font-size: 15px; color: #ffe9a8; min-height: 1.4em; } .sv-raid { font-size: 14px; color: #ffb3a8; font-weight: 700; }
 .sv-foot { margin-top: 18px; font-size: 13px; opacity: .55; }
 @keyframes svBob { 50% { transform: translateY(-8px); } } @keyframes svDot { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+.cz-list { display: grid; gap: 8px; } .cz-row { display: flex; gap: 10px; align-items: flex-start; padding: 9px 11px; border-radius: 12px; background: var(--paper2, #f6f3ea); } .cz-i { font-size: 20px; line-height: 1.2; } .cz-row b { display: block; } .cz-row small { display: block; opacity: .8; line-height: 1.45; margin-top: 2px; }
+.nick-tip .btn.sm { margin-top: 6px; padding: 5px 10px; font-size: 13px; min-height: 0; }
 .nick-tip { margin: 6px 0 0; padding: 8px 10px; border-radius: 10px; background: #eef8f0; font-size: 13px; line-height: 1.5; color: #2c4a35; }
 .lim-when { margin: 4px 0 10px; padding: 10px 12px; border-radius: 12px; background: #fff4e5; font-size: 15px; line-height: 1.5; } #limitLeft { display: block; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--kimchi, #d33); }
 #rlBox { position: fixed; left: 50%; top: 16px; transform: translateX(-50%); z-index: 9999; display: flex; align-items: center; gap: 14px; width: min(560px, calc(100vw - 24px)); padding: 16px 18px; border-radius: 18px;
@@ -1462,7 +1464,7 @@ import { SAVER, CHAIN, CLEAVE, PIERCE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, c
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
 import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico, icoImgFlat, setIconOverride } from './assets/js/game-icons.js?v=__BUILD__';
 import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSolid, noise2, inCore, BUILDINGS as MAP_BUILDINGS, SPOTS, PORTAL, BACK, FISH_AT, PLOTS, BENCHES, NODES, DECO,
-  HOUSE_W, HOUSE_H, DPORTAL, ROOM_W, ROOM_H, ROOM_DOOR, soft, PLAZA_C, PLAZA_R, nearWater, shoreNear, seaAt, coastY, SEA_AT, fishShadows, FSHADOW } from './assets/js/game-map.js?v=__BUILD__';
+  HOUSE_W, HOUSE_H, DPORTAL, ROOM_W, ROOM_H, ROOM_DOOR, soft, PLAZA_C, PLAZA_R, nearWater, waterIn, shoreNear, seaAt, coastY, SEA_AT, fishShadows, FSHADOW } from './assets/js/game-map.js?v=__BUILD__';
 import { DW, DH, DONG_NAME, dTileAt, dSolid, dSoft, DTREES, DBENCH, DGATE, DSPAWN, canHouseD, treeUnderHouse, LAKE } from './assets/js/game-dong.js?v=__BUILD__';
 const API = (location.hostname === 'localhost' && new URLSearchParams(location.search).get('api')) || 'https://kimchibok-game.kimchibok.workers.dev';   // 시험용: localhost에서만 ?api=http://localhost:8787 로 바꿀 수 있음
 const LIVE_API = 'https://kimchibok-live.kimchibok.workers.dev/live';
@@ -5051,7 +5053,7 @@ function spaceTarget() {
     }); });
     if (me.life?.farm) PLOTS.forEach((P, pi) => add(d(P.x, P.y) - 12, P.x, P.y, P.x, P.y + 16, () => farmTap(pi)));
     const tx = Math.floor(me.x / T), ty = Math.floor(me.y / T); let wb = null;   // 물: 가까운 물 칸 (낚시)
-    for (let y = ty - 2; y <= ty + 2; y++) for (let x = tx - 2; x <= tx + 2; x++) if (tileAt(x, y) === WATER) { const k = d((x + .5) * T, (y + .5) * T) - T / 2; if (!wb || k < wb[0]) wb = [k, (x + .5) * T, (y + .5) * T]; }
+    for (let y = ty - 2; y <= ty + 2; y++) for (let x = tx - 2; x <= tx + 2; x++) if (waterIn(x, y)) { const k = d((x + .5) * T, (y + .5) * T) - T / 2; if (!wb || k < wb[0]) wb = [k, (x + .5) * T, (y + .5) * T]; }
     if (wb) {
       const gone = LIFE()?.fsh || [], sh = fishShadows(Date.now()).filter(s => s.a >= .3 && !gone.includes(s.id)).map(s => [Math.hypot(s.x * T - me.x, s.y * T - me.y), s]).filter(([k]) => k < 4.5 * T).sort((a, b) => a[0] - b[0])[0];
       const [px, py] = sh ? [sh[1].x * T, sh[1].y * T] : [wb[1], wb[2]];
@@ -5257,7 +5259,7 @@ function tap(sx, sy, wIn) {
     const cb = bldAtW(w);
     if (bk === 'job' && cb?.id === 'cafe') return openBuilding(cb);
     if (bk === 'auto' && cb) return openBuilding(cb);   // 자동 생활 중에도 건물은 이용 가능
-    if (bk === 'fish' && (Math.hypot(w.x - FSPOT.x, w.y - FSPOT.y) < 3 * T || tileAt(Math.floor(w.x / T), Math.floor(w.y / T)) === WATER)) return openFishing();
+    if (bk === 'fish' && (Math.hypot(w.x - FSPOT.x, w.y - FSPOT.y) < 3 * T || waterIn(Math.floor(w.x / T), Math.floor(w.y / T)))) return openFishing();
     return busyToast();
   }
   { const sg = signAtW(w); if (sg) return openSign(sg.id); }   // 2026-11-20 안내판
@@ -5284,7 +5286,7 @@ function tap(sx, sy, wIn) {
   const pi = plotAt(w.x, w.y); if (pi >= 0) return farmTap(pi);
   const s = SPOTS.find(s => s.id !== 'fountain' && w.x > s.x * T && w.x < (s.x + s.w) * T && w.y > (s.y - .2) * T && w.y < (s.y + s.h) * T);
   if (s) return openSpot(s);
-  if (tileAt(Math.floor(w.x / T), Math.floor(w.y / T)) === WATER) return fishAtWater(w.x, w.y);
+  if (waterIn(Math.floor(w.x / T), Math.floor(w.y / T))) return fishAtWater(w.x, w.y);
   walkNear(me, w.x, w.y);
 }
 
@@ -5418,7 +5420,7 @@ async function openNpc(p) {
   p.path = []; p.moving = false; p.dir = me.x < p.x ? -1 : 1; p.next = 8;
   const tf = talkFor(p.i);
   if (tf) {   // 안부 전하기 임무의 받는 사람
-    const j = await act('/api/npc/talk', { i: p.i }); if (!j) return;
+    const j = await act('/api/npc/talk', { i: p.i, blk: NPC.blk }); if (!j) return;
     sfx('pop'); say(p, '어머, 고마워요! 😊', 3000); renderQuests();
     return npcSheet(p, `${tf.name}님이 안부를 전했다고요? 정말 고마워요! 저도 잘 지낸다고 전해 주세요 😊`);
   }
@@ -5440,18 +5442,18 @@ function npcSheet(p, said) {
     portrait(el.querySelector('#npcPic'), { ...p, dir: 1 }, 1.5);
     wire(el, async x => {
       if (x === 'take') {
-        const j = await act('/api/npc/take', { i: p.i }); if (!j) return;
+        const j = await act('/api/npc/take', { i: p.i, blk: NPC.blk }); if (!j) return;
         sfx('pop'); say(p, '부탁해요!', 2500); toast(`📜 임무를 받았어요: ${t.i} ${t.n}`); logAct(`임무 받음: ${t.n}`); closeModal(); renderQuests(); return;
       }
       if (x === 'done') {
-        const j = await act('/api/npc/done', { i: p.i }); if (!j) return;
+        const j = await act('/api/npc/done', { i: p.i, blk: NPC.blk }); if (!j) return;
         const d = j.npcDone; sfx('coin'); emote(me, '🎉'); say(p, t.thx, 4000);
         toast(`📜 임무 완료! ${goldTxt(d.gold)}`); sysMsg(`📜 ${p.name}의 임무 완료: ${t.n} (+${d.gold.toLocaleString()} 골드)`); logAct(`임무 완료: ${t.n}`);
         closeModal(); renderQuests(); return;
       }
       if (x === 'drop') {
         if (!(await ask('지금까지 한 것은 사라져요.', { title: '임무를 포기할까요?', ok: '포기하기', danger: true }))) return;
-        const j = await act('/api/npc/drop', { i: p.i }); if (!j) return;
+        const j = await act('/api/npc/drop', { i: p.i, blk: NPC.blk }); if (!j) return;
         say(p, '아쉽지만 괜찮아요…', 2500); closeModal(); renderQuests();
       }
     });
@@ -5557,11 +5559,30 @@ let modalHtml = '';   // 2026-11-20 1초마다 다시 그리는 창: 내용이 �
 function openModal(html, onReady, keep) { if (keep && html === modalHtml && !modal.hidden) return; modalHtml = html; if (!keep) { modalAt = performance.now(); if (modal.hidden) sfx('open'); } const st = keep ? sheet.scrollTop : 0; sheet.onclick = null; sheet.innerHTML = XBTN + html; modal.hidden = false; onReady?.(sheet); if (keep) sheet.scrollTop = st; else sheet.querySelector('button:not(.xclose), input')?.focus({ preventScroll: true }); }
 // ───────── 닉네임 바꾸기 (2026-11-18): 이름 옆 ✏️. 일주일에 한 번, 바꾸기 전에 한 번 더 물어봄 ─────────
 const NICK_GAP = 7 * 864e5;
+// 치지직 연동 확인 (2026-11-20): 방송 중인지 · 이번 방송 치지직 채팅에서 내 닉네임을 찾았는지 · 지금 자리가 연동되는 곳인지
+async function chzzkCheckShow(afterNick) {
+  let j; try { j = await api('/api/chzzk/check'); } catch (e) { return toast('⚠️ ' + e.message); }
+  const ok = '✅', no = '❌', nick = esc(j.nick), T0 = j.town, rows = [];
+  if (!j.live) rows.push(['📴', '지금은 방송 중이 아니에요', '방송이 켜지면 이 버튼을 다시 눌러 확인해 주세요. 닉네임이 치지직과 글자 하나까지(띄어쓰기 포함) 같으면 돼요.']);
+  else if (!j.seen) rows.push([no, '치지직 채팅에서 아직 이 닉네임을 못 찾았어요', `치지직 채팅창에 아무 말이나 한마디 친 뒤 다시 눌러 주세요. 치지직 닉네임이 <b>${nick}</b>와(과) 글자 하나까지 같아야 해요.`]);
+  else rows.push([ok, '치지직 채팅에서 이 닉네임을 찾았어요', `${Math.max(1, Math.round((Date.now() - j.seen) / 60e3))}분 안에 <b>${nick}</b>(으)로 친 채팅이 있어요.`]);
+  if (!T0) rows.push([no, '마을에 접속해 있지 않아요', '마을 화면이 켜져 있어야 채팅이 떠요.']);
+  else if (T0.hunt) rows.push([no, '지금 사냥 중이에요', '사냥터에서는 안 떠요. 마을 광장으로 돌아와 주세요.']);
+  else if (T0.room) rows.push([no, '지금 집 안·치복동에 있어요', '타운 광장에서만 떠요.']);
+  else if (T0.mute || T0.limited) rows.push([no, '채팅 금지 중이에요', '채팅 금지가 풀리면 떠요.']);
+  else if (!T0.near) rows.push(['📍', '광장(분수) 근처로 가 주세요', '분수에서 9칸 안에 있어야 치지직 채팅이 마을에 떠요.']);
+  else rows.push([ok, '지금 자리에서 마을 채팅에 떠요', '광장 근처에 있어요.']);
+  const good = j.live && j.seen && T0 && !T0.hunt && !T0.room && !T0.mute && !T0.limited && T0.near;
+  openModal(`<h3>🔗 치지직 연동 확인</h3>${afterNick ? `<p class="muted">닉네임을 <b>${nick}</b>(으)로 바꿨어요. 연동은 바로 적용돼요.</p>` : ''}
+    <p style="font-weight:800;margin:4px 0 8px">${good ? '🎉 연동 완료! 치지직에서 친 채팅이 마을에도 떠요' : j.live ? '아래 ❌·📍를 맞추면 연동돼요' : '방송 중에 다시 확인해 주세요'}</p>
+    <div class="cz-list">${rows.map(([i, a, b]) => `<div class="cz-row"><span class="cz-i">${i}</span><div><b>${a}</b><small>${b}</small></div></div>`).join('')}</div>
+    <div class="actions"><button class="btn main" id="czAgain" type="button">다시 확인</button></div><button class="close" data-close>닫기</button>`, el => el.querySelector('#czAgain').addEventListener('click', () => chzzkCheckShow()));
+}
 function openNick() {
   const left = me.nickAt ? me.nickAt + NICK_GAP - Date.now() : 0, wait = left > 0;
   openModal(`<h3>✏️ 닉네임 · 이름표</h3>
     <p class="sub">지금 닉네임: <b>${esc(me.name)}</b></p>
-    <p class="nick-tip">💬 <b>치지직 닉네임과 똑같이</b> 바꾸면, 방송 때 치지직에서 친 채팅이 게임 광장에도 떠요.</p>
+    <p class="nick-tip">💬 <b>치지직 닉네임과 똑같이</b> 바꾸면, 방송 때 치지직에서 친 채팅이 게임 광장에도 떠요. <button type="button" class="btn sm" id="czChk">🔗 치지직 연동 확인</button></p>
     <div class="field"><label>🎨 이름표 색 <span class="tagpv">${esc(me.name)}</span></label><div class="tagsw" id="tagSw"></div></div>
     ${wait ? `<p class="nk-wait">⏳ 닉네임은 <b>일주일에 한 번</b>만 바꿀 수 있어요.<br>다음에 바꿀 수 있는 날: <b>${new Date(me.nickAt + NICK_GAP).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</b> (${Math.ceil(left / 864e5)}일 남음)</p>`
     : `<div class="field"><label for="nkIn">새 닉네임</label><input id="nkIn" maxlength="10" placeholder="2~10글자" autocomplete="off"><ul class="rules chips" id="nkRules"><li data-r="len">2~10글자 (띄어쓰기 포함)</li><li data-r="chars">한글·영문·숫자·띄어쓰기</li><li data-r="name">김치복·관리자 같은 이름 X</li></ul></div>
@@ -5569,6 +5590,7 @@ function openNick() {
       <p class="err" id="nkErr" role="alert"></p>`}
     <div class="actions">${wait ? '' : '<button class="btn main" data-x="go" id="nkGo" disabled>닉네임 바꾸기</button>'}</div>`, el => {
     const sw = el.querySelector('#tagSw'); renderTagSw(sw); sw.addEventListener('click', pickTagc);
+    el.querySelector('#czChk')?.addEventListener('click', () => chzzkCheckShow());
     const inp = el.querySelector('#nkIn'); if (!inp) return;
     const check = () => { const n = inp.value.trim(), r = nickChecks(n); paintRules(el.querySelector('#nkRules'), r, n.length > 0); el.querySelector('#nkGo').disabled = !(Object.values(r).every(Boolean) && n !== me.name); };
     inp.addEventListener('input', check); setTimeout(() => inp.focus(), 50);
@@ -5579,7 +5601,7 @@ function openNick() {
       if (!(await ask(`'${me.name}' → '${n}'\n\n바꾸면 일주일 동안 다시 바꿀 수 없어요.\n로그인할 때도 새 닉네임을 써야 해요.`, { title: '정말 바꿀 거예요?', ok: '바꾸기' }))) return;
       try {
         const j = await api('/api/nick', { nick: n });
-        me.name = j.nick; me.nickAt = j.nickAt; syncMe(); closeModal(); sfx('levelup'); toast(`✏️ 이제 '${j.nick}'(으)로 불려요! 다음 로그인부터 새 닉네임으로 들어와요`);
+        me.name = j.nick; me.nickAt = j.nickAt; syncMe(); closeModal(); sfx('levelup'); toast(`✏️ 이제 '${j.nick}'(으)로 불려요! 다음 로그인부터 새 닉네임으로 들어와요`); setTimeout(() => chzzkCheckShow(true), 600);   // 2026-11-20 바꾸자마자 치지직 연동 확인
       } catch (x) { err.textContent = x.message; }
     });
   });
@@ -8506,7 +8528,7 @@ function drawBrag(c, top, now) {
 // 찌를 던질 자리: 누른 곳 쪽으로, 내 자리에서 3칸 안의 물
 function bobberAt(px, py) {
   const dx = px - me.x, dy = py - me.y, d = Math.hypot(dx, dy) || 1;
-  for (let k = Math.min(d, 3 * T); k >= T * .5; k -= 4) { const x = me.x + dx / d * k, y = me.y + dy / d * k; if (tileAt(Math.floor(x / T), Math.floor(y / T)) === WATER) return [x, y]; }
+  for (let k = Math.min(d, 3 * T); k >= T * .5; k -= 4) { const x = me.x + dx / d * k, y = me.y + dy / d * k; if (waterIn(Math.floor(x / T), Math.floor(y / T))) return [x, y]; }
   return [px, py];
 }
 const bagFull = () => fishBagL().length >= FISH_BAG && !FG_KEYS.every(g => LIFE()?.fsell?.[g]);

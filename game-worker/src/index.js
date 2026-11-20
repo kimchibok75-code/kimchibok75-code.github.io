@@ -5,7 +5,7 @@ import { SAVER, saverLife, jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, GUIDE_MAR
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
   offlineLife, offlineHuntAway, PRESET_CD, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait, fishCasts } from '../../assets/js/game-rules.js';
-import { isSolid, NODES, BACK, tileAt, WATER, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
+import { isSolid, NODES, BACK, tileAt, WATER, waterIn, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
 import { canHouseD } from '../../assets/js/game-dong.js';
 import { scanBad } from './filter.js';
 import { startHunt, settle, summary } from './hunt.js';
@@ -91,6 +91,7 @@ async function route(req, env, url) {
   if (m === 'POST' && p === '/api/move') return saveMove(req, env, s.user);
   if (m === 'GET' && p === '/api/fish/rank') return fishRank(env, s.user);
   if (m === 'GET' && p === '/api/farm/rank') return farmRank(env, s.user);
+  if (m === 'GET' && p === '/api/chzzk/check') return chzzkCheck(env, s.user);
   if (m === 'GET' && p === '/api/rank') return rankList(env, s.user, url.searchParams.get('k'));
   if (m === 'GET' && p === '/api/houses') return json({ houses: (await env.DB.prepare('SELECT h.user_id AS id, u.nick, h.x, h.y, h.roof, h.lv FROM houses h JOIN users u ON u.id = h.user_id WHERE u.banned = 0').all()).results });
   if (m === 'GET' && p === '/api/news') return json(await news(env));
@@ -649,6 +650,7 @@ const GAME = {
   // 칭호 달기 (가진 것만)
   // 마을 주민 임무: 받기 · 안부 전하기 · 보상 받기 · 포기 (주민과 임무는 시간으로 정해짐 → npcList)
   '/api/npc/take'(c, b, at) {
+    if (b.blk != null && Number(b.blk) !== npcBlk(at)) fail(409, '마을 주민이 바뀌었어요. 화면을 새로 고침해 주세요');   // 2026-11-20 화면과 서버가 다른 주민을 보고 있으면 거절 (예전엔 다른 주민 임무가 받아졌음)
     const st = npcState(c, at), p = npcList(st.blk)[Number(b.i)];
     if (!p) fail(400, '지금 마을에 없는 주민이에요');
     if (own(st.q, String(p.i))) fail(400, '이미 받은 임무예요');
@@ -657,6 +659,7 @@ const GAME = {
     return { log: ['npc-take', p.task.n] };
   },
   '/api/npc/talk'(c, b, at) {
+    if (b.blk != null && Number(b.blk) !== npcBlk(at)) fail(409, '마을 주민이 바뀌었어요. 화면을 새로 고침해 주세요');   // 2026-11-20 화면과 서버가 다른 주민을 보고 있으면 거절 (예전엔 다른 주민 임무가 받아졌음)
     const st = npcState(c, at), L = npcList(st.blk), to = Number(b.i);
     const p = L.find(p => p.task.to === to && st.q[p.i]?.s === 0 && !st.q[p.i].t);
     if (!p) fail(400, '전할 안부가 없어요');
@@ -664,6 +667,7 @@ const GAME = {
     return { talked: p.i };
   },
   '/api/npc/done'(c, b, at) {
+    if (b.blk != null && Number(b.blk) !== npcBlk(at)) fail(409, '마을 주민이 바뀌었어요. 화면을 새로 고침해 주세요');   // 2026-11-20 화면과 서버가 다른 주민을 보고 있으면 거절 (예전엔 다른 주민 임무가 받아졌음)
     const st = npcState(c, at), p = npcList(st.blk)[Number(b.i)], q = p && own(st.q, String(p.i)) ? st.q[p.i] : null;
     if (!q || q.s !== 0) fail(400, '받은 임무가 없어요');
     if (npcProg(c, q, p.task) < p.task.v) fail(400, '아직 임무를 다 하지 못했어요');
@@ -930,6 +934,13 @@ async function changeNick(req, env, s) {
   try { await env.CHZZK.get(env.CHZZK.idFromName('main')).fetch('https://chzzk/nick'); } catch {}   // 치지직 채팅 연동도 새 닉네임으로 바로 (예전엔 30초 기억 때문에 늦었음)
   return json({ ok: true, nick, nickAt: t });
 }
+// 2026-11-20 치지직 연동 확인 (닉네임 창 버튼 · 닉네임 바꾼 뒤): 방송 중인지 · 이번 방송 채팅에 이 닉네임이 있었는지 · 지금 마을에서 연동되는 자리인지
+async function chzzkCheck(env, user) {
+  let cz = { live: false, at: 0 }; try { cz = await (await env.CHZZK.get(env.CHZZK.idFromName('main')).fetch('https://chzzk/seen?n=' + encodeURIComponent(user.nick))).json(); } catch {}
+  let town = null;
+  for (let ch = 1; ch <= MAX_CH && !town; ch++) try { town = await (await env.TOWN.get(env.TOWN.idFromName('town-' + ch)).fetch('https://town/where?id=' + user.id)).json(); } catch {}
+  return json({ nick: user.nick, live: !!cz.live, seen: cz.at || 0, town });
+}
 async function changePw(req, env, s) {
   const b = await readBody(req), user = s.user;
   const locked = lockedMsg(user); if (locked) fail(429, locked);
@@ -964,6 +975,7 @@ async function fishCast(c, b, at, env, user) {
   if (left > 0) fail(429, `${left}초 뒤에 다시 던질 수 있어요`);
   if (fishBag(c).length >= FISH_BAG && !FG_KEYS.every(g => c.life.fsell?.[g])) fail(400, `물고기 가방이 꽉 찼어요 (${FISH_BAG}마리). 낚시점에서 팔아 주세요`);
   const w = Array.isArray(b.w) && b.w.length === 2 && b.w.every(Number.isInteger) ? b.w : null;
+  if (!w || !waterIn(w[0], w[1])) fail(400, '물에만 낚싯대를 던질 수 있어요');   // 2026-11-20 지도 밖(가장자리 바깥)이나 땅에 던진 건 거절
   // 찌 자리는 던진 물 칸에서 2칸 안이어야 함 (멀리서 물고기 그림자만 노리지 못하게)
   const p = w && Array.isArray(b.p) && b.p.length === 2 && b.p.every(Number.isFinite) && Math.hypot(b.p[0] - (w[0] + .5) * T, b.p[1] - (w[1] + .5) * T) < 2 * T ? b.p : null;
   const q = Array.isArray(b?.q) && b.q.length === 2 && Number.isFinite(+b.q[0]) && Number.isFinite(+b.q[1]) ? [+b.q[0], +b.q[1]] : null, wait = fishWait();
