@@ -24,7 +24,7 @@ export const START_GOLD = 500;
 export const POINTS_PER_LV = 4;
 
 // ───────── 활 · 원거리 밸런스 (시험 계산으로 맞춘 값) ─────────
-export const MELEE_K = 2.6, STAFF_K = 1.6, STAFF_SP = 1, BOW_DEX = 1.3, BOW_GAP = 1.1, BOW_M = .9, FAR_LEAD = .6, FAR_WALK = .8;
+export const MELEE_K = 2.6, STAFF_K = 1.7, STAFF_SP = 1, BOW_DEX = 1.3, BOW_GAP = 1.1, BOW_M = .9, FAR_LEAD = .6, FAR_WALK = .8;
 // 원거리 거리 유지: 몬스터에게 맞은 뒤 kite 확률(민첩 1당 +0.08%p, 최대 kiteMax)로 뒤로 물러나서 back초 동안 안 맞음
 export const FAR_KITE = .2, FAR_KITE_MAX = .4, FAR_BACK = .7;
 
@@ -66,6 +66,8 @@ export const CLASSES = { sword: { n: '검사', i: '🗡️', st: 'str' }, bow: {
 export const WTYPES = { sword: { n: '검', i: '🗡️', gap: 1.0, m: 1, st: 'str', k: MELEE_K },
   staff: { n: '지팡이', i: '🪄', gap: 1.1, m: .95, sp: STAFF_SP, st: 'int', far: true, k: STAFF_K }, bow: { n: '활', i: '🏹', gap: BOW_GAP, m: BOW_M, st: 'dex', far: true, k: BOW_DEX } };
 // 원거리 무기: 몬스터가 다가오는 시간(초)만큼 먼저 공격, 걸어가는 시간도 줄어듦 (FAR.walk 배)
+export const STAFF_WALK = .8;   // 2026-11-20 마법사는 멀리서 마법을 쏴서 몬스터 사이를 덜 걸음 (이동이 느려 뒤처지던 것 보완)
+export const CHAIN = { r: 3, k: .7 };   // 2026-11-20 번개 사슬 연쇄: r칸 안 다른 몬스터로 튐. 서버는 튄 피해 × k를 다음 몬스터에 미리 넣음 (주변 몬스터가 늘 다 있진 않으니 조금 깎음)
 export const CLEAVE = { hit: .25, sk: .6, r: 1.6 };   // 2026-11-20 검사 다수 타격: 기본 공격은 주변(r칸) 몬스터에 25%, 공격 스킬은 주변 모두에 60%
 export const FAR = { lead: FAR_LEAD, walk: FAR_WALK, kite: FAR_KITE, kiteMax: FAR_KITE_MAX, back: FAR_BACK };
 // 장비 칸 6개: 무기 3 + 방어구 3. k: 방어구 칸별 수치 배율
@@ -280,7 +282,7 @@ export function derive(c) {
     def: Math.round((def + str * .5) * (1 + (fx.defP || 0) / 100)), mdef: Math.round((def * .5 + int * .5) * (1 + ((fx.defP || 0) + (fx.mdefP || 0)) / 100)), maxHp: Math.round((100 + c.lv * 20 + str * 5 + hp) * (1 + (fx.hpP || 0) / 100)),
     gap: wt.gap / Math.min(2, 1 + dex * .005) / (1 + (fx.aspd || 0) / 100), spd: Math.min(1.8, (1 + dex * .003) * (1 + (fx.spdP || 0) / 100)), crit: Math.min(70, 5 + luk * .25 + (fx.crit || 0)), critM: 1.5 + (fx.critD || 0) / 100,
     eva: Math.min(45, dex * .2 + (fx.eva || 0)), sp: 5 + int * .1 + (fx.sp || 0), spMul: (2 + int * .02) * (wt.sp || 1), goldB: Math.min(LUK_GOLD_MAX, luk) + (fx.goldP || 0), expB: fx.expP || 0, enhB: Math.min(15, luk * .05 + (fx.enhB || 0)),
-    bossP: fx.bossP || 0, steal: fx.steal || 0, cleave: cls === 'sword' ? CLEAVE.hit : 0, cleaveSk: cls === 'sword' ? CLEAVE.sk : 0, regen: HUNT.huntRegen + (fx.regen || 0) / 100, potP: fx.potP || 0 };
+    bossP: fx.bossP || 0, steal: fx.steal || 0, walkM: staff ? STAFF_WALK : 1, cleave: cls === 'sword' ? CLEAVE.hit : 0, cleaveSk: cls === 'sword' ? CLEAVE.sk : 0, regen: HUNT.huntRegen + (fx.regen || 0) / 100, potP: fx.potP || 0 };
 }
 
 // 새 캐릭터 기본값: 무기 3개(1단계 일반) 모두 낌, 클래스는 검사
@@ -900,7 +902,7 @@ export const SKILLS = [
   SK('m_fire', 'staff', '불덩이', '🔥', 1, 6, 'hit', { m: 2.1 }, '뜨거운 불덩이를 날림'),
   SK('m_ice', 'staff', '얼음 창', '❄️', 1, 10, 'hit', { m: 1.6, stun: 2 }, '얼음 창으로 찌르고 몬스터를 얼려 멈추게 함'),
   SK('m_shield', 'staff', '마법 보호막', '🔮', 2, 16, 'shield', { x: 3 }, '보호막이 다음 공격 세 번을 막음'),
-  SK('m_bolt', 'staff', '번개 사슬', '⚡', 2, 12, 'hit', { m: .85, x: 4 }, '번개가 튀며 네 번 때림'),
+  SK('m_bolt', 'staff', '번개 사슬', '⚡', 2, 12, 'hit', { m: .85, x: 4, chain: 1 }, '번개가 주변 몬스터로 튀며 최대 네 마리를 때림 (혼자면 같은 몬스터를 네 번)'),
   SK('m_heal', 'staff', '치유의 빛', '✨', 3, 22, 'heal', { v: 25 }, '따뜻한 빛으로 체력을 크게 회복'),
   SK('m_meteor', 'staff', '메테오', '☄️', 3, 30, 'hit', { m: 8.5, stun: 1 }, '하늘에서 운석을 떨어뜨림'),
 ];
@@ -914,7 +916,7 @@ export const skLv = n => SK_NEED.filter(x => n >= x).length;
 export function skPow(s, lv) {
   const L = Math.max(0, lv - 1);
   return { m: (s.m || 0) * (1 + .1 * L), n: s.x || 1, stun: s.stun || 0, dot: (s.dot || 0) * (1 + .1 * L), v: (s.v || 0) * (1 + .07 * L),
-    sh: (s.k === 'shield' ? s.x : 0) + Math.floor(L / 3), atk: (s.atk || 0) * (1 + .07 * L), crit: (s.crit || 0) * (1 + .07 * L), dur: s.dur || 0, dash: s.dash || 0, cd: s.cd * (1 - .02 * L) };
+    sh: (s.k === 'shield' ? s.x : 0) + Math.floor(L / 3), atk: (s.atk || 0) * (1 + .07 * L), crit: (s.crit || 0) * (1 + .07 * L), dur: s.dur || 0, dash: s.dash || 0, chain: s.chain || 0, cd: s.cd * (1 - .02 * L) };
 }
 export function skText(s, lv) {
   const p = skPow(s, lv), pc = x => Math.round(x * 100) + '%';

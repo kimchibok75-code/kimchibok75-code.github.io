@@ -1425,7 +1425,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { CLEAVE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { CHAIN, CLEAVE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
@@ -4363,6 +4363,12 @@ function updateHunt(dt) {
 }
 // 근접: 앞으로 살짝 튀어나가며 베기
 function hitMon(m, D) { me.swing = .18; me.lunge = .12; const h = rollHit(D, m); applyHit(m, h, D, 'melee'); cleaveAround(m, h.dmg * (D.cleave || 0), D); }
+// 2026-11-20 번개 사슬이 튈 때: 두 몬스터 사이에 지그재그 번개 불꽃
+function fxBolt(a, b) {
+  const n = 7, ay = a.y - 18 * a.d.s, by = b.y - 18 * b.d.s;
+  for (let k = 0; k <= n; k++) { const t = k / n, j = k && k < n ? (Math.random() - .5) * 14 : 0; fxBurst(a.x + (b.x - a.x) * t + j, ay + (by - ay) * t + j, k % 2 ? '#fff6a8' : '#7fd0ff', 3, 50, 2.4, 0); }
+  fxRing(b.x, by, '#9fdcff', 26, .3); sfx('magic');
+}
 // 2026-11-20 검사 다수 타격: 맞은 몬스터 주변(CLEAVE.r칸)의 몬스터도 같이 맞음 (보스는 빼고). 서버 hunt.js도 같은 비율로 계산
 function cleaveAround(m, dmg, D) {
   if (!(dmg > 0) || m.boss) return;
@@ -4404,12 +4410,20 @@ function castSkill({ s, p }, tg, D) {
     HT.dash = { x0: me.x, y0: me.y, x1: tg.x - dx / d * stop, y1: tg.y - dy / d * stop, t: 0, dur: .16 }; me.dir = dx < 0 ? -1 : 1; sfx('warp');
   }
   if (s.k === 'hit') {
-    const meteor = s.id === 'm_meteor';
-    for (let i = 0; i < p.n; i++) HT.q.push({ t: i * .13 + (meteor ? .35 : 0) + (p.dash ? .16 : 0), f: () => {
-      const m = !tg.dead ? tg : HT.mons.find(x => !x.dead && Math.hypot(x.x - me.x, x.y - me.y) < 6 * T); if (!m) return;
+    const meteor = s.id === 'm_meteor', hitSet = [];   // 번개 사슬: 이미 맞은 몬스터
+    for (let i = 0; i < p.n; i++) HT.q.push({ t: i * .13 + (meteor ? .35 : 0) + (p.dash ? .16 : 0) + (p.chain && i > 0 ? .2 : 0), f: () => {
+      const prev = hitSet[hitSet.length - 1];
+      let m = !tg.dead ? tg : HT.mons.find(x => !x.dead && Math.hypot(x.x - me.x, x.y - me.y) < 6 * T);
+      if (p.chain && i > 0 && prev) {   // 2026-11-20 번개 사슬: 앞 몬스터에서 가장 가까운 안 맞은 몬스터로 튐 (없으면 같은 몬스터)
+        let best = null, bd = CHAIN.r * T;
+        for (const o of HT.mons) { if (o.dead || hitSet.includes(o)) continue; const d = Math.hypot(o.x - prev.x, o.y - prev.y); if (d < bd) { bd = d; best = o; } }
+        m = best || (!prev.dead ? prev : m);
+      }
+      if (!m) return; hitSet.push(m);
       const h = skHit(m, D, p.m);
       if (meteor) { fxBurst(m.x, m.y - 10, '#ff9f43', 40, 360, 5); fxBurst(m.x, m.y - 10, '#ffd34d', 20, 220, 3); fxRing(m.x, m.y, '#ffb36b', 90, .5); fxShake(12); applyHit(m, h, D, 'magic'); }
       else if (s.cls === 'sword') { me.lunge = .12; applyHit(m, h, D, 'melee'); cleaveAround(m, h.dmg * (D.cleaveSk || 0), D); fxSlash(m.x, cy(m.y), -(me.dir || 1), col, true); }
+      else if (p.chain && i > 0 && prev) { fxBolt(prev, m); applyHit(m, h, D, 'magic'); }
       else { const sx = me.x + (me.dir || 1) * 16, sy = me.y - 30; HT.shots.push({ k: s.cls === 'staff' ? 'magic' : 'arrow', x: sx, y: sy, m, h, sp: 620, t: 0, a: 0 }); }
       if (i === 0 && p.stun) { m.atkT += p.stun; m.gT += p.stun; if (m.g?.ph === 'warn') { m.g = null; floatText(m.x, m.y - 64 * m.d.s, '기믹 끊음!', '#9fe0ff', 13, 1); } floatText(m.x, m.y - 50 * m.d.s, s.id === 'm_ice' ? '❄️ 얼음!' : '💫 기절!', '#9fe0ff', 14, 1); fxRing(m.x, m.y, '#9fe0ff', 30, .5); }
       if (s.id === 's_quake') { fxBurst(m.x, m.y, '#b08a5a', 24, 260, 4); fxShake(9); }
