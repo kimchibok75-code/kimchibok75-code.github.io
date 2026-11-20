@@ -927,6 +927,7 @@ async function changeNick(req, env, s) {
   ]);
   RANK_MEM_CLEAR();
   await toRooms(env, { act: 'nick', id: user.id, n: nick });   // 마을에 있는 사람들 화면의 이름표도 바로
+  try { await env.CHZZK.get(env.CHZZK.idFromName('main')).fetch('https://chzzk/nick'); } catch {}   // 치지직 채팅 연동도 새 닉네임으로 바로 (예전엔 30초 기억 때문에 늦었음)
   return json({ ok: true, nick, nickAt: t });
 }
 async function changePw(req, env, s) {

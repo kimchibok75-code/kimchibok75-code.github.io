@@ -39,6 +39,7 @@ export class Raid extends DurableObject {
       if (!r || r.start !== st) this.r = { start: st, boss: raidBossOf(st), forced: !isHourlyRaid(st), players: {}, hp: 0, max: 0, done: false, endAt: 0, last: 0 };
       const R = this.r;
       if (!R.players[b.uid] && Object.keys(R.players).length >= RAID.cap) return J({ error: '이번 레이드는 자리가 꽉 찼어요' }, 400);
+      if (!R.players[b.uid]) R.rv = (R.rv || 0) + 1;   // 2026-11-20 사람이 늘면 다음 알림에 겉모습까지 보냄 (늦게 온 사람도 보이게)
       R.players[b.uid] = { n: b.nick, look: b.look, dps: b.dps, maxHp: b.maxHp, lv: b.lv, dmg: 0, dead: false, x: (RAID.W / 2 + (Math.random() - .5) * 8) * 32, y: (RAID.H - 3) * 32, at: 0, claimed: false };
       await this.keep(); await this.ctx.storage.setAlarm(st);
       return J({ start: st, n: Object.keys(R.players).length, boss: R.boss });
@@ -68,7 +69,9 @@ export class Raid extends DurableObject {
 
   send(ws, o) { try { ws.send(JSON.stringify(o)); } catch {} }
   all(o) { const s = JSON.stringify(o); for (const w of this.ctx.getWebSockets()) { const a = w.deserializeAttachment(); if (a?.uid) try { w.send(s); } catch {} } }
-  pub(R, full) { return { start: R.start, boss: R.boss, hp: Math.max(0, Math.round(R.hp)), max: R.max, done: R.done, ps: Object.entries(R.players).map(([id, p]) => full ? { id: +id, n: p.n, look: p.look, x: Math.round(p.x), y: Math.round(p.y), dead: p.dead } : [+id, Math.round(p.x), Math.round(p.y), p.dead ? 1 : 0]) }; }   // full: 겉모습까지 (처음 한 번)
+  pub(R, full) { return { start: R.start, boss: R.boss, hp: Math.max(0, Math.round(R.hp)), max: R.max, done: R.done, ps: Object.entries(R.players).map(([id, p]) => full ? { id: +id, n: p.n, look: p.look, x: Math.round(p.x), y: Math.round(p.y), dead: p.dead } : [+id, Math.round(p.x), Math.round(p.y), p.dead ? 1 : 0, Math.round(p.bd || 0)]) }; }   // full: 겉모습까지 (처음 한 번)
+  // 모두에게 상황 알림 (2026-11-20): 새 사람이 있으면 겉모습까지(full), 아니면 위치 + 지난 알림 뒤 준 피해(bd → 다른 화면이 공격 효과·숫자를 그림)
+  tell(R, t, k = 's') { const full = R.rv && R.rv !== R.rvSent; if (full) R.rvSent = R.rv; this.all({ t: k, ...this.pub(R, full), full: full ? 1 : 0, now: t }); for (const p of Object.values(R.players)) p.bd = 0; R.bAt = t; }
 
   async webSocketMessage(ws, msg) {
     if (typeof msg !== 'string' || msg.length > 300) return;
@@ -80,6 +83,7 @@ export class Raid extends DurableObject {
       if (!u || !R || !R.players[u.id] || R.done) { this.send(ws, { t: 'gone' }); return ws.close(4403, 'not in raid'); }
       for (const w of this.ctx.getWebSockets()) if (w !== ws && w.deserializeAttachment()?.uid === u.id) try { w.close(4002, 'dup'); } catch {}
       ws.serializeAttachment({ uid: u.id });
+      R.rvSent = 0;   // 들어온 사람에게는 hi로 전부, 다른 사람에게도 다음 알림에 겉모습 (새로 온 사람)
       return this.send(ws, { t: 'hi', id: u.id, ...this.pub(R, true), now: t });
     }
     if (!a.uid || !R || R.done) return;
@@ -92,9 +96,10 @@ export class Raid extends DurableObject {
       if (t >= R.start && !P.dead && Number.isFinite(m.d) && m.d > 0) {
         const sec = Math.min(3, Math.max(0, (t - (P.at || R.start)) / 1000));
         // 스킬은 한 번에 크게 들어가니까, 안 쓴 한도를 8초어치까지 모아 둠
-        const allow = P.dps * 2.5 * sec + (P.spare || 0), d = Math.min(m.d, allow); P.spare = Math.min(P.dps * 8, allow - d); P.dmg += d; R.hp -= d;
+        const allow = P.dps * 2.5 * sec + (P.spare || 0), d = Math.min(m.d, allow); P.spare = Math.min(P.dps * 8, allow - d); P.dmg += d; R.hp -= d; P.bd = (P.bd || 0) + d;
       }
       P.at = t;
+      if (t < R.start && t - (R.bAt || 0) > 700) this.tell(R, t);   // 모집 중에는 알람이 없으니 위치 보고가 올 때 알림 (0.7초에 한 번까지)
     }
   }
   async webSocketClose(ws) { try { ws.close(); } catch {} }
@@ -110,7 +115,7 @@ export class Raid extends DurableObject {
     }
     R.hp -= R.max / RAID.drain * Math.min(3, (t - R.last) / 1000); R.last = t;
     if (R.hp <= 0 || t >= R.start + RAID.max) { R.hp = 0; R.done = true; R.endAt = t; await this.keep(); this.all({ t: 'end', ...this.pub(R) }); return; }
-    this.all({ t: 's', ...this.pub(R), now: t });
+    this.tell(R, t);
     if ((t - R.start) % 10e3 < 1000) await this.keep();   // 10초마다 저장 (방이 잠깐 내려가도 이어지게)
     await this.ctx.storage.setAlarm(t + 1000);
   }

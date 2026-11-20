@@ -12,6 +12,7 @@ export class Chzzk extends DurableObject {
   constructor(ctx, env) { super(ctx, env); this.ws = null; this.cid = null; this.heard = 0; this.buf = []; this.flushT = null; this.busy = false; }
 
   async fetch(req) {   // 매 5분 크론 · 관리자 확인용
+    if (new URL(req.url).pathname === '/nick') { this.nk = {}; return Response.json({ ok: true }); }   // 2026-11-20 누가 닉네임을 바꿈 → 채널별 닉네임 기억을 비워서 새 닉네임 말도 바로 이어 줌
     await this.tick();
     return Response.json({ on: !!this.ws, cid: this.cid, heard: this.heard });
   }

@@ -3581,11 +3581,11 @@ function raidMsg(m) {
   if (m.t === 'hi' || m.t === 's' || m.t === 'end') {
     RD.hp = m.hp; RD.max = m.max || RD.max;
     for (const p of m.ps) {
-      const [id, x, y, dead, look, n] = Array.isArray(p) ? [...p, null, null] : [p.id, p.x, p.y, p.dead, p.look, p.n];
+      const [id, x, y, dead, bd, look, n] = Array.isArray(p) ? [p[0], p[1], p[2], p[3], p[4] || 0, null, null] : [p.id, p.x, p.y, p.dead, 0, p.look, p.n];
       if (id === me.uid) continue;
       let o = RD.ps.get(id);
-      if (!o && look) { o = { id, name: n, ...look, x, y, tx: x, ty: y, dir: 1, seed: (id % 17) * .37, moving: false, swing: 0 }; RD.ps.set(id, o); }
-      if (o) { o.tx = x; o.ty = y; o.dead = !!dead; }
+      if (!o && look) { o = { id, name: n, ...look, x, y, tx: x, ty: y, dir: 1, seed: (id % 17) * .37, moving: false, swing: 0, hq: [] }; RD.ps.set(id, o); }
+      if (o) { o.tx = x; o.ty = y; o.dead = !!dead; if (bd > 0 && !o.dead) raidOtherHits(o, bd); }
     }
     raidHud();
   }
@@ -3637,9 +3637,10 @@ function updateRaid(dt) {
   for (const f of RD.fx) f.t += dt; RD.fx = RD.fx.filter(f => f.t < f.life);
   // 다른 참가자: 받은 위치로 부드럽게 + 드래곤 근처면 휘두르는 시늉
   for (const o of RD.ps.values()) {
-    const dx = o.tx - o.x, dy = o.ty - o.y, d = Math.hypot(dx, dy), sp = 160 * dt;
+    const dx = o.tx - o.x, dy = o.ty - o.y, d = Math.hypot(dx, dy), sp = Math.max(170, d * 1.6) * dt;   // 1초마다 오는 위치를 늦지 않게 따라감
     if (d > 1) { const k = Math.min(1, sp / d); o.x += dx * k; o.y += dy * k; o.moving = true; if (Math.abs(dx) > 2) o.dir = dx < 0 ? -1 : 1; } else o.moving = false;
-    o.swing = Math.max(0, o.swing - dt); if (live && !o.dead && !o.moving && Math.random() < dt * 1.2) { o.swing = .18; o.dir = D0.x < o.x ? -1 : 1; }
+    o.swing = Math.max(0, o.swing - dt);
+    if (o.hq?.length && (o.hq[0].t -= dt) <= 0) raidOtherHit(o, o.hq.shift().d, D0);   // 2026-11-20 서버가 알려 준 그 사람의 피해를 나눠서 공격 효과·숫자로
   }
   // 보스 공격: 미리 빨갛게 보여 주고(warn), 그 순간 그 안에 있으면 맞음
   if (live) for (let i = 0; i < RD.pat.length; i++) {
@@ -3686,8 +3687,19 @@ function updateRaid(dt) {
   if (RD.boss === 'ogre') { if (RD.emb.length < (PHONE ? 30 : 60) && Math.random() < dt * 14) { const f = Math.random() < .6 ? OG_FIRE[Math.random() < .5 ? 0 : 1] : null; RD.emb.push(f ? { x: f[0] * RW() + (Math.random() - .5) * 20, y: f[1] * RH() - 6, t: 0, life: 1.2 + Math.random() * 1.4, s: 1 + Math.random() * 1.4, h: Math.random(), vy: 30 + Math.random() * 40 } : { dust: 1, x: Math.random() * RW(), y: (9 + Math.random() * 12) * T, t: 0, life: 3 + Math.random() * 3, s: 2 + Math.random() * 3, h: Math.random(), vy: 4 + Math.random() * 8 }); } }
   else if (RD.emb.length < (PHONE ? 40 : 80) && Math.random() < dt * 22) RD.emb.push({ x: Math.random() * RW(), y: Math.random() < .6 ? (3.6 + Math.random() * 2) * T : (7 + Math.random() * 13) * T, t: 0, life: 2 + Math.random() * 2.5, s: 1 + Math.random() * 1.8, h: Math.random(), vy: 20 + Math.random() * 40 });
   for (const p of RD.emb) { p.t += dt; p.y -= p.vy * dt; } RD.emb = RD.emb.filter(p => p.t < p.life);
-  if (live && (RD.sendT -= dt) <= 0) raidSend();
+  if (!RD.ended && (RD.sendT -= dt) <= 0) raidSend();   // 모집 중에도 위치를 보냄 (다른 사람 화면에서 움직이게)
   if ((RD.hudT = (RD.hudT || 0) - dt) <= 0) { RD.hudT = .5; raidHud(); syncBars(); }
+}
+// 다른 참가자의 공격 (2026-11-20): 1초 동안 준 피해를 2~3번으로 나눠, 그 사람 → 보스로 베기·화살·마법 + 숫자 (조금 작고 옅게)
+function raidOtherHits(o, d) { const n = d > 0 ? 2 + (Math.random() < .5 ? 1 : 0) : 0; o.hq = []; for (let i = 0; i < n; i++) o.hq.push({ t: i * .9 / n + Math.random() * .1, d: d / n }); }
+function raidOtherHit(o, d, D0) {
+  if (o.dead || !RD || RD.ended) return;
+  const c = o.cls || 'sword', far = c !== 'sword', hx = D0.x + (Math.random() - .5) * 90, hy = D0.y - 50 - Math.random() * 60;
+  o.swing = .18; if (!o.moving) o.dir = D0.x < o.x ? -1 : 1;
+  const onScr = Math.abs(o.x - cam.x) < innerWidth / S.zoom && Math.abs(o.y - cam.y) < innerHeight / S.zoom; if (!onScr) return;
+  if (RD.fx.length < (PHONE ? 60 : 140)) RD.fx.push({ k: far ? (c === 'staff' ? 'orb' : 'arrow') : 'slash', x0: o.x, y0: o.y - 30, x: hx, y: hy, t: 0, life: far ? .25 : .15 });
+  if (RD.floats.length < (PHONE ? 30 : 70)) raidFloat(hx, hy - 10, Math.round(d).toLocaleString(), 'rgba(255,255,255,.75)', 12);
+  raidBurst(hx, hy, '#fff3c4', 2, 110, 2.5);
 }
 function raidSend() {
   RD.sendT = 1;
