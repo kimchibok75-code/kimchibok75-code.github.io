@@ -107,7 +107,8 @@ async function route(req, env, url) {
   if (m === 'POST' && p === '/api/suggest') return suggestWrite(req, env, s.user);
   if (m === 'POST' && p === '/api/suggest/del') return suggestDel(req, env, s.user);
   const g = GAME[p];
-  if (m === 'POST' && g) { const b = await readBody(req); try { return await play(env, s.user, (c, at, out) => g(c, b, at, out, env, s.user)); } catch (e) { if (e instanceof HttpError && e.status === 400) await bumpReject(env, s.user.id); throw e; } }
+  if (m === 'POST' && g) { const b = await readBody(req); if (b && typeof b === 'object') for (const k of Object.keys(b)) if (k[0] === '_') delete b[k];   // 2026-11-21 _로 시작하는 값은 서버 안에서만 씀 (예: 분수 _o를 보내 잭팟을 고르는 것 막기)
+    try { return await play(env, s.user, (c, at, out) => g(c, b, at, out, env, s.user)); } catch (e) { if (e instanceof HttpError && e.status === 400) await bumpReject(env, s.user.id); throw e; } }
   if (m === 'POST' && p === '/api/password') return changePw(req, env, s);
   if (m === 'POST' && p === '/api/nick') return changeNick(req, env, s);
   if (m === 'POST' && p === '/api/recovery-code') return newRecovery(req, env, s.user);
@@ -329,14 +330,14 @@ function raidGroup(rows) {
 let FOUNT = { at: 0, v: null };
 async function fountain(env) {
   if (FOUNT.v && Date.now() - FOUNT.at < 15e3) return FOUNT.v;
-  const [f, w] = await Promise.all([env.DB.prepare('SELECT pool FROM fountain WHERE id = 1').first(), env.DB.prepare('SELECT nick, gold, at FROM fountain_win ORDER BY id DESC LIMIT 10').all()]);
-  const pool = f?.pool || 0; FOUNT = { at: Date.now(), v: { pool, prize: Math.round(pool * WISH.jpMul), wins: w.results } };
+  const [f, w] = await Promise.all([env.DB.prepare('SELECT pool, since FROM fountain WHERE id = 1').first(), env.DB.prepare('SELECT nick, gold, at, wait, n FROM fountain_win ORDER BY id DESC LIMIT 10').all()]);
+  const pool = f?.pool || 0; FOUNT = { at: Date.now(), v: { pool, prize: Math.round(pool * WISH.jpMul), since: f?.since || 0, wins: w.results } };   // since = 지금 돈이 모이기 시작한 때
   return FOUNT.v;
 }
 async function jackpot(env, user) {
-  const r = await env.DB.prepare('UPDATE fountain SET last = pool, pool = 0 WHERE id = 1 RETURNING last').first();
-  const g = Math.max(Math.round(WISH.cost * WISH.jpMul), Math.round((r?.last || 0) * WISH.jpMul)), t = now();
-  await env.DB.batch([env.DB.prepare('INSERT INTO fountain_win (user_id, nick, gold, at) VALUES (?, ?, ?, ?)').bind(user.id, user.nick, g, t),
+  const t = now(), r = await env.DB.prepare('UPDATE fountain SET last = pool, pool = 0, prev = since, since = ? WHERE id = 1 RETURNING last, prev').bind(t).first();   // SET 오른쪽은 바꾸기 전 값 → prev = 지난 잭팟 시각
+  const g = Math.max(Math.round(WISH.cost * WISH.jpMul), Math.round((r?.last || 0) * WISH.jpMul)), wait = r?.prev ? t - r.prev : 0, n = Math.round((r?.last || 0) / WISH.cost) + 1;   // n = 몇 번째 소원에서 (당첨된 소원 포함)
+  await env.DB.batch([env.DB.prepare('INSERT INTO fountain_win (user_id, nick, gold, at, wait, n) VALUES (?, ?, ?, ?, ?, ?)').bind(user.id, user.nick, g, t, wait, n),
     env.DB.prepare('DELETE FROM fountain_win WHERE id NOT IN (SELECT id FROM fountain_win ORDER BY id DESC LIMIT 10)')]);
   FOUNT.at = 0; return g;
 }

@@ -759,7 +759,7 @@ body.hunting .side { display: none; }
 .nick-tip { margin: 6px 0 0; padding: 8px 10px; border-radius: 10px; background: #eef8f0; font-size: 13px; line-height: 1.5; color: #2c4a35; }
 .aupick { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; margin: 10px 0; } .aup { display: grid; gap: 3px; text-align: left; padding: 11px 12px; min-height: 44px; border: 2px solid var(--line); border-radius: 12px; background: #fff; cursor: pointer; font: inherit; } .aup:hover { border-color: #9cc3ff; } .aup.on { border-color: #4f9d5a; background: #f1faf2; } .aup b { font-size: calc(15px * var(--fs, 1)); } .aup em { font-style: normal; font-size: 12px; color: #2f7a3b; margin-left: 4px; } .aup small { color: var(--muted, #6b7280); font-size: calc(12.5px * var(--fs, 1)); line-height: 1.35; }
 .jpcard { background: linear-gradient(135deg, #fff7e0, #ffe9c2); } .jpgold { font-size: calc(26px * var(--fs, 1)); font-weight: 900; color: #b36b00; margin: 2px 0 4px; font-variant-numeric: tabular-nums; }
-.jpwins { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; } .jpwins li { display: flex; gap: 8px; align-items: baseline; } .jpwins li span { font-weight: 800; color: #b36b00; } .jpwins li small { margin-left: auto; color: var(--muted, #6b7280); }
+.jpwins { margin: 4px 0 0; padding-left: 22px; display: grid; gap: 4px; } .jpwins li { display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; } .jpwins li em { flex-basis: 100%; font-style: normal; font-size: 12px; color: var(--muted, #6b7280); } .jpwins li span { font-weight: 800; color: #b36b00; } .jpwins li small { margin-left: auto; color: var(--muted, #6b7280); }
 .updl { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; } .updl > li { padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; } .updl > li:first-child { border-color: #e3c37a; background: #fffdf3; }
 .updh { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; } .updh b { color: #b36b00; } .updh span { font-weight: 800; } .updh small { margin-left: auto; color: var(--muted, #6b7280); } .updl ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 2px; font-size: calc(14px * var(--fs, 1)); }
 .lim-when { margin: 4px 0 10px; padding: 10px 12px; border-radius: 12px; background: #fff4e5; font-size: 15px; line-height: 1.5; } #limitLeft { display: block; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--kimchi, #d33); }
@@ -7775,6 +7775,7 @@ const buffNow = () => { const b = LIFE()?.buff; return b && b.until > Date.now()
 // 2026-11-21 개편: 100골드 · 꽝 50%(2026-11-21 30 → 50) · 사냥 N분어치 골드·경험치 · 60분 버프 · 💰 잭팟 = 분수에 모인 돈 × 1.5 (서버 /api/fountain)
 const FT = { at: 0, v: null };
 function ftLoad(force) { if (!force && FT.v && Date.now() - FT.at < 15e3) return; FT.at = Date.now(); api('/api/fountain').then(v => { FT.v = v; if (modalHtml.includes('data-ft')) reopen?.(); }).catch(() => {}); }
+const jpWait = ms => { const m = Math.max(1, Math.round(ms / 60e3)), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mm = m % 60; return d ? `${d}일${h ? ` ${h}시간` : ''}` : h ? `${h}시간${mm ? ` ${mm}분` : ''}` : `${mm}분`; };   // 잭팟까지 걸린 시간
 function openWish(msg, keep) {
   if (HT) return;
   reopen = () => openWish(msg, true); ftLoad();
@@ -7791,11 +7792,11 @@ function openWish(msg, keep) {
       ${thinBar(left ? 1 - left / (WISH.cd / 1000) : 1)}
       <div class="cs">${chip(`🪙 ${WISH.cost} / 1번`)}${chip(`⏱ ${WISH.cd / 60e3}분에 한 번`)}${chip(`🙏 지금까지 ${fmtN(n)}번`)}</div></div>
     <div class="bs-card jpcard"><h4>💰 잭팟 당첨금<small>모인 돈 × ${WISH.jpMul}</small></h4><div class="jpgold">🪙 ${F0 ? fmtN(F0.prize) : '…'}</div>
-      <p class="muted">모두가 던진 동전이 분수에 모여요 (지금 ${F0 ? fmtN(F0.pool) : '…'}골드). 잭팟이 나오면 한 번에 받고, 0부터 다시 모여요.</p></div>
+      <p class="muted">모두가 던진 동전이 분수에 모여요 (지금 ${F0 ? fmtN(F0.pool) : '…'}골드). 잭팟이 나오면 한 번에 받고, 0부터 다시 모여요.</p>${F0?.since ? `<div class="cs">${chip(`⏳ ${wins.length ? '지난 잭팟' : '잭팟 시작'}부터 ${jpWait(Date.now() - F0.since)}째`)}</div>` : ''}</div>
     ${b ? `<div class="bs-card"><h4>${BUFFS[b.k].i} ${BUFFS[b.k].n}<small>${fmtLeft(Math.ceil((b.until - Date.now()) / 1000))} 남음</small></h4><p class="muted">${BUFFS[b.k].d} · 지금 받고 있는 축복</p></div>` : ''}
     <div class="bs-card"><h4>🎲 나올 수 있는 것</h4>${oddsBar(odds)}
       <div class="cs">${odds.filter(o => o[0] !== '💧 꽝').map(([nm, , , d]) => chip(`${nm} · ${d}`)).join('')}</div></div>
-    <div class="bs-card"><h4>🏆 역대 잭팟 당첨자<small>최근 10명</small></h4>${wins.length ? `<ol class="jpwins">${wins.map(w => `<li><b>${esc(w.nick)}</b><span>🪙 ${fmtN(w.gold)}</span><small>${fmtT(w.at)}</small></li>`).join('')}</ol>` : `<p class="muted">${F0 ? '아직 당첨자가 없어요. 첫 주인공이 되어 보세요!' : '불러오는 중…'}</p>`}</div>`;
+    <div class="bs-card"><h4>🏆 역대 잭팟 당첨자<small>최근 10명</small></h4>${wins.length ? `<ol class="jpwins">${wins.map(w => `<li><b>${esc(w.nick)}</b><span>🪙 ${fmtN(w.gold)}</span><small>${fmtT(w.at)}</small>${w.wait ? `<em>⏳ ${jpWait(w.wait)} 만에${w.n ? ` · ${fmtN(w.n)}번째 소원` : ''}</em>` : ''}</li>`).join('')}</ol>` : `<p class="muted">${F0 ? '아직 당첨자가 없어요. 첫 주인공이 되어 보세요!' : '불러오는 중…'}</p>`}</div>`;
   const help = `<ul><li>꽝은 ${pct(o => o.k === 'none')}%예요. 나머지는 모두 쓸모 있는 것!</li>
     <li>버프: ${Object.values(BUFFS).map(x => `${x.i} ${x.n}(${x.d})`).join(' · ')}</li>
     <li>버프는 한 번에 하나만, 새로 받으면 바뀌어요.</li><li>골드·경험치는 내 레벨 사냥 기준이라 레벨이 올라도 쓸모 있어요.</li>

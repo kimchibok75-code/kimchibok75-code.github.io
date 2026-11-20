@@ -915,7 +915,8 @@
 - **자동 생활은 텃밭이 절대 먼저** (#8, 낚시만·카페 알바만 모드 빼고): 나무·바위·물가로 걷거나 캐는 중에도 0.5초마다 `auFarm`을 보고 할 일이 있으면 그 일을 끊고 텃밭으로 (`autoPace` 맨 앞). 같은 칸이 30초 넘게 안 바뀌면(서버 거절 등) 그때만 1분 쉼(`AU.farmOff`). 작물 가방이 꽉 차도 빈 밭은 심음 (수확만 쉼)
 - **자동 생활 세부 선택** (🧺 버튼 → `autoPick` 창): 전체 · 낚시만(낚을 때마다 5초 더 쉼 `AU_FISH_EXTRA`) · 벌목 우선 · 채굴 우선 · 농사 우선(25초 안에 다 자라는 칸이 있으면 밭 옆에서 기다림) · 카페 알바만(`auCafe`). `AU.kind`, 순서 `AU_SEQS`, 이 기기에 기억 localStorage `cbt-automode` (켜짐 `cbt-auto`와 같이 새로 고침·업데이트 뒤에도 그대로)
 - **소원 분수 개편**: 100골드 · 꽝 50% (`WISH_TABLE`, #9에서 30 → 50, 나머지는 같은 비율로 줄임. 분수 창의 확률은 높은 순서로 정렬). 골드·경험치는 내 레벨 사냥 5분어치(`wishGold`, `wishExp`), 버프 60분(골드·경험치 +30%, 공격 +20%, 🎣 물고기의 노래), 특대 음료 5개, 🌈 무지개(골드 30분어치 + 축복 90분), **💰 잭팟 0.3% = 분수에 모인 돈 × 1.5** (`WISH.jpMul`)
-  - D1 `fountain`(pool) · `fountain_win`(최근 10명) — `migrations/0020_fountain.sql`. 서버 `jackpot()`이 `UPDATE … SET last = pool, pool = 0 RETURNING last`로 한 번에 비움, 던진 100골드는 저장 뒤(`after`) pool에 더함. `GET /api/fountain` (15초 기억). play()가 다시 시도해도 같은 결과가 나오게 `b._o`, `b._jp`에 기억
+  - D1 `fountain`(pool) · `fountain_win`(최근 10명) — `migrations/0020_fountain.sql`. 잭팟까지 걸린 시간(#10, `0021_fountain_wait.sql`): `fountain.since` = 돈이 모이기 시작한 때, 잭팟 때 `prev = since, since = 지금`으로 한 번에 바꿈 → `fountain_win.wait`(ms) · `n`(몇 번째 소원). 화면 `jpWait`
+  - **보안 (#10)**: 요청 몸통에서 `_`로 시작하는 값은 route가 지움 (예전엔 `_o: {k:'jackpot'}`을 보내면 잭팟을 고를 수 있었음). 서버 안에서만 쓰는 값은 꼭 `_` 이름으로 서버 `jackpot()`이 `UPDATE … SET last = pool, pool = 0 RETURNING last`로 한 번에 비움, 던진 100골드는 저장 뒤(`after`) pool에 더함. `GET /api/fountain` (15초 기억). play()가 다시 시도해도 같은 결과가 나오게 `b._o`, `b._jp`에 기억
 - **보스**: 미리 싸워 보기를 늘 풀 컨디션(체력 가득·스킬 쿨타임 0)으로 (hunt.js). 현황판 '💀 강한 보스도 싸우기' 체크 = `life.bossF` (`/api/hunt/bossf`, 기본 꺼짐) → 켜면 질 것 같아도 싸우고 지면 쓰러짐(`out.bossDied`)
 - **몬스터 뱃지**: 일반 몬스터 100마리 · 보스 10번 (`MON_BADGE`, 그룹 몬스터·보스). hunt.js `reward`가 `cnt.mk_종류`를 셈 (2026-11-21부터 센 수). 그림은 `mon-종류`
 - 궁수 자동 사냥: 2마리 넘게 2칸 안이거나 2.5초 넘게 물러나기만 하면 3초 동안 그 자리에서 쏨, 물러나는 중에도 목표가 멀면 덤비는 몬스터를 쏨
