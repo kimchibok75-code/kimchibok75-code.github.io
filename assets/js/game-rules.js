@@ -799,6 +799,7 @@ export const GUIDE_Q = [
   ['crops', '🧺', '작물 수확하기', '3분이면 다 자라요. 다 자란 두둑을 누르면 수확해요.', 'crops', 1, '텃밭', 0, { gold: 300 }],
   ['cropSold', '💰', '작물 팔기', '텃밭 창고 → 팔기 탭에서 작물을 골드로 바꿔요.', 'cropSold', 1, '텃밭', 1, { gold: 300 }],
   ['job', '☕', '카페 알바 하기', '카페에서 1분 알바를 하면 알바비와 손님 팁을 받아요. 할수록 알바 레벨이 올라요.', 'job', 1, '카페', 1, { gold: 500 }],
+  ['auto', '🧺', '자동 생활 켜 보기', '오른쪽 🧺 자동 버튼을 누르면 캐릭터가 알아서 텃밭·나무·바위·낚시를 돌아다니며 해요. 게임 화면을 켜 둔 동안만 해요.', 'gAuto', 1, '', 0, { gold: 300 }],   // 2026-11-20 사용자 요청
   ['hall', '🏛️', '마을회관 둘러보기', '마을회관에서 내 집을 짓고, 마을 소식과 공동 건설을 볼 수 있어요.', 'gHall', 1, '회관', 1, { gold: 300 }],
   ['give', '🏗️', '공동 건설에 기부하기', '마을회관 → 마을 탭. 다 같이 모아 지으면 모두에게 효과가 생겨요.', 'give', 1, '회관', 1, { gold: 10000, wood: 60, stone: 40 }],
   ['dong', '🏡', '치복동 들어가기', '타운 남쪽의 🏡 치복동 포탈을 지나면 집들이 모인 동네가 나와요.', 'gDong', 1, '치복동', 0, { gold: 300 }],
@@ -807,7 +808,7 @@ export const GUIDE_Q = [
   ['house', '🏡', '치복동에 내 집 짓기', '마을회관 → 내 집에서 치복동 자리를 골라 지어요. 기부 보상으로 받은 재료로 지을 수 있어요.', 'house', 1, '회관', 1, { gold: 2000 }],
   ['raid', '🐉', '레이드 참여하기', '30분마다 레이드가 열려요 (정각 드래곤 · 30분 오우거). 모집 창이 뜨면 참가하세요.', 'raid', 1, '', 0, { gold: 5000 }],
 ];
-export const GUIDE_MARKS = ['gMove', 'gBld', 'gWarp', 'gHall', 'gDong', 'gSkin', 'gDex'];
+export const GUIDE_MARKS = ['gMove', 'gBld', 'gWarp', 'gHall', 'gDong', 'gSkin', 'gDex', 'gAuto'];
 // 예전(v1) 순서 → 같은 id가 있으면 그 단계로 옮겨 줌
 const GUIDE_V1 = ['wish', 'wood', 'stone', 'hire', 'fish', 'fishSold', 'plant', 'crops', 'cropSold', 'job', 'npc', 'kills', 'gacha', 'enhTry', 'skillPull', 'boss', 'badge', 'give', 'house', 'raid'];
 export const guideQ = c => { const g = c.life?.gq; return g && g.i < GUIDE_Q.length ? GUIDE_Q[g.i] : null; };

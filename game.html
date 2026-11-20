@@ -1023,6 +1023,7 @@ body.hunting .chat-log { height: 64px; }
   .qbox.mob .qb-chip.g.ok { background: #fff1c9; border-color: #f2a516; animation: gqPulse 1.4s ease-in-out infinite; }
   .qbox.mob .qb-chip .car { font-size: 10px; transition: transform .2s; } .qbox.mob .qb-chip[aria-expanded="true"] .car { transform: rotate(180deg); }
   .qbox.mob .qb-chip small { font-weight: 600; color: #6b7480; }
+  .qbox.mob .qb-card ul { display: grid; } .qbox.mob .qb-card .qhint { display: block; }   /* 2026-11-20 PC에서 접어 둔 기록(cbt-qmin)이 휴대폰 목록까지 숨기던 것 */
   .qbox.mob .qb-card { width: 100%; background: rgba(251, 252, 247, .95); border: 2px solid var(--ink); border-radius: var(--r); box-shadow: var(--shadow); padding: 6px 8px; display: grid; gap: 5px; }
   /* 점프 · 공격만 (이용 버튼 없앰). 공격은 오른쪽 아래 구석, 점프는 그 왼쪽 위 (엄지 둥근 길) */
   .actpad { right: 14px; bottom: calc(var(--padb, 130px) + 14px); gap: 14px; }
@@ -2938,8 +2939,9 @@ const pxR = v => Math.round(v * DPR) / DPR;
 function follow(dt, mw, mh) {
   const vw = W / S.zoom, vh = H / S.zoom;
   let tx = me.x, ty = me.y - (innerWidth <= 760 ? 40 : 0) + (HT ? (innerWidth <= 760 ? -H * .12 : H * .14) / S.zoom : 0);
-  tx = Math.max(vw / 2, Math.min(mw - vw / 2, tx)); ty = Math.max(vh / 2, Math.min(mh - vh / 2, ty));
-  if (vw > mw) tx = mw / 2; if (vh > mh) ty = mh / 2;
+  const cov = innerWidth <= 760 && !HT && !RD ? PAD_COVER / S.zoom : 0;   // 2026-11-20 휴대폰: 아래 창에 가려진 만큼 더 내려가 지도 맨 아래(치복동 포탈 등)가 보이게
+  tx = Math.max(vw / 2, Math.min(mw - vw / 2, tx)); ty = Math.max(vh / 2, Math.min(mh - vh / 2 + cov, ty));
+  if (vw > mw) tx = mw / 2; if (vh > mh + cov) ty = (mh + cov) / 2;
   const k = 1 - Math.exp(-dt * 7); cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k;   // 프레임 간격이 달라도 똑같이 부드럽게
 }
 // 마을에 떠오르는 글자 (채집 +3 등)
@@ -2982,15 +2984,16 @@ function nameTagAt(c, now) {
   if (plain) { ctx.strokeStyle = 'rgba(31,42,58,.35)'; ctx.lineWidth = 1; ctx.stroke(); }
   ctx.fillStyle = plain ? '#1f2a3a' : '#fff'; ctx.fillText(label, c.x + bw / 2, c.y - 57.5);
   if (bd) drawBadge(bd, c.x - tw / 2 + 12, c.y - 57.5, 21);
-  ctx.font = '800 9.5px "IBM Plex Sans KR", sans-serif'; ctx.lineJoin = 'round'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(31,42,58,.8)';
-  ctx.strokeText(`Lv.${c.lv}`, c.x, c.y - 72.5); ctx.fillStyle = '#fff'; ctx.fillText(`Lv.${c.lv}`, c.x, c.y - 72.5);
-  let top = c.y - 79;
+  // 2026-11-20 사용자 요청: 칭호가 이름표 바로 위, Lv은 그 위 (예전엔 Lv → 칭호 순)
+  let top = c.y - 67;
   const tn = c.title && c.title !== 'new' ? titleName(c.title) : '';
   if (tn) {
     ctx.font = '700 10.5px "IBM Plex Sans KR", sans-serif'; const w2 = ctx.measureText(tn).width + 12;
     ctx.fillStyle = 'rgba(255,244,214,.95)'; ctx.strokeStyle = 'rgba(176,122,30,.9)'; ctx.lineWidth = 1.2; rr(ctx, c.x - w2 / 2, top - 15, w2, 14, 7); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#8a5a12'; ctx.fillText(tn, c.x, top - 7.5); top -= 16;
   }
+  ctx.font = '800 9.5px "IBM Plex Sans KR", sans-serif'; ctx.lineJoin = 'round'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(31,42,58,.8)';
+  ctx.strokeText(`Lv.${c.lv}`, c.x, top - 6); ctx.fillStyle = '#fff'; ctx.fillText(`Lv.${c.lv}`, c.x, top - 6); top -= 12;
   if (c.brag && !HT) top = drawBrag(c, top, now);
   if (c.emote && c.emote.until > now) { const k = 1 - (c.emote.until - now) / 2200; ctx.font = '22px sans-serif'; ctx.globalAlpha = Math.min(1, (1 - k) * 3); fillTextIco(ctx, c.emote.e, c.x + tw / 2 + 12, c.y - 60 - k * 14); ctx.globalAlpha = 1; }
   if (c.bubble && c.bubble.until > now) bubbleAt(c.x, top - 2, c.bubble.text, c === me);
@@ -3479,7 +3482,7 @@ function raidSheet() {
         <span>✨<b>${fmtN(R.exp)}</b><small>경험치 약</small></span>
         <span class="sk">${B.i}<b>스킨 1개 확정</b><small>30% 확률로 2개!</small></span>
       </div>
-      <ul class="rq-tips"><li>👥 10레벨 이상 한 명마다 보상 +3% (최대 +60%)${bonus ? ` · 내가 들어가면 +${bonus}%` : ''} ${itip('🔥 바닥이 빨개지면 피하세요\n💤 쓰러져도 끝까지 있으면 보상을 받아요\n🚪 중간에 나가면 그 레이드 보상은 없어요')}</li></ul>`,
+      <ul class="rq-tips"><li>⚔️ 공격·스킬은 <b>자동</b>이에요. 바닥을 눌러 빨간 공격만 피하세요</li><li>👥 10레벨 이상 한 명마다 보상 +3% (최대 +60%)${bonus ? ` · 내가 들어가면 +${bonus}%` : ''} ${itip('🔥 바닥이 빨개지면 피하세요\n💤 쓰러져도 끝까지 있으면 보상을 받아요\n🚪 중간에 나가면 그 레이드 보상은 없어요')}</li></ul>`,
     foot: `<div class="bs-two">${bbtn('no', '나중에')}${bbtn('join', '⚔️ 참여하기', '하던 사냥·낚시는 멈춰요', { main: true })}</div>`,
     ready: el => {
       clearInterval(RAIDQ.tick);
@@ -3520,7 +3523,7 @@ async function raidJoin(start) {
 }
 function enterRaid(start, boss) {
   loadRaidArt();
-  bgm('raid-' + (boss || raidBossOf(start))); sfx('roar');
+  bgm('raid-' + (boss || raidBossOf(start))); sfx('roar'); toast('⚔️ 레이드는 공격·스킬이 자동이에요. 바닥을 눌러 빨간 공격만 피하세요!');   // 2026-11-20 안내
   boss = RAID_BOSS[boss] ? boss : raidBossOf(start);
   try { localStorage.setItem('cbt-raid', String(start)); } catch {}
   RD = { start, boss, club: 0, back: { x: me.x, y: me.y }, ps: new Map(), hp: 1, max: 1, pat: raidPattern(start, boss), hits: new Set(), fx: [], floats: [], parts: [], atkT: 1, sendT: 0, acc: 0,
@@ -4769,7 +4772,9 @@ let down = null, pinch = null;
 // 나무·바위 찾기 (누르기·마우스 올리기 같이)
 const nodeAtW = w => NODES.find(n => !n.off && Math.abs(w.x - (n.x + .5) * T) < 18 && w.y > n.y * T + (n.k === 'tree' ? -30 : 6) && w.y < (n.y + 1) * T);
 const houseAtW = w => HOUSES.find(h => w.x > h.x * T - 4 && w.x < (h.x + HOUSE_W) * T + 4 && w.y > (h.y - .5) * T && w.y < (h.y + HOUSE_H) * T);
-const bldAtW = w => BUILDINGS.find(b => w.x > b.x * T && w.x < (b.x + b.w) * T && w.y > (b.y - 1) * T && w.y < (b.y + b.h) * T);
+// 2026-11-20 휴대폰: 건물 가장자리를 눌러도 창이 떠서 지나가기 힘들다는 의견 → 가운데 부분(가로 60% · 세로 55%)만 누름
+const BLD_IN = PHONE ? { x: .2, y: .225 } : { x: 0, y: 0 };
+const bldAtW = w => BUILDINGS.find(b => { const ix = b.w * BLD_IN.x, iy = (b.h + 1) * BLD_IN.y; return w.x > (b.x + ix) * T && w.x < (b.x + b.w - ix) * T && w.y > (b.y - 1 + iy) * T && w.y < (b.y + b.h - iy) * T; });
 const onPortal = w => Math.abs(w.x - PORTAL.x) < (ART.portal ? PORTAL_W * .45 : 24) && w.y > (ART.portal ? portalBox().y + 6 : PORTAL.y - 74) && w.y < PORTAL.y + 6;
 const onFountain = w => { const fo = SPOTS.find(s => s.id === 'fountain'); return Math.hypot((w.x - (fo.x + 1) * T) / 50, (w.y - (fo.y + 1) * T - 4) / 42) < 1 ? fo : null; };
 // 마우스가 가리키는 것 (누르기와 같은 순서): 포탈 · 분수 · 나무/바위 · 집 · 건물
@@ -5115,7 +5120,7 @@ function tap(sx, sy, wIn) {
     return;
   }
   if (me.roof && !wIn) { const r = me.roof, fy = w.y + r.h; if (inRoof(r, w.x, fy)) { me.path = [{ x: w.x, y: fy }]; me.then = null; return; } }   // 지붕 위를 걷기
-  const hitP = !wIn && people.filter(shown).find(p => Math.abs(w.x - p.x) < 16 && w.y > p.y - 66 && w.y < p.y + 10), onMe = !wIn && Math.abs(w.x - me.x) < 14 && w.y > me.y - 56 && w.y < me.y + 8;
+  const hitP = !wIn && people.filter(shown).find(p => Math.abs(w.x - p.x) < 16 && w.y > p.y - 66 && w.y < p.y + 10), onMe = !wIn && !PHONE && Math.abs(w.x - me.x) < 14 && w.y > me.y - 56 && w.y < me.y + 8;
   if (me.room === DONG) {   // 치복동
     if (S.place) return setPlaceAt(w.x, w.y);   // 집 자리 고르는 중
     if (hitP) return openProfile(hitP);
@@ -5139,7 +5144,7 @@ function tap(sx, sy, wIn) {
   if (bk) {   // 알바 중엔 카페 앞, 자동 낚시 중엔 강가에서만
     if (hitP) return openProfile(hitP);
     if (onMe) return openPanelTab('stat');
-    const cb = BUILDINGS.find(b => w.x > b.x * T && w.x < (b.x + b.w) * T && w.y > (b.y - 1) * T && w.y < (b.y + b.h) * T);
+    const cb = bldAtW(w);
     if (bk === 'job' && cb?.id === 'cafe') return openBuilding(cb);
     if (bk === 'auto' && cb) return openBuilding(cb);   // 자동 생활 중에도 건물은 이용 가능
     if (bk === 'fish' && (Math.hypot(w.x - FSPOT.x, w.y - FSPOT.y) < 3 * T || tileAt(Math.floor(w.x / T), Math.floor(w.y / T)) === WATER)) return openFishing();
@@ -5662,7 +5667,7 @@ function suggestSheet(b, keep) {
 const BG_CH = [
   ['👣', '마을 익히기', '걷고, 건물을 누르고, 주민과 친해져요', ['move', 'bld', 'npcTake', 'wish', 'warp']],
   ['⚔️', '사냥으로 크기', '사냥 → 레벨업 → 능력치 → 장비를 키워요', ['huntGo', 'kills', 'statUp', 'gacha', 'enhTry']],
-  ['🎣', '마을 일 해 보기', '나무·돌·물고기·작물을 모아 골드로 바꿔요', ['wood', 'stone', 'fish', 'fishSold', 'plant', 'crops', 'cropSold', 'job']],
+  ['🎣', '마을 일 해 보기', '나무·돌·물고기·작물을 모아 골드로 바꿔요', ['wood', 'stone', 'fish', 'fishSold', 'plant', 'crops', 'cropSold', 'job', 'auto']],
   ['🏡', '마을의 주민 되기', '기부하고, 집을 짓고, 다 같이 레이드!', ['hall', 'give', 'dong', 'skin', 'dex', 'house', 'raid']],
 ];
 const BG_SYS = [
@@ -6252,7 +6257,8 @@ function menuOpen(on) { $('#menuPop').hidden = !on; $('#menuBtn').setAttribute('
 $('#menuBtn').onclick = () => menuOpen($('#menuPop').hidden);
 $('#menuPop').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; menuOpen(false); $('#' + b.dataset.m).click(); };
 function menuDotSync() { const a = $('#admBtn'), on = (!a.hidden && !!a.dataset.n) || !$('#newsDot').hidden; if ($('#menuDot').hidden === on) $('#menuDot').hidden = !on; }
-function padPos() { const p = $('#panel'); if (!p) return; const r = p.getBoundingClientRect(), b = r.height ? Math.max(0, innerHeight - r.top) : 0; document.documentElement.style.setProperty('--padb', Math.round(b) + 'px'); }
+var PAD_COVER = 0;   // 휴대폰에서 아래 창이 가리는 높이 (follow가 지도 맨 아래도 보이게 씀)
+function padPos() { const p = $('#panel'); if (!p) return; const r = p.getBoundingClientRect(), b = r.height ? Math.max(0, innerHeight - r.top) : 0; PAD_COVER = b; document.documentElement.style.setProperty('--padb', Math.round(b) + 'px'); }
 addEventListener('resize', padPos); try { new ResizeObserver(padPos).observe($('#panel')); } catch {}
 setInterval(() => { padPos(); try { document.body.classList.toggle('panel-open', $('#panel').classList.contains('open')); menuDotSync(); document.body.classList.toggle('raiding', !!RD); document.body.classList.toggle('ingame', !$('#app').hidden && !S.away); document.body.classList.toggle('modal-open', !modal.hidden); padIcon(); $('#apUse').classList.toggle('off', !spaceTarget()); auSync(); } catch {} }, 250);
 {
@@ -7068,6 +7074,7 @@ function autoSet(on) {
   }
   AU.on = on; AU.hold = 0; AU.mode = ''; AU.left = 0; AU.wait = .3; AU.bad.clear(); AU.i = Math.floor(Math.random() * AU_SEQ.length) - 1; me.path = []; GA = null;
   try { localStorage.setItem('cbt-auto', on ? '1' : '0'); } catch {}
+  if (on) guideMark('gAuto');   // 2026-11-20 가이드: 자동 생활 켜기
   if (on) { toast('🧺 자동 생활 ON · 텃밭을 돌보고, 나무·바위를 캐고, 강·바다에서 낚시해요'); sysMsg('🧺 자동 생활: 캐릭터가 직접 걸어가서 일해요. 번 것은 손으로 한 것과 똑같아요 (게임 화면을 켜 둔 동안만)'); }
   else toast('🧺 자동 생활을 멈췄어요');
   autoUi();
@@ -7226,7 +7233,7 @@ const cropImgC = id => { if (!CROP_BY[id]?.img) return null; let im = CIMG[id]; 
 const cropPic = (x, cls = '') => (x?.img ? `<img class="fpic ${cls}" src="assets/img/crop/${x.id}.webp?v=__BUILD__" alt="">` : `<span class="fpic emo ${cls}">${x?.i || '🌱'}</span>`);
 const cropText = (x, g, big) => `${x.i} ${cropW(g)}짜리 ${x.n}${x.grade !== 'normal' ? `(${fgOf(x.grade).n})` : ''}${big ? ' 왕 큰 것!' : ''}`;
 const fmTabs = () => { const f = LIFE().farm, t = Date.now(), r = f.plots.filter((p, i) => i < farmPlots(f.hoe) && plotStage(p, t) === 'ready').length;
-  return [['field', '🌱 밭', r || ''], ['sell', '💰 팔기', cropBagL().length || ''], ['shop', '🛒 호미·비료'], ['king', '👑 농사왕', kReady(KINGS.farm) ? '!' : '']]; };
+  return [['field', '🌱 밭', r || ''], ['sell', '💰 팔기', cropBagL().length || ''], ['shop', '🛒 상점'], ['king', '👑 농사왕', kReady(KINGS.farm) ? '!' : '']]; };
 const goFarm = () => { closeModal(); teleport(...door('farmshed')); toast('🌱 텃밭 두둑을 누르면 심고 · 수확해요'); };
 function openFarm(keep) {
   if (HT) return;
@@ -7254,7 +7261,7 @@ function openFarm(keep) {
     },   // 2026-11-20 전체 심기 · 전체 수확 버튼 없앰 (사용자 요청)
     async x => {
       const [a, v] = x.split(':');
-      if (a === 'lk') return toast(`🔒 호미를 Lv${plotNeed(+v)}로 올리면 열려요 (🛒 호미·비료 탭)`);
+      if (a === 'lk') return toast(`🔒 호미를 Lv${plotNeed(+v)}로 올리면 열려요 (🛒 상점 탭)`);
       if (a === 'p') { const p = LIFE().farm.plots[+v], st = plotStage(p, Date.now());
         if (st === 'empty') return farmPlant(null); if (st === 'ready') return farmHarvest(+v);   // 2026-11-20 사용자 요청: 심기는 언제나 빈 밭 모두
         return toast(`🌱 무엇이 자랄까요? ${fmtLeft(plotLeftS(p))} 뒤에 다 자라요`); }
@@ -7450,7 +7457,7 @@ function fishDex(b, keep) {
 }
 
 // '왕' 세트 (2026-11-19): 낚시왕(낚시점 탭) · 채굴왕(채석장 탭). 정해진 수마다 한 부위 (모자 → 의상 → 눈 → 검 → 활 → 지팡이), '받기'를 눌러야 받음
-const FS_TABS = [['sell', '💰 팔기'], ['shop', '🛒 낚싯대·미끼'], ['dex', '📖 도감'], ['king', '👑 낚시왕']], QS_TABS = [['work', '👷 알바'], ['king', '⛏️ 채굴왕']];
+const FS_TABS = [['sell', '💰 팔기'], ['shop', '🛒 상점'], ['dex', '📖 도감'], ['king', '👑 낚시왕']], QS_TABS = [['work', '👷 알바'], ['king', '⛏️ 채굴왕']];
 const kCnt = K => LIFE()?.cnt?.[K.cnt] || 0;
 const kReadyL = K => kingReady(K, me.hats, LIFE()?.cnt || {}), kReady = K => kReadyL(K).length > 0;
 const fkNext = () => kReadyL(FISH_KING)[0] || kingNext(FISH_KING, me.hats), fkReady = () => kReady(FISH_KING);
