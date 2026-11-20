@@ -2959,7 +2959,7 @@ function update(dt, now) {
   for (const c of [me, ...people]) if (c.swing > 0) { c.swing = Math.max(0, c.swing - dt); if (!c.swing) c.swMax = 0; }   // 마을 Z 공격 휘두르기 (2026-11-19: 안 줄어서 칼이 머리 위에 멈춰 있었음)
   rodTick(now);
   for (const f of TF) f.t += dt; while (TF.length && TF[0].t > 1.4) TF.shift();
-  if (me.room === DONG) { S.zoom = Math.max(S.zoom, W / (DW * T), H / (DH * T)); follow(dt, DW * T, DH * T); setPlace(DONG_NAME); return; }   // 치복동은 작아서 지도 밖이 안 보이게 확대 하한
+  if (me.room === DONG) { S.zoom = Math.max(S.zoom, W / (DW * T), H / (DH * T)); if (S.place?.cam) placeCam(dt); else follow(dt, DW * T, DH * T); setPlace(DONG_NAME); return; }   // 치복동은 작아서 지도 밖이 안 보이게 확대 하한
   if (me.room) { follow(dt, ROOM_W * T, ROOM_H * T); setPlace(`${S.roomNick || ''}님의 집`); return; }
   npcTick(dt);
   follow(dt, MW * T, MH * T);
@@ -4788,6 +4788,8 @@ cv.addEventListener('pointerleave', () => { S.hover = null; cv.style.cursor = ''
 const pts = new Map();
 cv.addEventListener('pointerdown', e => { try { cv.setPointerCapture(e.pointerId); } catch {} pts.set(e.pointerId, { x: e.offsetX, y: e.offsetY }); if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: S.zoom }; down = null; } else down = { x: e.offsetX, y: e.offsetY, t: performance.now() }; });
 cv.addEventListener('pointermove', e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.offsetX, y: e.offsetY }); if (pinch && pts.size === 2) { const [a, b] = [...pts.values()]; setZoom(pinch.z * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d); return; }
+  // 2026-11-20 집 자리 고르는 중: 끌면 캐릭터 대신 카메라(지도)를 옮김
+  if (S.place?.cam && down && pts.size === 1) { const lx = down.lx ?? down.x, ly = down.ly ?? down.y; if (down.drag || Math.hypot(e.offsetX - down.x, e.offsetY - down.y) > 8) { down.drag = true; S.place.cam.x -= (e.offsetX - lx) / S.zoom; S.place.cam.y -= (e.offsetY - ly) / S.zoom; } down.lx = e.offsetX; down.ly = e.offsetY; return; }
   // 한 손가락(또는 마우스)으로 끌면 그 방향으로 계속 걷기
   if (down && (!HT || HT.manual) && pts.size === 1) { const dx = e.offsetX - down.x, dy = e.offsetY - down.y; if (down.drag || Math.hypot(dx, dy) > 14) { down.drag = true; down.cx = e.offsetX; down.cy = e.offsetY; const l = Math.hypot(dx, dy); STEER.drag = l > 14 ? [dx / l, dy / l] : null; } } });
 cv.addEventListener('pointerup', e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!down) return; if (down.drag) { STEER.drag = null; down = null; return; } const moved = Math.hypot(e.offsetX - down.x, e.offsetY - down.y); if (moved < 10) tap(e.offsetX, e.offsetY); down = null; });
@@ -4814,6 +4816,7 @@ function steerDir() {
 // 칸이 아니라 좌표로 계속 걸음 (벽에 닿으면 옆으로 미끄러짐). 다른 사람 화면에는 0.5초마다 'go' 한 번
 function steerTick(dt) {
   const d = HT || S.away ? null : steerDir();
+  if (S.place?.cam) { if (d) { const v = 560 * dt / S.zoom; S.place.cam.x += d[0] * v; S.place.cam.y += d[1] * v; } if (STEER.on) { STEER.on = false; me.moving = false; } return; }   // 2026-11-20 집 자리 고르는 중: 화살표 = 카메라 이동
   if (d) auHold();
   if (d && BUSY()) { STEER.key.clear(); STEER.drag = null; busyToast(); return; }
   if (d) me.fdir = d;   // 바라보는 방향 (Z 공격이 나가는 쪽)
@@ -7788,11 +7791,19 @@ function hallSheet(b, keep) {
 async function startPlace(roof) {
   closeModal(); closePanel(); GA = null;
   if (me.room !== DONG) { if (me.room > 0) leaveRoom(); if (me.room !== DONG && !(await enterDong())) return; }   // 집은 치복동 A동에 지음 (2026-11-19)
-  S.place = { roof, x: null, y: null, why: '' };
+  S.place = { roof, x: null, y: null, why: '', cam: { x: cam.x, y: cam.y } };   // 캐릭터는 멈추고 카메라만 움직임
+  me.path = []; me.then = null; me.moving = false; STEER.drag = null; STEER.key.clear();
   const cx = Math.floor(me.x / T), cy = Math.floor(me.y / T);
   out: for (let r = 2; r < 16; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; const x = cx + dx - 1, y = cy + dy - 1; if (!placeWhy(x, y)) { Object.assign(S.place, { x, y }); break out; } }
   paintPlace();
-  toast(`🏡 ${DONG_NAME}이에요! 지도를 눌러 집 자리를 고르고, 위의 "여기에 짓기"를 눌러 주세요`);
+  toast(`🏡 ${DONG_NAME}이에요! 화면을 끌어(PC는 화살표도) 둘러보고, 지도를 눌러 집 자리를 고른 뒤 위의 "여기에 짓기"를 눌러 주세요`);
+}
+// 2026-11-20 집 자리 고르는 중의 카메라: 끌기·화살표로 옮김 (캐릭터는 그 자리에 멈춰 있음). 지도 밖으로는 안 나감
+function placeCam(dt) {
+  const p = S.place.cam, mw = DW * T, mh = DH * T, vw = W / S.zoom, vh = H / S.zoom, cov = innerWidth <= 760 ? PAD_COVER / S.zoom : 0;
+  p.x = vw >= mw ? mw / 2 : Math.max(vw / 2, Math.min(mw - vw / 2, p.x));
+  p.y = vh >= mh + cov ? (mh + cov) / 2 : Math.max(vh / 2, Math.min(mh - vh / 2 + cov, p.y));
+  const k = 1 - Math.exp(-dt * 18); cam.x += (p.x - cam.x) * k; cam.y += (p.y - cam.y) * k;
 }
 function setPlaceAt(wx, wy) { const x = Math.floor(wx / T) - 1, y = Math.floor(wy / T) - 1; Object.assign(S.place, { x, y, why: placeWhy(x, y) }); paintPlace(); }
 function paintPlace() {
