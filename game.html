@@ -6648,7 +6648,7 @@ function showLimit() {
   try { S.away = true; NET.want = false; NET.ws?.close(); closeModal(); if (typeof SV !== 'undefined' && SV.on) { SV.on = false; $('#saver').hidden = true; } } catch {}
   const draw = () => { const t = Math.ceil(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate() + 1) - Date.now()) / 1000, h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = Math.floor(t % 60);
     $('#limitLeft').textContent = ` · 남은 시간 ${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; };
-  const check = async () => { if (LOCAL_LIMIT) return; try { const r = await fetch(API + '/api/health', { cache: 'no-store' }); if (r.ok) location.reload(); } catch {} };
+  const check = async () => { if (LOCAL_LIMIT) return; try { const r = await fetch(API + '/api/health', { cache: 'no-store' }); const h = r.ok ? await r.json().catch(() => ({})) : null; if (h && !h.full) location.reload(); } catch {} };
   $('#limitGo').onclick = check; draw(); LM.tick = setInterval(draw, 1000); LM.t = setInterval(check, 5 * 60e3);
 }
 const LOCAL_LIMIT = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('limit') === '1';   // 시험용: 주소에 &limit=1
@@ -6660,6 +6660,7 @@ async function api(path, body, opts = {}) {
   try { r = await fetch(API + path, { method: body ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json', ...(devId() ? { 'X-Dev': devId() } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: body ? JSON.stringify(body) : undefined, keepalive: !!opts.keepalive }); }
   catch { limitCheck(); throw new Error('서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요'); }   // 무료 한도 초과일 수도 있어서 확인
   const j = await r.json().catch(() => ({}));
+  if (j.limit) showLimit();   // 2026-11-21 서버가 무료 한도 초과라고 알려 줌 (D1 하루 쓰기 한도)
   if (r.status === 429 && !j.error || r.status >= 500 && /exceed|limit|quota/i.test(j.error || '')) limitCheck();
   if (r.status === 401 && token && !opts.quiet401) { token = null; store.del('cbt-token'); }
   if (r.status === 503 && j.error) showMaint(j.error);

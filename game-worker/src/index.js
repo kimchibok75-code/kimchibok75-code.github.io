@@ -69,6 +69,7 @@ export default {
     try { res = await route(req, env, new URL(req.url)); }
     catch (e) {
       if (e instanceof HttpError) res = json({ error: e.message }, e.status);
+      else if (/exceeded D1's free tier|free tier daily/i.test(String(e))) { D1_FULL = Date.now(); res = json({ error: '오늘 무료 서버를 다 썼어요. 오전 9시에 다시 열려요', limit: 1 }, 429); }   // 2026-11-21 D1 무료 한도(하루 쓰기) 초과 → 화면이 한도 안내를 띄움
       else { console.error(e?.stack || String(e)); res = json({ error: '서버에 문제가 생겼어요. 잠시 뒤에 다시 해 주세요' }, 500); }
     }
     for (const [k, v] of Object.entries(cors)) res.headers.set(k, v);
@@ -78,7 +79,7 @@ export default {
 
 async function route(req, env, url) {
   const p = url.pathname, m = req.method;
-  if (p === '/' || p === '/api/health') { const M = await maintGet(env); return json({ ok: true, name: '치복 타운 서버', stage: 4, maint: M.on ? (M.msg || MAINT_MSG) : '' }); }
+  if (p === '/' || p === '/api/health') { const M = await maintGet(env); return json({ ok: true, name: '치복 타운 서버', stage: 4, maint: M.on ? (M.msg || MAINT_MSG) : '', full: Date.now() - D1_FULL < 10 * 60e3 ? 1 : 0 }); }   // full = 최근 10분 안에 D1 한도 초과를 봄
   if (m === 'GET' && p === '/api/mods-order') return json(await modOrderGet(env));   // 누구나 읽기 (홈페이지 모드 추천 순서)
   if (m === 'POST' && p === '/api/signup') return signup(req, env);
   if (m === 'POST' && p === '/api/login') return login(req, env);
@@ -328,6 +329,7 @@ function raidGroup(rows) {
 }
 // 소원 분수 잭팟 (2026-11-21): 모인 돈(pool)을 한 번에 0으로 바꾸며 그 값을 읽음 → × 1.5. 당첨자는 최근 10명만 남김
 let FOUNT = { at: 0, v: null };
+let D1_FULL = 0;   // 이 서버가 마지막으로 D1 무료 한도 초과를 본 때
 async function fountain(env) {
   if (FOUNT.v && Date.now() - FOUNT.at < 15e3) return FOUNT.v;
   const [f, w] = await Promise.all([env.DB.prepare('SELECT pool, since FROM fountain WHERE id = 1').first(), env.DB.prepare('SELECT nick, gold, at, wait, n FROM fountain_win ORDER BY id DESC LIMIT 10').all()]);
