@@ -298,7 +298,7 @@ export function newCharacter() {
 export const spentPoints = c => c.str + c.dex + c.int + c.luk - 20;
 
 // ───────── 사냥터 (기획서 4장) ─────────
-export const LV_CAP = 55;            // 지금 열린 최고 레벨 (사냥터를 추가하면 올리기)
+export const LV_CAP = 999;           // 최고 레벨 (2026-11-20 55 → 999: 도달하라는 게 아니라 열어 두기만)
 export const HUNT = { offlineMax: 4 * 3600, offlineEff: .5, offlineExp: .1, offlineHunt: .5, onlineGap: 90, bossEvery: 300, deathLoss: .1, townRegen: .02, huntRegen: .015, goldMul: .6 };   // huntRegen 2026-11-17 .02 → .015 (몬스터 기믹과 함께: 물약이 필요하게)   // 2026-11-16 1.15 → .6 (사냥 골드가 낚시·알바보다 너무 많아서 절반쯤으로)   // goldMul: 사냥에서 장비가 안 떨어지는 대신 골드 +15%
 // 2026-11-17: 모두 최대 체력 비율로 (작은 20% · 큰 50% · 특대 100%)
 export const POTS = { s: { n: '작은 음료', i: '🥤', d: '최대 체력의 20%', price: 20, heal: max => Math.round(max * .2) }, l: { n: '큰 음료', i: '🧋', d: '최대 체력의 50%', price: 70, heal: max => Math.round(max * .5) }, xl: { n: '특대 음료', i: '🍹', d: '최대 체력의 100%', price: 200, heal: max => Math.round(max) } };
@@ -585,7 +585,7 @@ export const TITLES = [
   tt('lv5', '첫발을 뗀', '성장', 'lv', 5, { hpP: 1 }, '5레벨 달성'), tt('lv10', '10레벨을 달성한', '성장', 'lv', 10, { atkP: 1 }, '10레벨 달성'),
   tt('lv20', '20레벨을 달성한', '성장', 'lv', 20, { hpP: 2 }, '20레벨 달성'), tt('lv30', '30레벨을 달성한', '성장', 'lv', 30, { atkP: 2 }, '30레벨 달성'),
   tt('lv40', '40레벨을 달성한', '성장', 'lv', 40, { defP: 2 }, '40레벨 달성'), tt('lv50', '50레벨을 달성한', '성장', 'lv', 50, { atkP: 3 }, '50레벨 달성'),
-  tt('lv55', '마을에서 제일 센', '성장', 'lv', 55, { crit: 2, hpP: 2 }, '지금 열린 최고 레벨(55) 달성'),
+  tt('lv55', '마을에서 제일 센', '성장', 'lv', 55, { crit: 2, hpP: 2 }, '55레벨 달성'),
   tt('str100', '힘이 넘치는', '성장', 'str', 100, { hpP: 2 }, '힘 100'), tt('dex100', '날렵한', '성장', 'dex', 100, { eva: 1 }, '민첩 100'),
   tt('int100', '똑똑한', '성장', 'int', 100, { defP: 2 }, '지력 100'), tt('luk100', '운이 좋은', '성장', 'luk', 100, { goldP: 2 }, '운 100'),
   tt('k100', '사냥을 시작한', '사냥', 'kills', 100, { goldP: 1 }, '몬스터 100마리'), tt('k1000', '몬스터를 잡는', '사냥', 'kills', 1000, { atkP: 1 }, '몬스터 1,000마리'),
