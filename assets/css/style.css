@@ -752,3 +752,34 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
 .art-body .xtable.mood { table-layout: fixed; }
 .art-body .xtable.mood thead th:first-child { width: 24%; }
 @media (max-width: 600px) { .art-body .xtable.mood { font-size: 13px; } .art-body .xtable.mood thead img { width: 40px; height: 40px; } .art-body .xtable.mood th, .art-body .xtable.mood td { padding: 7px 3px; } }
+
+/* 읽을 거리: 유전자 아이콘 칸 · 구울 정리 표 (2026-11-21) */
+.art-body .ggrid { display: inline-flex; flex-direction: column; gap: 4px; margin: 4px 0 14px; max-width: 100%; }
+.art-body .ggrid > div { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border-radius: 10px; }
+.art-body .ggrid .g-up { background: rgba(140, 220, 100, .28); }
+.art-body .ggrid .g-dn { background: rgba(255, 140, 115, .3); }
+.art-body .ggrid img { width: 52px; height: 52px; background: #fff; border-radius: 8px; padding: 4px; object-fit: contain; }
+.art-body .ggrid.solo > div { background: var(--glass); border: 1px solid var(--stroke); }
+.art-body .legend { font-size: 14.5px; color: var(--muted); }
+.art-body .legend span { display: inline-block; padding: 1px 8px; border-radius: 6px; font-weight: 600; color: var(--text, inherit); }
+.art-body .legend .up { background: rgba(140, 220, 100, .35); }
+.art-body .legend .dn { background: rgba(255, 140, 115, .38); }
+.art-body ul.gl { margin: 0 0 16px; padding-left: 20px; list-style: circle; }
+.art-body ul.gl li { margin: 0 0 10px; }
+.art-body ul.gl li p { margin: 0 0 6px; }
+.art-body ul.gl .note { color: var(--muted); }
+.art-body ul.gl figure.one { margin: 8px 0 8px; }
+.art-body small { font-size: 12px; color: var(--muted); }
+.art-body .xtable.gsum th, .art-body .xtable.gsum td { padding: 6px; }
+.art-body .xtable.gsum td img { width: 34px; height: 34px; background: #fff; border-radius: 6px; padding: 2px; margin: 2px; vertical-align: middle; object-fit: contain; }
+.art-body .xtable.gsum .me { background: rgba(200, 130, 190, .25); font-size: 14px; }
+.art-body .xtable.gsum .up { background: rgba(140, 220, 100, .2); }
+.art-body .xtable.gsum .dn { background: rgba(255, 140, 115, .22); }
+.art-body .xtable.gsum thead .me, .art-body .xtable.gsum thead .up, .art-body .xtable.gsum thead .dn { font-weight: 700; }
+@media (max-width: 600px) { .art-body .ggrid img { width: 44px; height: 44px; } .art-body .xtable.gsum td img { width: 26px; height: 26px; } .art-body .xtable.gsum { font-size: 13px; } }
+.art-body .xtable.gsum { table-layout: fixed; }
+.art-body .xtable.gsum thead th:nth-child(1) { width: 20%; }
+.art-body .xtable.gsum thead th:nth-child(2) { width: 17%; }
+.art-body .xtable.gsum thead th:nth-child(3) { width: 40%; }
+.art-body .xtable.gsum tbody th { font-size: 14.5px; }
+.art-body .xtable.gsum td img, .art-body .ggrid img { display: inline-block; }
