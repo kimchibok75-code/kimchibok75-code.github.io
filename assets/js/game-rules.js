@@ -118,7 +118,7 @@ export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'clear', n: '�
   { id: 'farmking', n: '🌾 농사왕 밀짚모자', price: 0, fk: 1, fx: { farmP: 8, goldP: 2 } },
   { id: 'huntking', n: '⚔️ 사냥왕 모자', price: 0, fk: 1, fx: { atkP: 2, expP: 2 } },
   { id: 'bingom', n: '🎱 빙고 마스터 모자', price: 0, fk: 1, bgc: 1, fx: { goldP: 2, expP: 1 } },
-  { id: 'maid', n: '🎀 알바왕 머리띠', price: 0, fk: 1, fx: { goldP: 3, hpP: 2 } }];   // 2026-11-22 알바왕(메이드복) 세트: 카페 '알바왕' 탭 보상. 경험치 효과는 넣지 않음 (사용자 요청)   // 2026-11-21 빙고 마스터 (이벤트 상점 빙고코인샵, 효과는 임시)   // 2026-11-21 사냥왕 (사냥꾼 쉼터 보상)   // fk = 낚시점 '낚시왕' 보상 (2026-11-19, 상점에 안 팖)   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
+  { id: 'maid', n: '🎀 알바왕 머리띠', price: 0, fk: 1, fx: { goldP: 2, hpP: 1 } }];   // 2026-11-22 알바왕(메이드복) 세트: 카페 '알바왕' 탭 보상. 경험치 효과는 넣지 않음 (사용자 요청)   // 2026-11-21 빙고 마스터 (이벤트 상점 빙고코인샵, 효과는 임시)   // 2026-11-21 사냥왕 (사냥꾼 쉼터 보상)   // fk = 낚시점 '낚시왕' 보상 (2026-11-19, 상점에 안 팖)   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
 // 눈 모양 스킨 (가진 것은 hats 목록에 'eye:별' 처럼 저장). dot은 기본
 export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 10000, fx: { defP: 3 } }, { id: 'star', n: '⭐ 별 눈', price: 10000, fx: { expP: 3 } }, { id: 'wink', n: '😉 윙크', price: 15000, fx: { crit: 2, atkP: 0.5 } }, { id: 'heart', n: '💗 하트 눈', price: 15000, fx: { hpP: 4 } }, { id: 'cat', n: '🐱 고양이 눈', price: 15000, fx: { fishC: 8 } }, { id: 'big', n: '✨ 반짝 큰 눈', price: 20000, fx: { goldP: 5 } },
   { id: 'rdragon', n: '🐉 용의 눈', price: 0, raid: 'rdragon', fx: { crit: 3, expP: 5 } },
@@ -130,7 +130,7 @@ export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: '
   { id: 'farmking', n: '🌾 농사왕 눈', price: 0, fk: 1, fx: { crit: 2, farmP: 4 } },
   { id: 'huntking', n: '⚔️ 사냥왕 눈', price: 0, fk: 1, fx: { crit: 2, bossP: 3 } },
   { id: 'bingom', n: '🎱 빙고 마스터 눈', price: 0, fk: 1, bgc: 1, fx: { crit: 1, goldP: 2 } },
-  { id: 'maid', n: '🎀 알바왕 눈', price: 0, fk: 1, fx: { crit: 2, goldP: 2 } }];
+  { id: 'maid', n: '🎀 알바왕 눈', price: 0, fk: 1, fx: { crit: 1, goldP: 1 } }];
 // 의상 스킨 (몸 전체 겉모습, 입으면 갑옷 그림 대신 보임). 가진 것은 c.hats 에 'suit:id', 입은 것은 c.suit
 export const SUITS = [
   { id: 'hoodie', n: '🧥 후드티', price: 10000, fx: { spdP: 3 } },
@@ -148,7 +148,7 @@ export const SUITS = [
   { id: 'farmking', n: '🌾 농사왕 멜빵바지', price: 0, fk: 1, fx: { hpP: 4, farmP: 10 } },
   { id: 'huntking', n: '⚔️ 사냥왕 갑옷', price: 0, fk: 1, fx: { hpP: 4, defP: 3 } },
   { id: 'bingom', n: '🎱 빙고 마스터 코트', price: 0, fk: 1, bgc: 1, fx: { hpP: 1, goldP: 2 } },
-  { id: 'maid', n: '🎀 알바왕 메이드복', price: 0, fk: 1, fx: { hpP: 4, defP: 3, goldP: 2 } },
+  { id: 'maid', n: '🎀 알바왕 메이드복', price: 0, fk: 1, fx: { hpP: 2, defP: 1, goldP: 1 } },
 ];
 // 무기 스킨 (그 무기의 겉모습만). 가진 것은 'wsk:무기:id', 쓰는 것은 c.wsk = { sword, bow, staff }
 export const WSKINS = [
@@ -197,9 +197,9 @@ export const WSKINS = [
   { t: 'sword', id: 'bingom', n: '🎱 빙고 마스터 검', price: 0, fk: 1, bgc: 1, fx: { atkP: 1, goldP: 2 } },
   { t: 'bow', id: 'bingom', n: '🎱 빙고 마스터 활', price: 0, fk: 1, bgc: 1, fx: { atkP: 1, goldP: 2 } },
   { t: 'staff', id: 'bingom', n: '🎱 빙고 마스터 지팡이', price: 0, fk: 1, bgc: 1, fx: { atkP: 1, goldP: 2 } },
-  { t: 'sword', id: 'maid', n: '🎀 알바왕 검', price: 0, fk: 1, fx: { atkP: 3, goldP: 3 } },
-  { t: 'bow', id: 'maid', n: '🎀 알바왕 활', price: 0, fk: 1, fx: { atkP: 3, goldP: 3 } },
-  { t: 'staff', id: 'maid', n: '🎀 알바왕 먼지떨이', price: 0, fk: 1, fx: { atkP: 3, goldP: 3 } },
+  { t: 'sword', id: 'maid', n: '🎀 알바왕 검', price: 0, fk: 1, fx: { atkP: 1, goldP: 2 } },
+  { t: 'bow', id: 'maid', n: '🎀 알바왕 활', price: 0, fk: 1, fx: { atkP: 1, goldP: 2 } },
+  { t: 'staff', id: 'maid', n: '🎀 알바왕 먼지떨이', price: 0, fk: 1, fx: { atkP: 1, goldP: 2 } },
 ];
 // 낚시왕 보상 (2026-11-19, 낚시점 '낚시왕' 탭): 물고기 50마리마다 한 부위씩, '받기'를 눌러야 받음. 순서 = 모자 · 의상 · 눈 · 검 · 활 · 지팡이
 // '왕' 세트 (2026-11-19): 낚시왕(낚시점, 물고기 50마리마다) · 채굴왕(채석장, 손으로 캔 석재 100개마다). cnt = life.cnt 의 어느 값으로 셈
@@ -255,7 +255,7 @@ export const KINGS = {
     { t: '손님 200명 맞이하기', u: '명', need: 200, v: c => c.guest || 0 },
     { t: 'VIP 손님 15명 맞이하기', u: '명', need: 15, v: c => c.vip || 0 },
     { t: '카페 알바 300번 끝내기', u: '번', need: 300, v: c => c.job || 0 },
-    { t: '알바 레벨 30 (최고) 되기', u: '레벨', need: 30, v: c => c.cafeLv || 0 },
+    { t: '알바 레벨 20 되기', u: '레벨', need: 20, v: c => c.cafeLv || 0 },
   ] },
 };
 export const FISH_KING = KINGS.fish;
@@ -767,7 +767,7 @@ export const SKIN_THEMES = [
   { id: 'farmking', n: '농사왕', g: '텃밭 창고', fx: { farmP: 5, goldP: 2 } },
   { id: 'huntking', n: '사냥왕', g: '사냥꾼 쉼터', fx: { atkP: 2, bossP: 3, crit: 1 } },
   { id: 'bingom', n: '빙고 마스터', g: '이벤트 상점', fx: { goldP: 3, hpP: 2 } },
-  { id: 'maid', n: '알바왕', g: '카페', fx: { goldP: 4, hpP: 2, crit: 1 } },   // 2026-11-22 경험치 없음
+  { id: 'maid', n: '알바왕', g: '카페', fx: { goldP: 2, hpP: 1, crit: 1 } },   // 2026-11-22 경험치 없음
 ];
 export const themeKeys = id => kingKeys(id);
 export const themeGot = (c, id) => { const own = Array.isArray(c.hats) ? c.hats : []; return themeKeys(id).filter(k => own.includes(k)).length; };

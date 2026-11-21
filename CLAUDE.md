@@ -982,7 +982,7 @@
   - 화면 `tipsSheet` (상태 `TIPB` — `TP`는 이미 다른 데서 씀): 탭 ✍️ 글쓰기 · ⚔️ 전사 · 🏹 궁수 · 🔮 법사 (처음엔 내 직업 탭). 글쓰기는 직업 버튼 3개로 올릴 곳을 고름. 목록 줄을 누르면 글 보기 → 고치기·지우기
   - 진짜 서버에 올릴 때 `d1 migrations apply kimchibok-game --remote` 먼저
 
-- **🎀 알바왕 세트** (id `maid`, `fk: 1`, 효과에 경험치 없음 — 사용자 결정): 카페 창 탭 ☕ 카페 / 🎀 알바왕 (`CF_TABS`, `KINGS.cafe`, 서버 `/api/cafe/king`). 목표: 알바 30번 · 알바 레벨 10 · 손님 200 · VIP 15 · 알바 300번 · 알바 레벨 30. 알바를 끝내거나 그만둘 때 `cnt.guest` · `cnt.vip` · `cnt.cafeLv`(알바 레벨 최고값)을 셈 (2026-11-22부터 센 수)
+- **🎀 알바왕 세트** (id `maid`, `fk: 1`, 효과에 경험치 없음 — 사용자 결정, 부위마다 1~2%만): 카페 창 탭 ☕ 카페 / 🎀 알바왕 (`CF_TABS`, `KINGS.cafe`, 서버 `/api/cafe/king`). 목표: 알바 30번 · 알바 레벨 10 · 손님 200 · VIP 15 · 알바 300번 · 알바 레벨 20(지팡이, 2026-11-22 30 → 20). 알바를 끝내거나 그만둘 때 `cnt.guest` · `cnt.vip` · `cnt.cafeLv`(알바 레벨 최고값)을 셈 (2026-11-22부터 센 수)
   - 그림: 사용자가 한 판에 그린 `내 디자인/스킨_메이드복.png` → `python scripts/img-export/bingo-skin.py "내 디자인/스킨_메이드복.png" 메이드복`(이제 판·이름을 인자로 받음) → 템플릿 `*_guide_메이드복.png` → town-art.py `tpl_set('메이드복', 'md')` → `md-*.webp`, game.html `MDS` · `TSK.maid` · `SUIT_IMG.maid` · suitParts case · `THEME_I.maid`
   - 머리띠·옷 위치 (2026-11-22 사용자 요청: 머리띠가 크고 낮았음, 옷 작았음) → `MDS.hat` [-18.5, -57.7, 37, 26.7] · `suit` [-11.75, -25, 23.5, 22.6]
 - **능력치 버튼 +1 · +10 · +100** (`#statRows`, 서버 `/api/stats`는 한 번에 능력치마다 400까지)
