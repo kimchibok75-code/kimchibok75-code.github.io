@@ -237,7 +237,7 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .legendpop .fpic.big { animation: lpBob 1.6s ease-in-out infinite; filter: drop-shadow(0 0 18px rgba(255,190,60,.85)); } @keyframes lpBob { 50% { transform: translateY(-8px) rotate(-3deg); } }
 .legendpop .btn { margin-top: 10px; min-width: 160px; }
 #modal .legendpop h3, #modal .legendpop p { text-align: center; justify-content: center; width: 100%; } #modal .legendpop .fpic.big { display: block; margin-left: auto; margin-right: auto; } #modal .legendpop .btn { display: block; margin-left: auto; margin-right: auto; }
-#fbagList, #cbagList { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 5px; } #fbagList .fcard, #cbagList .fcard { min-height: 0; cursor: pointer; padding: 6px 2px 4px; } #fbagList .fpic, #cbagList .fpic { width: 48px; height: 34px; } #cbagList .fcard { cursor: default; }
+#fbagList, #cbagList { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 5px; } #fbagList .fcard, #cbagList .fcard { min-height: 0; cursor: pointer; padding: 6px 2px 4px; } #fbagList .fpic, #cbagList .fpic { width: 48px; height: 34px; }
 /* 캐릭터창 칭호 줄: 뱃지 + 칭호 가운데 (2026-11-20) */
 .meTitleRow { justify-content: center; align-items: center; gap: 6px; } .meBadge { width: 30px; height: 30px; cursor: pointer; flex: none; } .meBadge[hidden] { display: none; }
 /* 도감 센터 (2026-11-20) */
@@ -905,6 +905,31 @@ body.bingoing .raidbox { width: min(220px, calc(40% - 12px)); }
   .bg-board { grid-template-columns: repeat(5, 1fr); gap: 4px; }
   .bg-cell { height: min(11.5vw, 50px); font-size: 18px; }
   .bg-go { width: auto; height: 46px; }
+}
+/* 2026-11-21 빙고 UI 크게 · 가운데로 모음 (사용자 요청: 배경·캐릭터가 가려져도 괜찮음) */
+.bgpanel { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 70px 14px 16px; background: rgba(18,12,8,.28); }
+.bgpanel > .bg-calls, .bgpanel > .bg-me { position: static; transform: none; }
+.bgpanel > .bg-calls { width: min(820px, calc(100% - 540px)); max-width: none; min-width: 520px; min-height: 112px; padding: 12px 20px; gap: 16px; border-width: 3px; border-radius: 22px; }
+.bgpanel .bgc-wait { font-size: 21px; }
+.bgpanel .bgc-new { width: 92px; height: 92px; border-width: 4px; } .bgpanel .bgc-new b { font-size: 46px; } .bgpanel .bgc-new small { top: -12px; font-size: 13px; padding: 1px 8px; }
+.bgpanel .bgc-old { gap: 7px; } .bgpanel .bgc-old span { width: 46px; height: 46px; font-size: 20px; border-width: 2.5px; }
+.bgpanel > .bg-me { padding: 16px; gap: 16px; border-width: 3px; border-radius: 24px; }
+.bgpanel .bg-board { grid-template-columns: repeat(5, min(10vh, 96px)); gap: 8px; }
+.bgpanel .bg-cell { height: min(10vh, 96px); font-size: min(4.6vh, 40px); border-radius: 14px; border-width: 2.5px; }
+.bgpanel .bg-cell.on::after { inset: 9px; border-width: 5px; }
+.bgpanel .bg-go { width: 150px; font-size: 34px; border-radius: 18px; } .bgpanel .bg-go.done { font-size: 24px; }
+.bgpanel > .bg-rank { width: 260px; max-height: calc(100% - 80px); top: 70px; padding: 10px 12px; }
+.bgpanel .bg-rank h4 { font-size: 18px; } .bgpanel .bg-rank li { font-size: 16px; padding: 6px 8px; grid-template-columns: 40px 1fr auto; } .bgpanel .bg-rank p { font-size: 14.5px; }
+@media (max-width: 760px) {
+  .bgpanel { justify-content: flex-start; gap: 10px; padding: var(--bgtop, 160px) 8px 100px; background: rgba(18,12,8,.22); }   /* 아래 100px = 아래 정보창 */
+  .bgpanel > .bg-calls { width: 100%; min-width: 0; min-height: 0; padding: 8px 12px; gap: 10px; border-radius: 16px; }
+  .bgpanel .bgc-new { width: 64px; height: 64px; } .bgpanel .bgc-new b { font-size: 31px; }
+  .bgpanel .bgc-old span { width: 34px; height: 34px; font-size: 15px; } .bgpanel .bgc-old span:nth-child(n+6) { display: none; }
+  .bgpanel > .bg-me { width: 100%; flex-direction: column; padding: 10px; gap: 10px; margin-top: auto; margin-bottom: auto; }
+  .bgpanel .bg-board { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .bgpanel .bg-cell { height: min(16vw, 13vh, 76px); font-size: min(7.5vw, 30px); }
+  .bgpanel .bg-go { width: auto; height: 62px; font-size: 28px; }
+  .bgpanel > .bg-rank { top: 62px; width: min(170px, 44%); } .bgpanel .bg-rank h4 { font-size: 14px; } .bgpanel .bg-rank li { font-size: 13.5px; grid-template-columns: 30px 1fr auto; }
 }
 .raidbox { position: absolute; top: 62px; left: 12px; width: min(250px, calc(58% - 12px)); background: rgba(38,24,24,.94); color: #fff; border: 2px solid var(--ink); border-radius: 14px; padding: 8px 12px; z-index: 6; box-shadow: var(--shadow); }
 .raidbox .rb-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 8px; font-size: calc(14px * var(--fs)); }
@@ -4842,9 +4867,28 @@ async function huntDie() {
   try { took(await api('/api/hunt/leave', { died: true })); }
   catch (x) { toast(x.message); if (HT) { HT.dying = false; me.hp = 1; } }
 }
-async function huntSync() {
-  if (SV.on || !HT || HT.dying || huntBusy || S.away || document.visibilityState === 'hidden') return;
+async function huntSync(force) {
+  if (SV.on || !HT || HT.dying || huntBusy || S.away || (!force && document.visibilityState === 'hidden')) return;
   try { took(await api('/api/hunt/sync', {})); } catch (x) { if (x.status === 401) location.reload(); }
+}
+// 2026-11-21 사냥터 보스를 화면에 등장시킴. 이기고 지는 건 서버 계산(hunt.js) 그대로이고, 화면 보스는 그 결과를 보여 주는 역할
+// 체력은 내 초당 피해 약 10초어치로 줄여서 곧 쓰러짐. 서버가 '피함'이면 사라지고, '이김'이면 끝까지 싸워 쓰러뜨림
+function bossAppear() {
+  if (!HT || HT.mons.some(m => m.boss && !m.dead) || performance.now() - (HT.bossT || -1e9) < 30e3) return;   // 30초 안에 또 부르면 무시 (서버 정산이 조금 늦어도 두 번 안 나오게)
+  HT.bossT = performance.now();
+  spawnMon(true); const m = HT.mons[HT.mons.length - 1], hp = Math.max(1, Math.min(m.d.hp, Math.round(raidDps(derive()) * 10)));
+  m.d = { ...m.d, hp }; m.hp = hp; m.aggro = true; m.wait = 0;
+  const x = Math.max(2.5 * T, Math.min((HW - 2.5) * T, me.x + (me.dir < 0 ? -1 : 1) * 4 * T)), y = Math.max(2.5 * T, Math.min((HH - 2.5) * T, me.y));
+  m.x = m.wx = x; m.y = m.wy = y; HT.target = m;
+  fxRing(x, y - 20, '#ffb020', 80, .6); fxBurst(x, y - 20, '#ffd45a', 30, 260, 4); fxShake(10); sfx('boom');
+  floatText(x, y - 70 * (m.d.s || 1), `👑 ${m.d.n} 등장!`, '#ffd45a', 20, 1.6, true); toast(`👑 보스 ${m.d.n} 등장!`);
+}
+function bossResult(h) {   // 서버 정산 결과를 화면 보스에 반영
+  const m = HT?.mons.find(o => o.boss && !o.dead); if (!m) return;
+  if (h.bossSkip?.length && !h.bosses?.length) {   // 너무 강해서 피함 → 보스가 연기와 함께 사라짐
+    fxBurst(m.x, m.y - 20, '#9aa3ad', 26, 180, 4, -40); floatText(m.x, m.y - 60, '💨 피했어요', '#cfd6de', 17, 1.3, true);
+    HT.mons.splice(HT.mons.indexOf(m), 1); if (HT.target === m) HT.target = null;
+  } else if (h.bosses?.length) { m.won = h.bosses[0]; return true; }   // 이김 → 화면 보스를 쓰러뜨릴 때 알림
 }
 function spawnMon(boss) {
   const d = boss ? HT.f.boss : MONS[pick(HT.f.mons)];
@@ -4976,7 +5020,7 @@ function updateHunt(dt) {
   // 물약 자동
   HT.potCD -= dt; if (me.hp <= D.maxHp * me.potAt / 100 && HT.potCD <= 0) usePotion(D);
   for (const f of HT.floats) f.t += dt; HT.floats = HT.floats.filter(f => f.t < f.life);
-  if (me.hp <= 0 && !HT.dying) huntDie();
+  if (me.hp <= 0 && !HT.dying) { if (HT.mons.some(m => m.boss && !m.dead)) me.hp = 1; else huntDie(); }   // 2026-11-21 화면 보스와 싸우는 동안은 화면에서 쓰러지지 않음 (진짜 결과는 서버)
 }
 // 근접: 앞으로 살짝 튀어나가며 베기
 function hitMon(m, D) { me.swing = .18; me.lunge = .12; const h = rollHit(D, m); applyHit(m, h, D, 'melee'); cleaveAround(m, h.dmg * (D.cleave || 0), D); }
@@ -5294,11 +5338,12 @@ function hitMe(m, D) {
 }
 function killMon(m, D) {   // 보여 주기용: 진짜 경험치·골드·장비는 서버가 계산해서 30초마다 알려 줌
   m.dead = true; m.deadT = 0; m.hp = 0; m.g = null; if (HT.target === m) HT.target = null;
+  if (m.boss && m.won) { toast(`👑 보스 ${m.won}를 쓰러뜨렸어요!`); sysMsg(`👑 보스 ${m.won} 처치!`); }
   const cy = m.y - 18 * m.d.s;   // 쓰러질 때 펑! (몸 색 조각 + 금빛 반짝이)
   fxBurst(m.x, cy, m.d.c, m.boss ? 40 : 18, m.boss ? 320 : 230, m.boss ? 5 : 4); fxBurst(m.x, cy, '#ffe28a', m.boss ? 20 : 8, 160, 2.4, 120);
   sfx(m.boss ? 'boom' : 'kill'); fxRing(m.x, cy, '#ffffff', m.boss ? 70 : 38, .35); fxShake(m.boss ? 12 : 4.5); HT.freeze = Math.max(HT.freeze, m.boss ? .2 : .07);
   const e = Math.max(1, Math.round(m.d.exp * expPen(me.lv, m.d.lv)));
-  HT.loc.kills++; HT.loc.exp += e; HT.loc.gold += Math.max(1, Math.round(m.d.gold * (1 + D.goldB / 100))); syncBars();
+  if (!m.boss) { HT.loc.kills++; HT.loc.exp += e; HT.loc.gold += Math.max(1, Math.round(m.d.gold * (1 + D.goldB / 100))); syncBars(); }
   floatText(m.x, m.y - 14, `+${e} EXP`, '#ffe9a8', 13, 1.3);
 }
 const expPen = (lv, mlv) => { const d = lv - mlv; return d >= 10 ? Math.max(.2, 1 - (d - 9) * .1) : 1; };
@@ -5444,8 +5489,9 @@ cv.addEventListener('wheel', e => { e.preventDefault(); setZoom(S.zoom * (e.delt
 const zoomKey = () => (innerWidth <= 760 ? 'cbt-zoom-m' : 'cbt-zoom-pc') + (HT ? '-hunt' : '');
 let zoomT = null;
 const raidFit = () => Math.min(W / RW(), H / RH());   // 레이드 맵 전체가 화면에 들어오는 배율
-function setZoom(z) { S.zoom = Math.max(RD ? Math.min(.7, raidFit()) : .7, Math.min(2.6, z)); clearTimeout(zoomT); if (RD) return; zoomT = setTimeout(() => { try { localStorage.setItem(zoomKey(), S.zoom.toFixed(2)); } catch {} }, 300); }
-function loadZoom() { clearTimeout(zoomT); let z = 0; try { z = +localStorage.getItem(zoomKey()); } catch {} S.zoom = z ? Math.max(.7, Math.min(2.6, z)) : HT && innerWidth <= 760 ? 1.15 : 1.6; }
+const ZOOM_MAX = 4;   // 2026-11-21 가장 가까이 2.6 → 4 (사용자 요청)
+function setZoom(z) { S.zoom = Math.max(RD ? Math.min(.7, raidFit()) : .7, Math.min(ZOOM_MAX, z)); clearTimeout(zoomT); if (RD) return; zoomT = setTimeout(() => { try { localStorage.setItem(zoomKey(), S.zoom.toFixed(2)); } catch {} }, 300); }
+function loadZoom() { clearTimeout(zoomT); let z = 0; try { z = +localStorage.getItem(zoomKey()); } catch {} S.zoom = z ? Math.max(.7, Math.min(ZOOM_MAX, z)) : HT && innerWidth <= 760 ? 1.15 : 1.6; }
 loadZoom();
 $('#zIn').onclick = () => setZoom(S.zoom * 1.2); $('#zOut').onclick = () => setZoom(S.zoom / 1.2);
 
@@ -7100,7 +7146,8 @@ function syncBars() {
     $('#hbTime').textContent = `⏱ ${sec >= 3600 ? Math.floor(sec / 3600) + ':' : ''}${String(Math.floor(sec % 3600 / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
     const L = HT.loc;   // 서버 정산(30초마다) 뒤에 화면에서 잡은 만큼 더해서 보여 줌
     $('#hbKills').textContent = (v.kills + L.kills).toLocaleString(); $('#hbExp').textContent = `+${(v.exp + L.exp).toLocaleString()}`; $('#hbGold').textContent = `+${(v.gold + L.gold).toLocaleString()}`; $('#hbDrops').textContent = v.drops;
-    $('#hbBoss').textContent = `👑 보스까지 ${Math.floor(b / 60)}:${String(b % 60).padStart(2, '0')}`;
+    $('#hbBoss').textContent = b ? `👑 보스까지 ${Math.floor(b / 60)}:${String(b % 60).padStart(2, '0')}` : `👑 보스와 싸우는 중!`;
+    if (!b && !HT.bossCall && !HT.dying) { HT.bossCall = 1; bossAppear(); setTimeout(() => huntSync(true), 1200); }   // 2026-11-21 보스 시간이 되면 바로 화면에 보스 + 서버 정산
     { const ps = `${me.pots.s}|${me.pots.l}|${me.pots.xl}`, el = $('#hbPots'); if (el.dataset.sig !== ps) { el.dataset.sig = ps; el.innerHTML = [['🥤', me.pots.s], ['🧋', me.pots.l], ['🍹', me.pots.xl]].map(([i, n]) => `<i class="${n ? '' : 'no'}">${i} ${n}</i>`).join(''); iconize(el); } }
   }
 }
@@ -7232,6 +7279,19 @@ const savePotAt = e => { setPotAt(e.target.value); api('/api/pot-at', { v: me.po
 $('#potAt').onchange = savePotAt; $('#hbPot').onchange = savePotAt;
 $('#ptabs').addEventListener('click', e => { const p = e.target.closest('[data-p]')?.dataset.p; if (p) showTab(p); });
 function showTab(p) { $$('#ptabs [data-p]').forEach(b => b.setAttribute('aria-selected', b.dataset.p === p)); $$('.panel-body > .pane').forEach(el => (el.hidden = el.dataset.pane !== p)); }
+// 가방의 작물을 누르면 → 자랑하기 (2026-11-21, 물고기와 같음): 머리 위로 들어 보임 (움직이면 넣음). 다른 사람에게는 실시간 {t:'crop'}
+$('#cbagList').onclick = async e => {
+  const el = e.target.closest('[data-ck]'); if (!el) return;
+  const f = cropBagL().find(x => x.k === +el.dataset.ck), d = f && CROP_BY[f.id]; if (!d) return;
+  const big = isBigCrop(d.id, f.g);
+  if (!await ask(`${d.n} · ${cropW(f.g)} · ${FISH_GRADES[d.grade].n}
+팔면 🪙 ${fmtN(f.p)}`, { title: `${d.i} ${d.n}`, ok: '🙌 자랑하기', no: '닫기' })) return;
+  if (HT || me.room > 0) return toast('마을에서만 자랑할 수 있어요');
+  if (F.busy) return toast('🎣 낚시가 끝난 뒤에 자랑해 보세요');
+  me.path = []; me.moving = false; me.fz = null; me.brag = { crop: { id: d.id, i: d.i, n: d.n, grade: d.grade, g: f.g }, big, t0: performance.now() };
+  say(me, `${cropW(f.g)}짜리 ${d.n}${big ? '(대물)' : ''} 자랑!`, 3600); closePanel(); emote(me, '😎');
+  netSend({ t: 'crop', id: d.id, g: f.g, big });
+};
 // 가방의 물고기를 누르면 → 자랑하기 (2026-11-20): 그 자리에서 머리 위로 들어 보임 (움직이면 넣음)
 $('#fbagList').onclick = async e => {
   const el = e.target.closest('[data-fk]'); if (!el) return;
@@ -7340,7 +7400,8 @@ function took(j) {
   applyMe(j.me, !(HT && !j.me.char.hunt));   // 버튼 응답으로 순간이동하지 않게. 사냥에서 돌아올 때만 서버 위치로
   const h = j.hunt, srv = j.me.char.hunt;
   if (h && inTown) {
-    if (h.bosses?.length) { toast(`👑 보스 ${h.bosses[0]}를 쓰러뜨렸어요!`); sysMsg(`👑 보스 ${h.bosses.join(', ')} 처치!`); }
+    const bossLater = (h.bosses?.length || h.bossSkip?.length) && bossResult(h);
+    if (h.bosses?.length && !bossLater) { toast(`👑 보스 ${h.bosses[0]}를 쓰러뜨렸어요!`); sysMsg(`👑 보스 ${h.bosses.join(', ')} 처치!`); }
     if (h.bossSkip?.length) sysMsg(`👑 보스 ${h.bossSkip[0]}가 너무 강해서 피했어요 (손해 없음 · 현황판 '강한 보스도 싸우기'를 켜면 싸워요)`);
     for (const it of h.drops || []) if (it.g && ['epic', 'legend', 'myth'].includes(it.g)) { toast(`✨ ${GRADES[it.g].n} 장비! ${itemName(it)}`); sysMsg(`✨ ${GRADES[it.g].n} 장비 획득: ${itemName(it)}`); }
     if (HT && h.drops?.length) h.drops.slice(0, 3).forEach((it, i) => floatText(me.x + (i - 1) * 26, me.y - 84 - i * 10, `${itemIcon(it)} ${GRADES[it.g].n}`, it.g === 'normal' ? '#e6ebf2' : GRADES[it.g].c, 14, 1.8));
@@ -7360,7 +7421,7 @@ function took(j) {
   if (inTown) {
     if (srv && !HT) enterHunt(srv);
     else if (!srv && HT) exitHuntView();
-    else if (srv && HT) { HT.srv = srv; HT.loc = { kills: 0, exp: 0, gold: 0 }; HT.bossAt = performance.now() + (srv.boss - srv.t) * 1000; }
+    else if (srv && HT) { HT.srv = srv; HT.loc = { kills: 0, exp: 0, gold: 0 }; HT.bossAt = performance.now() + Math.max(1, srv.boss - srv.t) * 1000; HT.bossCall = 0; }
     for (const id of j.newTitles || []) { const x = titleOf(id); toast(`🏷️ 새 칭호 「${x.n}」!`); sysMsg(`🏷️ 새 칭호를 얻었어요: 「${x.n}」 · ${fxText(x.fx) || '효과 없음'} · 캐릭터창의 칭호를 눌러 달 수 있어요`); emote(me, '🎉'); }
     if (j.bonus) { toast(`🎁 오늘 첫 접속 보너스 🪙 ${j.bonus.toLocaleString()}`); sysMsg(`🎁 오늘 첫 접속 보너스: 골드 ${j.bonus.toLocaleString()} (레벨 × 20) · 📋 소식판에서 오늘 의뢰를 확인해 보세요!`); setTimeout(() => { if (modal.hidden && !guideOn()) openNews('daily'); }, 900); }
     if (j.daily?.length) tookDaily(j.daily);
@@ -8098,7 +8159,7 @@ function renderWallet() {
   $('#fbagList').innerHTML = fb.length ? [...fb].sort((a, b) => b.p - a.p).map(f => { const d = FISH_BY[f.id] || { n: '?', grade: 'normal' }; return `<button type="button" class="fcard" data-fk="${f.k}" style="--gc:${FISH_GRADES[d.grade].c}">${fishPic(d)}<b>${esc(d.n)}</b><small>${fmtCm(f.len)}</small><em>🪙 ${fmtN(f.p)}</em></button>`; }).join('') : '<p class="muted">비었어요. 물가를 눌러 낚시해 보세요!</p>';
   const cb = L.farm?.bag || [];   // 2026-11-20 작물 가방 (보기만, 팔기는 텃밭 창고에서)
   $('#cbagN').textContent = `${cb.length} / ${FARM.bag} · 텃밭 창고에서 팔아요`;
-  $('#cbagList').innerHTML = cb.length ? [...cb].sort((a, b) => b.p - a.p).map(f => { const d = CROP_BY[f.id] || { n: '?', grade: 'normal' }; return `<div class="fcard" style="--gc:${FISH_GRADES[d.grade].c}">${cropPic(d)}<b>${esc(d.n)}</b><small>${cropW(f.g)}</small><em>🪙 ${fmtN(f.p)}</em></div>`; }).join('') : '<p class="muted">비었어요. 텃밭에서 수확해 보세요!</p>';
+  $('#cbagList').innerHTML = cb.length ? [...cb].sort((a, b) => b.p - a.p).map(f => { const d = CROP_BY[f.id] || { n: '?', grade: 'normal' }; return `<div class="fcard" data-ck="${f.k}" style="--gc:${FISH_GRADES[d.grade].c}">${cropPic(d)}<b>${esc(d.n)}</b><small>${cropW(f.g)}</small><em>🪙 ${fmtN(f.p)}</em></div>`; }).join('') : '<p class="muted">비었어요. 텃밭에서 수확해 보세요!</p>';
   $('#wallet').innerHTML = [['🪙', '골드', me.gold], [RES.wood.i, RES.wood.n, L.res.wood], [RES.stone.i, RES.stone.n, L.res.stone]]
     .map(([i, n, v]) => `<div><span class="wi">${i}</span><small>${n}</small><b>${v.toLocaleString()}</b></div>`).join('');
 }
@@ -9590,7 +9651,7 @@ const GUIDE = () => [
     ['낚시점', '골드로 낚싯대(낚을 확률 · 더 큰 물고기)와 미끼(희귀 · 전설 확률)를 10단계까지 올려요. 한 번 사면 영원히 써요. 도감 탭에서 모든 물고기를 볼 수 있어요.'],
     ['전설 물고기', '낚싯대 Lv6 · 미끼 Lv6부터 나와요. 물고기마다 필요한 낚싯대 단계가 달라요 (최고는 Lv10). 처음 낚으면 그 물고기 전용 칭호를 받아요!'],
     ['낚시왕', '낚시점 → 낚시왕 탭. 부위마다 목표가 달라요 (물고기 수 · 낚시 횟수 · 희귀 · 도감 · 대어 · 전설). 이룬 것부터 받기를 눌러 받아요.'],
-    ['자랑하기', '낚은 물고기는 움직이기 전까지 머리 위로 들고 있어요. 캐릭터창 → 가방에서 물고기를 눌러 🙌 자랑하기도 할 수 있어요.'],
+    ['자랑하기', '낚은 물고기는 움직이기 전까지 머리 위로 들고 있어요. 캐릭터창 → 가방에서 물고기나 작물을 눌러 🙌 자랑하기도 할 수 있어요.'],
     ['장비 올리기 조건', '낚싯대·미끼를 올리려면 골드와 함께 낚시 횟수가 필요해요 (놓친 것도 세요).'],
     ['물고기 그림자', '물속에서 헤엄치는 물고기 그림자 근처로 던지면 좋은 물고기가 잘 나와요. 낚으면 사라지고 다른 곳에 또 나타나요.'],
     ['🏆 낚시 랭킹판', '낚시점 옆 랭킹판에서 제일 비싼 · 제일 큰 · 제일 많이 낚은 사람 순위를 봐요. 🏆 랭킹 창에서도 볼 수 있어요.'],

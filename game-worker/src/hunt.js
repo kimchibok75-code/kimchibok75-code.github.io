@@ -94,7 +94,8 @@ export function settle(c, at, onGap = HUNT.onlineGap) {   // onGap: 100%로 쳐 
   let D = derive(c);
   const st = { hp: Math.min(c.hp, D.maxHp), pots: c.pots, potAt: c.potAt, used: 0, cd: h.cd || {}, sh: 0, bt: 0 };
   let steps = 0, onG = 0, onE = 0, onT = 0;   // 화면을 켜 둔 몫(offLeft가 다 쓰인 뒤)의 골드·경험치·시간 → life.hgr
-  while (sec > 0 && steps++ < MAX_STEPS) {
+  // 2026-11-21 보스 시간이 됐으면 남은 시간이 없어도 바로 보스전 (화면이 보스 시간에 맞춰 정산을 부름. 쓴 시간은 debt로 넘어감)
+  while ((sec > 0 || (h.t >= h.boss && !out.died)) && steps++ < MAX_STEPS) {
     const lv0 = c.lv, isBoss = h.t >= h.boss;
     if (isBoss) {
       h.boss += HUNT.bossEvery;
