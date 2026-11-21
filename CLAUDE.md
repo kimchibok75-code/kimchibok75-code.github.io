@@ -947,8 +947,24 @@
   - 서버 hunt.js `settle`: `h.t >= h.boss`면 남은 시간이 없어도 보스전 (쓴 시간은 debt)
 - 빙고 UI 크게: `/* 2026-11-21 빙고 UI 크게` 블록 (`.bgpanel`이 가운데 세로 정렬, 위에 덮는 규칙)
 - 작물 가방 자랑: `#cbagList` 클릭 → 실시간 `{t:'crop'}` (수확 자랑과 같음)
+- 보스 잡으면 타이머 (#21): 서버 `h.boss = h.t + bossEvery` (보스전이 끝난/피한 때부터 5분). 화면은 화면 보스가 살아 있는 동안 타이머 멈춤(`fightB`)
+- 사냥터 입구(`openHuntSelect`): 몬스터 Lv, '📉 경험치 감소: Lv.(가장 낮은 몬스터 Lv+10)부터 · Lv.(가장 높은 몬스터 Lv+10)부터 모든 몬스터', 꼬리표 '경험치 −N%' (`expPen` 평균)
+- 휴대폰 감정 표현: 8개가 두 줄이라 아래 정보창(#peek 46px)에 가렸음 → 한 줄 grid + margin-bottom 48px
+- 레이드·빙고 참가(`/api/raid/join`, `/api/bingo/join`)가 카페 알바 중이면 `GAME['/api/job/quit']`를 불러 그만둠 → 응답 `jobQuit` → 화면 `jobQuitMsg` (예전엔 레이드를 뛰면서 알바도 했음)
+- **숙련 알바** (#21): `WORK.max` 10, `WORK_PRO = {from 6, mul 4, gold 1.5}`, `workOne(kind, k)`, `workRate(kind, n)` (workSettle이 씀). 창 `workSheet`의 `.wk-p` 5칸×2줄, 숙련은 🦺 금색
 - 확대 최대 2.6 → 4배 (`ZOOM_MAX`, game.html `setZoom` 위)
 - 작물 그림 둘레 옅은 번짐 지우기: `scripts/img-export/crop-clean.py c31=작물_0030_인삼.png …` (알파 110 아래는 지움). c28~c34 정리함
+
+### 캐릭터창 전투 수치 · 세부 표 — 2026-11-21 (#21)
+- 전투 수치(`#derived`)는 한 줄에 하나: 값 + 초록 +N(= 지금 값 − 능력치·레벨만의 값). 줄 목록 `DV_ROWS`, 값 모양 `DV_F`, 차이 `dvDiff` (공격 간격만 줄어야 초록)
+- game-rules.js `derive(c, opt)`: `true` = 능력치·레벨만(장비 수치·효과·초보자 모두 뺌), `{gear:false, fx, nb:false}`로 골라 뺄 수 있음. 효과는 `gearFx`(장비 옵션) · `skinFx` · `dexFx` · `titleFx` · `buffFx`(버프·쿠폰·마을)로 나뉨 (`statFx` = 모두 합)
+- 📊 세부 버튼(`#dvMore` → `openStatDetail`): `deriveSteps(c)`가 능력치·레벨 → 장비 → 스킨 → 도감 → 칭호 → 버프·마을 → 초보자 순서로 하나씩 더한 값 → 칸마다 오른 만큼 (다 더하면 지금 값). 오른 게 없는 열은 숨김. 새 효과 출처를 만들면 deriveSteps에도 한 단계
+
+### 3빙고 · 틀린 칸 벌칙 · 코인 최소 보장 — 2026-11-21 (#21)
+- 관리자 화면 → 🛠️ 운영 → '🎱 3빙고 열기' (`/api/admin/bingo {need: 3}`). quiz.js가 `R.need` 저장, `bingoLines(P.m) < bingoNeed(R.need)`면 벌칙. `/state`·`hi`·`/result`에 `need`. 화면 `RD.need`, `BGQ.need`, 이름 `BGN()` = '빙고' / '3빙고' (버튼·제목·모집 창·순위)
+- 안 나온 숫자를 누르면 `BINGO.markPen`(1초) 동안 칸을 못 누름: 화면 `bgMiss`(판 위 큰 ✕ `.bg-x`, 크기는 판에 맞춰 `--xs`) + 서버도 `{t:'mk'}`가 안 나온 숫자면 `P.mpen` → `{t:'mx', pen}`, 그동안 mk 무시
+- 빙고 코인 최소 보장 `BINGO_MIN` = 1위 30 · 2위 20 · 3위 10 (`bingoCoins`가 참가자 수 기준과 큰 쪽)
+- 탭 이름 앞 모집 알림은 `ttlMark(접두어, 켜기)` 하나로 (레이드·빙고가 같이 열리면 서로 쌓이던 문제)
 
 ### 다음: 4-2단계
 - 집 안 가구 사기·놓기·옮기기, 도감

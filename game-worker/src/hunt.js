@@ -102,10 +102,10 @@ export function settle(c, at, onGap = HUNT.onlineGap) {   // onGap: 100%로 쳐 
       // 보스: 이길 수 있을 때만 싸움 (질 것 같으면 피해서 손해 없음). 2026-11-21 보스전은 늘 풀 컨디션(체력 가득·스킬 쿨타임 0)으로 계산 → 이기고 지는 게 들쭉날쭉하지 않게
       // life.bossF(사냥 현황판 '강한 보스도 싸우기' 체크)면 질 것 같아도 싸움 → 지면 쓰러짐
       const test = { ...st, hp: D.maxHp, sh: 0, bt: 0, pots: { ...st.pots }, cd: {}, used: 0 }, r = fight(test, D, f.boss, true);
-      if (r.dead && !c.life?.bossF) { out.bossSkip.push(f.boss.n); continue; }
+      if (r.dead && !c.life?.bossF) { out.bossSkip.push(f.boss.n); h.boss = h.t + HUNT.bossEvery; continue; }
       Object.assign(st, { ...test, cd: { ...st.cd }, used: st.used + test.used }); c.pots = st.pots;
       if (r.dead) { sec -= r.t; h.t += r.t; out.died = true; out.bossDied = f.boss.n; break; }
-      sec -= r.t; h.t += r.t;
+      sec -= r.t; h.t += r.t; h.boss = h.t + HUNT.bossEvery;   // 2026-11-21 다음 보스는 보스를 잡은 때부터 5분
       const on = offLeft <= 0, [g, e] = reward(c, h, out, f, f.boss, D, true, on ? 1 : OFF_XP()); offLeft -= r.t; if (on) { onG += g; onE += e; onT += r.t; }
       out.bosses.push(f.boss.n);
     } else {

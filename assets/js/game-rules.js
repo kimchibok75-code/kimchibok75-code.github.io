@@ -326,16 +326,19 @@ export const defaultPresets = () => Array.from({ length: PRESETS }, (_, i) => ({
 export const totalPoints = lv => (lv - 1) * POINTS_PER_LV;
 
 // 능력치 → 전투 수치 (기획서 3-3 계산식). 공격은 지금 클래스의 무기로
-export function derive(c) {
-  const b = { str: 0, dex: 0, int: 0, luk: 0, crit: 0, gold: 0 }, E = c.enh || {}, fx = statFx(c); let def = 0, hp = 0;
-  for (const s of ARMOR_SLOTS) { const it = c.equip?.[s]; if (!it) continue; const x = itemStats(it, E[s] || 0); def += x.def; hp += x.hp; }
-  const cls = CLASSES[c.cls] ? c.cls : 'sword', w = c.equip?.[cls], wt = WTYPES[cls], staff = wt.st === 'int', bow = wt.st === 'dex';
+// opt (2026-11-21 캐릭터창 '효과로 오른 값' · 세부 표): true = 능력치·레벨만 (장비·스킨·도감·칭호·버프·초보자 모두 뺌)
+//   { gear: false, fx: {…}, nb: false } = 장비 수치 빼기 · 이 효과만 쓰기 · 초보자 버프 빼기
+export function derive(c, opt) {
+  const o = opt === true ? { gear: false, fx: {}, nb: false } : opt || {}, bare = o.gear === false;
+  const b = { str: 0, dex: 0, int: 0, luk: 0, crit: 0, gold: 0 }, E = c.enh || {}, fx = o.fx || statFx(c); let def = 0, hp = 0;
+  if (!bare) for (const s of ARMOR_SLOTS) { const it = c.equip?.[s]; if (!it) continue; const x = itemStats(it, E[s] || 0); def += x.def; hp += x.hp; }
+  const cls = CLASSES[c.cls] ? c.cls : 'sword', w = bare ? null : c.equip?.[cls], wt = WTYPES[cls], staff = wt.st === 'int', bow = wt.st === 'dex';
   const str = c.str, dex = c.dex, int = c.int, luk = c.luk, wAtk = w ? itemStats(w, E[cls] || 0).atk : 3;
   // 공격력: 검은 힘, 활은 민첩. 마력: 지팡이는 지력. 기본 공격 피해 = hit
   // 능력치·레벨에서 오는 피해는 공격 간격만큼 곱함 → 느린 무기는 한 방이 세고, 빠른 무기는 약하게 여러 번 (초당 피해는 비슷)
   const god = !!c.life?.god, am = (1 + (fx.atkP || 0) / 100) * (god ? 10 : 1);   // god: 관리자 갓모드 (안 맞음 + 공격력 10배)
   const atk = Math.round(((staff ? 3 : wAtk) + ((bow ? dex * wt.k : str * (staff ? 2 : wt.k)) + c.lv) * (staff ? 1 : wt.gap)) * am), mag = Math.round(((staff ? wAtk : 0) + (int * (staff ? wt.k : 2) + c.lv) * (staff ? wt.gap : 1)) * am);
-  const nb = newbie(c);   // 2026-11-21 초보자 버프 (1~50레벨): 경험치·골드 2배
+  const nb = o.nb === false ? 0 : newbie(c);   // 2026-11-21 초보자 버프 (1~50레벨): 경험치·골드 2배
   return { god, b, str, dex, int, luk, atk, nb, mag, hit: staff ? mag : atk, magic: staff, far: !!wt.far, wt: cls, cls, fx, skills: mySkills(c, cls),
     def: Math.round((def + str * .5) * (1 + (fx.defP || 0) / 100)), mdef: Math.round((def * .5 + int * .5) * (1 + ((fx.defP || 0) + (fx.mdefP || 0)) / 100)), maxHp: Math.round((100 + c.lv * 20 + str * 5 + dex * 2 + hp) * (1 + (fx.hpP || 0) / 100)),
     gap: wt.gap / Math.min(bow ? BOW_ASPD_MAX : 2, 1 + dex * .005) / (1 + (fx.aspd || 0) / 100), spd: Math.min(1.8, (1 + dex * .003) * (1 + (fx.spdP || 0) / 100)), crit: Math.min(70, 5 + luk * .25 + (fx.crit || 0)), critM: 1.5 + (fx.critD || 0) / 100,
@@ -584,14 +587,19 @@ export const GATHER = { tree: { n: '나무', res: 'wood', amt: [2, 4], regrow: [
 export const RES = { wood: { n: '목재', i: '🪵' }, stone: { n: '석재', i: '🪨' } };
 // rate: 알바 1명이 1시간에 모으는 양 · cap: 쌓이는 최대 시간 · hire(k): k번째 알바 비용
 // 알바 고용 값 (2026-11-19 사용자 요청: 처음은 싸게, 뒤로 갈수록 크게): 골드 1,500 → 3,600 → 8,600 → 20,700 → 49,800 (2.4배씩), 목재·석재는 고용 번호의 제곱
-const hireGold = k => Math.round(1500 * 2.4 ** (k - 1) / 100) * 100;
+// 2026-11-21 알바 5명 더 (최대 10명): 6번째부터는 '숙련 알바' — 골드 1.5배로 비싸지만 1명이 4배를 모아 옴 (WORK_PRO)
+// 값 (골드): 1,500 · 3,600 · 8,600 · 20,700 · 49,800 → 숙련 179,200 · 430,000 · 1,032,000 · 2,476,700 · 5,944,100. 10명이면 1시간에 목재 275 · 석재 200 (5명일 때 55 · 40)
+export const WORK_PRO = { from: 6, mul: 4, gold: 1.5 };
+const hireGold = k => Math.round(1500 * 2.4 ** (k - 1) * (k >= WORK_PRO.from ? WORK_PRO.gold : 1) / 100) * 100;
+export const workOne = (kind, k) => WORK[kind].rate * (k >= WORK_PRO.from ? WORK_PRO.mul : 1);   // k번째 알바가 1시간에 모으는 양
+export const workRate = (kind, n) => { let s = 0; for (let k = 1; k <= n; k++) s += workOne(kind, k); return s; };   // 알바 n명이 1시간에 모으는 양
 export const WORK = {
-  lumber: { n: '벌목소', res: 'wood', rate: 11, cap: 10, max: 5, hire: k => ({ gold: hireGold(k), wood: 20 * k * k }) },
-  quarry: { n: '채석장', res: 'stone', rate: 8, cap: 10, max: 5, hire: k => ({ gold: hireGold(k), stone: 15 * k * k }) },
+  lumber: { n: '벌목소', res: 'wood', rate: 11, cap: 10, max: 10, hire: k => ({ gold: hireGold(k), wood: 20 * k * k }) },
+  quarry: { n: '채석장', res: 'stone', rate: 8, cap: 10, max: 10, hire: k => ({ gold: hireGold(k), stone: 15 * k * k }) },
 };
 export function workSettle(w, kind, now) {
-  const W = WORK[kind], cap = w.n * W.rate * W.cap;
-  if (w.n && w.at) w.acc = Math.min(cap, w.acc + w.n * W.rate * (now - w.at) / HOUR);
+  const W = WORK[kind], r = workRate(kind, w.n), cap = r * W.cap;
+  if (w.n && w.at) w.acc = Math.min(cap, w.acc + r * (now - w.at) / HOUR);
   w.at = now; return { have: Math.floor(w.acc), cap };
 }
 
@@ -785,14 +793,32 @@ export const hasBadge = (c, id) => { const b = badgeOf(id); if (!b) return false
 export function titleFx(c) { const fx = {}; for (const id of c.life?.titles || []) addFx(fx, titleOf(id)?.fx || {}); return fx; }
 // 효과 합계: 가진 칭호 전부 + 지금 버프 + 장비 옵션(방어구 3칸 + 지금 클래스 무기)
 export function statFx(c) {
-  const fx = titleFx(c), b = c.life?.buff;
+  const fx = titleFx(c);
   addFx(fx, skinFx(c));   // 스킨 보유 효과
   addFx(fx, dexFx(c));    // 도감 효과 (물고기 · 스킨 5개마다)
+  addFx(fx, buffFx(c));   // 버프 · 쿠폰 · 마을 전체 효과
+  addFx(fx, gearFx(c));   // 장비 옵션
+  return fx;
+}
+export function buffFx(c) {
+  const fx = {}, b = c.life?.buff;
   if (c.gfx) addFx(fx, c.gfx);   // 마을 전체 효과 (사건 · 방송 · 공동 건설)
   if (b && b.until > Date.now() && BUFFS[b.k]) addFx(fx, BUFFS[b.k].fx);
   for (const k in COUPONS) if (cpnLeft(c, k) > 0) addFx(fx, COUPONS[k].fx);   // 🎟️ 이벤트 상점 쿠폰
-  for (const s of [...ARMOR_SLOTS, CLASSES[c.cls] ? c.cls : 'sword']) addFx(fx, Object.fromEntries(c.equip?.[s]?.o || []));
   return fx;
+}
+export function gearFx(c) { const fx = {}; for (const s of [...ARMOR_SLOTS, CLASSES[c.cls] ? c.cls : 'sword']) addFx(fx, Object.fromEntries(c.equip?.[s]?.o || [])); return fx; }
+// 세부 표 (2026-11-21): 능력치·레벨만 → 장비 → 스킨 → 도감 → 칭호 → 버프·마을 → 초보자 순서로 하나씩 더해 각 단계에서 오른 만큼. 다 더하면 지금 값과 같음
+export function deriveSteps(c) {
+  const add = (a, f) => { const x = { ...a }; addFx(x, f); return x; };
+  const out = [{ k: 'base', n: '능력치·레벨', D: derive(c, true) }]; let fx = gearFx(c);
+  out.push({ k: 'gear', n: '장비', D: derive(c, { fx, nb: false }) });
+  fx = add(fx, skinFx(c)); out.push({ k: 'skin', n: '스킨', D: derive(c, { fx, nb: false }) });
+  fx = add(fx, dexFx(c)); out.push({ k: 'dex', n: '도감', D: derive(c, { fx, nb: false }) });
+  fx = add(fx, titleFx(c)); out.push({ k: 'title', n: '칭호', D: derive(c, { fx, nb: false }) });
+  fx = add(fx, buffFx(c)); out.push({ k: 'buff', n: '버프·마을', D: derive(c, { fx, nb: false }) });
+  out.push({ k: 'nb', n: '초보자', D: derive(c, { fx }) });
+  return out;
 }
 export const fxText = fx => Object.entries(fx).map(([k, v]) => `${FX_N[k]?.[0] || OPTS[k]?.n || k} +${v}${FX_N[k]?.[1] ?? OPTS[k]?.u ?? ''}`).join(' · ');
 
@@ -1258,7 +1284,10 @@ export function houseSettle(h, now) {
 // - 시작 뒤 intro초가 지나면 every초마다 숫자 하나씩 (서버만 순서를 앎). 내 판에 있는 숫자는 직접 눌러 지움
 // - 지운 칸으로 가로·세로·대각선 한 줄이 되면 '빙고!' 버튼. 누른 순서대로 순위. 줄이 안 됐는데 누르면 penalty초 동안 못 누름
 // - 끝: 숫자를 maxCalls개 다 부르거나 모두 빙고하면 outro초 뒤
-export const BINGO = { recruit: 120e3, cap: 150, max: 50, size: 5, intro: 6, every: 3.5, maxCalls: 45, outro: 6, penalty: 3, W: 24, H: 16 };
+export const BINGO = { recruit: 120e3, cap: 150, max: 50, size: 5, intro: 6, every: 3.5, maxCalls: 45, outro: 6, penalty: 3, markPen: 1, W: 24, H: 16 };   // markPen: 안 나온 숫자를 누르면 그만큼(초) 칸을 못 누름 (2026-11-21)
+// 빙고 종류 (2026-11-21): need = 이기려면 필요한 줄 수. 1 = 보통 빙고, 3 = 3빙고 (3줄을 채우고 '3빙고!'를 외쳐야 함)
+export const bingoNeed = n => (n === 3 ? 3 : 1);
+export const bingoName = n => (bingoNeed(n) === 3 ? '3빙고' : '빙고');
 export const bingoCallAt = (start, i) => start + (BINGO.intro + i * BINGO.every) * 1000;   // i번째(0부터) 숫자가 나오는 시각 (ms)
 export const bingoLastAt = start => bingoCallAt(start, BINGO.maxCalls - 1) + BINGO.every * 1000;   // 마지막 숫자 뒤 한 칸 쉬고 끝 (outro 전)
 // 줄 12개 (칸 번호 0~24): 가로 5 · 세로 5 · 대각선 2
@@ -1276,4 +1305,6 @@ export const BINGO_HOST = { x: .5, y: .16 };                       // 김치복(
 // 보상 = 빙고 코인 (life.bgc, 이벤트 상점 → 빙고코인샵에서 씀). 2026-11-21 사용자 결정: 1위 = 참가자 수, 2위부터 하나씩 적게 (13명 → 13·12·11…, 4명 → 4·3·2·1)
 // 빙고를 못 한 사람은 0 (BINGO_JOIN_COIN). 순위가 참가자 수보다 뒤일 일은 없지만 최소 1
 export const BINGO_JOIN_COIN = 0;
-export const bingoCoins = (rank, n) => (rank > 0 ? Math.max(1, (n | 0) - rank + 1) : BINGO_JOIN_COIN);
+// 2026-11-21 사용자 결정: 1위 최소 30개 · 2위 최소 20개 · 3위 최소 10개 보장 (사람이 많으면 참가자 수 기준이 더 큼)
+export const BINGO_MIN = [0, 30, 20, 10];
+export const bingoCoins = (rank, n) => (rank > 0 ? Math.max(1, BINGO_MIN[rank] || 0, (n | 0) - rank + 1) : BINGO_JOIN_COIN);

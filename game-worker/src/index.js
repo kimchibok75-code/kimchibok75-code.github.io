@@ -4,7 +4,7 @@ import { INCENSE, SAVER, saverLife, jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, 
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, wishGold, wishExp, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill, skAllMax,
-  offlineLife, offlineHuntAway, PRESET_CD, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, EVENT_SHOP, PULL_NS, gachaCostN, skCostN, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait, fishCasts, huntGoldN, huntExpN } from '../../assets/js/game-rules.js';
+  offlineLife, offlineHuntAway, PRESET_CD, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, EVENT_SHOP, PULL_NS, gachaCostN, skCostN, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait, fishCasts, huntGoldN, huntExpN, workRate } from '../../assets/js/game-rules.js';
 import { isSolid, NODES, BACK, tileAt, WATER, waterIn, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
 import { canHouseD } from '../../assets/js/game-dong.js';
 import { scanBad } from './filter.js';
@@ -592,7 +592,8 @@ const GAME = {
     const res = await raidDO(env).fetch('https://raid/join', { method: 'POST', body: JSON.stringify({ start: Number(b.start), uid: user.id, nick: user.nick, lv: c.lv, dps, maxHp: D.maxHp, look }) });
     const j = await res.json(); if (!res.ok) fail(400, j.error || '참여하지 못했어요');
     c.hp = D.maxHp;
-    return { raid: { start: j.start, n: j.n, dps, boss: j.boss } };
+    const jobQuit = c.jobAt ? GAME['/api/job/quit'](c, {}, at) : null;   // 2026-11-21 레이드에 가면 카페 알바는 그만둠 (그때까지 온 손님 팁만)
+    return { raid: { start: j.start, n: j.n, dps, boss: j.boss }, jobQuit };
   },
   // 2026-11-21 빙고 참가 (2분 모집 중에만). 겉모습은 빙고 맵에서 다른 사람에게 보이게
   async '/api/bingo/join'(c, b, at, out, env, user) {
@@ -600,7 +601,8 @@ const GAME = {
     const look = { lv: c.lv, title: c.title, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair, hairC: c.hairC, hatHair: c.hatHair, suit: c.suit, wsk: c.wsk, cls: c.cls, enh: c.enh, equip: c.equip };
     const res = await quizDO(env).fetch('https://quiz/join', { method: 'POST', body: JSON.stringify({ start: Number(b.start), uid: user.id, nick: user.nick, look }) });
     const j = await res.json(); if (!res.ok) fail(400, j.error || '참여하지 못했어요');
-    return { bingo: { start: j.start, n: j.n } };
+    const jobQuit = c.jobAt ? GAME['/api/job/quit'](c, {}, at) : null;   // 빙고도 같음
+    return { bingo: { start: j.start, n: j.n }, jobQuit };
   },
   // 빙고 보상: 순위에 따라 빙고 코인 (bingoCoins → life.bgc). 1위 = 참가자 수, 2위부터 하나씩 적게. 빙고를 못 하면 0
   // 기록 = cnt.bingoPlay(참여) · cnt.bingo(빙고 성공) · cnt.bingo1(1위) · cnt.bingoTop3(3위 안) · cnt.bingoBest(가장 좋은 순위)
@@ -612,7 +614,7 @@ const GAME = {
     cntAdd(c, 'bingoPlay');
     const cn = c.life.cnt;
     if (rank) { cntAdd(c, 'bingo'); if (rank === 1) cntAdd(c, 'bingo1'); if (rank <= 3) cntAdd(c, 'bingoTop3'); cn.bingoBest = cn.bingoBest ? Math.min(cn.bingoBest, rank) : rank; }
-    return { bingo: { rank, coin, have: c.life.bgc, n: j.n, wins: j.wins, calls: j.calls, total: cn.bingo || 0, plays: cn.bingoPlay || 0 }, log: ['bingo', rank ? `${rank}위` : '빙고 못 함'],
+    return { bingo: { need: j.need || 1, rank, coin, have: c.life.bgc, n: j.n, wins: j.wins, calls: j.calls, total: cn.bingo || 0, plays: cn.bingoPlay || 0 }, log: ['bingo', rank ? `${rank}위` : '빙고 못 함'],
       chron: rank === 1 ? ['bingo', `빙고 1위! (${j.n}명 중)`] : null };
   },
   // 레이드 보상: 레이드 방에서 기록을 읽고 → 골드·경험치 + 확률로 전용 스킨. life.raidGot 으로 한 번만
@@ -1324,7 +1326,7 @@ function cheat(c, k, b, at, env, user) {
   if (k === 'lgonly') { L.lgOnly = !L.lgOnly; return { msg: L.lgOnly ? '전설 물고기만 낚이기 켬' : '전설 물고기만 낚이기 끔' }; }
   if (k === 'farmmax') { L.farm.hoe = 9; L.farm.fert = 9; return { msg: '호미 · 비료 최고 단계' }; }
   if (k === 'work') {
-    for (const [w, W] of Object.entries(WORK)) { const x = L.work[w]; if (!x.n) x.n = 1; x.acc = x.n * W.rate * W.cap; x.at = at; }
+    for (const [w, W] of Object.entries(WORK)) { const x = L.work[w]; if (!x.n) x.n = 1; x.acc = workRate(w, x.n) * W.cap; x.at = at; }
     return { msg: '벌목소·채석장 창고 가득' };
   }
   if (k === 'cool') {   // 분수·채집·나무·바위·낚시 기다리는 시간 없애기
@@ -1398,9 +1400,9 @@ async function admin(p, m, req, env, user, url) {
   if (m === 'POST' && p === '/api/admin/bingo') {   // 2026-11-21 빙고: 지금부터 2분 모집 (김치복 캐릭터가 숫자를 불러 줌)
     const ku = await DB.prepare("SELECT c.* FROM characters c JOIN users u ON u.id = c.user_id WHERE u.nick = '김치복'").first();
     const host = ku ? { n: '김치복', ...lookRow(ku) } : null;
-    const res = await quizDO(env).fetch('https://quiz/force', { method: 'POST', body: JSON.stringify({ host }) }), j = await res.json(); if (!res.ok) fail(400, j.error);
-    await toRooms(env, { act: 'bingo', start: j.start }); await done('bingo', String(j.start));
-    return json({ ok: true, start: j.start });
+    const res = await quizDO(env).fetch('https://quiz/force', { method: 'POST', body: JSON.stringify({ host, need: body?.need === 3 ? 3 : 1 }) }), j = await res.json(); if (!res.ok) fail(400, j.error);   // need 3 = 3빙고
+    await toRooms(env, { act: 'bingo', start: j.start }); await done('bingo', `${j.start} · ${j.need === 3 ? '3빙고' : '빙고'}`);
+    return json({ ok: true, start: j.start, need: j.need });
   }
   if (m === 'POST' && p === '/api/admin/raid') {   // 지금부터 30초 모집하는 레이드를 엶 (시험용)
     const res = await raidDO(env).fetch('https://raid/force', { method: 'POST', body: JSON.stringify({ boss: body?.boss }) }), j = await res.json(); if (!res.ok) fail(400, j.error);
