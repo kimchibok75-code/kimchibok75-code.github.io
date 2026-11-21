@@ -1,8 +1,21 @@
 {
-  "updatedAt": 1795239839639,
+  "updatedAt": 1795241915953,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
+    {
+      "id": 206,
+      "title": "끝없는 지평선",
+      "board": "💽 모드 추천/제작",
+      "head": "소개",
+      "author": "펩사이신",
+      "time": 1795241565973,
+      "comments": 0,
+      "likes": 0,
+      "image": false,
+      "thumb": null,
+      "url": "https://cafe.naver.com/kimchibok/206"
+    },
     {
       "id": 205,
       "title": "정착지 터짐 [ 림월드 500% 상한해제 (8) ]",
@@ -249,19 +262,6 @@
       "image": false,
       "thumb": null,
       "url": "https://cafe.naver.com/kimchibok/187"
-    },
-    {
-      "id": 186,
-      "title": "수송 포드, 왕복선 이륙 이펙트를 추가하는 모드",
-      "board": "💽 모드 추천/제작",
-      "head": "제작",
-      "author": "김치복",
-      "time": 1794421805593,
-      "comments": 1,
-      "likes": 0,
-      "image": true,
-      "thumb": "https://cafeptthumb-phinf.pstatic.net/MjAyNjExMTJfNDAg/MDAxNzk0NDIxNzkzMjYy.o6OpqkgmPerxUmy0lBllZ0J54w5QZflPkliHxV69hbIg.prp2lSLkEP1kTmBsnLpRmLUkVaL0XwIP4wS8ufKEACIg.GIF/%25EC%259D%25B4%25EB%25A5%2599_%25ED%259A%25A8%25EA%25B3%25BC_1.gif",
-      "url": "https://cafe.naver.com/kimchibok/186"
     }
   ]
 }
