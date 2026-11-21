@@ -274,6 +274,7 @@ META['mk'] = tpl_set('채굴왕', 'mk')   # 2026-11-19 채굴왕 스킨 (채광�
 META['fa'] = tpl_set('농사왕', 'fa')   # 2026-11-20 농사왕 스킨 (텃밭 창고 보상)
 META['hk'] = tpl_set('사냥왕', 'hk')   # 2026-11-21 사냥왕 스킨 (사냥꾼 쉼터 보상)
 META['cy'] = tpl_set('사이버전사', 'cy', cut=140)   # 2026-11-21 사이버 전사 스킨 (스킨샵, 은은한 빛은 빼고 외곽만)
+META['bm'] = tpl_set('빙고마스터', 'bm')   # 2026-11-21 빙고 마스터 스킨 (이벤트 상점 빙고코인샵). 틀 그림은 bingo-skin.py가 한 판에서 잘라 만듦
 
 # 10) 소원 분수 (2026-11-18 새 그림, 흰 배경): 그림 + 물 칸만 뗀 그림(물결·반짝임을 물 안에만 그리려고) + 위치(비율)
 r = cut_bg(load('건물_분수')); b = bbox(r[:, :, 3]); t = r[b[1]:b[3], b[0]:b[2]]
@@ -332,8 +333,9 @@ r = keep_rgba('안내판'); b = bbox(r[:, :, 3]); save('sign', r[b[1]:b[3], b[0]
 
 # 14) 레이드 세트 이펙트 (2026-11-20): 검은 바탕 + 흰 그림, 정사각 판 그대로 (자르지 않음: 판 가운데 아래 고리 = 발 자리).
 #     밝기를 투명도로 (흰 그림만 남김) → 화면이 색을 물들여 캐릭터 뒤에 은은하게. 드래곤 = 붉게, 오우거 = 초록
-for nm, key in [('드래곤', 'fx-dragon'), ('오우거', 'fx-ogre')]:
-    g = np.asarray(Image.open(os.path.join(SRC, f'이펙트_{nm} 세트.png')).convert('L')).astype(np.float32)
+#     2026-11-21 스킨 세트 이펙트 추가: 낚시왕 · 농사왕 · 마법소녀 · 사냥왕 (파일 이름에 ' 세트'가 없음)
+for nm, key in [('드래곤 세트', 'fx-dragon'), ('오우거 세트', 'fx-ogre'), ('낚시왕', 'fx-fishking'), ('농사왕', 'fx-farmking'), ('마법소녀', 'fx-magic'), ('사냥왕', 'fx-huntking'), ('사이버', 'fx-cyber'), ('빙고왕', 'fx-bingom')]:
+    g = np.asarray(Image.open(os.path.join(SRC, f'이펙트_{nm}.png')).convert('L')).astype(np.float32)
     al = np.clip((g - 30) * 255 / 200, 0, 255).astype(np.uint8)
     save(key, np.dstack([np.full_like(al, 255)] * 3 + [al]), width=512)
 

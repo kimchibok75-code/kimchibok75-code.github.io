@@ -4,7 +4,7 @@ import { INCENSE, SAVER, saverLife, jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, 
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, wishGold, wishExp, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
-  offlineLife, offlineHuntAway, PRESET_CD, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait, fishCasts } from '../../assets/js/game-rules.js';
+  offlineLife, offlineHuntAway, PRESET_CD, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, EVENT_SHOP, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait, fishCasts } from '../../assets/js/game-rules.js';
 import { isSolid, NODES, BACK, tileAt, WATER, waterIn, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
 import { canHouseD } from '../../assets/js/game-dong.js';
 import { scanBad } from './filter.js';
@@ -659,6 +659,22 @@ const GAME = {
     spend(c, h.price); c.hats.push(h.id); c.hat = h.id;
     return { log: ['skin', h.id] };
   },
+  // 🎁 이벤트 상점 (2026-11-21): 빙고 코인으로 스킨 하나씩 (EVENT_SHOP)
+  '/api/event/buy'(c, b, at) {
+    const S = EVENT_SHOP.bingo, k = String(b.k || ''), it = S.items.find(x => x.k === k);
+    if (it) {   // 쓰는 물건: 사면 바로 효과
+      const have = c.life[S.coin] || 0; if (have < it.cost) fail(400, `빙고 코인이 ${it.cost - have}개 모자라요`);
+      c.life[S.coin] = have - it.cost; const r = { ev: k, log: ['event-buy', k] };
+      if (k === 'pouch') { r.gold = wishGold(c.lv, it.min); c.gold += r.gold; }
+      else { const cp = c.life.cpn = { ...(c.life.cpn || {}) }; cp[it.cpn] = Math.max(cp[it.cpn] || 0, at) + it.min * 60e3; r.until = cp[it.cpn]; }
+      return r;
+    }
+    if (!S.keys.includes(k)) fail(400, '없는 물건이에요');
+    if (c.hats.includes(k)) fail(400, '이미 가지고 있어요');
+    const have = c.life[S.coin] || 0; if (have < S.cost) fail(400, `빙고 코인이 ${S.cost - have}개 모자라요`);
+    c.life[S.coin] = have - S.cost; c.hats.push(k);
+    return { ev: k, log: ['event-buy', k] };
+  },
   // 카페 알바: 1분 기다리면 골드
   '/api/job/start'(c, b, at) {
     townOnly(c); if (c.jobAt) fail(400, '이미 알바 중이에요');
@@ -939,10 +955,10 @@ const GAME = {
     return { log: ['house-up', String(h.lv)], chron: h.lv >= 3 ? ['house', `집을 ${nx.n}(으)로 올렸어요!`] : null,
       after: async () => { await env.DB.prepare('UPDATE houses SET lv = ? WHERE user_id = ?').bind(h.lv, user.id).run(); await toRooms(env, { act: 'house', h: { id: user.id, nick: user.nick, ...h } }); } };
   },
-  // 임대 수입 받기 (빌라부터)
+  // 임대 수입 받기 (호화로운 집부터)
   '/api/house/collect'(c, b, at) {
     const h = c.life.house; if (!h) fail(400, '먼저 집을 지어 주세요');
-    const s = houseSettle(h, at); if (!s.rate) fail(400, '빌라부터 임대 수입이 생겨요');
+    const s = houseSettle(h, at); if (!s.rate) fail(400, `${HOUSE_TIERS.findIndex(t => t.inc) + 1}단계 ${HOUSE_TIERS.find(t => t.inc)?.n}부터 임대 수입이 시작돼요`);
     if (s.have < 1) fail(400, '아직 모인 수입이 없어요');
     c.gold += s.have; h.acc -= s.have;
     return { got: s.have, log: ['house-inc', String(s.have)] };

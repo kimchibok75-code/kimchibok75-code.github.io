@@ -116,7 +116,8 @@ export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'clear', n: '�
   { id: 'fishking', n: '🎣 낚시왕 모자', price: 0, fk: 1, fx: { fishP: 8, fishZ: 2 } },
   { id: 'mineking', n: '⛏️ 채굴왕 헬멧', price: 0, fk: 1, fx: { gather: 1, hpP: 3 } },
   { id: 'farmking', n: '🌾 농사왕 밀짚모자', price: 0, fk: 1, fx: { farmP: 8, goldP: 2 } },
-  { id: 'huntking', n: '⚔️ 사냥왕 모자', price: 0, fk: 1, fx: { atkP: 2, expP: 2 } }];   // 2026-11-21 사냥왕 (사냥꾼 쉼터 보상)   // fk = 낚시점 '낚시왕' 보상 (2026-11-19, 상점에 안 팖)   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
+  { id: 'huntking', n: '⚔️ 사냥왕 모자', price: 0, fk: 1, fx: { atkP: 2, expP: 2 } },
+  { id: 'bingom', n: '🎱 빙고 마스터 모자', price: 0, fk: 1, bgc: 1, fx: { goldP: 2, expP: 1 } }];   // 2026-11-21 빙고 마스터 (이벤트 상점 빙고코인샵, 효과는 임시)   // 2026-11-21 사냥왕 (사냥꾼 쉼터 보상)   // fk = 낚시점 '낚시왕' 보상 (2026-11-19, 상점에 안 팖)   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
 // 눈 모양 스킨 (가진 것은 hats 목록에 'eye:별' 처럼 저장). dot은 기본
 export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 10000, fx: { defP: 3 } }, { id: 'star', n: '⭐ 별 눈', price: 10000, fx: { expP: 3 } }, { id: 'wink', n: '😉 윙크', price: 15000, fx: { crit: 2, atkP: 0.5 } }, { id: 'heart', n: '💗 하트 눈', price: 15000, fx: { hpP: 4 } }, { id: 'cat', n: '🐱 고양이 눈', price: 15000, fx: { fishC: 8 } }, { id: 'big', n: '✨ 반짝 큰 눈', price: 20000, fx: { goldP: 5 } },
   { id: 'rdragon', n: '🐉 용의 눈', price: 0, raid: 'rdragon', fx: { crit: 3, expP: 5 } },
@@ -126,7 +127,8 @@ export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: '
   { id: 'fishking', n: '🎣 낚시왕 눈', price: 0, fk: 1, fx: { crit: 2, fishZ: 2 } },
   { id: 'mineking', n: '⛏️ 채굴왕 눈', price: 0, fk: 1, fx: { crit: 2, defP: 2 } },
   { id: 'farmking', n: '🌾 농사왕 눈', price: 0, fk: 1, fx: { crit: 2, farmP: 4 } },
-  { id: 'huntking', n: '⚔️ 사냥왕 눈', price: 0, fk: 1, fx: { crit: 2, bossP: 3 } }];
+  { id: 'huntking', n: '⚔️ 사냥왕 눈', price: 0, fk: 1, fx: { crit: 2, bossP: 3 } },
+  { id: 'bingom', n: '🎱 빙고 마스터 눈', price: 0, fk: 1, bgc: 1, fx: { crit: 1, goldP: 2 } }];
 // 의상 스킨 (몸 전체 겉모습, 입으면 갑옷 그림 대신 보임). 가진 것은 c.hats 에 'suit:id', 입은 것은 c.suit
 export const SUITS = [
   { id: 'hoodie', n: '🧥 후드티', price: 10000, fx: { spdP: 3 } },
@@ -143,6 +145,7 @@ export const SUITS = [
   { id: 'mineking', n: '⛏️ 채굴왕 작업복', price: 0, fk: 1, fx: { defP: 5, hpP: 3 } },
   { id: 'farmking', n: '🌾 농사왕 멜빵바지', price: 0, fk: 1, fx: { hpP: 4, farmP: 10 } },
   { id: 'huntking', n: '⚔️ 사냥왕 갑옷', price: 0, fk: 1, fx: { hpP: 4, defP: 3 } },
+  { id: 'bingom', n: '🎱 빙고 마스터 코트', price: 0, fk: 1, bgc: 1, fx: { hpP: 1, goldP: 2 } },
 ];
 // 무기 스킨 (그 무기의 겉모습만). 가진 것은 'wsk:무기:id', 쓰는 것은 c.wsk = { sword, bow, staff }
 export const WSKINS = [
@@ -188,10 +191,22 @@ export const WSKINS = [
   { t: 'sword', id: 'huntking', n: '⚔️ 사냥왕 검', price: 0, fk: 1, fx: { atkP: 3, bossP: 4 } },
   { t: 'bow', id: 'huntking', n: '⚔️ 사냥왕 활', price: 0, fk: 1, fx: { atkP: 3, bossP: 4 } },
   { t: 'staff', id: 'huntking', n: '⚔️ 사냥왕 지팡이', price: 0, fk: 1, fx: { atkP: 3, bossP: 4 } },
+  { t: 'sword', id: 'bingom', n: '🎱 빙고 마스터 검', price: 0, fk: 1, bgc: 1, fx: { atkP: 1, goldP: 2 } },
+  { t: 'bow', id: 'bingom', n: '🎱 빙고 마스터 활', price: 0, fk: 1, bgc: 1, fx: { atkP: 1, goldP: 2 } },
+  { t: 'staff', id: 'bingom', n: '🎱 빙고 마스터 지팡이', price: 0, fk: 1, bgc: 1, fx: { atkP: 1, goldP: 2 } },
 ];
 // 낚시왕 보상 (2026-11-19, 낚시점 '낚시왕' 탭): 물고기 50마리마다 한 부위씩, '받기'를 눌러야 받음. 순서 = 모자 · 의상 · 눈 · 검 · 활 · 지팡이
 // '왕' 세트 (2026-11-19): 낚시왕(낚시점, 물고기 50마리마다) · 채굴왕(채석장, 손으로 캔 석재 100개마다). cnt = life.cnt 의 어느 값으로 셈
 const kingKeys = id => [id, 'suit:' + id, 'eye:' + id, 'wsk:sword:' + id, 'wsk:bow:' + id, 'wsk:staff:' + id];
+// 🎁 이벤트 상점 (2026-11-21): 빙고 코인(life.bgc)으로 스킨 사기. 서버 /api/event/buy {k}
+// 2026-11-21 쓰는 물건 3종 (사면 바로 효과): 골드 주머니 = 내 레벨 사냥 min분어치 골드 · 쿠폰 = min분 동안 ×1.5 (같은 쿠폰을 또 사면 시간이 이어 붙음)
+export const EVENT_SHOP = { bingo: { coin: 'bgc', cost: 30, keys: kingKeys('bingom'), items: [
+  { k: 'pouch', n: '골드 주머니', img: 'ev-pouch', cost: 10, min: 30 },
+  { k: 'cexp', n: '경험치 1.5배 쿠폰', img: 'ev-cexp', cost: 10, min: 30, cpn: 'exp' },
+  { k: 'cgold', n: '골드 1.5배 쿠폰', img: 'ev-cgold', cost: 10, min: 30, cpn: 'gold' }] } };
+// 쿠폰 효과: 저장 life.cpn = { exp: 끝나는 시각, gold: 끝나는 시각 }. 분수 버프와 따로라 같이 받음
+export const COUPONS = { exp: { n: '경험치 1.5배 쿠폰', s: 'EXP ×1.5', img: 'ev-cexp', fx: { expP: 50 } }, gold: { n: '골드 1.5배 쿠폰', s: 'GOLD ×1.5', img: 'ev-cgold', fx: { goldP: 50 } } };
+export const cpnLeft = (c, k, now = Date.now()) => Math.max(0, (c.life?.cpn?.[k] || 0) - now);
 // 🔥 사냥꾼 쉼터 향로 (2026-11-21): 단계마다 사냥터 몬스터 +1마리 (최대 +5). 서버는 몬스터가 많을수록 다음 몬스터까지 덜 걷는 것으로 계산
 // [골드, 필요한 누적 처치 수]
 export const INCENSE = { base: 8, max: 5, lv: [[60000, 1500], [180000, 5000], [500000, 12000], [1200000, 25000], [3000000, 50000]] };
@@ -701,13 +716,30 @@ export function skinFx(c) {
 // ───────── 📚 도감 센터 (2026-11-20): 물고기 · 스킨 도감은 모은 수 5개마다 효과, 뱃지(이름 왼쪽, 효과 없음) ─────────
 export const DEX_STEP = 5;
 // 단계마다 더해지는 효과 (5개 → 첫 번째, 10개 → 두 번째까지 …). 각 13단계 (물고기 69종 · 스킨 65개)
+const SKIN_DEX_CYCLE = [{ hpP: 1 }, { atkP: 1 }, { goldP: 1 }, { defP: 1 }, { crit: 1 }, { hpP: 2 }, { atkP: 2 }, { goldP: 2 }, { defP: 2 }];   // 2026-11-21 사용자 요청: 스킨 도감·테마 효과에 경험치는 넣지 않음
 export const DEX_FX = {
   fish: [{ fishP: 2 }, { fishZ: 1 }, { goldP: 1 }, { fishP: 3 }, { expP: 1 }, { fishZ: 1 }, { fishP: 3 }, { goldP: 2 }, { fishZ: 2 }, { fishP: 4 }, { expP: 2 }, { goldP: 3 }, { fishP: 5, fishZ: 2 }],
   crop: [{ farmP: 2 }, { goldP: 1 }, { farmP: 3 }, { expP: 1 }, { farmP: 3 }, { goldP: 2 }, { farmP: 4 }, { farmP: 5, goldP: 2 }],   // 2026-11-20 작물 40종 → 8단계
-  skin: [{ hpP: 1 }, { atkP: 1 }, { goldP: 1 }, { defP: 1 }, { expP: 1 }, { atkP: 1 }, { hpP: 2 }, { crit: 1 }, { goldP: 2 }, { atkP: 2 }, { expP: 2 }, { defP: 2 }, { atkP: 3, crit: 1 }],
+  // 2026-11-21 스킨샵 스킨 수에 맞춰 단계가 저절로 늘어남 (스킨 수 ÷ 5단계, 효과는 아래 순서를 되풀이). 지금 47개 → 9단계
+  get skin() { const n = Math.floor(DEX_SKINS().length / DEX_STEP); return Array.from({ length: n }, (_, i) => SKIN_DEX_CYCLE[i % SKIN_DEX_CYCLE.length]); },
 };
-// 도감에 들어가는 스킨 (처음부터 가진 것 · 투명 모자는 빼고)
-export const DEX_SKINS = () => [...HATS.filter(h => h.id !== 'none' && h.id !== 'clear').map(h => h.id), ...EYE_SKINS.filter(e => e.id !== 'dot').map(e => 'eye:' + e.id), ...SUITS.map(x => 'suit:' + x.id), ...WSKINS.map(wskKey)];
+// 🎨 테마 스킨 (2026-11-21 개편): 6부위(모자·눈·의상·검·활·지팡이) 세트는 개수로 세지 않고, 한 테마를 다 모으면 그 테마 효과 (효과는 임시)
+export const SKIN_THEMES = [
+  { id: 'rdragon', n: '레드 드래곤', g: '레이드', fx: { atkP: 3, bossP: 5 } },
+  { id: 'ogre', n: '오우거', g: '레이드', fx: { hpP: 4, defP: 3 } },
+  { id: 'fishking', n: '낚시왕', g: '낚시점', fx: { fishP: 5, fishZ: 2 } },
+  { id: 'mineking', n: '채굴왕', g: '채석장', fx: { defP: 3, goldP: 3 } },
+  { id: 'farmking', n: '농사왕', g: '텃밭 창고', fx: { farmP: 5, goldP: 2 } },
+  { id: 'huntking', n: '사냥왕', g: '사냥꾼 쉼터', fx: { atkP: 2, bossP: 3, crit: 1 } },
+  { id: 'bingom', n: '빙고 마스터', g: '이벤트 상점', fx: { goldP: 3, hpP: 2 } },
+];
+export const themeKeys = id => kingKeys(id);
+export const themeGot = (c, id) => { const own = Array.isArray(c.hats) ? c.hats : []; return themeKeys(id).filter(k => own.includes(k)).length; };
+export const themeDone = (c, id) => themeGot(c, id) >= themeKeys(id).length;
+const THEME_IDS = new Set(SKIN_THEMES.map(t => t.id));
+// 숫자로 세는 스킨 도감 = 스킨샵에서 파는 낱개 스킨만 (테마 · 레이드 · 보상 · 무료 스킨은 빼고)
+const saleSkin = s => (s.price || 0) > 0 && !s.raid && !s.fk && !THEME_IDS.has(s.id);
+export const DEX_SKINS = () => [...HATS.filter(saleSkin).map(h => h.id), ...EYE_SKINS.filter(saleSkin).map(e => 'eye:' + e.id), ...SUITS.filter(saleSkin).map(x => 'suit:' + x.id), ...WSKINS.filter(saleSkin).map(wskKey)];
 export const dexFishGot = c => FISH_LIST.filter(f => c.life?.cnt?.['fc_' + f.id] || c.life?.cnt?.['lf_' + f.id]);
 export const dexSkinGot = c => { const own = Array.isArray(c.hats) ? c.hats : []; return DEX_SKINS().filter(k => own.includes(k)); };
 export const dexCropGot = c => CROP_LIST.filter(x => c.life?.cnt?.['cc_' + x.id]);
@@ -715,6 +747,7 @@ export const dexN = (c, k) => (k === 'fish' ? dexFishGot(c) : k === 'crop' ? dex
 export function dexFx(c) {
   const fx = {};
   for (const k of ['fish', 'crop', 'skin']) { const st = Math.floor(dexN(c, k) / DEX_STEP); DEX_FX[k].slice(0, st).forEach(o => addFx(fx, o)); }
+  for (const t of SKIN_THEMES) if (themeDone(c, t.id)) addFx(fx, t.fx);   // 🎨 테마 다 모으면
   return fx;
 }
 // 뱃지: 이름 왼쪽에 다는 작은 그림 (효과 없음). life.badge = 단 뱃지 id
@@ -747,6 +780,7 @@ export function statFx(c) {
   addFx(fx, dexFx(c));    // 도감 효과 (물고기 · 스킨 5개마다)
   if (c.gfx) addFx(fx, c.gfx);   // 마을 전체 효과 (사건 · 방송 · 공동 건설)
   if (b && b.until > Date.now() && BUFFS[b.k]) addFx(fx, BUFFS[b.k].fx);
+  for (const k in COUPONS) if (cpnLeft(c, k) > 0) addFx(fx, COUPONS[k].fx);   // 🎟️ 이벤트 상점 쿠폰
   for (const s of [...ARMOR_SLOTS, CLASSES[c.cls] ? c.cls : 'sword']) addFx(fx, Object.fromEntries(c.equip?.[s]?.o || []));
   return fx;
 }
@@ -1185,16 +1219,17 @@ export function offlineHuntAway(c, sec) {
 }
 
 // ───────── 집 업그레이드 (마을회관, 2026-11-18 8단계): 일반 집 → 다락방 집 → 2층 집 → 저택 → 빌라 → 3층 빌라 → 4층 빌라 → 궁전 ─────────
-// inc = 1시간 임대 수입(골드, 빌라부터). 수입은 최대 HOUSE_INC_CAP 시간까지만 쌓임 → 마을회관에서 받기
+// inc = 1시간 임대 수입(골드, 호화로운 집부터). 수입은 최대 HOUSE_INC_CAP 시간까지만 쌓임 → 마을회관에서 받기
+// 2026-11-21 이름 바꿈 (사용자 요청: '저택'이 빌라보다 좋아 보여 헷갈림) → 빈약한·평범한·좋은·호화로운 집 → 같은 순서의 빌라. 그림·값은 그대로
 export const HOUSE_TIERS = [
-  { n: '일반 집' },
-  { n: '다락방 집', cost: { gold: 30000, wood: 300, stone: 200 } },   // 2026-11-21 값 올림 (사용자 요청: 빌라가 너무 빨리 나옴). 골드 약 1.5~2.5배, 목재·석재 약 2~7배
-  { n: '2층 집', cost: { gold: 100000, wood: 700, stone: 500 } },
-  { n: '저택', cost: { gold: 300000, wood: 1500, stone: 1100 }, inc: 5000 },
-  { n: '빌라', cost: { gold: 700000, wood: 2800, stone: 2100 }, inc: 9000 },
-  { n: '3층 빌라', cost: { gold: 1500000, wood: 4500, stone: 3500 }, inc: 15000 },
-  { n: '4층 빌라', cost: { gold: 3000000, wood: 7000, stone: 5500 }, inc: 25000 },
-  { n: '궁전', cost: { gold: 6000000, wood: 10000, stone: 8000 }, inc: 45000 },
+  { n: '빈약한 집' },
+  { n: '평범한 집', cost: { gold: 30000, wood: 300, stone: 200 } },   // 2026-11-21 값 올림 (사용자 요청: 빌라가 너무 빨리 나옴). 골드 약 1.5~2.5배, 목재·석재 약 2~7배
+  { n: '좋은 집', cost: { gold: 100000, wood: 700, stone: 500 } },
+  { n: '호화로운 집', cost: { gold: 300000, wood: 1500, stone: 1100 }, inc: 5000 },
+  { n: '빈약한 빌라', cost: { gold: 700000, wood: 2800, stone: 2100 }, inc: 9000 },
+  { n: '평범한 빌라', cost: { gold: 1500000, wood: 4500, stone: 3500 }, inc: 15000 },
+  { n: '좋은 빌라', cost: { gold: 3000000, wood: 7000, stone: 5500 }, inc: 25000 },
+  { n: '호화로운 빌라', cost: { gold: 6000000, wood: 10000, stone: 8000 }, inc: 45000 },
 ];
 export const HOUSE_INC_CAP = 12;
 // 임대 수입 정산 (h = life.house). 돌려줌: { have(받을 수 있는 골드), cap, rate }
