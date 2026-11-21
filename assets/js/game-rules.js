@@ -298,6 +298,9 @@ export const GACHA = { w: { n: '무기 뽑기', i: '⚔️', slots: WEAPON_SLOTS
 export const GACHA_NEED = [10, 30, 60, 100, 160, 240, 330, 440, 560];        // 다음 뽑기 레벨까지 필요한 횟수 (Lv.1→2, 2→3 …)
 export const GACHA_COST = [150, 300, 500, 800, 1300, 2000, 2900, 4000, 5400, 7200];   // 레벨별 1회 가격
 export const GACHA_TEN = .9;   // 10회 뽑기는 10% 할인
+// 2026-11-21 100회 뽑기: 뽑는 동안 뽑기 레벨이 올라 값이 바뀌므로 한 번씩 값을 더한 뒤 10% 할인 (10회는 예전처럼 시작 레벨 값 × 10)
+export const PULL_NS = [1, 10, 100];
+export const gachaCostN = (cnt, n) => n === 1 ? gachaInfo(cnt).cost : n === 10 ? Math.round(gachaInfo(cnt).cost * 10 * GACHA_TEN) : Math.round(Array.from({ length: n }, (_, k) => gachaInfo(cnt + k).cost).reduce((a, b) => a + b, 0) * GACHA_TEN);
 // 레벨별 단계 확률(%) [1단계 … 6단계]
 export const GACHA_ODDS = [
   [100, 0, 0, 0, 0, 0], [70, 30, 0, 0, 0, 0], [40, 50, 10, 0, 0, 0], [15, 50, 32, 3, 0, 0], [5, 30, 50, 15, 0, 0],
@@ -1024,6 +1027,8 @@ export const SK_RARE = { 1: { n: '보통', c: '#5d6b7e' }, 2: { n: '희귀', c: 
 // 같은 스킬을 모은 장 수 → 레벨 (최대 10). 1장이면 Lv.1, 2장 Lv.2, 4장 Lv.3 …
 export const SK_NEED = [1, 2, 4, 7, 11, 16, 22, 29, 37, 46];
 export const SK_MAX = SK_NEED.length;
+// 2026-11-21 모든 스킬이 최고 레벨이면 스킬 뽑기를 못 함
+export const skAllMax = c => { const sk = c.life?.sk || {}; return SKILLS.every(s => (sk[s.id] || 0) >= SK_NEED[SK_MAX - 1]); };
 export const skLv = n => SK_NEED.filter(x => n >= x).length;
 // 레벨에 따른 세기: 피해 +10%/레벨, 회복·버프 +7%/레벨, 막기는 3레벨마다 +1번, 쿨타임 −2%/레벨
 export function skPow(s, lv) {
@@ -1049,6 +1054,7 @@ export const SKILL_GACHA = {
   odds: [[60, 30, 10], [57, 31, 12], [54, 32, 14], [50, 33, 17], [46, 34, 20], [42, 35, 23], [38, 36, 26], [34, 36, 30]],   // [보통, 희귀, 전설] %
   ten: .9, back: .3,
 };
+export const skCostN = (cnt, n) => n === 1 ? skGachaInfo(cnt).cost : n === 10 ? Math.round(skGachaInfo(cnt).cost * 10 * SKILL_GACHA.ten) : Math.round(Array.from({ length: n }, (_, k) => skGachaInfo(cnt + k).cost).reduce((a, b) => a + b, 0) * SKILL_GACHA.ten);
 export function skGachaInfo(n = 0) {
   const G = SKILL_GACHA; let lv = 1, base = 0;
   while (lv <= G.need.length && n >= base + G.need[lv - 1]) { base += G.need[lv - 1]; lv++; }

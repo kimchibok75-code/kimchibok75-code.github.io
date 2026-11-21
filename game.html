@@ -175,7 +175,7 @@ h3.sub { margin: 14px 0 6px; font-size: calc(15px * var(--fs)); }
 .bs-help > div { display: grid; gap: 7px; font-size: calc(14px * var(--fs)); line-height: 1.55; padding-bottom: 6px; }
 .bs-help p { margin: 0; }
 .bs-foot { position: sticky; bottom: 0; z-index: 2; margin: 4px -18px calc(-1 * var(--sb, 18px)); padding: 16px 18px var(--sb, 18px); background: linear-gradient(rgba(251,252,247,0), var(--paper) 14px); }
-.bs-two { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; } .bs-two .bb { min-height: 54px; }
+.bs-two { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; } .bs-two .bb { min-height: 54px; } .bs-two.bs-three { grid-template-columns: 1fr 1.2fr 1.2fr; } .gx-note { margin: 0 2px !important; padding-top: 11px; text-align: right; font-size: 13px; font-weight: 800; color: #c0392b; }
 .bs-three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; } .bs-three .bb { min-height: 58px; padding: 6px 4px; min-width: 0; } .bs-three .bb small { white-space: normal; text-align: center; }
 .bs-alert { width: 100%; min-height: 52px; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 2px solid #f2c14e; border-radius: 14px; background: #fff8e1; font-weight: 700; text-align: left; animation: bsPulse 1.6s ease-in-out infinite; }
 .bs-alert span { margin-left: auto; color: var(--kimchi); font-weight: 800; white-space: nowrap; }
@@ -697,6 +697,7 @@ body.hunting .side { display: none; }
 .gsum { text-align: center; margin: 4px 0; }
 /* 뽑기 결과 (2026-11-17): 더 센 것(NEW)은 앞에 · 금빛 테, 분해된 것은 흐리게, 장착한 것은 초록 테 */
 .gres.still .gcard { animation: none; }
+.gres.fast .gcard { animation-duration: .22s; animation-delay: calc(var(--i) * 6ms); } .gres.fast .gcard.shine { animation-duration: .22s, .9s; animation-delay: calc(var(--i) * 6ms), calc(var(--i) * 6ms + .22s); }   /* 2026-11-21 100회 뽑기는 카드가 빠르게 (약 0.8초) */
 .gcard.dim { opacity: .5; filter: saturate(.35); } .gcard.dim .gt { transform: scale(.9); }
 .gcard.on { box-shadow: 0 0 0 3px #4fbf6a; position: relative; }
 /* 2026-11-20 건물 안내판 창 */
@@ -1547,7 +1548,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { EVENT_SHOP, COUPONS, cpnLeft, BINGO, bingoCallAt, bingoLastAt, bingoLines, BINGO_LINES, BINGO_FLOOR, BINGO_WALK, BINGO_HOST, bingoCoins, NEWBIE, raidSlotStart, INCENSE, incLv, SAVER, CHAIN, CLEAVE, PIERCE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { EVENT_SHOP, COUPONS, gachaCostN, skCostN, skAllMax, cpnLeft, BINGO, bingoCallAt, bingoLastAt, bingoLines, BINGO_LINES, BINGO_FLOOR, BINGO_WALK, BINGO_HOST, bingoCoins, NEWBIE, raidSlotStart, INCENSE, incLv, SAVER, CHAIN, CLEAVE, PIERCE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, SKIN_THEMES, themeKeys, themeGot, themeDone, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, wishTable, BUFFS, wishGold, wishExp,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
@@ -6496,7 +6497,7 @@ function cafeSheet(b, keep) {
   const cl = cafeLv(me), C = me.life?.cafe || { xp: 0 }, pay = JOB.pay(cl), left = me.job ? jobLeft() : 0;
   const lvCard = `<div class="bs-card"><h4>☕ 알바 레벨 ${cl}${cl < CAFE.max ? `<small>다음 레벨 알바비 🪙 ${fmtN(JOB.pay(cl + 1))}</small>` : '<small>최고 레벨!</small>'}</h4>${cl < CAFE.max ? pbar(C.xp / CAFE.need(cl), `알바 경험치 ${fmtN(C.xp)} / ${fmtN(CAFE.need(cl))}`) : ''}</div>`;
   const pots = Object.entries(POTS).map(([k, p]) => `<li class="bs-row stack"><span class="bs-ri">${p.i}</span><div><b class="t">${p.n}</b><div class="cs">${chip(p.d, 'up')}${chip(`가진 것 ${me.pots[k]}개`)}</div></div><span></span>
-    <div class="bs-qty">${[1, 5, 10].map(n => bbtn(`${k}:${n}`, `${n}개`, `🪙 ${fmtN(p.price * n)}`, { main: n === 5, dis: me.gold < p.price * n })).join('')}</div></li>`).join('');
+    <div class="bs-qty">${[1, 10, 100].map(n => bbtn(`${k}:${n}`, `${n}개`, `🪙 ${fmtN(p.price * n)}`, { main: n === 10, dis: me.gold < p.price * n })).join('')}</div></li>`).join('');
   const job = me.job
     ? `<div class="bs-card hero"><h4>☕ 카페 알바 ${chip('일하는 중', 'up')}</h4>${pbar(1 - left / JOB.sec, `${fmtSec(left)} 남음 · 끝나면 🪙 ${fmtN(me.job.pay)}`)}${bbtn('quit', '그만두기', '', { wide: true })}</div>`
     : `<div class="bs-card hero"><h4>☕ 카페 알바<span class="cs">${chip('1분')}${chip(`🪙 ${fmtN(pay)}`, 'gold')}${chip(`✨ ${fmtN(lifeExp(me, 'job'))}`, 'up')}</span></h4>${bbtn('job', '알바 시작', '카페 앞에서 1분 동안 일해요', { wide: true })}</div>`;
@@ -6539,8 +6540,8 @@ function showSkillPulls(j) {
   const nNew = j.got.filter(o => o.isNew).length, nUp = j.got.filter(o => o.up && !o.isNew).length, ten = skTen();
   openModal(bsWrap({ id: 'gacha', icon: '📘', name: '스킬 뽑기 결과' }, { tag: '같은 스킬이 또 나오면 모아서 레벨 업', wal: ['gold'],
     body: `<div class="cs" style="margin:0">${nNew ? chip(`✨ 새 스킬 ${nNew}개`, 'up') : ''}${nUp ? chip(`▲ 레벨 업 ${nUp}개`, 'up') : ''}${j.back ? chip(`🪙 +${fmtN(j.back)} (최고 레벨)`, 'gold') : ''}${j.lvUp ? chip(`🎉 스킬 뽑기 Lv.${j.lvUp}`, 'up') : ''}</div>
-      <div class="gres">${cards}</div>${bbtn('see', '📘 내 스킬 보기', '', { wide: true })}`,
-    foot: `<div class="bs-two">${bbtn('back', '가챠센터로')}${bbtn('again', '🎰 10회 더 뽑기', `🪙 ${fmtN(ten)}`, { main: true, dis: me.gold < ten })}</div>` }), el => wire(el, async x => {
+      <div class="gres${j.got.length > 10 ? ' fast' : ''}">${cards}</div>${bbtn('see', '📘 내 스킬 보기', '', { wide: true })}`,
+    foot: `<div class="bs-two">${bbtn('back', '가챠센터로')}${bbtn('again', skAllMax(me) ? '🏆 모든 스킬 최고 레벨' : '🎰 10회 더 뽑기', skAllMax(me) ? '' : `🪙 ${fmtN(ten)}`, { main: !skAllMax(me), dis: skAllMax(me) || me.gold < ten })}</div>` }), el => wire(el, async x => {
     if (x === 'back') return openBuilding(gachaB());
     if (x === 'see') { closeModal(); skTab = SKILLS.find(s => s.id === j.got[0]?.id)?.cls || me.cls; renderSkills(); return openPanelTab('skill'); }
     const k = await act('/api/skill/pull', { n: 10 }); if (k) showSkillPulls(k);
@@ -6568,20 +6569,20 @@ function gachaSheet(b, keep) {
   reopen = () => gachaSheet(b, true);
   const tab = btab('gacha', 'w', ['w', 'a', 'sk']);
   if (!keep || (S.godds && S.godds.tab !== tab)) S.godds = null;
-  let body, one, ten, x1, x10;
+  let body, one, ten, x1, x10, hund, x100, allMax = false;
   const head = (i, gi) => `<div class="bs-card hero"><div class="gx-h"><span class="gx-i">${i}</span><div>${pbar(gi.need ? gi.now / gi.need : 1, gi.need ? `뽑기 Lv.${gi.lv + 1}까지 ${gi.need - gi.now}회` : '최고 레벨')}</div><span class="gx-lv"><span class="glv">Lv.${gi.lv}</span><button type="button" class="oddi${S.godds ? ' on' : ''}" data-x="odds" aria-label="확률 보기">i</button></span></div>${S.godds ? gachaOdds(tab, S.godds.lv) : ''}</div>`;
   if (tab === 'sk') {
     const gi = skGachaInfo(me.life?.skg || 0), own = me.life?.sk || {};
-    one = gi.cost; ten = skTen(); x1 = 'sk:1'; x10 = 'sk:10';
-    body = head('📘', gi) + `<p class="muted gx-own">모은 스킬 <b>${SKILLS.filter(s => own[s.id]).length} / ${SKILLS.length}</b></p>`;
+    one = gi.cost; ten = skTen(); x1 = 'sk:1'; x10 = 'sk:10'; hund = skCostN(me.life?.skg || 0, 100); x100 = 'sk:100'; allMax = skAllMax(me);
+    body = head('📘', gi) + `<p class="muted gx-own">모은 스킬 <b>${SKILLS.filter(s => own[s.id]).length} / ${SKILLS.length}</b></p>` + (allMax ? `<div class="bs-card hero" style="text-align:center"><h4>🏆 모든 스킬이 최고 레벨이에요!</h4><p class="muted">더 뽑을 스킬이 없어서 스킬 뽑기는 닫혀 있어요</p></div>` : '');
   } else {
     const G = GACHA[tab], gi = gachaInfo(me.gacha[tab]);
-    one = gi.cost; ten = tenCost(gi); x1 = `${tab}:1`; x10 = `${tab}:10`;
+    one = gi.cost; ten = tenCost(gi); x1 = `${tab}:1`; x10 = `${tab}:10`; hund = gachaCostN(me.gacha[tab], 100); x100 = `${tab}:100`;
     body = head(G.i, gi) + `<div class="bs-card"><h4>현재 장비</h4><div class="gx-gear">${G.slots.map(k => { const it = me.equip[k]; return `<div>${it ? gIcon(it) : `<span class="emp">${SLOTS[k].i}</span>`}<small>${it ? `${it.st}단계 <b style="color:${GRADES[it.g].c}">${GRADES[it.g].n}</b>` : '비어 있음'}</small></div>`; }).join('')}</div></div>`;
   }
   bsOpen(b, { tag: '골드로 장비 · 스킬 뽑기', wal: ['gold'], tabs: [['w', '⚔️ 무기'], ['a', '🛡️ 방어구'], ['sk', '📘 스킬']], tab,
     body,
-    foot: `<div class="bs-two">${bbtn(x1, '1회 뽑기', `🪙 ${fmtN(one)}`, { dis: me.gold < one })}${bbtn(x10, '10회 뽑기<em>10%↓</em>', `🪙 ${fmtN(ten)}`, { main: true, dis: me.gold < ten })}</div>` },
+    foot: `<div class="bs-two bs-three">${bbtn(x1, '1회 뽑기', `🪙 ${fmtN(one)}`, { dis: allMax || me.gold < one })}${bbtn(x10, '10회 뽑기<em>10%↓</em>', `🪙 ${fmtN(ten)}`, { main: !allMax, dis: allMax || me.gold < ten })}${bbtn(x100, '100회 뽑기<em>10%↓</em>', `🪙 ${fmtN(hund)}`, { main: !allMax, dis: allMax || me.gold < hund })}</div><p class="gx-note">연속 뽑기 중 레벨이 오르는 경우가 고려된 가격입니다.</p>` },
     async x => {
       if (x === 'table') return gachaTable();
       if (x === 'odds') { S.godds = S.godds ? null : { tab, lv: tab === 'sk' ? skGachaInfo(me.life?.skg || 0).lv : gachaInfo(me.gacha[tab]).lv }; return gachaSheet(b, true); }
@@ -6635,7 +6636,7 @@ function showPulls(j, box) {
     tag: '장비를 누르면 자세히 보고 착용을 고를 수 있어요',
     wal: ['gold'],
     body: `<div class="cs" style="margin:0">${take.length ? chip(`✅ 착용 ${take.length}개`, 'up') : chip('착용할 장비 없음')}${chip(`🔨 분해 ${rest.length + take.filter(it => me.equip[it.slot]).length}개 · 🪙 ${fmtN(gold)}`)}${P.lvUp ? chip(`🎉 뽑기 Lv.${P.lvUp}`, 'up') : ''}</div>
-      <div class="gres${j ? '' : ' still'}">${cards}</div><p class="gx-tip"><b class="gx-warn">선택하지 않은 장비는 자동으로 분해됩니다.</b></p>`,
+      <div class="gres${j ? '' : ' still'}${me.bag.length > 10 ? ' fast' : ''}">${cards}</div><p class="gx-tip"><b class="gx-warn">선택하지 않은 장비는 자동으로 분해됩니다.</b></p>`,
     foot: bbtn('done', '✔️ 선택 완료', take.length ? `${take.length}개 착용 · 나머지 분해 🪙 ${fmtN(gold)}` : `모두 분해 · 🪙 ${fmtN(gold)}`, { wide: true, main: true }),
   }), el => wire(el, async x => {
     if (x.startsWith('card:')) return pullDetail(me.bag[+x.slice(5)]?.id);

@@ -3,8 +3,8 @@
 import { INCENSE, SAVER, saverLife, jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, GUIDE_MARKS, guideQ, guideProg, guideInit, guideNext, npcExp as guideExp, TAG_COLORS, RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, wishGold, wishExp, START, LV_CAP, TITLES, rollOpts, STAGES,
-  SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
-  offlineLife, offlineHuntAway, PRESET_CD, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, EVENT_SHOP, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait, fishCasts } from '../../assets/js/game-rules.js';
+  SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill, skAllMax,
+  offlineLife, offlineHuntAway, PRESET_CD, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, EVENT_SHOP, PULL_NS, gachaCostN, skCostN, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait, fishCasts } from '../../assets/js/game-rules.js';
 import { isSolid, NODES, BACK, tileAt, WATER, waterIn, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
 import { canHouseD } from '../../assets/js/game-dong.js';
 import { scanBad } from './filter.js';
@@ -476,7 +476,7 @@ const GAME = {
   // 카페
   '/api/pots'(c, b) {
     const k = b.k, n = Number(b.n);
-    if (!own(POTS, k) || ![1, 5, 10].includes(n)) fail(400, '잘못된 요청이에요');
+    if (!own(POTS, k) || ![1, 10, 100].includes(n)) fail(400, '잘못된 요청이에요');
     if (c.pots[k] + n > 999) fail(400, '물약은 종류마다 999개까지예요');
     spend(c, POTS[k].price * n); c.pots[k] += n;
   },
@@ -487,8 +487,8 @@ const GAME = {
     townOnly(c);
     if (c.bag.length) fail(400, '먼저 지난 뽑기 결과를 골라 주세요');
     const box = b.box, n = Number(b.n);
-    if (!own(GACHA, box) || ![1, 10].includes(n)) fail(400, '잘못된 요청이에요');
-    const g0 = gachaInfo(c.gacha[box]), cost = n === 10 ? Math.round(g0.cost * 10 * GACHA_TEN) : g0.cost;
+    if (!own(GACHA, box) || !PULL_NS.includes(n)) fail(400, '잘못된 요청이에요');
+    const g0 = gachaInfo(c.gacha[box]), cost = gachaCostN(c.gacha[box], n);
     spend(c, cost);
     const items = []; let got = 0;
     for (let k = 0; k < n; k++) {
@@ -525,8 +525,9 @@ const GAME = {
   // 뽑기 레벨(뽑은 횟수)이 오르면 값이 오르고 전설 확률도 오름. 최고 레벨(10)인 스킬이 또 나오면 그 1회 값의 30%를 골드로 돌려줌
   '/api/skill/pull'(c, b) {
     townOnly(c);
-    const n = Number(b.n); if (![1, 10].includes(n)) fail(400, '잘못된 요청이에요');
-    const g0 = skGachaInfo(c.life.skg || 0), cost = n === 10 ? Math.round(g0.cost * 10 * SKILL_GACHA.ten) : g0.cost;
+    const n = Number(b.n); if (!PULL_NS.includes(n)) fail(400, '잘못된 요청이에요');
+    if (skAllMax(c)) fail(400, '모든 스킬이 최고 레벨이라 더 뽑을 수 없어요');
+    const g0 = skGachaInfo(c.life.skg || 0), cost = skCostN(c.life.skg || 0, n);
     spend(c, cost);
     const sk = c.life.sk = c.life.sk && typeof c.life.sk === 'object' ? c.life.sk : {}, out = []; let back = 0;
     for (let k = 0; k < n; k++) {
