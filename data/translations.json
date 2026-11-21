@@ -337,6 +337,12 @@
       "ko": "Vanilla Factions Expanded - Pirates를 위한 새로운 스페이서 등급 전쟁통입니다.",
       "at": 1794901758368
     },
+    "3841196254": {
+      "src": "Your fields keep growing, but you never have enough hands? Build a farm machine next to a growing zone and let it harvest, sow and clear the land while your colonists do something else.",
+      "full": "귀하의 분야는 계속 성장하고 있지만 인력이 충분하지 않습니까? 재배 구역 옆에 농기계를 만들어서 식민지 주민들이 다른 일을 하는 동안 농기계가 수확하고 씨를 뿌리고 땅을 개간하게 하세요.",
+      "ko": "귀하의 분야는 계속 성장하고 있지만 인력이 충분하지 않습니까? 재배 구역 옆에 농기계를 만들어서 식민지 주민들이 다른 일을 하는 동안 농기계가 수확하고 씨를 뿌리고 땅을 개간하게 하세요.",
+      "at": 1795237459621
+    },
     "3841240775": {
       "src": "Some of you might remember my old Resurrect Enemy Mechanoids - The Big Three Patch, which I originally made because the author of Resurrect Enemy Mechanoids somehow managed to make a mechanoid resurre",
       "full": "여러분 중 일부는 Resurrent Enemy Mechanoids의 저자가 어떻게든 메카노이드를 부활시킬 수 있었기 때문에 원래 만들었던 나의 오래된 Resurrent Enemy Mechanoids - The Big Three Patch를 기억하실 것입니다.",
@@ -373,6 +379,12 @@
       "ko": "Vehicle Map Framework를 사용하여 생성된 4대의 차량을 중심으로 RimWorld에 해양 콘텐츠를 추가하는 주요 확장 모드입니다.",
       "at": 1795066609153
     },
+    "3842244323": {
+      "src": "This mod grants Dragonians (Gloomy Dragonian race) the ability to uproot fully grown trees directly from the ground to wield as heavy improvised weapons.",
+      "full": "이 모드는 Dragonian(Gloomy Dragonian 종족)에게 완전히 자란 나무를 땅에서 직접 뽑아 무거운 즉석 무기로 휘두를 수 있는 능력을 부여합니다.",
+      "ko": "이 모드는 Dragonian(Gloomy Dragonian 종족)에게 완전히 자란 나무를 땅에서 직접 뽑아 무거운 즉석 무기로 휘두를 수 있는 능력을 부여합니다.",
+      "at": 1795237460213
+    },
     "3842486043": {
       "src": "One day, I built a castle. It was a beautiful castle... until I realized I'd built it way too close to the map border.",
       "full": "어느 날 나는 성을 쌓았습니다. 그것은 아름다운 성이었습니다... 지도 경계에 너무 가깝게 지었다는 것을 깨닫기 전까지는요.",
@@ -384,6 +396,12 @@
       "full": "\"맙소사 랜디, 보스! 코니는 완전히 미쳤고 심지어 인질까지 잡았어요! 우리가 계속해서 하이퍼피드를 키우게 하면 그 빌어먹을 식민지 전체를 하늘 높이 날려버릴 거라고 하더라고요!",
       "ko": "\"맙소사 랜디, 보스! 코니는 완전히 미쳤고 심지어 인질까지 잡았어요! 우리가 계속해서 하이퍼피드를 키우게 하면 그 빌어먹을 식민지 전체를 하늘 높이 날려버릴 거라고 하더라고요!",
       "at": 1795177057126
+    },
+    "3843294270": {
+      "src": "UI Rethemed - Info Card rethemes RimWorld's info card, the window every \"i\" button opens, to match the other Rethemed mods.",
+      "full": "UI 재구성 - 정보 카드는 다른 테마 변경 모드와 일치하도록 RimWorld의 정보 카드(\"i\" 버튼마다 열리는 창)의 테마를 변경합니다.",
+      "ko": "UI 재구성 - 정보 카드는 다른 테마 변경 모드와 일치하도록 RimWorld의 정보 카드(\"i\" 버튼마다 열리는 창)의 테마를 변경합니다.",
+      "at": 1795237458735
     }
   }
 }
