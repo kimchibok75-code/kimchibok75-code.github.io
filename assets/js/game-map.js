@@ -405,3 +405,33 @@ for (const b of [{ id: 'hrest', name: '사냥꾼 쉼터', icon: '🔥', x: 71, y
   for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) block(x, y);
   for (let x = 52; x <= b.door.x; x++) if (!solid[b.door.y * MW + x]) set(x, b.door.y, PATH);   // 스킨샵 앞 길과 이어 줌
 }
+// 20) 2026-11-22: 무한의 탑을 동쪽(숲 가장자리)으로 옮기고, 그 자리 아래(동쪽 길 왼쪽)에 던전 입구 (사용자 요청). 맨 마지막이라 나무·돌 번호 그대로
+{
+  const near = (b, x, y) => x >= b.x - 1 && x <= b.x + b.w && y >= b.y - 1 && y <= b.y + b.h;
+  const clear = b => {
+    for (let k = DECO.length - 1; k >= 0; k--) { const d = DECO[k]; if (near(b, d.x, d.y)) { if (tileAt(d.x, d.y) !== WATER) solid[d.y * MW + d.x] = 0; DECO.splice(k, 1); } }
+    for (const n of NODES) if (!n.off && near(b, n.x, n.y)) { n.off = true; if (tileAt(n.x, n.y) !== WATER) solid[n.y * MW + n.x] = 0; }
+  };
+  const place = b => { clear(b); b.door = { x: b.x + Math.floor(b.w / 2), y: b.y + b.h }; for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) block(x, y); set(b.door.x, b.door.y, PATH); };
+  const t = BUILDINGS.find(q => q.id === 'tower');
+  for (let y = t.y; y < t.y + t.h; y++) for (let x = t.x; x < t.x + t.w; x++) { solid[y * MW + x] = 0; set(x, y, G); }
+  set(t.door.x, t.door.y, G);
+  for (let y = 24; y <= 29; y++) for (let x = 69; x <= 72; x++) if (tileAt(x, y) === PATH) set(x, y, G);   // 예전 탑 문에서 내려오던 길 윗부분 지움
+  t.x = 73; t.y = 24; place(t);
+  road([[75, 27.5], [74, 30], [72.6, 32.6]], .8, 32);                  // 탑 문 → 동쪽 길
+  const d = { id: 'dungeon', name: '던전 입구', icon: '⚔️', x: 65, y: 29, w: 4, h: 3, soon: 1 };
+  BUILDINGS.push(d); place(d);
+  road([[67, 32.4], [67.4, 33.8]], .8, 33);                             // 던전 문 → 아래 길
+}
+// 21) 2026-11-22: 광장 남쪽 게시판 3개를 나란히 (건의 · 공략 · 초보자 가이드, 1칸씩 띄움 → 사이로 지나갈 수 있음). 맨 마지막이라 나무·돌 번호 그대로
+{
+  const sg = BUILDINGS.find(q => q.id === 'suggest'), bg = BUILDINGS.find(q => q.id === 'beginner');
+  for (const b of [sg, bg]) for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) solid[y * MW + x] = 0;   // 예전 자리 풀기
+  const tips = { id: 'tips', name: '공략 게시판', icon: '📖', x: 39, y: 37, w: 2, h: 1 }; BUILDINGS.push(tips);
+  sg.x = 36; bg.x = 42;
+  for (const b of [sg, tips, bg]) {
+    for (let k = DECO.length - 1; k >= 0; k--) { const d = DECO[k]; if (d.x >= b.x - 1 && d.x <= b.x + b.w && d.y >= b.y - 1 && d.y <= b.y + b.h) { if (tileAt(d.x, d.y) !== WATER) solid[d.y * MW + d.x] = 0; DECO.splice(k, 1); } }
+    b.door = { x: b.x + Math.floor(b.w / 2), y: b.y + b.h };
+    for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) block(x, y);
+  }
+}

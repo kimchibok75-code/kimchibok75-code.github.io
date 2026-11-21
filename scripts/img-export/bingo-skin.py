@@ -2,11 +2,12 @@
 # 부위마다 잘라 은은한 빛(옅은 알파)을 지우고 → 사이버 전사 템플릿 그림이 차지한 자리(크기·위치)에 맞춰 넣어
 # 텍스쳐 템플릿/char·weapon/*_guide_빙고마스터.png 를 만듦. 그다음 town-art.py의 tpl_set('빙고마스터', 'bm')이 게임 그림으로 바꿈
 # 실행: 프로젝트 폴더에서 PYTHONUTF8=1 python scripts/img-export/bingo-skin.py
-import os
+# 2026-11-22 같은 3×2 배치의 다른 판도: python scripts/img-export/bingo-skin.py "내 디자인/스킨_메이드복.png" 메이드복
+import os, sys
 import numpy as np
 from PIL import Image
 
-SRC = '텍스쳐 템플릿/내 디자인/스킨_빙고 마스터.png'; TPL = '텍스쳐 템플릿'; REF = '사이버전사'; TAG = '빙고마스터'
+SRC = '텍스쳐 템플릿/' + (sys.argv[1] if len(sys.argv) > 1 else '내 디자인/스킨_빙고 마스터.png'); TPL = '텍스쳐 템플릿'; REF = '사이버전사'; TAG = sys.argv[2] if len(sys.argv) > 2 else '빙고마스터'
 CUT = 120   # 이 값보다 옅은 알파(빛 번짐)는 지움
 sheet = np.asarray(Image.open(SRC).convert('RGBA')).copy()
 # 판에서 부위 자리 (x0, y0, x1, y1), 어디에 넣을지, 맞추는 방법

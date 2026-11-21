@@ -117,7 +117,8 @@ export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'clear', n: '�
   { id: 'mineking', n: '⛏️ 채굴왕 헬멧', price: 0, fk: 1, fx: { gather: 1, hpP: 3 } },
   { id: 'farmking', n: '🌾 농사왕 밀짚모자', price: 0, fk: 1, fx: { farmP: 8, goldP: 2 } },
   { id: 'huntking', n: '⚔️ 사냥왕 모자', price: 0, fk: 1, fx: { atkP: 2, expP: 2 } },
-  { id: 'bingom', n: '🎱 빙고 마스터 모자', price: 0, fk: 1, bgc: 1, fx: { goldP: 2, expP: 1 } }];   // 2026-11-21 빙고 마스터 (이벤트 상점 빙고코인샵, 효과는 임시)   // 2026-11-21 사냥왕 (사냥꾼 쉼터 보상)   // fk = 낚시점 '낚시왕' 보상 (2026-11-19, 상점에 안 팖)   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
+  { id: 'bingom', n: '🎱 빙고 마스터 모자', price: 0, fk: 1, bgc: 1, fx: { goldP: 2, expP: 1 } },
+  { id: 'maid', n: '🎀 알바왕 머리띠', price: 0, fk: 1, fx: { goldP: 3, hpP: 2 } }];   // 2026-11-22 알바왕(메이드복) 세트: 카페 '알바왕' 탭 보상. 경험치 효과는 넣지 않음 (사용자 요청)   // 2026-11-21 빙고 마스터 (이벤트 상점 빙고코인샵, 효과는 임시)   // 2026-11-21 사냥왕 (사냥꾼 쉼터 보상)   // fk = 낚시점 '낚시왕' 보상 (2026-11-19, 상점에 안 팖)   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
 // 눈 모양 스킨 (가진 것은 hats 목록에 'eye:별' 처럼 저장). dot은 기본
 export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 10000, fx: { defP: 3 } }, { id: 'star', n: '⭐ 별 눈', price: 10000, fx: { expP: 3 } }, { id: 'wink', n: '😉 윙크', price: 15000, fx: { crit: 2, atkP: 0.5 } }, { id: 'heart', n: '💗 하트 눈', price: 15000, fx: { hpP: 4 } }, { id: 'cat', n: '🐱 고양이 눈', price: 15000, fx: { fishC: 8 } }, { id: 'big', n: '✨ 반짝 큰 눈', price: 20000, fx: { goldP: 5 } },
   { id: 'rdragon', n: '🐉 용의 눈', price: 0, raid: 'rdragon', fx: { crit: 3, expP: 5 } },
@@ -128,7 +129,8 @@ export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: '
   { id: 'mineking', n: '⛏️ 채굴왕 눈', price: 0, fk: 1, fx: { crit: 2, defP: 2 } },
   { id: 'farmking', n: '🌾 농사왕 눈', price: 0, fk: 1, fx: { crit: 2, farmP: 4 } },
   { id: 'huntking', n: '⚔️ 사냥왕 눈', price: 0, fk: 1, fx: { crit: 2, bossP: 3 } },
-  { id: 'bingom', n: '🎱 빙고 마스터 눈', price: 0, fk: 1, bgc: 1, fx: { crit: 1, goldP: 2 } }];
+  { id: 'bingom', n: '🎱 빙고 마스터 눈', price: 0, fk: 1, bgc: 1, fx: { crit: 1, goldP: 2 } },
+  { id: 'maid', n: '🎀 알바왕 눈', price: 0, fk: 1, fx: { crit: 2, goldP: 2 } }];
 // 의상 스킨 (몸 전체 겉모습, 입으면 갑옷 그림 대신 보임). 가진 것은 c.hats 에 'suit:id', 입은 것은 c.suit
 export const SUITS = [
   { id: 'hoodie', n: '🧥 후드티', price: 10000, fx: { spdP: 3 } },
@@ -146,6 +148,7 @@ export const SUITS = [
   { id: 'farmking', n: '🌾 농사왕 멜빵바지', price: 0, fk: 1, fx: { hpP: 4, farmP: 10 } },
   { id: 'huntking', n: '⚔️ 사냥왕 갑옷', price: 0, fk: 1, fx: { hpP: 4, defP: 3 } },
   { id: 'bingom', n: '🎱 빙고 마스터 코트', price: 0, fk: 1, bgc: 1, fx: { hpP: 1, goldP: 2 } },
+  { id: 'maid', n: '🎀 알바왕 메이드복', price: 0, fk: 1, fx: { hpP: 4, defP: 3, goldP: 2 } },
 ];
 // 무기 스킨 (그 무기의 겉모습만). 가진 것은 'wsk:무기:id', 쓰는 것은 c.wsk = { sword, bow, staff }
 export const WSKINS = [
@@ -194,6 +197,9 @@ export const WSKINS = [
   { t: 'sword', id: 'bingom', n: '🎱 빙고 마스터 검', price: 0, fk: 1, bgc: 1, fx: { atkP: 1, goldP: 2 } },
   { t: 'bow', id: 'bingom', n: '🎱 빙고 마스터 활', price: 0, fk: 1, bgc: 1, fx: { atkP: 1, goldP: 2 } },
   { t: 'staff', id: 'bingom', n: '🎱 빙고 마스터 지팡이', price: 0, fk: 1, bgc: 1, fx: { atkP: 1, goldP: 2 } },
+  { t: 'sword', id: 'maid', n: '🎀 알바왕 검', price: 0, fk: 1, fx: { atkP: 3, goldP: 3 } },
+  { t: 'bow', id: 'maid', n: '🎀 알바왕 활', price: 0, fk: 1, fx: { atkP: 3, goldP: 3 } },
+  { t: 'staff', id: 'maid', n: '🎀 알바왕 먼지떨이', price: 0, fk: 1, fx: { atkP: 3, goldP: 3 } },
 ];
 // 낚시왕 보상 (2026-11-19, 낚시점 '낚시왕' 탭): 물고기 50마리마다 한 부위씩, '받기'를 눌러야 받음. 순서 = 모자 · 의상 · 눈 · 검 · 활 · 지팡이
 // '왕' 세트 (2026-11-19): 낚시왕(낚시점, 물고기 50마리마다) · 채굴왕(채석장, 손으로 캔 석재 100개마다). cnt = life.cnt 의 어느 값으로 셈
@@ -240,6 +246,16 @@ export const KINGS = {
     { t: '레이드 10번 성공하기', u: '번', need: 10, v: c => c.raid || 0 },
     { t: '몬스터 20,000마리 잡기', u: '마리', need: 20000, v: c => c.kills || 0 },
     { t: '늪지 보스 거대 코브라 잡기', u: '번', need: 1, v: c => c.mk_cobra || 0 },
+  ] },
+  // 2026-11-22 알바왕 (카페 '알바왕' 탭, 메이드복 세트): 부위마다 다른 목표, 이룬 것부터 받음. 순서 = 모자 · 의상 · 눈 · 검 · 활 · 지팡이
+  //   손님 · VIP 수는 2026-11-22부터 셈, 알바 레벨은 알바를 끝낼 때 cnt.cafeLv에 적음
+  cafe: { id: 'maid', n: '알바왕', i: '🎀', cnt: 'job', every: 30, what: '알바', unit: '번', keys: kingKeys('maid'), goals: [
+    { t: '카페 알바 30번 끝내기', u: '번', need: 30, v: c => c.job || 0 },
+    { t: '알바 레벨 10 되기', u: '레벨', need: 10, v: c => c.cafeLv || 0 },
+    { t: '손님 200명 맞이하기', u: '명', need: 200, v: c => c.guest || 0 },
+    { t: 'VIP 손님 15명 맞이하기', u: '명', need: 15, v: c => c.vip || 0 },
+    { t: '카페 알바 300번 끝내기', u: '번', need: 300, v: c => c.job || 0 },
+    { t: '알바 레벨 30 (최고) 되기', u: '레벨', need: 30, v: c => c.cafeLv || 0 },
   ] },
 };
 export const FISH_KING = KINGS.fish;
@@ -362,7 +378,7 @@ export const spentPoints = c => c.str + c.dex + c.int + c.luk - 20;
 export const LV_CAP = 999;           // 최고 레벨 (2026-11-20 55 → 999: 도달하라는 게 아니라 열어 두기만)
 export const HUNT = { offlineMax: 4 * 3600, offlineEff: .5, offlineExp: .1, offlineHunt: .5, onlineGap: 90, bossEvery: 300, deathLoss: .1, townRegen: .02, huntRegen: .015, goldMul: .6 };   // huntRegen 2026-11-17 .02 → .015 (몬스터 기믹과 함께: 물약이 필요하게)   // 2026-11-16 1.15 → .6 (사냥 골드가 낚시·알바보다 너무 많아서 절반쯤으로)   // goldMul: 사냥에서 장비가 안 떨어지는 대신 골드 +15%
 // 2026-11-17: 모두 최대 체력 비율로 (작은 20% · 큰 50% · 특대 100%)
-export const POTS = { s: { n: '작은 음료', i: '🥤', d: '최대 체력의 20%', price: 20, heal: max => Math.round(max * .2) }, l: { n: '큰 음료', i: '🧋', d: '최대 체력의 50%', price: 70, heal: max => Math.round(max * .5) }, xl: { n: '특대 음료', i: '🍹', d: '최대 체력의 100%', price: 200, heal: max => Math.round(max) } };
+export const POTS = { s: { n: '작은 음료', i: '🥤', d: '최대 체력의 20%', price: 40, heal: max => Math.round(max * .2) }, l: { n: '큰 음료', i: '🧋', d: '최대 체력의 50%', price: 140, heal: max => Math.round(max * .5) }, xl: { n: '특대 음료', i: '🍹', d: '최대 체력의 100%', price: 400, heal: max => Math.round(max) } };
 // 어떤 음료를 마실지 (화면·서버 같은 규칙): 많이 다쳤을수록 큰 것부터, 없으면 있는 것
 export const potPick = (p, max, hp) => { const m = (max - hp) / max; return m >= .75 && p.xl ? 'xl' : m >= .4 && p.l ? 'l' : p.s ? 's' : p.l ? 'l' : p.xl ? 'xl' : null; };
 // 몬스터: n 이름, lv, hp, atk, exp, gold, c 색, s 크기, f 생김새
@@ -500,12 +516,12 @@ export function cafeGain(c, xp) {   // 경험치를 더하고 오른 레벨 수�
   if (C.lv >= CAFE.max) C.xp = 0;
   return up;
 }
-export const JOB = { sec: 60, pay: cl => 100 + cl * 16 };   // 2026-11-21 올림: 1 = 116 · 10 = 260 · 30 = 580 (예전 80 + 14×레벨)
+export const JOB = { sec: 60, pay: cl => 200 + cl * 32 };   // 2026-11-22 2배 (사용자 요청): 1 = 232 · 10 = 520 · 30 = 1,160 (2026-11-21 100 + 16×레벨)
 // (예전)    // 카페 알바 1분: 알바 레벨 1 = 94 · 10 = 220 · 30 = 500 (예전 60 + 캐릭터 레벨×7)
 // 카페 손님 (2026-11-17): 알바 중 가끔 마을 주민이 와서 커피를 사 감 → 팁. 알바 시작 시각(jobAt)으로 정해져서 화면·서버 같은 계산
 // 1분을 7토막(5초부터 7초씩)으로 나눠 토막마다 chance 확률로 손님 1명 (평균 약 5명). 팁 = tip(레벨) × 0.8~1.4, vip 확률로 VIP 손님(팁 ×5)
 // 밸런스: 30레벨 1분에 알바비 270 + 팁 약 250 (사냥 방치 시간당 약 2.8만 ≈ 1분 470)
-export const JOB_GUEST = { slots: [[5, 11], [12, 18], [19, 25], [26, 32], [33, 39], [40, 46], [47, 53]], chance: .75, tip: cl => 10 + cl * 2.6,   /* 2026-11-21 8 + 2.2×레벨 → 10 + 2.6×레벨 */ vip: .06, vipMul: 5,
+export const JOB_GUEST = { slots: [[5, 11], [12, 18], [19, 25], [26, 32], [33, 39], [40, 46], [47, 53]], chance: .75, tip: cl => 20 + cl * 5.2,   /* 2026-11-22 2배 (사용자 요청), 2026-11-21 10 + 2.6×레벨 */ vip: .06, vipMul: 5,
   menu: ['아메리카노', '카페라테', '바닐라 라테', '카푸치노', '핫초코', '딸기 스무디', '녹차 라테', '아이스티', '돌체 라테', '캐러멜 마키아토', '레몬에이드', '흑당 밀크티', '에스프레소', '김치 라테(?)', '고구마 라테', '자몽 허니 블랙티'] };
 export function jobGuests(jobAt, lv) {
   const r = seeded('job' + jobAt), out = [];
@@ -751,6 +767,7 @@ export const SKIN_THEMES = [
   { id: 'farmking', n: '농사왕', g: '텃밭 창고', fx: { farmP: 5, goldP: 2 } },
   { id: 'huntking', n: '사냥왕', g: '사냥꾼 쉼터', fx: { atkP: 2, bossP: 3, crit: 1 } },
   { id: 'bingom', n: '빙고 마스터', g: '이벤트 상점', fx: { goldP: 3, hpP: 2 } },
+  { id: 'maid', n: '알바왕', g: '카페', fx: { goldP: 4, hpP: 2, crit: 1 } },   // 2026-11-22 경험치 없음
 ];
 export const themeKeys = id => kingKeys(id);
 export const themeGot = (c, id) => { const own = Array.isArray(c.hats) ? c.hats : []; return themeKeys(id).filter(k => own.includes(k)).length; };
@@ -1037,14 +1054,14 @@ const SK = (id, cls, n, i, r, cd, k, o, d) => ({ id, cls, n, i, r, cd, k, ...o, 
 // 2026-11-22 요정 소환 숫자 (밸런스 시험으로 맞춤): dur 요정이 있는 초 · fr 공격 간격(초) · m 한 번 피해 배율 (스킬 레벨마다 +10%)
 export const FAIRY = { dur: 10, fr: .5, m: .5 };
 export const SKILLS = [
-  SK('s_bash', 'sword', '돌진 베기', '🏃', 1, 2.5, 'hit', { m: 1.7, stun: .3, dash: 1 },   // 2026-11-21 쿨타임 6 → 2.5초 (사용자 요청), 대신 피해·기절 조금 줄임
+  SK('s_bash', 'sword', '돌진 베기', '🏃', 1, 2.3, 'hit', { m: 1.7, stun: .3, dash: 1 },   // 2026-11-22 쿨타임 2.5 → 2.3초 (검사 쿨타임 약 10% 줄임). 2026-11-21 쿨타임 6 → 2.5초 (사용자 요청), 대신 피해·기절 조금 줄임
   '멀리 있는 몬스터에게 순식간에 달려들어 베고 잠깐 휘청이게 함 (주변 몬스터도 함께)'),
-  SK('s_whirl', 'sword', '회오리 베기', '⚔️', 1, 10, 'hit', { m: .75, x: 3 }, '몸을 돌리며 빠르게 세 번 벰 (주변 몬스터 모두)'),
-  SK('s_guard', 'sword', '철벽 방패', '🛡️', 2, 15, 'shield', { x: 2 }, '방패를 들어 다음 공격을 막음'),
-  SK('s_roar', 'sword', '전투 함성', '📣', 2, 20, 'buff', { atk: 30, dur: 6 }, '함성을 질러 잠깐 공격력이 오름'),
-  SK('s_quake', 'sword', '대지 가르기', '⛰️', 3, 18, 'hit', { m: 4.6, stun: 1.5 }, '땅을 갈라 주변 몬스터 모두에게 큰 피해를 주고 멈추게 함'),
+  SK('s_whirl', 'sword', '회오리 베기', '⚔️', 1, 9, 'hit', { m: .75, x: 3 }, '몸을 돌리며 빠르게 세 번 벰 (주변 몬스터 모두)'),
+  SK('s_guard', 'sword', '철벽 방패', '🛡️', 2, 13.5, 'shield', { x: 2 }, '방패를 들어 다음 공격을 막음'),
+  SK('s_roar', 'sword', '전투 함성', '📣', 2, 18, 'buff', { atk: 30, dur: 6 }, '함성을 질러 잠깐 공격력이 오름'),
+  SK('s_quake', 'sword', '대지 가르기', '⛰️', 3, 16, 'hit', { m: 4.6, stun: 1.5 }, '땅을 갈라 주변 몬스터 모두에게 큰 피해를 주고 멈추게 함'),
   // 2026-11-21 불굴의 의지(회복) → 검기 날리기: 초승달 검기를 멀리 날려 지나가는 길의 몬스터 모두 벰. id는 그대로 (모은 장 수 유지)
-  SK('s_will', 'sword', '검기 날리기', '🌙', 3, 14, 'hit', { m: 4.2, wave: 1 }, '검을 크게 휘둘러 초승달 검기를 멀리 날림 (지나가는 길의 몬스터 모두)'),
+  SK('s_will', 'sword', '검기 날리기', '🌙', 3, 12.5, 'hit', { m: 4.2, wave: 1 }, '검을 크게 휘둘러 초승달 검기를 멀리 날림 (지나가는 길의 몬스터 모두)'),
   SK('b_multi', 'bow', '연속 사격', '🏹', 1, 6, 'hit', { m: .8, x: 3 }, '화살 세 발을 빠르게 연달아 쏨'),
   SK('b_poison', 'bow', '독화살', '🧪', 1, 9, 'hit', { m: 1, dot: 1.6 }, '독 묻은 화살. 맞은 몬스터가 몇 초 동안 독 피해를 입음'),
   SK('b_roll', 'bow', '뒤로 구르기', '💨', 2, 13, 'shield', { x: 2 }, '재빨리 굴러서 다음 공격을 피함'),
@@ -1099,10 +1116,13 @@ export function skGachaInfo(n = 0) {
   while (lv <= G.need.length && n >= base + G.need[lv - 1]) { base += G.need[lv - 1]; lv++; }
   return { lv, max: G.cost.length, now: n - base, need: lv <= G.need.length ? G.need[lv - 1] : 0, cost: G.cost[lv - 1], odds: G.odds[lv - 1] };
 }
-export function rollSkill(lv = 1) {
-  const o = SKILL_GACHA.odds[Math.min(lv, SKILL_GACHA.odds.length) - 1];
-  let r = Math.random() * 100, rare = 3; for (const k of [1, 2]) { r -= o[k - 1]; if (r < 0) { rare = k; break; } }
-  return pick(SKILLS.filter(s => s.r === rare));
+// 2026-11-22: sk(모은 장 수)를 주면 최고 레벨 스킬은 안 나옴. 남은 후보가 있는 등급끼리 확률을 다시 100%로 (전부 최고면 null)
+export function rollSkill(lv = 1, sk = null) {
+  const o = SKILL_GACHA.odds[Math.min(lv, SKILL_GACHA.odds.length) - 1], top = SK_NEED[SK_MAX - 1];
+  const pool = SKILLS.filter(s => !sk || (sk[s.id] || 0) < top); if (!pool.length) return null;
+  const w = [1, 2, 3].map(k => pool.some(s => s.r === k) ? o[k - 1] : 0), sum = w[0] + w[1] + w[2];
+  let r = Math.random() * sum, rare = 3; for (const k of [1, 2]) { r -= w[k - 1]; if (r < 0 && w[k - 1]) { rare = k; break; } }
+  return pick(pool.filter(s => s.r === rare));
 }
 
 // ───────── 레이드 (기획서 4-9): 매시 정각 = 레드 드래곤, 매시 30분 = 오우거 (2026-11-18) ─────────

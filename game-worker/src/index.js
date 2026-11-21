@@ -121,6 +121,11 @@ async function route(req, env, url) {
   if (m === 'GET' && p === '/api/suggest') return suggestList(env, s.user);
   if (m === 'POST' && p === '/api/suggest') return suggestWrite(req, env, s.user);
   if (m === 'POST' && p === '/api/suggest/del') return suggestDel(req, env, s.user);
+  if (m === 'GET' && p === '/api/tips') return tipsList(env, s.user, url.searchParams.get('cls'));   // 2026-11-22 공략 게시판
+  if (m === 'GET' && p === '/api/tips/read') return tipsRead(env, s.user, Number(url.searchParams.get('id')));
+  if (m === 'POST' && p === '/api/tips') return tipsWrite(req, env, s.user);
+  if (m === 'POST' && p === '/api/tips/edit') return tipsEdit(req, env, s.user);
+  if (m === 'POST' && p === '/api/tips/del') return tipsDel(req, env, s.user);
   const g = GAME[p];
   if (m === 'POST' && g) { const b = await readBody(req); if (b && typeof b === 'object') for (const k of Object.keys(b)) if (k[0] === '_') delete b[k];   // 2026-11-21 _로 시작하는 값은 서버 안에서만 씀 (예: 분수 _o를 보내 잭팟을 고르는 것 막기)
     try { return await play(env, s.user, (c, at, out) => g(c, b, at, out, env, s.user)); } catch (e) { if (e instanceof HttpError && e.status === 400) await bumpReject(env, s.user.id); throw e; } }
@@ -477,8 +482,9 @@ const GAME = {
   '/api/pots'(c, b) {
     const k = b.k, n = Number(b.n);
     if (!own(POTS, k) || ![1, 10, 100].includes(n)) fail(400, '잘못된 요청이에요');
-    if (c.pots[k] + n > 999) fail(400, '물약은 종류마다 999개까지예요');
-    spend(c, POTS[k].price * n); c.pots[k] += n;
+    const m = Math.min(n, 999 - (c.pots[k] || 0));   // 2026-11-22: 999를 넘으면 넘지 않는 만큼만 삼
+    if (m <= 0) fail(400, '음료는 종류마다 999개까지예요');
+    spend(c, POTS[k].price * m); c.pots[k] += m;
   },
   '/api/pot-at'(c, b) { const v = Number(b.v); if (!Number.isInteger(v) || v < 10 || v > 90) fail(400, '10~90 사이로 정해 주세요'); c.potAt = v; },
   // 가챠센터: 무기 뽑기 · 방어구 뽑기 (1회 / 10회)
@@ -531,7 +537,9 @@ const GAME = {
     spend(c, cost);
     const sk = c.life.sk = c.life.sk && typeof c.life.sk === 'object' ? c.life.sk : {}, out = []; let back = 0;
     for (let k = 0; k < n; k++) {
-      const s = rollSkill(skGachaInfo(c.life.skg || 0).lv), had = own(sk, s.id) ? sk[s.id] : 0, lv0 = skLv(had);
+      const s = rollSkill(skGachaInfo(c.life.skg || 0).lv, sk);   // 2026-11-22 최고 레벨 스킬은 안 나옴
+      if (!s) { back += Math.round(cost / n * (n - k)); break; }   // 뽑는 중에 모두 최고 레벨이 되면 남은 횟수 값은 돌려줌
+      const had = own(sk, s.id) ? sk[s.id] : 0, lv0 = skLv(had);
       c.life.skg = (c.life.skg || 0) + 1;
       if (had >= SK_NEED[SK_MAX - 1]) { back += Math.round(g0.cost * SKILL_GACHA.back); out.push({ id: s.id, lv: SK_MAX, max: true }); continue; }
       sk[s.id] = had + 1; const lv1 = skLv(sk[s.id]);
@@ -687,13 +695,15 @@ const GAME = {
     if (!c.jobAt) fail(400, '알바 중이 아니에요');
     const left = Math.ceil((c.jobAt + JOB.sec * 1000 - at) / 1000);
     if (left > 0) fail(400, `아직 ${left}초 남았어요`);
-    const cl = cafeLv(c), tips = jobTips(c.jobAt, cl), pay = JOB.pay(cl), guests = jobGuests(c.jobAt, cl).length; c.gold += pay + tips; c.jobAt = 0; cntAdd(c, 'job');
+    const cl = cafeLv(c), tips = jobTips(c.jobAt, cl), pay = JOB.pay(cl), gl = jobGuests(c.jobAt, cl), guests = gl.length; c.gold += pay + tips; c.jobAt = 0; cntAdd(c, 'job');
+    cntAdd(c, 'guest', guests); cntAdd(c, 'vip', gl.filter(g => g.vip).length);   // 2026-11-22 알바왕 세트 목표
     const lexp = lifeExp(c, 'job'); addExp(c, lexp);
     const cx = CAFE.xp(guests), up = cafeGain(c, cx);   // 알바 경험치 (2026-11-20)
+    (c.life.cnt ||= {}).cafeLv = Math.max(c.life.cnt.cafeLv || 0, cafeLv(c));
     return { pay, tips, lexp, cafe: { xp: cx, up, lv: cafeLv(c) }, log: ['job', String(pay + tips)] };
   },
   // 그만두면 알바비는 없고, 그때까지 온 손님 팁만 받음
-  '/api/job/quit'(c, b, at) { const cl = cafeLv(c), tips = c.jobAt ? jobTips(c.jobAt, cl, at) : 0, n = c.jobAt ? jobGuests(c.jobAt, cl).filter(g => c.jobAt + g.t <= at).length : 0; c.gold += tips; c.jobAt = 0; const cx = n * 3, up = cx ? cafeGain(c, cx) : 0; return { tips, cafe: { xp: cx, up, lv: cafeLv(c) } }; },   // 그만두면 손님 경험치만
+  '/api/job/quit'(c, b, at) { const cl = cafeLv(c), tips = c.jobAt ? jobTips(c.jobAt, cl, at) : 0, n = c.jobAt ? jobGuests(c.jobAt, cl).filter(g => c.jobAt + g.t <= at).length : 0; c.gold += tips; c.jobAt = 0; const cx = n * 3, up = cx ? cafeGain(c, cx) : 0; if (n) cntAdd(c, 'guest', n); (c.life.cnt ||= {}).cafeLv = Math.max(c.life.cnt.cafeLv || 0, cafeLv(c)); return { tips, cafe: { xp: cx, up, lv: cafeLv(c) } }; },   // 그만두면 손님 경험치만
   // 손 낚시: 물을 누르면 바로. 서버가 결과를 정하고, 화면은 wait(ms) 뒤에 입질 → 결과를 보여 줌
   // 손 낚시 (2026-11-19 나눔): 던지기(hand) → 입질 시간(wait) 뒤 당기기(reel). 자리를 떠나면 화면이 cancel → 아무것도 안 낚임
   '/api/fish/hand'(c, b, at, out, env, user) { return fishCast(c, b, at, env, user); },
@@ -866,7 +876,8 @@ const GAME = {
   },
   '/api/farm/autosell'(c, b) { const g = b?.g || {}; c.life.farm.sell = Object.fromEntries(FG_KEYS.map(k => [k, g[k] ? 1 : 0])); },   // 수확하자마자 팔기 (등급별)
   '/api/farm/king'(c, b) { return kingClaim(c, 'farm', b); },
-  '/api/hunt/king'(c, b) { return kingClaim(c, 'hunt', b); },   // 2026-11-21 사냥왕 세트 (사냥꾼 쉼터)
+  '/api/hunt/king'(c, b) { return kingClaim(c, 'hunt', b); },
+  '/api/cafe/king'(c, b) { (c.life.cnt ||= {}).cafeLv = Math.max(c.life.cnt.cafeLv || 0, cafeLv(c)); return kingClaim(c, 'cafe', b); },   // 2026-11-22 알바왕(메이드복) 세트 (카페)   // 2026-11-21 사냥왕 세트 (사냥꾼 쉼터)
   '/api/hunt/incense'(c) {   // 2026-11-21 사냥꾼 쉼터 향로 올리기 (사냥터 몬스터 +1마리)
     if (c.hunt) fail(400, '사냥 중에는 올릴 수 없어요');
     const l = c.life.inc || 0; if (l >= INCENSE.max) fail(400, '이미 최고 단계예요');
@@ -1278,6 +1289,55 @@ async function suggestDel(req, env, user) {
   if (r.user_id !== user.id && !user.is_admin) fail(403, '내 글만 지울 수 있어요');
   await env.DB.prepare('DELETE FROM suggestions WHERE id = ?').bind(id).run();
   return suggestList(env, user);
+}
+// ───── 공략 게시판 (2026-11-22): 직업별 탭(전사·궁수·법사). 하루 1건(한국 날짜), 제목 40자 · 본문 2000자. 고치기는 내 글만, 지우기는 내 글 + 관리자 ─────
+const TIP = { cls: ['sword', 'bow', 'staff'], title: 40, body: 2000, min: 10, perPage: 100 };
+const kDay = t => Math.floor((t + 9 * 3600e3) / DAY);   // 한국 날짜 번호
+function tipClean(b) {
+  if (!TIP.cls.includes(b.cls)) fail(400, '올릴 직업을 골라 주세요');
+  const title = String(b.title || '').replace(/\s+/g, ' ').trim(), body = String(b.body || '').replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').trim();
+  if ([...title].length < 2) fail(400, '제목을 2글자 이상 써 주세요');
+  if ([...title].length > TIP.title) fail(400, `제목은 ${TIP.title}글자까지예요`);
+  if ([...body].length < TIP.min) fail(400, `본문을 ${TIP.min}글자 이상 써 주세요`);
+  if ([...body].length > TIP.body) fail(400, `본문은 ${TIP.body}글자까지예요`);
+  const r1 = scanBad(title), r2 = scanBad(body); if (r1.hard || r2.hard) fail(400, '쓸 수 없는 말이 들어 있어요');
+  return { cls: b.cls, title: r1.text, body: r2.text };
+}
+async function tipsCanWrite(env, user) {
+  const last = await env.DB.prepare('SELECT at FROM tips WHERE user_id = ? ORDER BY at DESC LIMIT 1').bind(user.id).first();
+  return !last || kDay(last.at) < kDay(now());
+}
+async function tipsList(env, user, cls) {
+  if (!TIP.cls.includes(cls)) fail(400, '없는 탭이에요');
+  const rows = (await env.DB.prepare(`SELECT t.id, t.user_id AS uid, u.nick, t.title, t.at, t.edit_at, length(t.body) AS len FROM tips t JOIN users u ON u.id = t.user_id
+    WHERE t.cls = ? AND t.del = 0 AND u.banned = 0 ORDER BY t.at DESC LIMIT ?`).bind(cls, TIP.perPage).all()).results;
+  return json({ list: rows.map(r => ({ ...r, mine: r.uid === user.id })), can: await tipsCanWrite(env, user), admin: !!user.is_admin, max: TIP.body, tmax: TIP.title });
+}
+async function tipsRead(env, user, id) {
+  const r = await env.DB.prepare('SELECT t.id, t.user_id AS uid, u.nick, t.cls, t.title, t.body, t.at, t.edit_at FROM tips t JOIN users u ON u.id = t.user_id WHERE t.id = ? AND t.del = 0 AND u.banned = 0').bind(id).first();
+  if (!r) fail(404, '없는 글이에요 (지워졌을 수 있어요)');
+  return json({ post: { ...r, mine: r.uid === user.id }, admin: !!user.is_admin });
+}
+async function tipsWrite(req, env, user) {
+  const v = tipClean(await readBody(req));
+  if (!await tipsCanWrite(env, user)) fail(429, '공략 글은 하루에 1건만 쓸 수 있어요. 내일 다시 써 주세요');
+  const r = await env.DB.prepare('INSERT INTO tips (user_id, cls, title, body, at) VALUES (?, ?, ?, ?, ?) RETURNING id').bind(user.id, v.cls, v.title, v.body, now()).first();
+  await log(env, user.id, 'tip', `${v.cls} ${v.title}`);
+  return json({ ok: true, id: r.id, cls: v.cls });
+}
+async function tipsEdit(req, env, user) {
+  const b = await readBody(req), id = Number(b.id), v = tipClean(b);
+  const r = await env.DB.prepare('SELECT user_id FROM tips WHERE id = ? AND del = 0').bind(id).first(); if (!r) fail(404, '없는 글이에요');
+  if (r.user_id !== user.id) fail(403, '내 글만 고칠 수 있어요');
+  await env.DB.prepare('UPDATE tips SET cls = ?, title = ?, body = ?, edit_at = ? WHERE id = ?').bind(v.cls, v.title, v.body, now(), id).run();
+  return json({ ok: true, id, cls: v.cls });
+}
+async function tipsDel(req, env, user) {
+  const b = await readBody(req), id = Number(b.id);
+  const r = await env.DB.prepare('SELECT user_id FROM tips WHERE id = ? AND del = 0').bind(id).first(); if (!r) fail(404, '없는 글이에요');
+  if (r.user_id !== user.id && !user.is_admin) fail(403, '내 글만 지울 수 있어요');
+  await env.DB.prepare('UPDATE tips SET del = 1 WHERE id = ?').bind(id).run();
+  return json({ ok: true });
 }
 async function report(req, env, user) {
   const b = await readBody(req), id = Number(b.id), t = now();
