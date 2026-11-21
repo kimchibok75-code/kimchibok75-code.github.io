@@ -766,7 +766,7 @@ body.hunting .side { display: none; }
 .sv-in { display: grid; justify-items: center; gap: 10px; padding: 24px; text-align: center; }
 .sv-ic { font-size: 64px; line-height: 1; animation: svBob 3s ease-in-out infinite; } .sv-ic svg, .sv-ic img { width: 72px; height: 72px; }
 .sv-tx { font-size: calc(30px * var(--fs, 1)); font-weight: 800; letter-spacing: -.5px; } .sv-dot i { font-style: normal; animation: svDot 1.5s infinite; } .sv-dot i:nth-child(2) { animation-delay: .25s; } .sv-dot i:nth-child(3) { animation-delay: .5s; }
-.sv-where { font-size: 16px; opacity: .8; } .sv-time { font-size: 15px; opacity: .7; } .sv-got { font-size: 15px; color: #ffe9a8; min-height: 1.4em; } .sv-raid { margin-top: 6px; padding: 12px 18px; border-radius: 14px; background: rgba(214,48,32,.9); color: #fff; box-shadow: 0 0 0 3px rgba(255,180,160,.5); animation: svRaid 1.1s ease-in-out infinite; display: grid; gap: 3px; }
+.sv-where { font-size: 16px; opacity: .8; } .sv-time { font-size: 15px; opacity: .7; } .sv-got { font-size: 15px; color: #ffe9a8; min-height: 1.4em; } .sv-note { font-size: 12px; opacity: .5; margin-top: -2px; } .sv-raid { margin-top: 6px; padding: 12px 18px; border-radius: 14px; background: rgba(214,48,32,.9); color: #fff; box-shadow: 0 0 0 3px rgba(255,180,160,.5); animation: svRaid 1.1s ease-in-out infinite; display: grid; gap: 3px; }
 .sv-raid[hidden] { display: none; } .sv-raid b { font-size: 19px; } .sv-raid span { font-size: 14px; opacity: .92; font-variant-numeric: tabular-nums; }
 @keyframes svRaid { 50% { box-shadow: 0 0 0 9px rgba(255,120,100,.25); transform: scale(1.03); } }
 .sv-foot { margin-top: 18px; font-size: 13px; opacity: .55; }
@@ -7574,7 +7574,7 @@ function svStart(k) {
   let el = $('#saver'); if (!el) { el = document.createElement('div'); el.id = 'saver'; document.body.append(el); }
   const [ic, tx] = SV_TXT[k], where = k === 'hunt' && HT?.f ? `${HT.f.i || ''} ${HT.f.n}` : '';
   el.innerHTML = `<div class="sv-in"><div class="sv-ic">${ic}</div><div class="sv-tx">${tx}<span class="sv-dot"><i>.</i><i>.</i><i>.</i></span></div>${where ? `<div class="sv-where">${where}</div>` : ''}
-    <div class="sv-time" id="svTime"></div><div class="sv-got" id="svGot"></div><div class="sv-raid" id="svRaid" hidden></div>
+    <div class="sv-time" id="svTime"></div><div class="sv-got" id="svGot"></div>${k !== 'idle' ? '<div class="sv-note">1분마다 갱신</div>' : ''}<div class="sv-raid" id="svRaid" hidden></div>
     <div class="sv-foot">${PHONE ? '화면을 누르면' : '아무 키나 누르거나 화면을 누르면'} 돌아와요</div></div>`;
   iconize(el); el.hidden = false; document.body.classList.add('saver');
   svBeat(1).catch(() => {}); clearInterval(SV.beatT); SV.beatT = setInterval(() => svBeat(1).catch(() => {}), SAVER.beat);

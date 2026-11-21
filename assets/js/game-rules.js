@@ -1146,7 +1146,7 @@ export function autoSettle(c, now) {
 // ───────── 화면 보호기 (2026-11-20): 5분 동안 아무 조작이 없으면 화면이 '자동 사냥 중… / 자동 생활 중…'으로 바뀌고 요청을 멈춤 ─────────
 // 화면은 4분마다 신호(/api/saver)만 보냄. 신호가 오는 동안은 효율 100% (사용자 결정): 사냥은 settle의 100% 구간을 gap초까지, 자동 생활은 서버가 시간으로 계산
 // 신호가 끊기면(화면을 닫으면) 원래 자리 비움 규칙. life: 자동 생활 1시간에 하는 양 (나무·바위 캐기 횟수, 낚시 던지기, 텃밭 칸마다 수확)
-export const SAVER = { idle: 300e3, beat: 240e3, gap: 330, life: { trees: 80, rocks: 80, casts: 130, harvest: 12 } };
+export const SAVER = { idle: 300e3, beat: 60e3, gap: 330, life: { trees: 80, rocks: 80, casts: 130, harvest: 12 } };
 export function saverLife(c, sec) {
   if (!(sec >= 1)) return null;
   const D = derive(c), fx = D.fx || {}, h = sec / 3600, L = c.life, S = SAVER.life, R = n => Math.floor(n) + (Math.random() < n % 1 ? 1 : 0);
