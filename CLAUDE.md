@@ -1027,6 +1027,15 @@
 - 화면 보호기: 마우스 움직임·휠로는 안 풀림, 클릭·키·터치로만 (사용자 요청)
 - 낚시점(`KINGS.fish`) · 사냥꾼 쉼터(`KINGS.hunt`) · 텃밭 창고(`KINGS.farm`): 받을 수 있는 부위가 있으면(`kReady`) 건물 위 ❗ (`bFull`이 '❗'을 돌려주면 `icoBubble`). 채석장(채굴왕)은 사용자가 말 안 해서 안 넣음
 
+### 레이드 렉 · 조준 나누기 · 사냥터 복귀 · 스킬 이펙트 — 2026-11-21 (#16)
+- 레이드 렉 원인: 맞는 동안 내 캐릭터를 `ctx.filter = 'brightness(1.6)'`로 그렸음 → 그림 조각마다 필터라 아주 느림(여러 번 겹쳐 맞으면 큰 렉). 이제 깜빡임(`globalAlpha`). **캔버스 `ctx.filter`는 자주 그리는 것에 쓰지 말 것** (지금은 죽은 보스 회색만)
+- 조준 몰림: game-rules.js `RAID_AIM = {near 3.5, gap 1.6, avoid 2.6, pen 3}`, `raidAim(p, pts, rnd, used)`. 가중치 = 주변 사람 수 ÷ (1 + 3 × 앞뒤 1.6초 안에 이미 노린 자리 근처 수). 운석·바위는 50%만 조준, 이미 노린 자리 근처면 조준 포기. 돌려주는 `t`(노린 사람)는 서버만 씀 (`aimOut`이 뺌)
+- 사냥터 → 레이드 → 끝나면 그 사냥터로: `raidJoin`이 localStorage `cbt-raidback`에 사냥터 번호, `exitRaid`가 0.7초 뒤 `huntBack(i)` (레벨이 모자라거나 실패하면 마을)
+- **스킬 이펙트** `assets/js/game-vfx.js`: `vfxCast(스킬 id, {x, y 발, tx, ty, dir})` 쓰는 순간 · `vfxHit(스킬 id, {x, y, tx, ty, i, px, py})` 맞는 순간 · `vfxDraw(ctx)` (사냥터 `drawFx` 끝, 레이드 `renderRaid`의 알갱이 다음, 둘 다 월드 좌표) · `vfxClear()` (사냥터·레이드 들어가고 나갈 때)
+  - 빛은 색마다 한 번 만든 부드러운 빛 점(`glow`)을 `lighter`로 겹침 (shadowBlur·filter 안 씀). 알갱이 최대 PC 520 · 휴대폰 240
+  - 모양: ring · flash · streak · bolt · slash(초승달) · circle(마법진) · pillar(빛 기둥) · crack(갈라진 땅) · spin · hex(육각 방패) · reticle · emit · proj(날아가는 것, 도착하면 hit)
+  - 새 스킬을 만들면 `vfxCast`/`vfxHit`의 switch에 id를 넣을 것 (없으면 예전 효과만)
+
 ### 화면 꺼짐 방지 — 2026-11-21 (#14)
 - 설정 → '📱 화면 꺼짐 방지' (브라우저 Screen Wake Lock이 있을 때만 보임, 기본 켬, localStorage `cbt-wake`). `WAKE`, `wakeSync`: 화면이 보일 때 `navigator.wakeLock.request('screen')`, 숨으면 브라우저가 풀고 다시 보이면(visibilitychange)·누를 때 다시 요청. 배터리 절약 모드 등에서 거절되면 조용히 넘어감 (soundSetHtml 바로 아래)
 

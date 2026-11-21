@@ -1546,6 +1546,7 @@ import { BINGO, bingoCallAt, bingoLastAt, bingoLines, BINGO_LINES, BINGO_FLOOR, 
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
+import { vfxCast, vfxHit, vfxDraw, vfxClear } from './assets/js/game-vfx.js?v=__BUILD__';   // 2026-11-21 스킬 이펙트
 import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico, icoImgFlat, setIconOverride } from './assets/js/game-icons.js?v=__BUILD__';
 import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSolid, noise2, inCore, BUILDINGS as MAP_BUILDINGS, SPOTS, PORTAL, BACK, FISH_AT, PLOTS, BENCHES, NODES, DECO,
   HOUSE_W, HOUSE_H, DPORTAL, ROOM_W, ROOM_H, ROOM_DOOR, soft, PLAZA_C, PLAZA_R, nearWater, waterIn, shoreNear, seaAt, coastY, SEA_AT, fishShadows, FSHADOW } from './assets/js/game-map.js?v=__BUILD__';
@@ -3750,7 +3751,9 @@ setInterval(async () => {
 async function raidJoin(start) {
   if (RD || RAIDQ.busy) return; RAIDQ.busy = true;
   try {
+    const back = HT ? FIELDS.findIndex(f => f.id === HT.f?.id) : -1;   // 2026-11-21 사냥터에서 왔으면 레이드가 끝난 뒤 그 사냥터로 돌아감 (사용자 요청)
     if (HT) { took(await api('/api/hunt/leave', {})); if (HT) exitHuntView(); }
+    try { if (back >= 0) localStorage.setItem('cbt-raidback', String(back)); else localStorage.removeItem('cbt-raidback'); } catch {}
     if (F.auto) autoFishStop();
     if (me.room) toTown();
     standUp(me);
@@ -3759,6 +3762,7 @@ async function raidJoin(start) {
   } catch (x) { toast(x.message); } finally { RAIDQ.busy = false; }
 }
 function enterRaid(start, boss) {
+  vfxClear();
   loadRaidArt();
   bgm('raid-' + (boss || raidBossOf(start))); sfx('roar'); toast(`⚔️ 레이드는 공격·스킬이 자동이에요. ${RAID_MOVE()} 빨간 공격만 피하세요!`);   // 2026-11-20 안내
   boss = RAID_BOSS[boss] ? boss : raidBossOf(start);
@@ -3980,11 +3984,20 @@ async function leaveRaid() {
 }
 $('#raidOut').onclick = leaveRaid;
 function exitRaid() {
+  vfxClear();
   if (!RD) return; bgm('town');
   try { RD.ws?.close(); } catch {}
   me.x = RD.back.x; me.y = RD.back.y; me.path = []; me.moving = false; me.swing = 0; me.hurt = 0; RD = null;
   document.body.classList.remove('hunting', 'raiding'); $('#raidBox').hidden = true; loadZoom(); cam = { x: me.x, y: me.y }; syncBars();
   netSend({ t: 'hunt', on: false }); netGo();
+  let back = -1; try { back = +(localStorage.getItem('cbt-raidback') ?? -1); localStorage.removeItem('cbt-raidback'); } catch {}
+  if (FIELDS[back]) setTimeout(() => huntBack(back), 700);
+}
+// 2026-11-21 레이드 전에 있던 사냥터로 다시 (레벨이 모자라거나 실패하면 마을에 남음)
+async function huntBack(i) {
+  if (HT || RD || huntBusy || me.lv < FIELDS[i].min) return; huntBusy = true;
+  try { const j = await api('/api/hunt/start', { f: i }); took(j); sysMsg(`${FIELDS[i].i} ${FIELDS[i].n}(으)로 돌아왔어요. 자동 사냥 다시 시작!`); toast(`${FIELDS[i].i} 레이드 전에 있던 ${FIELDS[i].n}(으)로 돌아왔어요`); }
+  catch (x) { toast(x.message); } finally { huntBusy = false; }
 }
 // ───── 빙고 (2026-11-21, OX 퀴즈 대신) ─────
 // 관리자가 열면 마을 모두에게 2분 모집 창 → 참여하면 모집이 끝날 때 빙고 맵(RD.bg)으로. 레이드와 같은 RD 자리를 써서 '레이드 중' 막기(사냥·낚시·저장 등)가 그대로 걸림
@@ -4635,8 +4648,10 @@ function raidSkill({ s, p }, D, D0) {
   RD.cd[s.id] = p.cd; RD.skT = .7; sfx('skill');
   const col = SK_COL[s.cls] || '#ffcf5a';
   raidFloat(me.x, me.y - 86, `${s.i} ${s.n}!`, col, 17); RD.fx.push({ k: 'ring', x: me.x, y: me.y - 20, c: col, r: 44, t: 0, life: .45 }); me.swing = .22;
+  const rdx = D0.x + Math.max(-1.6 * T, Math.min(1.6 * T, me.x - D0.x)), rdy = D0.y + 1.2 * T;
+  vfxCast(s.id, { x: me.x, y: me.y, dir: me.dir || 1, tx: p.dash ? rdx : D0.x, ty: p.dash ? rdy - 22 : D0.y - 80, sp: 900, life: .35 });   // 2026-11-21 스킬 이펙트
   if (p.dash) {   // 돌진: 드래곤 바로 앞까지 쭉 (먼지를 남기며)
-    const x1 = D0.x + Math.max(-1.6 * T, Math.min(1.6 * T, me.x - D0.x)), y1 = D0.y + 1.2 * T;
+    const x1 = rdx, y1 = rdy;
     for (let k = 0; k <= 6; k++) raidBurst(me.x + (x1 - me.x) * k / 6, me.y + (y1 - me.y) * k / 6, '#d8c9ac', 2, 60, 2.6);
     if (Math.abs(x1 - me.x) > 4) me.dir = x1 < me.x ? -1 : 1; me.x = x1; me.y = y1; RD.goal = null; sfx('warp');
   }
@@ -4647,8 +4662,9 @@ function raidSkill({ s, p }, D, D0) {
       let dmg = D.hit * p.m * (.9 + Math.random() * .2) * (1 + (D.bossP || 0) / 100) * (1 + (bt ? RD.batk : 0) / 100); if (crit) dmg *= D.critM || 1.5;
       dmg = Math.round(dmg * RDEF()); RD.acc += dmg;
       const hx = D0.x + (Math.random() - .5) * 90, hy = D0.y - 50 - Math.random() * 60;
-      if (meteor) { raidBurst(hx, hy, '#ff9f43', 30, 320, 5); raidBurst(hx, hy, '#ffd34d', 14, 200, 3); RD.fx.push({ k: 'ring', x: hx, y: hy, c: '#ffb36b', r: 90, t: 0, life: .5 }); RD.shake = Math.max(RD.shake, 9); sfx('boom'); }
-      else { RD.fx.push({ k: p.wave ? 'wave' : s.cls === 'sword' ? 'slash' : s.cls === 'staff' ? 'orb' : 'arrow', x0: me.x, y0: me.y - 30, x: hx, y: hy, t: 0, life: p.wave ? .3 : s.cls === 'sword' ? .18 : .25, big: 1 }); sfx(crit ? 'crit' : 'hit'); }
+      vfxHit(s.id, { x: me.x, y: me.y - 30, tx: meteor ? D0.x : hx, ty: meteor ? D0.y - 80 : hy, i, px: RD.lastHit?.[0], py: RD.lastHit?.[1], dur: .25 }); RD.lastHit = [hx, hy];   // 2026-11-21 스킬 이펙트
+      if (meteor) { RD.shake = Math.max(RD.shake, 9); sfx('boom'); }
+      else { if (p.wave) RD.fx.push({ k: 'wave', x0: me.x, y0: me.y - 30, x: hx, y: hy, t: 0, life: .3, big: 1 }); sfx(crit ? 'crit' : 'hit'); }
       raidFloat(hx, hy - 10, `${s.i} ${dmg.toLocaleString()}`, crit ? '#ffd166' : col, 19); raidBurst(hx, hy, col, 8, 160, 3.5);
       if (i === 0 && p.stun) raidFloat(D0.x, D0.y - 200, s.id === 'm_ice' ? '❄️ 얼음!' : '💫 휘청!', '#9fe0ff', 16);
     } });
@@ -4749,7 +4765,7 @@ function renderRaid(now) {
   const vw2 = W / z / 2 + 60, vh2 = H / z / 2 + 90, inV = o => Math.abs(o.x - cam.x) < vw2 && Math.abs(o.y - cam.y) < vh2;
   let others = [...RD.ps.values()].filter(inV); if (PHONE && others.length > 25) others = others.sort((a, b) => Math.hypot(a.x - me.x, a.y - me.y) - Math.hypot(b.x - me.x, b.y - me.y)).slice(0, 25);
   for (const o of others) list.push({ y: o.y, f: () => { ctx.save(); if (o.dead) ctx.globalAlpha = .45; drawChar(ctx, o.x, o.y + 6, o, clock + o.seed); ctx.restore(); } });
-  list.push({ y: me.y, f: () => { ctx.save(); if (RD.dead) ctx.globalAlpha = .5; if (me.hurt > 0) ctx.filter = 'brightness(1.6)'; drawChar(ctx, me.x, me.y + 6, me, clock); ctx.restore(); raidAura(); } });
+  list.push({ y: me.y, f: () => { ctx.save(); if (RD.dead) ctx.globalAlpha = .5; if (me.hurt > 0 && Math.floor(clock * 16) % 2) ctx.globalAlpha *= .45; drawChar(ctx, me.x, me.y + 6, me, clock); ctx.restore(); raidAura(); } });
   list.sort((a, b) => a.y - b.y).forEach(o => o.f());
   // 내 공격 (베기 · 화살 · 구슬)
   for (const f of RD.fx) {
@@ -4764,6 +4780,7 @@ function renderRaid(now) {
       ctx.fillStyle = '#cfd6de'; ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(4, -3.5); ctx.lineTo(4, 3.5); ctx.fill(); ctx.fillStyle = '#e8553a'; ctx.fillRect(-15, -3, 4, 6); ctx.restore(); }
   }
   for (const p of RD.parts) { ctx.globalAlpha = Math.max(0, 1 - p.t / p.life); ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 7); ctx.fill(); } ctx.globalAlpha = 1;
+  vfxDraw(ctx);   // 2026-11-21 스킬 이펙트
   raidHpBar(D0.x, D0.y + 22, e);
   // 이름표 · 숫자
   for (const o of others) { ctx.save(); if (o.dead) ctx.globalAlpha = .55; nameTag(o, now); ctx.restore(); }
@@ -4776,6 +4793,7 @@ function renderRaid(now) {
   if (RD.flash > 0) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .7); g.addColorStop(0, 'rgba(255,0,0,0)'); g.addColorStop(1, `rgba(255,40,30,${RD.flash * 1.4})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
 }
 function enterHunt(h) {
+  vfxClear();
   bgm('hunt-' + (FIELDS[h.f]?.id || '')); sfx('warp');
   const f = FIELDS[h.f]; paintHunt(f);
   HT = { f, mons: [], floats: [], parts: [], fx: [], shots: [], shake: 0, freeze: 0, loc: { kills: 0, exp: 0, gold: 0 }, t0: h.start, srv: h, bossAt: performance.now() + (h.boss - h.t) * 1000, atkT: .4, potCD: 0, target: null, cd: { ...(h.cd || {}) }, q: [], sh: 0, bt: 0, batk: 0, bcrit: 0 };
@@ -4791,6 +4809,7 @@ function enterHunt(h) {
   netSend({ t: 'hunt', on: true });
 }
 function exitHuntView() {
+  vfxClear();
   bgm('town');
   clearInterval(syncT); syncT = null;
   document.body.classList.remove('hunting', 'hunt-man'); $('#huntBox').hidden = true;
@@ -5004,6 +5023,7 @@ function castSkill({ s, p }, tg, D) {
     const dx = tg.x - me.x, dy = tg.y - me.y, d = Math.hypot(dx, dy) || 1, stop = Math.min(d, 20 + tg.d.s * 10);
     HT.dash = { x0: me.x, y0: me.y, x1: tg.x - dx / d * stop, y1: tg.y - dy / d * stop, t: 0, dur: .16 }; me.dir = dx < 0 ? -1 : 1; sfx('warp');
   }
+  vfxCast(s.id, { x: me.x, y: me.y, dir: me.dir || 1, tx: HT.dash && p.dash ? HT.dash.x1 : tg?.x, ty: HT.dash && p.dash ? HT.dash.y1 - 22 : tg ? tg.y - (s.id === 'm_meteor' ? 10 : 22) : undefined, sp: WAVE.sp, life: WAVE.r * T / WAVE.sp });
   if (p.wave && tg && !tg.dead) {   // 2026-11-21 검기 날리기: 목표 쪽으로 초승달 검기가 7칸 날아가며 길 위의 몬스터를 한 번씩 벰
     const sx = me.x, sy = me.y - 22, a = Math.atan2(tg.y - 22 - sy, tg.x - sx), ux = Math.cos(a), uy = Math.sin(a), len = WAVE.r * T, sp = WAVE.sp;
     me.dir = ux < 0 ? -1 : 1; me.swing = .3; sfx('crit'); fxShake(4);
@@ -5011,7 +5031,7 @@ function castSkill({ s, p }, tg, D) {
     const hit = [];
     for (const o of HT.mons) { if (o.dead) continue; const dx = o.x - sx, dy = o.y - 22 - sy, along = dx * ux + dy * uy; if (along > -10 && along < len && Math.abs(dx * uy - dy * ux) < T * (.9 + o.d.s * .3)) hit.push([o, along]); }
     if (!hit.some(([o]) => o === tg)) hit.push([tg, Math.hypot(tg.x - sx, tg.y - 22 - sy)]);
-    for (const [o, along] of hit) HT.q.push({ t: Math.max(0, along) / sp, f: () => { if (o.dead) return; const h = skHit(o, D, o === tg ? p.m : p.m * WAVE.k); applyHit(o, h, D, 'melee'); fxBurst(o.x, o.y - 18 * o.d.s, '#fff3c4', 12, 220, 3); } });
+    for (const [o, along] of hit) HT.q.push({ t: Math.max(0, along) / sp, f: () => { if (o.dead) return; const h = skHit(o, D, o === tg ? p.m : p.m * WAVE.k); applyHit(o, h, D, 'melee'); fxBurst(o.x, o.y - 18 * o.d.s, '#fff3c4', 12, 220, 3); vfxHit('s_will', { x: sx, y: sy, tx: o.x, ty: o.y - 18 * o.d.s }); } });
     return;
   }
   if (s.k === 'hit') {
@@ -5026,9 +5046,10 @@ function castSkill({ s, p }, tg, D) {
       }
       if (!m) return; hitSet.push(m);
       const h = skHit(m, D, p.m);
+      vfxHit(s.id, { x: me.x + (me.dir || 1) * 16, y: me.y - 30, tx: m.x, ty: m.y - (meteor ? 10 : 20 * m.d.s), i, px: prev?.x, py: prev ? prev.y - 20 * prev.d.s : null });
       if (meteor) { fxBurst(m.x, m.y - 10, '#ff9f43', 40, 360, 5); fxBurst(m.x, m.y - 10, '#ffd34d', 20, 220, 3); fxRing(m.x, m.y, '#ffb36b', 90, .5); fxShake(12); applyHit(m, h, D, 'magic'); }
       else if (s.cls === 'sword') { me.lunge = .12; applyHit(m, h, D, 'melee'); cleaveAround(m, h.dmg * (D.cleaveSk || 0), D); fxSlash(m.x, cy(m.y), -(me.dir || 1), col, true); }
-      else if (p.chain && i > 0 && prev) { fxBolt(prev, m); applyHit(m, h, D, 'magic'); }
+      else if (p.chain) { if (i > 0 && prev) fxBolt(prev, m); applyHit(m, h, D, 'magic'); }   // 2026-11-21 첫 번개도 바로 (번개 이펙트가 내 손에서 바로 감)
       else { const sx = me.x + (me.dir || 1) * 16, sy = me.y - 30; HT.shots.push({ k: s.cls === 'staff' ? 'magic' : 'arrow', x: sx, y: sy, m, h, sp: 620, t: 0, a: 0 }); }
       if (i === 0 && p.stun) { m.atkT += p.stun; m.gT += p.stun; if (m.g?.ph === 'warn') { m.g = null; floatText(m.x, m.y - 64 * m.d.s, '기믹 끊음!', '#9fe0ff', 13, 1); } floatText(m.x, m.y - 50 * m.d.s, s.id === 'm_ice' ? '❄️ 얼음!' : '💫 기절!', '#9fe0ff', 14, 1); fxRing(m.x, m.y, '#9fe0ff', 30, .5); }
       if (s.id === 's_quake') { fxBurst(m.x, m.y, '#b08a5a', 24, 260, 4); fxShake(9); }
@@ -5321,6 +5342,7 @@ function drawFx() {
   }
   for (const p of HT.parts) { ctx.globalAlpha = Math.min(1, (1 - p.t / p.life) * 1.6); ctx.fillStyle = p.c; const r = p.s * 1.7 * (1 - p.t / p.life * .6); ctx.beginPath(); ctx.arc(p.x, p.y, r / 2, 0, 7); ctx.fill(); }
   ctx.globalAlpha = 1;
+  vfxDraw(ctx);   // 2026-11-21 스킬 이펙트
 }
 function renderHunt(now) {
   const f = HT.f;

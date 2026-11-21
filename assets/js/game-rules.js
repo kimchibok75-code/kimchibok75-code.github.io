@@ -1092,19 +1092,22 @@ export function raidPattern(start, boss) {
 // 사람 많은 곳 노리기 (2026-11-21): 레이드 방(서버)이 빨간 표시가 뜨기 직전에 살아 있는 사람 위치(칸)를 보고 공격 자리를 정해 모두에게 알려 줌
 // 주변(3.5칸)에 사람이 많을수록 뽑힐 확률이 큼(제곱). 운석·바위는 일부만 조준(나머지는 원래 자리), 지진·대회전·포효는 그대로
 // pts = [[x, y], …] (칸, 발 위치). 돌려주는 값 = 패턴에 덮어쓸 값 (없으면 null)
-export function raidAim(p, pts, rnd = Math.random) {
+// 2026-11-21 한 자리에 공격이 몰리던 것 고침 (사용자 의견): 가중치 제곱 → 그대로(n), 비슷한 때(앞뒤 1.6초)에 이미 노린 자리(used) 근처 사람은 덜 뽑힘,
+//   운석·바위는 이미 노린 자리 근처면 조준을 포기하고 원래(무작위) 자리로. 돌려주는 값의 t = 노린 사람 자리 (서버만 씀, 화면에는 안 보냄)
+export const RAID_AIM = { near: 3.5, gap: 1.6, avoid: 2.6, pen: 3 };
+export function raidAim(p, pts, rnd = Math.random, used = []) {
   if (!pts?.length) return null;
-  const W = RAID.W, H = RAID.H, cl = (v, a, b) => Math.max(a, Math.min(b, v)), j = r => (rnd() - .5) * 2 * r;
-  const w = pts.map(([x, y]) => { const n = pts.filter(([u, v]) => Math.hypot(u - x, v - y) < 3.5).length; return n * n; });
+  const W = RAID.W, H = RAID.H, cl = (v, a, b) => Math.max(a, Math.min(b, v)), j = r => (rnd() - .5) * 2 * r, A = RAID_AIM;
+  const hitBy = (x, y) => used.filter(([u, v]) => Math.hypot(u - x, v - y) < A.avoid).length;
+  const w = pts.map(([x, y]) => pts.filter(([u, v]) => Math.hypot(u - x, v - y) < A.near).length / (1 + A.pen * hitBy(x, y)));
   const pick = () => { let r = rnd() * w.reduce((a, b) => a + b, 0); for (let i = 0; i < pts.length; i++) if ((r -= w[i]) <= 0) return pts[i]; return pts[pts.length - 1]; };
   const ang = (ox, oy, lim) => { const [x, y] = pick(); return +cl(Math.atan2(y - .3 - oy, x - ox) - Math.PI / 2 + j(.1), -lim, lim).toFixed(3); };
   const k = p.k;
-  if (k === 'meteor' || k === 'rock') { if (rnd() > .6) return null; const [x, y] = pick(); return { x: +cl(x + j(1.5), 2, W - 2).toFixed(2), y: +cl(y + j(1.5), 8, H - 1.5).toFixed(2) }; }
-  if (k === 'slam') { const [x, y] = pick(); return { x: +cl(x + j(1), 3, W - 3).toFixed(2), y: +cl(y + j(1), 11, H - 2).toFixed(2) }; }
-  if (k === 'charge') { const [x] = pick(); return { x: +cl(x + j(.8), 3, W - 3).toFixed(2) }; }
-  if (k === 'tail') { const [, y] = pick(); return { y: +cl(y - .3 + j(.5), 8, H - 2).toFixed(2) }; }
-  if (k === 'breath') return { a: ang(W / 2, 9 - 4.6, .8) };
-  if (k === 'swing') return { a: ang(W / 2, 9 - .5, .6) };
+  if (k === 'meteor' || k === 'rock') { if (rnd() > .5) return null; const [x, y] = pick(); if (hitBy(x, y)) return null; return { x: +cl(x + j(1.5), 2, W - 2).toFixed(2), y: +cl(y + j(1.5), 8, H - 1.5).toFixed(2), t: [x, y] }; }
+  if (k === 'slam') { const [x, y] = pick(); return { x: +cl(x + j(1), 3, W - 3).toFixed(2), y: +cl(y + j(1), 11, H - 2).toFixed(2), t: [x, y] }; }
+  if (k === 'charge') { const q = pick(); return { x: +cl(q[0] + j(.8), 3, W - 3).toFixed(2), t: q }; }
+  if (k === 'tail') { const q = pick(); return { y: +cl(q[1] - .3 + j(.5), 8, H - 2).toFixed(2), t: q }; }
+  if (k === 'breath' || k === 'swing') { const q = pick(), oy = k === 'breath' ? 9 - 4.6 : 9 - .5, lim = k === 'breath' ? .8 : .6; return { a: +cl(Math.atan2(q[1] - .3 - oy, q[0] - W / 2) - Math.PI / 2 + j(.1), -lim, lim).toFixed(3), t: q }; }
   return null;
 }
 // 보스 공격 피해 (최대 체력 비율): 3번 맞으면 쓰러짐

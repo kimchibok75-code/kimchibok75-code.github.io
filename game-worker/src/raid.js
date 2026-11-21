@@ -3,7 +3,7 @@
 // - 보스는 무조건 잡힘: 1초마다 최대 체력의 1/RAID.drain 만큼 저절로 깎임 + 참가자가 보낸 피해 (초당 피해로 막음)
 // - 보상은 끝난 뒤 각자 /api/raid/claim 으로 받음 (여기서는 누가 얼마나 때렸는지만 기억)
 import { DurableObject } from 'cloudflare:workers';
-import { RAID, RAID_BOSS, isHourlyRaid, raidBossOf, raidPattern, raidAim } from '../../assets/js/game-rules.js';
+import { RAID, RAID_BOSS, isHourlyRaid, raidBossOf, raidPattern, raidAim, RAID_AIM } from '../../assets/js/game-rules.js';
 
 const now = () => Date.now();
 const J = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json' } });
@@ -74,10 +74,12 @@ export class Raid extends DurableObject {
   // 2026-11-21 사람 많은 곳 노리기: 빨간 표시가 뜨기 RAID.aimLead초 전에 살아 있는 사람 위치로 공격 자리를 정함 (모두에게 같은 값을 보냄)
   aim(R, t) {
     const e = (t - R.start) / 1000, A = R.aim || (R.aim = {}), pts = Object.values(R.players).filter(p => !p.dead).map(p => [p.x / 32, p.y / 32]);
-    for (const [i, p] of this.pat(R).entries()) { if (p.at - p.warn > e + RAID.aimLead || A[i] !== undefined || p.at < e) continue; A[i] = raidAim(p, pts) || 0; }
+    const L = this.pat(R);   // 2026-11-21 앞뒤 RAID_AIM.gap초 안에 이미 노린 자리는 피함 (한 자리 몰림 방지)
+    for (const [i, p] of L.entries()) { if (p.at - p.warn > e + RAID.aimLead || A[i] !== undefined || p.at < e) continue;
+      const used = Object.entries(A).filter(([k, v]) => v?.t && Math.abs(L[k].at - p.at) < RAID_AIM.gap).map(([, v]) => v.t); A[i] = raidAim(p, pts, Math.random, used) || 0; }
     for (const i of Object.keys(A)) if (this.pat(R)[i].at < e - 3) delete A[i];   // 지난 것은 지움
   }
-  aimOut(R) { return Object.entries(R.aim || {}).filter(([, v]) => v).map(([i, v]) => [+i, v]); }
+  aimOut(R) { return Object.entries(R.aim || {}).filter(([, v]) => v).map(([i, { t, ...v }]) => [+i, v]); }   // t(노린 사람 자리)는 서버만 씀
   pub(R, full) { return { start: R.start, boss: R.boss, hp: Math.max(0, Math.round(R.hp)), max: R.max, done: R.done, rage: R.rage ? 1 : 0, aim: this.aimOut(R), ps: Object.entries(R.players).map(([id, p]) => full ? { id: +id, n: p.n, look: p.look, x: Math.round(p.x), y: Math.round(p.y), dead: p.dead } : [+id, Math.round(p.x), Math.round(p.y), p.dead ? 1 : 0, Math.round(p.bd || 0)]) }; }   // full: 겉모습까지 (처음 한 번)
   // 모두에게 상황 알림 (2026-11-20): 새 사람이 있으면 겉모습까지(full), 아니면 위치 + 지난 알림 뒤 준 피해(bd → 다른 화면이 공격 효과·숫자를 그림)
   tell(R, t, k = 's') { const full = R.rv && R.rv !== R.rvSent; if (full) R.rvSent = R.rv; this.all({ t: k, ...this.pub(R, full), full: full ? 1 : 0, now: t }); for (const p of Object.values(R.players)) p.bd = 0; R.bAt = t; }
