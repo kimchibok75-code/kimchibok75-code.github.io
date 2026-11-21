@@ -14,10 +14,14 @@ export { Town };
 import { Chzzk } from './chzzk.js';
 export { Chzzk };
 import { Raid } from './raid.js';
+import { Quiz } from './quiz.js';
+import { bingoCoins } from '../../assets/js/game-rules.js';
 import { maintGet, maintSet, MAINT_MSG } from './maint.js';
 import { track, bumpReject, scan, snapAll, restore, groups, hash as gHash, devOf } from './guard.js';
 export { Raid };
-const raidDO = env => env.RAID.get(env.RAID.idFromName('main'));   // 레이드 방은 하나
+export { Quiz };
+const raidDO = env => env.RAID.get(env.RAID.idFromName('main'));
+const quizDO = env => env.QUIZ.get(env.QUIZ.idFromName('main'));   // 2026-11-21 빙고 방도 하나 (클래스 이름은 Quiz)   // 레이드 방은 하나
 
 const ORIGINS = ['https://kimchibok75-code.github.io', 'https://kimchibok.com', 'https://www.kimchibok.com', 'http://localhost:5173', 'http://127.0.0.1:5173'];
 const TERMS_VER = '2026-11-18';   // 가입 안내(개인 팬 게임·수익 없음·언제든 바뀜·운영 미흡) 판. 화면 game.html의 TERMS_VER와 같게
@@ -44,6 +48,7 @@ export default {
         env.DB.prepare('DELETE FROM sessions WHERE expires_at < ?').bind(t),
         env.DB.prepare('DELETE FROM signups WHERE at < ?').bind(t - 8 * d),   // 기기 가입 제한(일주일) 때문에 8일 보관
         env.DB.prepare('DELETE FROM access WHERE last_at < ?').bind(t - 60 * d),
+        env.DB.prepare('DELETE FROM errlog WHERE last_at < ?').bind(t - 14 * d),   // 2026-11-21 오류 기록 14일
       ]).catch(() => {}));
       ctx.waitUntil(scan(env).catch(e => console.error('scan', e?.stack || e)));   // 2026-11-20 어뷰징 감시 (한 시간마다)
       if (new Date(t + 9 * 3600e3).getUTCHours() === 4) ctx.waitUntil(snapAll(env, dayKey(t)).catch(e => console.error('snap', e?.stack || e)));   // 매일 새벽 4시 캐릭터 사본
@@ -65,12 +70,17 @@ export default {
       if (!ORIGINS.includes(origin)) return new Response('forbidden', { status: 403 });
       return raidDO(env).fetch(new Request('https://raid/ws', req));
     }
+    if (new URL(req.url).pathname === '/bingo-ws') {   // 2026-11-21 빙고 (로그인·참가자 확인은 빙고 방이 첫 메시지로 함)
+      if (req.headers.get('Upgrade') !== 'websocket') return new Response('websocket only', { status: 426 });
+      if (!ORIGINS.includes(origin)) return new Response('forbidden', { status: 403 });
+      return quizDO(env).fetch(new Request('https://quiz/ws', req));
+    }
     let res;
     try { res = await route(req, env, new URL(req.url)); }
     catch (e) {
       if (e instanceof HttpError) res = json({ error: e.message }, e.status);
       else if (/exceeded D1's free tier|free tier daily/i.test(String(e))) { D1_FULL = Date.now(); res = json({ error: '오늘 무료 서버를 다 썼어요. 오전 9시에 다시 열려요', limit: 1 }, 429); }   // 2026-11-21 D1 무료 한도(하루 쓰기) 초과 → 화면이 한도 안내를 띄움
-      else { console.error(e?.stack || String(e)); res = json({ error: '서버에 문제가 생겼어요. 잠시 뒤에 다시 해 주세요' }, 500); }
+      else { console.error(e?.stack || String(e)); res = json({ error: '서버에 문제가 생겼어요. 잠시 뒤에 다시 해 주세요' }, 500); await errServer(env, e, new URL(req.url).pathname); }   // 2026-11-21 서버 오류도 오류 기록에
     }
     for (const [k, v] of Object.entries(cors)) res.headers.set(k, v);
     return res;
@@ -94,9 +104,13 @@ async function route(req, env, url) {
   if (m === 'GET' && p === '/api/farm/rank') return farmRank(env, s.user);
   if (m === 'GET' && p === '/api/chzzk/check') return chzzkCheck(env, s.user);
   if (m === 'GET' && p === '/api/rank') return rankList(env, s.user, url.searchParams.get('k'));
+  if (m === 'GET' && p === '/api/profile') return profile(env, url.searchParams.get('id'));   // 2026-11-21 랭킹에서 이름 누르기 · 캐릭터 정보의 누적 기록
+  if (m === 'POST' && p === '/api/errlog') return errLog(req, env, s.user);   // 2026-11-21 화면 오류 모으기
   if (m === 'GET' && p === '/api/houses') return json({ houses: (await env.DB.prepare('SELECT h.user_id AS id, u.nick, h.x, h.y, h.roof, h.lv FROM houses h JOIN users u ON u.id = h.user_id WHERE u.banned = 0').all()).results });
   if (m === 'GET' && p === '/api/news') return json(await news(env));
-  if (m === 'GET' && p === '/api/fountain') return json(await fountain(env));   // 2026-11-21 분수 잭팟 금액 · 역대 당첨자
+  if (m === 'GET' && p === '/api/fountain') return json(await fountain(env));
+  if (m === 'GET' && p === '/api/legend') return json(await legends(env));   // 2026-11-21 광장 전광판: 최근 전설 물고기·작물 1명씩   // 2026-11-21 분수 잭팟 금액 · 역대 당첨자
+  if (m === 'GET' && p === '/api/bingo') { const j = await (await quizDO(env).fetch('https://quiz/state')).json(); return json({ ...j, now: now() }); }   // 2026-11-21 빙고 모집·진행 상태
   if (m === 'GET' && p === '/api/raid') { const j = await (await raidDO(env).fetch('https://raid/state')).json(); return json({ ...j, now: now() }); }
   if (m === 'GET' && p === '/api/whoami') return json({ nick: s.user.nick, admin: !!s.user.is_admin });   // 홈페이지(모드 추천 편집 버튼)용. 게임 정산은 안 함
   if (m === 'POST' && p === '/api/admin/mods-order') return modsOrder(req, env, s.user);
@@ -343,6 +357,21 @@ async function jackpot(env, user) {
     env.DB.prepare('DELETE FROM fountain_win WHERE id NOT IN (SELECT id FROM fountain_win ORDER BY id DESC LIMIT 10)')]);
   FOUNT.at = 0; return g;
 }
+// 2026-11-21 광장 전광판 슬라이드: 가장 최근에 전설 물고기·작물을 얻은 사람 1명씩 (settings 표 lg_fish · lg_crop). 테스트·zz 계정은 안 적음
+let LEGEND = { at: 0, v: null };
+async function legends(env) {
+  if (LEGEND.v && Date.now() - LEGEND.at < 30e3) return LEGEND.v;
+  const r = await env.DB.prepare("SELECT k, v FROM settings WHERE k IN ('lg_fish', 'lg_crop')").all(), v = { fish: null, crop: null };
+  for (const x of r.results) { try { v[x.k === 'lg_fish' ? 'fish' : 'crop'] = JSON.parse(x.v); } catch {} }
+  LEGEND = { at: Date.now(), v }; return v;
+}
+async function legendSet(env, user, k, d) {
+  if (user.nick === '테스트' || /^zz/i.test(user.nick)) return;
+  const v = { nick: user.nick, ...d, at: now() };
+  await env.DB.prepare('INSERT OR REPLACE INTO settings (k, v) VALUES (?, ?)').bind(k === 'fish' ? 'lg_fish' : 'lg_crop', JSON.stringify(v)).run();
+  if (LEGEND.v) LEGEND.v[k] = v; LEGEND.at = Date.now();
+  await toRooms(env, { act: 'legend', k, v });   // 마을에 있는 사람들 전광판도 바로 바뀜
+}
 // 마을 연대기 (전설 물고기, 신화 장비, 공동 건설 완성 등 큰일만)
 const chron = (env, kind, text) => env.DB.prepare('INSERT INTO chronicle (at, kind, text) VALUES (?, ?, ?)').bind(now(), kind, String(text).slice(0, 120)).run().then(() => { NEWS.at = 0; }).catch(() => {});
 
@@ -378,8 +407,9 @@ async function play(env, user, fn) {
       if (res.log) await log(env, user.id, res.log[0], res.log[1] || '');
       if (res.after) await res.after();   // 캐릭터 저장이 끝난 뒤 할 일 (낚시 기록 등)
       if (res.chron) await chron(env, res.chron[0], `${user.nick}님이 ${res.chron[1]}`);
+      if (res.legend) await legendSet(env, user, res.legend[0], res.legend[1]);
       if (lv0 < LV_CAP && c.lv >= LV_CAP) await chron(env, 'lv', `${user.nick}님이 ${LV_CAP}레벨이 되었어요!`);
-      delete res.log; delete res.after; delete res.chron;
+      delete res.log; delete res.after; delete res.chron; delete res.legend;
       return json({ me: meOut(user, c), ...out, ...res });
     }
   }
@@ -563,13 +593,34 @@ const GAME = {
     c.hp = D.maxHp;
     return { raid: { start: j.start, n: j.n, dps, boss: j.boss } };
   },
+  // 2026-11-21 빙고 참가 (2분 모집 중에만). 겉모습은 빙고 맵에서 다른 사람에게 보이게
+  async '/api/bingo/join'(c, b, at, out, env, user) {
+    townOnly(c);
+    const look = { lv: c.lv, title: c.title, face: c.face, body: c.body, eyes: c.eyes, hat: c.hat, hair: c.hair, hairC: c.hairC, hatHair: c.hatHair, suit: c.suit, wsk: c.wsk, cls: c.cls, enh: c.enh, equip: c.equip };
+    const res = await quizDO(env).fetch('https://quiz/join', { method: 'POST', body: JSON.stringify({ start: Number(b.start), uid: user.id, nick: user.nick, look }) });
+    const j = await res.json(); if (!res.ok) fail(400, j.error || '참여하지 못했어요');
+    return { bingo: { start: j.start, n: j.n } };
+  },
+  // 빙고 보상: 순위에 따라 빙고 코인 (bingoCoins → life.bgc). 1위 = 참가자 수, 2위부터 하나씩 적게. 빙고를 못 하면 0
+  // 기록 = cnt.bingoPlay(참여) · cnt.bingo(빙고 성공) · cnt.bingo1(1위) · cnt.bingoTop3(3위 안) · cnt.bingoBest(가장 좋은 순위)
+  async '/api/bingo/claim'(c, b, at, out, env, user) {
+    const start = Number(b.start); if (c.life.bgGot === start) fail(400, '이미 보상을 받았어요');
+    const res = await quizDO(env).fetch(`https://quiz/result?start=${start}&uid=${user.id}`), j = await res.json(); if (!res.ok) fail(400, j.error || '기록이 없어요');
+    const rank = Math.max(0, j.rank | 0), coin = bingoCoins(rank, j.n);
+    c.life.bgc = Math.max(0, (c.life.bgc | 0) + coin); c.life.bgGot = start;
+    cntAdd(c, 'bingoPlay');
+    const cn = c.life.cnt;
+    if (rank) { cntAdd(c, 'bingo'); if (rank === 1) cntAdd(c, 'bingo1'); if (rank <= 3) cntAdd(c, 'bingoTop3'); cn.bingoBest = cn.bingoBest ? Math.min(cn.bingoBest, rank) : rank; }
+    return { bingo: { rank, coin, have: c.life.bgc, n: j.n, wins: j.wins, calls: j.calls, total: cn.bingo || 0, plays: cn.bingoPlay || 0 }, log: ['bingo', rank ? `${rank}위` : '빙고 못 함'],
+      chron: rank === 1 ? ['bingo', `빙고 1위! (${j.n}명 중)`] : null };
+  },
   // 레이드 보상: 레이드 방에서 기록을 읽고 → 골드·경험치 + 확률로 전용 스킨. life.raidGot 으로 한 번만
   async '/api/raid/claim'(c, b, at, out, env, user) {
     const start = Number(b.start); if (!Number.isFinite(start)) fail(400, '잘못된 요청이에요');
     if (c.life.raidGot === start) fail(400, '이미 보상을 받았어요');
     const res = await raidDO(env).fetch(`https://raid/result?start=${start}&uid=${user.id}`), j = await res.json();
     if (!res.ok) fail(res.status, j.error || '보상을 받지 못했어요');
-    const D = derive(c), RW = raidReward(c.lv), m = (j.dead ? RAID.deadMul : 1) * (.85 + .3 * Math.min(1, j.share * j.n)) * raidCrowd(j.n10 ?? j.n);
+    const D = derive(c), RW = raidReward(c.lv), m = (j.dead ? RAID.deadMul : 1) * (.85 + .3 * Math.min(1, j.share * j.n)) * raidCrowd(j.n10 ?? j.n) * (j.n === 1 ? RAID.solo : 1);   // 2026-11-21 혼자 잡으면 조금 적게 (RAID.solo)
     let gold = Math.round(RW.gold * m * (1 + D.goldB / 100)); const exp = Math.round(RW.exp * m * (1 + D.expB / 100));
     let skin = null, skinLv = 0, skinN = 0; const skins = [];
     // 2026-11-18 전용 스킨은 무조건 1개, RAID.drop2 확률로 2개. 세트 6부위 중 하나씩. 이미 있으면 개수가 늘어 레벨이 오름
@@ -583,7 +634,7 @@ const GAME = {
     }
     if (skins[0]) ({ skin, lv: skinLv, n: skinN } = skins[0]);
     c.gold += gold; const up = addExp(c, exp); c.life.raidGot = start; cntAdd(c, 'raid'); c.hp = D.maxHp; c.hpAt = at;
-    return { raid: { boss: j.boss, gold, exp, up, skin, skinLv, skinN, skins, crowd: Math.round((raidCrowd(j.n10 ?? j.n) - 1) * 100), dead: j.dead, rank: j.rank, n: j.n, dmg: j.dmg }, log: ['raid', `${gold} ${exp} ${skins.map(x => x.skin).join(' ')}`.trim()],
+    return { raid: { boss: j.boss, gold, exp, up, skin, skinLv, skinN, skins, crowd: Math.round((raidCrowd(j.n10 ?? j.n) - 1) * 100), solo: j.n === 1 ? Math.round((1 - RAID.solo) * 100) : 0, dead: j.dead, rank: j.rank, n: j.n, dmg: j.dmg }, log: ['raid', `${gold} ${exp} ${skins.map(x => x.skin).join(' ')}`.trim()],
       chron: ['raid', `${RAID_BOSS[j.boss]?.n || '레이드'} 레이드에 성공했어요!`] };   // 2026-11-20 마을 소식에서는 한 레이드를 한 줄로 묶어 보여 줌 (news)
   },
   // 스킨샵 (겉모습만, 현금 결제 없음)
@@ -774,7 +825,8 @@ const GAME = {
         best_price_crop = CASE WHEN excluded.best_price > best_price THEN excluded.best_price_crop ELSE best_price_crop END, best_price = MAX(best_price, excluded.best_price),
         best_w_crop = CASE WHEN excluded.best_w > best_w THEN excluded.best_w_crop ELSE best_w_crop END, best_w = MAX(best_w, excluded.best_w)`)
       .bind(user.id, got.length, bp.p, info(bp), bw.g, info(bw)).run();
-    return { got, lexp, after, log: ['harvest', `${got.length}개`], chron: got.some(g => g.grade === 'legend') ? ['farm', `전설 작물 ${got.filter(g => g.grade === 'legend').map(g => CROP_BY[g.id].n).join(', ')}을(를) 수확했어요!`] : null };
+    const lg = got.filter(g => g.grade === 'legend').reduce((a, x) => (!a || x.p > a.p ? x : a), null);
+    return { got, lexp, after, legend: lg ? ['crop', { id: lg.id, n: CROP_BY[lg.id].n, g: lg.g, p: lg.p }] : null, log: ['harvest', `${got.length}개`], chron: got.some(g => g.grade === 'legend') ? ['farm', `전설 작물 ${got.filter(g => g.grade === 'legend').map(g => CROP_BY[g.id].n).join(', ')}을(를) 수확했어요!`] : null };
   },
   // 작물 가방 팔기: ks = 팔 작물 번호들. 확인 창의 합계(want)와 다르면 거절
   '/api/farm/sell'(c, b) {
@@ -813,7 +865,9 @@ const GAME = {
     const x = Number(b.x), y = Number(b.y);
     if (!(Math.abs(x - (n.x + .5) * T) < 2.6 * T && Math.abs(y - (n.y + .5) * T) < 2.6 * T)) fail(400, '조금 더 가까이 가서 해 주세요');
     const amt = G.amt[0] + Math.floor(Math.random() * (G.amt[1] - G.amt[0] + 1)) + (derive(c).fx.gather || 0);
-    L.res[G.res] += amt; cntAdd(c, G.res, amt); L.gatherAt = at;
+    const ck = G.res === 'wood' ? 'trees' : 'rocks', cn = c.life.cnt || (c.life.cnt = {});   // 2026-11-21 캔 나무·바위 '횟수' (wood·stone은 얻은 개수)
+    if (cn[ck] === undefined) cn[ck] = gatherGuess(cn, ck);   // 처음 한 번: 예전에 모은 개수로 어림
+    L.res[G.res] += amt; cntAdd(c, G.res, amt); cntAdd(c, ck); L.gatherAt = at;
     L.nodes[n.i] = Math.round(at + G.regrow[0] + Math.random() * (G.regrow[1] - G.regrow[0]));
     for (const k of Object.keys(L.nodes)) if (L.nodes[k] < at) delete L.nodes[k];   // 다 자란 기록은 지움
     if (!isSolid(Math.floor(x / T), Math.floor(y / T))) { c.x = x; c.y = y; }
@@ -1051,7 +1105,7 @@ async function fishOnce(c, b, at, env, user, now) {
   if (sh) { const old = (Math.floor(at / FSHADOW.slot) - 8) * 10; c.life.fsh = [...gone.filter(id => id >= old), sh.id]; }   // 낚은 그림자는 사라짐
   const lexp = lifeExp(c, 'fish'); addExp(c, lexp);
   if (big) cntAdd(c, 'perfect'); if (fish.grade === 'legend') cntAdd(c, 'legendFish'); if (fish.n === '낡은 장화') cntAdd(c, 'boot');
-  return { ...base, caught: true, big, lexp, fish: { ...fish, price: sell }, sold: auto ? 1 : 0, bagN: bag.length, tired: tired < 1, chron: fish.grade === 'legend' ? ['fish', `전설 물고기 ${fish.n} ${fish.len}cm를 낚았어요!`] : null,
+  return { ...base, caught: true, big, lexp, fish: { ...fish, price: sell }, sold: auto ? 1 : 0, bagN: bag.length, tired: tired < 1, chron: fish.grade === 'legend' ? ['fish', `전설 물고기 ${fish.n} ${fish.len}cm를 낚았어요!`] : null, legend: fish.grade === 'legend' ? ['fish', { id: fish.id, n: fish.n, len: fish.len, p: sell }] : null,
     after: async () => { await env.DB.prepare(`INSERT INTO fishing (user_id, bait, count, gold, day, day_n, best_price, best_price_fish, best_len, best_len_fish) VALUES (?, '', 1, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(user_id) DO UPDATE SET count = count + 1, gold = gold + excluded.gold, day = excluded.day, day_n = excluded.day_n,
         best_price_fish = CASE WHEN excluded.best_price > best_price THEN excluded.best_price_fish ELSE best_price_fish END, best_price = MAX(best_price, excluded.best_price),
@@ -1090,6 +1144,57 @@ async function rankList(env, user, k) {
   }
   const i = M.pos.get(user.id), mine = i === undefined ? null : M.all[i];
   return json({ k, list: M.list, me: { v: mine?.v || 0, rank: mine ? i + 1 : 0, f: rankFish(mine?.i) }, at: M.at });
+}
+
+// ───────── 2026-11-21 캐릭터 정보 (랭킹에서 이름 누르기) ─────────
+// 누구나 읽기. 한 사람마다 1분 기억 (같은 사람을 여럿이 눌러도 DB는 1분에 한 번). 기록은 life.cnt 에서
+const gatherGuess = (cn, k) => Math.round(k === 'trees' ? (cn.wood || 0) / 3 : (cn.stone || 0) / 2);   // 나무 1번 = 2~4개, 바위 1번 = 1~3개
+const PROF_MEM = new Map();
+async function profile(env, idS) {
+  const id = Number(idS); if (!Number.isInteger(id) || id <= 0) fail(400, '잘못된 요청이에요');
+  const hit = PROF_MEM.get(id); if (hit && now() - hit.at < 60e3) return json(hit.v);
+  const r = await env.DB.prepare('SELECT c.*, u.nick, u.created_at AS joined FROM characters c JOIN users u ON u.id = c.user_id WHERE c.user_id = ? AND u.banned = 0').bind(id).first();
+  if (!r) fail(404, '캐릭터를 찾을 수 없어요');
+  let cn = {}; try { cn = JSON.parse(r.life || '{}').cnt || {}; } catch {}
+  const g = k => Math.max(0, Math.floor(Number(cn[k]) || 0));
+  const v = { id, nick: r.nick, joined: r.joined, ...lookRow(r), stats: {
+    kills: g('kills'), boss: g('boss'), fish: g('fish'), crops: g('crops'), job: g('job'),
+    trees: cn.trees === undefined ? gatherGuess(cn, 'trees') : g('trees'), rocks: cn.rocks === undefined ? gatherGuess(cn, 'rocks') : g('rocks'),
+    raid: g('raid'), bingo: g('bingo') } };
+  if (PROF_MEM.size > 400) PROF_MEM.clear();
+  PROF_MEM.set(id, { at: now(), v });
+  return json(v);
+}
+
+// ───────── 2026-11-21 오류 모으기 (관리자 화면 → 🐞 오류) ─────────
+// 같은 오류(메시지 + 파일·줄)는 한 줄로 묶고 횟수만 늘림. 화면은 한 번 켤 때 같은 오류를 한 번만, 모두 8개까지만 보냄
+const ERR_MEM = new Map();   // 사람마다 한 시간에 20개까지 (이 서버 칸 안에서) + 같은 서버 오류 1분에 한 번
+const cut = (s, n) => String(s ?? '').slice(0, n);
+async function errPut(env, e) {
+  await env.DB.prepare(`INSERT INTO errlog (sig, kind, msg, src, stack, n, nicks, first_at, last_at, last_nick, ua, ver, place) VALUES (?1, ?2, ?3, ?4, ?5, 1, '|' || ?6 || '|', ?7, ?7, ?6, ?8, ?9, ?10)
+    ON CONFLICT(sig) DO UPDATE SET n = n + 1, last_at = ?7, last_nick = ?6, ua = ?8, ver = ?9, place = ?10, stack = ?5,
+    nicks = CASE WHEN instr(nicks, '|' || ?6 || '|') > 0 OR length(nicks) > 240 THEN nicks ELSE nicks || ?6 || '|' END`)
+    .bind(e.sig, e.kind, e.msg, e.src, e.stack, e.nick, now(), e.ua, e.ver, e.place).run();
+}
+async function errLog(req, env, user) {
+  const b = await readBody(req), list = Array.isArray(b?.list) ? b.list.slice(0, 5) : [];
+  const t = now(), m = ERR_MEM.get(user.id) || { at: t, n: 0 };
+  if (t - m.at > 3600e3) { m.at = t; m.n = 0; }
+  if (ERR_MEM.size > 2000) ERR_MEM.clear();
+  ERR_MEM.set(user.id, m);
+  for (const x of list) {
+    if (m.n >= 20) break; m.n++;
+    const msg = cut(x?.m, 300), src = cut(x?.src, 80); if (!msg) continue;
+    await errPut(env, { sig: cut('c|' + msg + '|' + src, 400), kind: 'client', msg, src, stack: cut(x?.st, 900), nick: cut(user.nick, 20), ua: cut(x?.ua, 160), ver: cut(x?.ver, 16), place: cut(x?.w, 40) });
+  }
+  return json({ ok: true });
+}
+async function errServer(env, e, path) {
+  try {
+    const msg = cut(e?.message || e, 300), src = cut(path, 80), k = 's|' + msg + '|' + src;
+    if (ERR_MEM.get(k) > now() - 60e3) return; ERR_MEM.set(k, now());
+    await errPut(env, { sig: cut(k, 400), kind: 'server', msg, src, stack: cut(e?.stack, 900), nick: '-', ua: '', ver: '', place: '' });
+  } catch {}
 }
 
 async function fishRank(env, user) {
@@ -1246,10 +1351,11 @@ async function modsOrder(req, env, user) {
 
 // 관리자 버튼 숫자: 처리 안 한 신고 · 의심 계정
 async function admCounts(env) {
-  const t = now(), [r, f] = await env.DB.batch([
+  const t = now(), [r, f, e] = await env.DB.batch([
     env.DB.prepare('SELECT COUNT(DISTINCT target_id) AS n FROM reports WHERE done = 0'),
-    env.DB.prepare('SELECT COUNT(DISTINCT user_id) AS n FROM flags WHERE ok_until < ?').bind(t)]);
-  return { reports: r.results[0].n, flags: f.results[0].n };
+    env.DB.prepare('SELECT COUNT(DISTINCT user_id) AS n FROM flags WHERE ok_until < ?').bind(t),
+    env.DB.prepare('SELECT COUNT(*) AS n FROM errlog WHERE last_at > ?').bind(t - 864e5)]);
+  return { reports: r.results[0].n, flags: f.results[0].n, errs: e.results[0].n };
 }
 async function admin(p, m, req, env, user, url) {
   if (!user.is_admin) fail(403, '관리자만 쓸 수 있어요');
@@ -1261,6 +1367,21 @@ async function admin(p, m, req, env, user, url) {
     const min = Math.max(0, Math.min(600, Math.floor(Number(body.min) || 0)));
     await DB.prepare('UPDATE village SET live_until = ? WHERE id = 1').bind(min ? t + min * 60e3 : 0).run(); WORLD.at = 0; await done('live', String(min));
     return json({ ok: true, until: min ? t + min * 60e3 : 0 });
+  }
+  if (m === 'GET' && p === '/api/admin/errors') {   // 2026-11-21 오류 기록 (최근 순 100개)
+    const r = await DB.prepare('SELECT sig, kind, msg, src, stack, n, nicks, first_at, last_at, last_nick, ua, ver, place FROM errlog ORDER BY last_at DESC LIMIT 100').all();
+    return json({ list: r.results, now: t });
+  }
+  if (m === 'POST' && p === '/api/admin/errors/clear') {   // sig 하나 또는 전부 지우기
+    if (body.all) await DB.prepare('DELETE FROM errlog').run(); else await DB.prepare('DELETE FROM errlog WHERE sig = ?').bind(cut(body.sig, 400)).run();
+    return json({ ok: true });
+  }
+  if (m === 'POST' && p === '/api/admin/bingo') {   // 2026-11-21 빙고: 지금부터 2분 모집 (김치복 캐릭터가 숫자를 불러 줌)
+    const ku = await DB.prepare("SELECT c.* FROM characters c JOIN users u ON u.id = c.user_id WHERE u.nick = '김치복'").first();
+    const host = ku ? { n: '김치복', ...lookRow(ku) } : null;
+    const res = await quizDO(env).fetch('https://quiz/force', { method: 'POST', body: JSON.stringify({ host }) }), j = await res.json(); if (!res.ok) fail(400, j.error);
+    await toRooms(env, { act: 'bingo', start: j.start }); await done('bingo', String(j.start));
+    return json({ ok: true, start: j.start });
   }
   if (m === 'POST' && p === '/api/admin/raid') {   // 지금부터 30초 모집하는 레이드를 엶 (시험용)
     const res = await raidDO(env).fetch('https://raid/force', { method: 'POST', body: JSON.stringify({ boss: body?.boss }) }), j = await res.json(); if (!res.ok) fail(400, j.error);
@@ -1306,13 +1427,14 @@ async function admin(p, m, req, env, user, url) {
     return json({ user: { ...u, warns: w.results[0].n, reports: r.results[0].n, ips: acc.results[0].ip, devs: acc.results[0].dev }, links: links.results, flags: fl.results, snaps: snaps.results });
   }
   if (m === 'GET' && p === '/api/admin/overview') {   // 관리자 화면 맨 위 요약
-    const [users, sign, act, rep, fl] = await DB.batch([
+    const [users, sign, act, rep, fl, er] = await DB.batch([
       DB.prepare('SELECT COUNT(*) AS n FROM users'),
       DB.prepare('SELECT COUNT(*) AS n FROM users WHERE created_at > ?').bind(t - DAY),
       DB.prepare('SELECT COUNT(*) AS n FROM characters WHERE updated_at > ?').bind(t - DAY),
       DB.prepare('SELECT COUNT(DISTINCT target_id) AS n FROM reports WHERE done = 0'),
-      DB.prepare('SELECT COUNT(DISTINCT user_id) AS n FROM flags WHERE ok_until < ?').bind(t)]);
-    return json({ users: users.results[0].n, signups: sign.results[0].n, active: act.results[0].n, reports: rep.results[0].n, flags: fl.results[0].n, maint: await maintGet(env, true) });
+      DB.prepare('SELECT COUNT(DISTINCT user_id) AS n FROM flags WHERE ok_until < ?').bind(t),
+      DB.prepare('SELECT COUNT(*) AS n FROM errlog WHERE last_at > ?').bind(t - DAY)]);
+    return json({ users: users.results[0].n, signups: sign.results[0].n, active: act.results[0].n, reports: rep.results[0].n, flags: fl.results[0].n, errs: er.results[0].n, maint: await maintGet(env, true) });
   }
   if (m === 'GET' && p === '/api/admin/flags') {   // 의심 계정 (점수 높은 순)
     const rows = (await DB.prepare(`SELECT f.user_id AS id, u.nick, u.created_at, u.banned, c.lv, f.k, f.why, f.score, f.at FROM flags f JOIN users u ON u.id = f.user_id LEFT JOIN characters c ON c.user_id = f.user_id

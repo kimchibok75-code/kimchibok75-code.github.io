@@ -18,6 +18,7 @@ function fight(st, D, mon, boss) {
   if (!boss && st.pre > 0) hp -= Math.min(st.pre, mon.hp);   // 2026-11-20 검사 다수 타격: 앞 싸움에서 주변 몬스터가 이미 맞은 피해
   st.pre = 0;
   const heal = () => { st.hp = Math.min(D.maxHp, st.hp + (t - healed) * regen); healed = t; };   // 사냥 중에도 체력이 천천히 참
+  let wave = false;   // 2026-11-21 검기 날리기: 길 위 몬스터들도 맞음 (주변 피해 비율 .8)
   const roll = (m = 1, side) => {   // 피해 한 번 (스킬은 m 배). side: 번개 사슬이 옆 몬스터로 튐 → 다음 몬스터에 미리 들어감
     let dmg = D.hit * m * (.9 + Math.random() * .2) * (1 + (st.bt > 0 ? st.batk : 0) / 100);
     if (m === 1 && Math.random() * 100 < D.sp) dmg *= D.spMul;
@@ -26,7 +27,7 @@ function fight(st, D, mon, boss) {
     dmg = Math.max(1, Math.round(dmg));
     if (side) { st.pre = (st.pre || 0) + dmg * CHAIN.k; return; }
     hp -= dmg;
-    if (!boss && D.cleave) st.pre = (st.pre || 0) + dmg * (m === 1 ? D.cleave : D.cleaveSk);   // 주변 몬스터도 같이 맞음
+    if (!boss && D.cleave) st.pre = (st.pre || 0) + dmg * (m === 1 ? D.cleave : wave ? .8 : D.cleaveSk);   // 주변 몬스터도 같이 맞음
     else if (!boss && D.pierce) st.pre = (st.pre || 0) + dmg * D.pierce;   // 궁수: 화살이 뒤 몬스터까지 뚫음
     if (D.steal) st.hp = Math.min(D.maxHp, st.hp + dmg * D.steal / 100);   // 흡혈
   };
@@ -35,7 +36,7 @@ function fight(st, D, mon, boss) {
     let ready = null; for (const k of sk) if ((cd[k.s.id] || 0) <= 0 && (!ready || k.p.cd > ready.p.cd)) ready = k;
     if (ready) {
       const { s: S, p: P } = ready; cd[S.id] = P.cd; st.casts = (st.casts || 0) + 1;
-      if (S.k === 'hit') { for (let i = 0; i < P.n; i++) { if (P.chain && i > 0 && !boss) roll(P.m, true); else if (hp > 0) roll(P.m); } if (P.dot && hp > 0) hp -= Math.round(D.hit * P.dot); if (P.stun) { nextBite += P.stun; nextGim += P.stun; } }
+      if (S.k === 'hit') { wave = !!P.wave; for (let i = 0; i < P.n; i++) { if (P.chain && i > 0 && !boss) roll(P.m, true); else if (hp > 0) roll(P.m); } if (P.dot && hp > 0) hp -= Math.round(D.hit * P.dot); if (P.stun) { nextBite += P.stun; nextGim += P.stun; } wave = false; }
       else if (S.k === 'heal') { heal(); st.hp = Math.min(D.maxHp, st.hp + D.maxHp * P.v / 100); }
       else if (S.k === 'shield') st.sh = Math.max(st.sh || 0, P.sh);
       else { st.bt = P.dur; st.batk = P.atk; st.bcrit = P.crit; }

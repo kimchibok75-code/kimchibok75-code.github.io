@@ -47,7 +47,7 @@ export class Town extends DurableObject {
   // 사람별 채팅 기록 (sent: 최근 10초, last: 최근 3개, cool: 쉬는 시간 끝, day/n: 오늘 보낸 수)
   talkOf(id) { let k = this.talk.get(id); if (!k) { k = { sent: [], last: [], cool: 0, day: '', n: 0 }; this.talk.set(id, k); if (this.talk.size > 500) this.talk.delete(this.talk.keys().next().value); } return k; }
   members(except) { return this.ctx.getWebSockets().filter(w => w !== except && this.info(w).id && !this.info(w).gone); }
-  pub(a) { return { id: a.id, n: a.n, adm: a.adm, ...a.look, x: a.x, y: a.y, tx: a.tx, ty: a.ty, hunt: a.hunt, au: a.au || 0, sit: a.sit ?? -1, room: a.room2 || 0 }; }
+  pub(a) { return { id: a.id, n: a.n, adm: a.adm, ...a.look, x: a.x, y: a.y, tx: a.tx, ty: a.ty, hunt: a.hunt, au: a.au || 0, dn: a.dn || 0, sit: a.sit ?? -1, room: a.room2 || 0 }; }
   send(ws, o) { try { ws.send(JSON.stringify(o)); } catch {} }
   all(o, except) { const s = JSON.stringify(o); for (const w of this.members(except)) try { w.send(s); } catch {} }
   // 2026-11-20 움직임처럼 자주 오는 것은 같은 방(마을 0 · 치복동 -1 · 집)에 있고 사냥 중이 아닌 사람에게만
@@ -127,6 +127,7 @@ export class Town extends DurableObject {
       if (!num(m.x, MW * T) || !num(m.y, MH * T)) return;
       const r = Number.isInteger(m.r) && m.r >= -1 && m.r < 1e9 ? m.r : 0; Object.assign(a, { room2: r, sit: -1, x: m.x | 0, y: m.y | 0, tx: m.x | 0, ty: m.y | 0 }); this.save(ws, a); return this.all({ t: 'room', id: a.id, r, x: a.x, y: a.y }, ws);
     }
+    if (m.t === 'dance') { const v = m.on === 2 ? 2 : m.on ? 1 : 0; if (a.dn === v || t - (a.dnAt || 0) < 300) return; a.dn = v; a.dnAt = t; this.save(ws, a); return this.all({ t: 'dance', id: a.id, on: v }, ws); }   // 2026-11-21 춤 (1 춤 · 2 브레이크 댄스, 움직이면 화면이 끔)
     if (m.t === 'au') { const v = m.on ? 1 : 0; if (a.au === v) return; a.au = v; this.save(ws, a); return this.all({ t: 'au', id: a.id, on: v }, ws); }   // 2026-11-20 자동 생활 중 말풍선
     if (m.t === 'hunt') { a.hunt = !!m.on; a.sit = -1; this.save(ws, a); return this.all({ t: 'hunt', id: a.id, on: a.hunt }, ws); }
     // 움직임 기록 (2026-11-18): p = [[보낸 쪽 시각 ms, x, y, 점프 높이, 건물 위 1/0], …] 최대 8개. 마지막 자리를 기억 (새로 들어온 사람용)
@@ -267,7 +268,9 @@ export class Town extends DurableObject {
     if (b.act === 'notice') this.all({ t: 'notice', text: b.text });
     if (b.act === 'house') this.all({ t: 'house', h: b.h });   // 누가 집을 짓거나 옮김 → 그 집만 고쳐 그림
     if (b.act === 'event') this.all({ t: 'event', e: b.e });
-    if (b.act === 'raid') this.all({ t: 'raid', start: b.start });   // 관리자가 레이드를 엶   // 마을 사건·공동 건설 소식
+    if (b.act === 'legend') this.all({ t: 'legend', k: b.k, v: b.v });   // 2026-11-21 전광판: 새 전설 물고기·작물
+    if (b.act === 'raid') this.all({ t: 'raid', start: b.start });
+    if (b.act === 'bingo') this.all({ t: 'bingo', start: b.start });   // 2026-11-21 관리자가 빙고를 엶   // 관리자가 레이드를 엶   // 마을 사건·공동 건설 소식
     if (b.act === 'maint') for (const w of this.members()) {   // 2026-11-20 점검 시작: 관리자가 아닌 사람은 모두 내보냄
       const a = this.info(w); if (a.adm || a.gone) continue;
       a.gone = true; this.save(w, a); this.send(w, { t: 'maint', msg: b.msg || MAINT_MSG }); try { w.close(4003, 'maint'); } catch {} this.all({ t: 'leave', id: a.id }, w);

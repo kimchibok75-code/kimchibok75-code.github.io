@@ -41,6 +41,15 @@ class_name = "Raid"
 tag = "v3"
 new_sqlite_classes = ["Raid"]
 
+# 빙고 (관리자가 열 때만, 하나만 씀) — 2026-11-21 (처음엔 OX 퀴즈였음, 클래스 이름 Quiz 그대로)
+[[durable_objects.bindings]]
+name = "QUIZ"
+class_name = "Quiz"
+
+[[migrations]]
+tag = "v4"
+new_sqlite_classes = ["Quiz"]
+
 [vars]
 CHZZK_CHANNEL = "d44a982c742226605f4fcf3b6b4e7629"   # 김치복 치지직 채널 (config/site.json과 같음)
 

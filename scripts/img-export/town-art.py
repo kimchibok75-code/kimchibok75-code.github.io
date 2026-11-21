@@ -159,7 +159,7 @@ def keep_rgba(name):
 # 1) 가게 건물 (한 장에 하나). 2026-11-19 새 그림은 배경이 투명 → keep_rgba
 for src, key in [('건물_가챠센터', 'gacha'), ('건물_카페', 'cafe'), ('건물_스킨샵', 'skin'), ('건물_마을회관', 'hall'), ('건물_대장간', 'smith'),
                  ('건물_낚시점', 'fishshop'), ('건물_벌목소', 'lumber'), ('건물_채석장', 'quarry'), ('건물_텃밭 창고', 'farmshed'),
-                 ('건물_무한의탑', 'tower'), ('건물_김치볶음밥 전문점', 'kfr'), ('건물_도감센터', 'dex'), ('건물_게시판_건의', 'suggest'), ('건물_게시판_초보자 가이드', 'beginner'), ('건물_사냥꾼 쉼터', 'hrest'), ('건물_사냥 랭킹', 'huntrank')]:   # 2026-11-21 사냥꾼 쉼터 · 사냥 랭킹   # 2026-11-19 무한의 탑 · 김치볶음밥 전문점
+                 ('건물_무한의탑', 'tower'), ('건물_김치볶음밥 전문점', 'kfr'), ('건물_도감센터', 'dex'), ('건물_게시판_건의', 'suggest'), ('건물_게시판_초보자 가이드', 'beginner'), ('건물_사냥꾼 쉼터', 'hrest'), ('건물_사냥 랭킹', 'huntrank'), ('건물_이벤트 상점', 'event')]:   # 2026-11-21 이벤트 상점   # 2026-11-21 사냥꾼 쉼터 · 사냥 랭킹   # 2026-11-19 무한의 탑 · 김치볶음밥 전문점
     r = keep_rgba(src)
     b = bbox(r[:, :, 3]); save('b-' + key, r[b[1]:b[3], b[0]:b[2]], width=720)
 
@@ -243,6 +243,9 @@ META['ogre'] = {'parts': OG, 'floor': obottom}
 bg = Image.open(os.path.join(SRC, '배경_오우거.png')).convert('RGB')
 bg.resize((1344, round(1344 * bg.height / bg.width)), Image.LANCZOS).save(os.path.join(OUT, 'ogre-bg.webp'), 'WEBP', quality=86, method=6)
 META['ogre-bg'] = [bg.width, bg.height]
+# 2026-11-21 OX 퀴즈 맵 (1536×1024 그대로)
+Image.open(os.path.join(SRC, '배경 빙고.png')).convert('RGB').save(os.path.join(OUT, 'bingo-bg.webp'), 'WEBP', quality=86, method=6)   # 2026-11-21 빙고 맵 (OX 퀴즈 대신)
+_bc = Image.open(os.path.join(SRC, '빙고 코인.png')).convert('RGBA'); _bc = _bc.crop(_bc.getchannel('A').point(lambda v: 255 if v > 60 else 0).getbbox()); _bc.thumbnail((192, 192), Image.LANCZOS); _bc.save(os.path.join(OUT, 'bingocoin.webp'), 'WEBP', quality=90, method=6)   # 2026-11-21 빙고 코인 (사용자 그림)
 TPL = os.path.join('텍스쳐 템플릿')
 # 템플릿 틀 그대로 그린 스킨 세트 → <prefix>-<부위>.webp + META[prefix] = {부위: [x, y, w, h]} (게임 단위, 발/손잡이 기준)
 def tpl_set(tag, prefix, cut=0):   # cut: 그 값보다 옅은 알파(은은한 빛)는 지우고 나머지는 불투명하게 (2026-11-21 사이버 전사)

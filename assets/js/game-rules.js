@@ -48,7 +48,13 @@ export const allOk = o => Object.values(o).every(Boolean);
 export const pick = a => a[Math.floor(Math.random() * a.length)];
 // 2026-11-20 사용자 요청: 저레벨은 그대로, 15레벨부터 1레벨마다 필요 경험치 +1% (20 ×1.05 · 30 ×1.15 · 40 ×1.25 · 50 ×1.35 · 55부터 ×1.4 고정)
 // 2026-11-21 고렙 조정 (사용자 요청): 70레벨부터 1레벨마다 필요 경험치 +8%씩 더 (70 ×1.08 · 75 ×1.48 · 80 ×1.88 · 85 ×2.28)
-export const expCurve = L => (1 + Math.max(0, Math.min(L, 55) - 15) * .01) * (1 + Math.max(0, L - 69) * .08);
+// 2026-11-21 90레벨부터 더 가파르게: ×(1 + .05d + .003d²), d = L − 89 (100 ×1.9 · 110 ×3.4 · 120 ×5.4 더)
+const late = d => 1 + .05 * d + .003 * d * d;
+// 초보자 버프: 레벨 NEWBIE.max 까지 경험치·골드 2배 (보너스 %에 곱해서 정말 2배가 되게: (100 + B) × 2 − 100)
+export const NEWBIE = { max: 50, exp: 2, gold: 2 };
+export const newbie = c => (c?.lv || 1) <= NEWBIE.max;
+const nbB = (nb, k, B) => (nb ? Math.round(((100 + B) * k - 100) * 100) / 100 : B);
+export const expCurve = L => (1 + Math.max(0, Math.min(L, 55) - 15) * .01) * (1 + Math.max(0, L - 69) * .08) * late(Math.max(0, L - 89));
 export const needExp = L => Math.round(100 * Math.pow(L, 2) * expCurve(L));   // 2026-11-19: 50 → 100 (레벨업 경험치 2배, 사용자 요청)
 // ───────── 장비 (뽑기로만 얻음, 기획서 3-2) ─────────
 // 등급 7개. m: 수치 배율, p: 뽑기 확률(%), d: 분해할 때 골드 배율
@@ -311,10 +317,11 @@ export function derive(c) {
   // 능력치·레벨에서 오는 피해는 공격 간격만큼 곱함 → 느린 무기는 한 방이 세고, 빠른 무기는 약하게 여러 번 (초당 피해는 비슷)
   const god = !!c.life?.god, am = (1 + (fx.atkP || 0) / 100) * (god ? 10 : 1);   // god: 관리자 갓모드 (안 맞음 + 공격력 10배)
   const atk = Math.round(((staff ? 3 : wAtk) + ((bow ? dex * wt.k : str * (staff ? 2 : wt.k)) + c.lv) * (staff ? 1 : wt.gap)) * am), mag = Math.round(((staff ? wAtk : 0) + (int * (staff ? wt.k : 2) + c.lv) * (staff ? wt.gap : 1)) * am);
-  return { god, b, str, dex, int, luk, atk, mag, hit: staff ? mag : atk, magic: staff, far: !!wt.far, wt: cls, cls, fx, skills: mySkills(c, cls),
+  const nb = newbie(c);   // 2026-11-21 초보자 버프 (1~50레벨): 경험치·골드 2배
+  return { god, b, str, dex, int, luk, atk, nb, mag, hit: staff ? mag : atk, magic: staff, far: !!wt.far, wt: cls, cls, fx, skills: mySkills(c, cls),
     def: Math.round((def + str * .5) * (1 + (fx.defP || 0) / 100)), mdef: Math.round((def * .5 + int * .5) * (1 + ((fx.defP || 0) + (fx.mdefP || 0)) / 100)), maxHp: Math.round((100 + c.lv * 20 + str * 5 + dex * 2 + hp) * (1 + (fx.hpP || 0) / 100)),
     gap: wt.gap / Math.min(bow ? BOW_ASPD_MAX : 2, 1 + dex * .005) / (1 + (fx.aspd || 0) / 100), spd: Math.min(1.8, (1 + dex * .003) * (1 + (fx.spdP || 0) / 100)), crit: Math.min(70, 5 + luk * .25 + (fx.crit || 0)), critM: 1.5 + (fx.critD || 0) / 100,
-    eva: Math.min(45, dex * .2 + (fx.eva || 0)), sp: Math.min(SP_MAX, 5 + int * .1 + (fx.sp || 0)), spMul: Math.min(SPMUL_MAX, 2 + int * .02) * (wt.sp || 1), goldB: Math.min(LUK_GOLD_MAX, luk) + (fx.goldP || 0), expB: fx.expP || 0, enhB: Math.min(15, luk * .05 + (fx.enhB || 0)),
+    eva: Math.min(45, dex * .2 + (fx.eva || 0)), sp: Math.min(SP_MAX, 5 + int * .1 + (fx.sp || 0)), spMul: Math.min(SPMUL_MAX, 2 + int * .02) * (wt.sp || 1), goldB: nbB(nb, NEWBIE.gold, Math.min(LUK_GOLD_MAX, luk) + (fx.goldP || 0)), expB: nbB(nb, NEWBIE.exp, fx.expP || 0), enhB: Math.min(15, luk * .05 + (fx.enhB || 0)),
     bossP: fx.bossP || 0, steal: fx.steal || 0, walkM: (staff ? STAFF_WALK : 1) * incWalk(c), cleave: cls === 'sword' ? CLEAVE.hit : 0, cleaveSk: cls === 'sword' ? CLEAVE.sk : 0, pierce: bow ? PIERCE.k : 0, regen: HUNT.huntRegen + (fx.regen || 0) / 100, potP: fx.potP || 0 };
 }
 
@@ -357,6 +364,9 @@ export const FIELDS = [
   { id: 'mine', n: '버려진 폐광', i: '⛏️', min: 55, max: 70, tier: 4, mons: ['bat', 'spider', 'ogolem'], boss: M('거대 두더지', 72, 320000, 790, 42000, 17000, '#7a5640', 2.3, 'snout', false, 'mole'), g: ['#6d6359', '#655b52'], deco: 'rock' },
   { id: 'swamp', n: '독안개 늪지', i: '🐊', min: 70, max: 85, tier: 5, mons: ['snake', 'croc', 'slime'], boss: M('거대 코브라', 87, 832000, 2310, 80600, 32500, '#5c3a6e', 2.4, 'ears', true, 'cobra'), g: ['#5d7a4a', '#566f44'], deco: 'tree' },
 ];
+// 2026-11-21 사냥터 보스를 더 크게(그림 ×1.3) · 조금 더 세게(체력 ×1.25, 공격 ×1.15). 보상은 그대로
+export const BOSS_BUFF = { s: 1.3, hp: 1.25, atk: 1.15 };
+for (const f of FIELDS) { const b = f.boss; b.s = +(b.s * BOSS_BUFF.s).toFixed(2); b.hp = Math.round(b.hp * BOSS_BUFF.hp); b.atk = Math.round(b.atk * BOSS_BUFF.atk); }
 // 내 레벨이 몬스터보다 10 이상 높으면 경험치 줄어듦
 export const expPenalty = (lv, mlv) => { const d = lv - mlv; return d >= 10 ? Math.max(.2, 1 - (d - 9) * .1) : 1; };
 // 레벨업 (최고 레벨에서는 경험치가 더 쌓이지 않음). 올라간 레벨 수를 돌려줌
@@ -617,7 +627,7 @@ const tt = (id, n, g, k, v, fx, d) => ({ id, n, g, k, v, fx, d });
 // 전설 물고기 칭호 이름: '강의 용을 낚은', '은하 고래를 낚은' (받침에 따라 을/를)
 const josa = w => { const c = w.charCodeAt(w.length - 1) - 0xac00; return c >= 0 && c < 11172 && c % 28 ? '을' : '를'; };
 const legendTitle = n => `${n}${josa(n)} 낚은`;
-export const TITLE_GROUPS = ['마을', '성장', '사냥', '낚시', '전설 물고기', '텃밭', '채집', '장비'];
+export const TITLE_GROUPS = ['마을', '성장', '사냥', '낚시', '전설 물고기', '텃밭', '채집', '장비', '빙고'];
 export const TITLES = [
   tt('new', '새로 온', '마을', 'lv', 1, {}, '치복 타운에 처음 왔어요'),
   tt('guide', '마을을 한 바퀴 돈', '마을', 'guideDone', 1, { expP: 2, goldP: 2 }, '📘 가이드 퀘스트를 모두 끝내기'),
@@ -651,6 +661,11 @@ export const TITLES = [
   tt('g100', '뽑기를 좋아하는', '장비', 'gacha', 100, { goldP: 1 }, '뽑기 100번'), tt('g1000', '뽑기에 진심인', '장비', 'gacha', 1000, { goldP: 2, crit: 1 }, '뽑기 1,000번'),
   tt('gl', '전설을 뽑은', '장비', 'gotLegend', 1, { crit: 1 }, '전설 등급 장비 뽑기'), tt('gm', '신화를 손에 넣은', '장비', 'gotMyth', 1, { atkP: 2 }, '신화 등급 장비 뽑기'),
   tt('e10', '망치질을 배운', '장비', 'enhOk', 10, { enhB: .5 }, '강화 성공 10번'), tt('e10max', '+10을 해낸', '장비', 'enhMax', 10, { atkP: 2, enhB: .5 }, '아무 칸이나 +10 강화'),
+  // 2026-11-21 빙고 칭호 (cnt.bingo 빙고 성공 · bingo1 1위 · bingoTop3 3위 안 · bingoPlay 참여)
+  tt('bg1', '첫 빙고를 외친', '빙고', 'bingo', 1, { expP: 1 }, '빙고 1번 성공'), tt('bg10', '빙고에 익숙한', '빙고', 'bingo', 10, { expP: 2 }, '빙고 10번 성공'),
+  tt('bg50', '숫자를 놓치지 않는', '빙고', 'bingo', 50, { expP: 3, goldP: 1 }, '빙고 50번 성공'),
+  tt('bgt3', '손이 빠른', '빙고', 'bingoTop3', 3, { expP: 2 }, '빙고 3위 안에 3번'), tt('bgw1', '빙고왕인', '빙고', 'bingo1', 1, { expP: 2, goldP: 1 }, '빙고 1위'),
+  tt('bgw10', '전설의 빙고왕인', '빙고', 'bingo1', 10, { expP: 3, goldP: 2 }, '빙고 1위 10번'), tt('bgp20', '빙고판을 사랑하는', '빙고', 'bingoPlay', 20, { goldP: 2 }, '빙고 20번 참여'),
   tt('wi10', '소원을 비는', '마을', 'wish', 10, { goldP: 1 }, '소원 10번'), tt('wi100', '분수의 단골인', '마을', 'wish', 100, { goldP: 2, expP: 1 }, '소원 100번'),
   tt('jack', '대박이 난', '마을', 'jackpot', 1, { goldP: 3 }, '분수에서 대박 (아주 드묾)'),
   tt('dq10', '의뢰를 해결하는', '마을', 'daily', 10, { goldP: 1 }, '매일 의뢰 10개'), tt('dq100', '마을의 해결사인', '마을', 'daily', 100, { goldP: 2, expP: 2 }, '매일 의뢰 100개'),
@@ -705,19 +720,21 @@ export const BADGES = [
   { id: 'leaf', n: '새내기 뱃지', g: '기본', d: '치복 타운 주민이라면 누구나' },
   { id: 'rdragon', n: '레드 드래곤 뱃지', g: '레이드', d: '레드 드래곤 레이드 스킨 6개를 모두 모으기', raid: 'rdragon' },
   { id: 'ogre', n: '오우거 뱃지', g: '레이드', d: '오우거 레이드 스킨 6개를 모두 모으기', raid: 'ogre' },
+  { id: 'bingo', n: '빙고 뱃지', g: '빙고', d: '빙고 10번 성공', bingo: 10 },   // 2026-11-21
   ...FISH_LIST.map(f => ({ id: 'f_' + f.id, n: `${f.n} 뱃지`, g: f.sea ? '바다 물고기' : '민물 물고기', d: `${f.n} 낚기`, fish: f.id })),
   ...CROP_LIST.map(x => ({ id: 'c_' + x.id, n: `${x.n} 뱃지`, g: '작물', d: `${x.n} 수확하기`, crop: x.id })),   // 2026-11-20
   // 2026-11-21 몬스터 뱃지: 일반 몬스터는 100마리, 보스는 10마리 잡으면 (서버 hunt.js가 cnt.mk_종류로 셈)
   ...Object.values(MONS).map(m => ({ id: 'm_' + m.k, n: `${m.n} 뱃지`, g: '몬스터', d: `${m.n} ${MON_BADGE.mon}마리 잡기`, mon: m.k, need: MON_BADGE.mon })),
   ...FIELDS.map(f => ({ id: 'm_' + f.boss.k, n: `${f.boss.n} 뱃지`, g: '보스', d: `${f.boss.n} ${MON_BADGE.boss}번 잡기`, mon: f.boss.k, need: MON_BADGE.boss })),
 ];
-export const BADGE_GROUPS = ['기본', '레이드', '몬스터', '보스', '민물 물고기', '바다 물고기', '작물'];
+export const BADGE_GROUPS = ['기본', '레이드', '빙고', '몬스터', '보스', '민물 물고기', '바다 물고기', '작물'];
 export const badgeOf = id => BADGES.find(b => b.id === id);
 export const hasBadge = (c, id) => { const b = badgeOf(id); if (!b) return false;
   if (b.raid) return raidSet(b.raid).every(k => (c.hats || []).includes(k));
   if (b.fish) return !!(c.life?.cnt?.['fc_' + b.fish] || c.life?.cnt?.['lf_' + b.fish]);
   if (b.crop) return !!c.life?.cnt?.['cc_' + b.crop];
   if (b.mon) return (c.life?.cnt?.['mk_' + b.mon] || 0) >= b.need;
+  if (b.bingo) return (c.life?.cnt?.bingo || 0) >= b.bingo;
   return true; };
 export function titleFx(c) { const fx = {}; for (const id of c.life?.titles || []) addFx(fx, titleOf(id)?.fx || {}); return fx; }
 // 효과 합계: 가진 칭호 전부 + 지금 버프 + 장비 옵션(방어구 3칸 + 지금 클래스 무기)
@@ -944,12 +961,14 @@ export function worldFx(w, t) {
 // r: 희귀도 1 보통 · 2 희귀 · 3 전설 (뽑기 확률이 다름)
 const SK = (id, cls, n, i, r, cd, k, o, d) => ({ id, cls, n, i, r, cd, k, ...o, d });
 export const SKILLS = [
-  SK('s_bash', 'sword', '돌진 베기', '🏃', 1, 6, 'hit', { m: 2.1, stun: .5, dash: 1 }, '멀리 있는 몬스터에게 순식간에 달려들어 베고 잠깐 휘청이게 함 (주변 몬스터도 함께)'),
+  SK('s_bash', 'sword', '돌진 베기', '🏃', 1, 2.5, 'hit', { m: 1.7, stun: .3, dash: 1 },   // 2026-11-21 쿨타임 6 → 2.5초 (사용자 요청), 대신 피해·기절 조금 줄임
+  '멀리 있는 몬스터에게 순식간에 달려들어 베고 잠깐 휘청이게 함 (주변 몬스터도 함께)'),
   SK('s_whirl', 'sword', '회오리 베기', '⚔️', 1, 10, 'hit', { m: .75, x: 3 }, '몸을 돌리며 빠르게 세 번 벰 (주변 몬스터 모두)'),
   SK('s_guard', 'sword', '철벽 방패', '🛡️', 2, 15, 'shield', { x: 2 }, '방패를 들어 다음 공격을 막음'),
   SK('s_roar', 'sword', '전투 함성', '📣', 2, 20, 'buff', { atk: 30, dur: 6 }, '함성을 질러 잠깐 공격력이 오름'),
   SK('s_quake', 'sword', '대지 가르기', '⛰️', 3, 18, 'hit', { m: 4.6, stun: 1.5 }, '땅을 갈라 주변 몬스터 모두에게 큰 피해를 주고 멈추게 함'),
-  SK('s_will', 'sword', '불굴의 의지', '❤️', 3, 26, 'heal', { v: 22 }, '이를 악물고 체력을 크게 회복'),
+  // 2026-11-21 불굴의 의지(회복) → 검기 날리기: 초승달 검기를 멀리 날려 지나가는 길의 몬스터 모두 벰. id는 그대로 (모은 장 수 유지)
+  SK('s_will', 'sword', '검기 날리기', '🌙', 3, 14, 'hit', { m: 4.2, wave: 1 }, '검을 크게 휘둘러 초승달 검기를 멀리 날림 (지나가는 길의 몬스터 모두)'),
   SK('b_multi', 'bow', '연속 사격', '🏹', 1, 6, 'hit', { m: .8, x: 3 }, '화살 세 발을 빠르게 연달아 쏨'),
   SK('b_poison', 'bow', '독화살', '🧪', 1, 9, 'hit', { m: 1, dot: 1.6 }, '독 묻은 화살. 맞은 몬스터가 몇 초 동안 독 피해를 입음'),
   SK('b_roll', 'bow', '뒤로 구르기', '💨', 2, 13, 'shield', { x: 2 }, '재빨리 굴러서 다음 공격을 피함'),
@@ -973,7 +992,7 @@ export const skLv = n => SK_NEED.filter(x => n >= x).length;
 export function skPow(s, lv) {
   const L = Math.max(0, lv - 1);
   return { m: (s.m || 0) * (1 + .1 * L), n: s.x || 1, stun: s.stun || 0, dot: (s.dot || 0) * (1 + .1 * L), v: (s.v || 0) * (1 + .07 * L),
-    sh: (s.k === 'shield' ? s.x : 0) + Math.floor(L / 3), atk: (s.atk || 0) * (1 + .07 * L), crit: (s.crit || 0) * (1 + .07 * L), dur: s.dur || 0, dash: s.dash || 0, chain: s.chain || 0, cd: s.cd * (1 - .02 * L) };
+    sh: (s.k === 'shield' ? s.x : 0) + Math.floor(L / 3), atk: (s.atk || 0) * (1 + .07 * L), crit: (s.crit || 0) * (1 + .07 * L), dur: s.dur || 0, dash: s.dash || 0, chain: s.chain || 0, wave: s.wave || 0, cd: s.cd * (1 - .02 * L) };
 }
 export function skText(s, lv) {
   const p = skPow(s, lv), pc = x => Math.round(x * 100) + '%';
@@ -1016,6 +1035,9 @@ export const RAID = {
   drop2: .3,                         // 전용 스킨: 무조건 1개 + 30% 확률로 1개 더 (2026-11-18, 쓰러져도 같음)
   deadMul: .7,                       // 쓰러진 사람 보상 배율
   W: 28, H: 21,                      // 레이드 맵 크기 (칸) — 배경 그림 비율(4:3)에 맞춤
+  rage: { hp: .3, atk: 1.4, def: .7 },  // 2026-11-21 광폭화: 보스 체력 30% 아래 → 보스 공격 ×1.4, 받는 피해 ×0.7 (방어력)
+  solo: .85,                         // 2026-11-21 혼자 잡으면 골드·경험치 ×0.85
+  aimLead: 1.5,                      // 2026-11-21 보스 공격 조준: 빨간 표시가 뜨기 이 초 전에 서버가 사람 많은 곳을 골라 모두에게 알려 줌
 };
 export const RAID_BOSS = { rdragon: { n: '레드 드래곤', obj: '레드 드래곤을', i: '🐉', set: 'rdragon', at: '정각' }, ogre: { n: '오우거', obj: '오우거를', i: '👹', set: 'ogre', at: '30분' } };
 // 이 시각에 시작하는 정기 레이드의 보스: 정각 칸 = 레드 드래곤, 30분 칸 = 오우거 (한국 시간도 정각이 같음)
@@ -1063,6 +1085,24 @@ export function raidPattern(start, boss) {
     t += 3.2 + rnd() * 2;
   }
   return out;
+}
+// 사람 많은 곳 노리기 (2026-11-21): 레이드 방(서버)이 빨간 표시가 뜨기 직전에 살아 있는 사람 위치(칸)를 보고 공격 자리를 정해 모두에게 알려 줌
+// 주변(3.5칸)에 사람이 많을수록 뽑힐 확률이 큼(제곱). 운석·바위는 일부만 조준(나머지는 원래 자리), 지진·대회전·포효는 그대로
+// pts = [[x, y], …] (칸, 발 위치). 돌려주는 값 = 패턴에 덮어쓸 값 (없으면 null)
+export function raidAim(p, pts, rnd = Math.random) {
+  if (!pts?.length) return null;
+  const W = RAID.W, H = RAID.H, cl = (v, a, b) => Math.max(a, Math.min(b, v)), j = r => (rnd() - .5) * 2 * r;
+  const w = pts.map(([x, y]) => { const n = pts.filter(([u, v]) => Math.hypot(u - x, v - y) < 3.5).length; return n * n; });
+  const pick = () => { let r = rnd() * w.reduce((a, b) => a + b, 0); for (let i = 0; i < pts.length; i++) if ((r -= w[i]) <= 0) return pts[i]; return pts[pts.length - 1]; };
+  const ang = (ox, oy, lim) => { const [x, y] = pick(); return +cl(Math.atan2(y - .3 - oy, x - ox) - Math.PI / 2 + j(.1), -lim, lim).toFixed(3); };
+  const k = p.k;
+  if (k === 'meteor' || k === 'rock') { if (rnd() > .6) return null; const [x, y] = pick(); return { x: +cl(x + j(1.5), 2, W - 2).toFixed(2), y: +cl(y + j(1.5), 8, H - 1.5).toFixed(2) }; }
+  if (k === 'slam') { const [x, y] = pick(); return { x: +cl(x + j(1), 3, W - 3).toFixed(2), y: +cl(y + j(1), 11, H - 2).toFixed(2) }; }
+  if (k === 'charge') { const [x] = pick(); return { x: +cl(x + j(.8), 3, W - 3).toFixed(2) }; }
+  if (k === 'tail') { const [, y] = pick(); return { y: +cl(y - .3 + j(.5), 8, H - 2).toFixed(2) }; }
+  if (k === 'breath') return { a: ang(W / 2, 9 - 4.6, .8) };
+  if (k === 'swing') return { a: ang(W / 2, 9 - .5, .6) };
+  return null;
 }
 // 보스 공격 피해 (최대 체력 비율): 3번 맞으면 쓰러짐
 export const RAID_HIT = { breath: .36, meteor: .3, tail: .4, roar: .12, slam: .4, rock: .28, swing: .36, quake: .34, charge: .45, spin: .32 };
@@ -1158,3 +1198,28 @@ export function houseSettle(h, now) {
   if (h.at) h.acc = Math.min(cap, (h.acc || 0) + rate * Math.max(0, now - h.at) / 3600e3);
   h.at = now; return { have: Math.floor(h.acc || 0), cap, rate };
 }
+
+// ───── 빙고 (2026-11-21, OX 퀴즈 대신): 관리자가 엶 → 2분 모집 → 빙고 맵에서 한 판
+// - 참가자마다 1~50 중 25개로 만든 5×5 숫자판 (서버가 만들어 줌)
+// - 시작 뒤 intro초가 지나면 every초마다 숫자 하나씩 (서버만 순서를 앎). 내 판에 있는 숫자는 직접 눌러 지움
+// - 지운 칸으로 가로·세로·대각선 한 줄이 되면 '빙고!' 버튼. 누른 순서대로 순위. 줄이 안 됐는데 누르면 penalty초 동안 못 누름
+// - 끝: 숫자를 maxCalls개 다 부르거나 모두 빙고하면 outro초 뒤
+export const BINGO = { recruit: 120e3, cap: 150, max: 50, size: 5, intro: 6, every: 3.5, maxCalls: 45, outro: 6, penalty: 3, W: 24, H: 16 };
+export const bingoCallAt = (start, i) => start + (BINGO.intro + i * BINGO.every) * 1000;   // i번째(0부터) 숫자가 나오는 시각 (ms)
+export const bingoLastAt = start => bingoCallAt(start, BINGO.maxCalls - 1) + BINGO.every * 1000;   // 마지막 숫자 뒤 한 칸 쉬고 끝 (outro 전)
+// 줄 12개 (칸 번호 0~24): 가로 5 · 세로 5 · 대각선 2
+export const BINGO_LINES = [
+  ...[0, 1, 2, 3, 4].map(r => [0, 1, 2, 3, 4].map(c => r * 5 + c)),
+  ...[0, 1, 2, 3, 4].map(c => [0, 1, 2, 3, 4].map(r => r * 5 + c)),
+  [0, 6, 12, 18, 24], [4, 8, 12, 16, 20],
+];
+// 지운 칸(비트 묶음 m: 칸 i가 지워졌으면 m의 i번째 비트) → 완성된 줄 수
+export const bingoLines = m => BINGO_LINES.filter(L => L.every(i => (m >>> i) & 1)).length;
+// 맵(그림 1536×1024) 바닥의 큰 5×5 칸: 네 모서리 (그림 픽셀). 바닥에 내 숫자판을 그대로 비춰 그림
+export const BINGO_FLOOR = { tl: [468, 243], tr: [1068, 243], bl: [452, 780], br: [1088, 780] };
+export const BINGO_WALK = { x0: .05, x1: .95, y0: .2, y1: .95 };   // 걸을 수 있는 곳 (맵 비율)
+export const BINGO_HOST = { x: .5, y: .16 };                       // 김치복(숫자를 불러 주는 사람) 자리
+// 보상 = 빙고 코인 (life.bgc, 이벤트 상점 → 빙고코인샵에서 씀). 2026-11-21 사용자 결정: 1위 = 참가자 수, 2위부터 하나씩 적게 (13명 → 13·12·11…, 4명 → 4·3·2·1)
+// 빙고를 못 한 사람은 0 (BINGO_JOIN_COIN). 순위가 참가자 수보다 뒤일 일은 없지만 최소 1
+export const BINGO_JOIN_COIN = 0;
+export const bingoCoins = (rank, n) => (rank > 0 ? Math.max(1, (n | 0) - rank + 1) : BINGO_JOIN_COIN);

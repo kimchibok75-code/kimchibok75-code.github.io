@@ -18,7 +18,7 @@ for ($i = 0; $i -lt 90; $i++) {
 if (-not $ok) { Write-Host '서버가 켜지지 않았어요. 작업 표시줄의 "테스트 - 게임 서버" 창을 Claude에게 보여 주세요.' -ForegroundColor Red; Read-Host '엔터를 누르면 닫혀요'; exit }
 
 $url = 'http://localhost:5173/game.html?api=http://localhost:8787'
-$chrome = @("$env:ProgramFilesGoogleChromeApplicationchrome.exe", "${env:ProgramFiles(x86)}GoogleChromeApplicationchrome.exe", "$env:LOCALAPPDATAGoogleChromeApplicationchrome.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
-if ($chrome) { Start-Process $chrome -ArgumentList "--app=$url", "--user-data-dir=$env:LOCALAPPDATAChibokTownTest", '--window-size=1500,900' } else { Start-Process $url }
+$chrome = @("$env:ProgramFiles\Google\Chrome\Application\chrome.exe", "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe", "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
+if ($chrome) { Start-Process $chrome -ArgumentList "--app=$url", "--user-data-dir=$env:LOCALAPPDATA\ChibokTownTest", '--window-size=1500,900' } else { Start-Process $url }
 Write-Host '열렸어요! 다 쓰면 작업 표시줄의 "테스트 - ..." 창 2개를 닫으면 꺼져요.' -ForegroundColor Green
 Start-Sleep -Seconds 4

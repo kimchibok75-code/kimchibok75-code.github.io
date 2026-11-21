@@ -145,6 +145,8 @@ export const ICONS = {
   clipboard: [R(5.5, 5, 21, 24, WOOD, 3), R(8.5, 9, 15, 17, WHITE, 1, 'f'), R(11.5, 2.5, 9, 5.5, GREY, 2), R(11, 13, 10, 1.8, '#b8c2cc', .8, 'f'), R(11, 17, 10, 1.8, '#b8c2cc', .8, 'f'), R(11, 21, 6, 1.8, '#b8c2cc', .8, 'f')],
   chart: [R(4, 4.5, 24, 23.5, WHITE, 3), R(8, 17, 4.2, 8, BLUE, 1, 'f'), R(14, 10.5, 4.2, 14.5, GREEN, 1, 'f'), R(20, 14, 4.2, 11, RED, 1, 'f')],
   gift: [R(5, 13, 22, 15.5, RED, 2), R(4, 9, 24, 6, '#ff6b5b', 2), R(14, 9, 4, 19.5, GOLD, 0, 'f'), P('M16 9 Q9 2.5 8 6 Q7.5 9 16 9Z', GOLD), P('M16 9 Q23 2.5 24 6 Q24.5 9 16 9Z', GOLD)],
+  dance: [C(16, 7, 4.6, '#ffe0c2'), S('M16 12 L15 20', '#ff5d8f', 5.5), S('M15.5 13.5 L23 7.5', '#ffe0c2', 2.6), S('M15.5 14 L8.5 17.5', '#ffe0c2', 2.6), P('M10 18.5 L21 18.5 L23.5 25 L7.5 25Z', '#ff5d8f'), S('M13 24.5 L10.5 30', '#ffe0c2', 2.6), S('M18.5 24.5 L24 27.5', '#ffe0c2', 2.6), L('M25.5 4 L25.5 9 M25.5 4 L28 3.2', INK, 1.4), C(24.6, 9.2, 1.3, INK, 'd')],   // 2026-11-21 춤
+  breakdance: [S('M16 12.5 L16 4.5', '#3a4456', 3), S('M16 13 L8.5 5', '#3a4456', 3), S('M16 13 L24 5.5', '#3a4456', 3), S('M16 20 L16 12', '#4a90e2', 6), S('M16 17.5 L9 25', '#ffe0c2', 2.6), S('M16 17.5 L23 25', '#ffe0c2', 2.6), C(16, 24.5, 4.4, '#ffe0c2'), L('M5 29 Q16 25 27 29', INK, 1.4), L('M4 13 Q2 18 5 22 M28 13 Q30 18 27 22', INK, 1.3)],   // 2026-11-21 브레이크 댄스
   party: [P('M3.5 28.5 L11 9.5 L22.5 21Z', YEL), P('M6 22 L9 14.5 L13.5 19 Z', '#ff8a3d', 'f'), P('M4.5 26 L6 22.5 L9.5 26Z', '#ff8a3d', 'f'), R(20, 4, 3, 3, RED, .6, 'd', 'rotate(20 21.5 5.5)'), R(25, 10, 3, 3, BLUE, .6, 'd', 'rotate(-20 26.5 11.5)'), C(27, 4.5, 1.6, GREEN, 'd'), C(15, 4.5, 1.4, PINK, 'd'), L('M17 12 Q20 7 24 8 M20 15 Q25 13 28 16', '#9a6ad6', 1.4)],
   balloon: [L('M16 22 Q13 26 16 30', '#5b6573', 1.2), E(16, 12, 8.5, 10, '#ff4f6d'), P('M14 21.5 L18 21.5 L16 24Z', '#ff4f6d'), E(12.5, 8.5, 2, 3, '#ffa3b3', 'f', 'rotate(25 12.5 8.5)')],
   slot: [S('M26.5 14 L29 6', GREY, 2), C(29, 5.5, 2.4, RED), R(4.5, 5.5, 22, 23, RED, 3), R(7.5, 10, 16, 9, WHITE, 1.5, 'f'), P(star(11, 14.5, 2.6, 1.1), GOLD, 'd'), P(star(16, 14.5, 2.6, 1.1), GOLD, 'd'), P(star(21, 14.5, 2.6, 1.1), GOLD, 'd'), R(9, 22, 13, 3, '#b8402a', 1.5, 'f')],
@@ -188,6 +190,7 @@ export const ICONS = {
   monitor: [R(3.5, 5, 25, 17, DARK, 2.5), R(6, 7.5, 20, 12, SKY, 1.5, 'f'), R(13.5, 22, 5, 4, GREY, 1), R(9, 26, 14, 2.5, DARK, 1.2)],
   paper: [R(4, 6, 24, 21, WHITE, 2.5), R(7, 9, 18, 4, DARK, 1, 'f'), R(7, 15.5, 8, 7.5, SKY, 1.2, 'f'), R(17, 15.5, 8, 1.8, GREY, .8, 'f'), R(17, 18.5, 8, 1.8, GREY, .8, 'f'), R(17, 21.5, 6, 1.8, GREY, .8, 'f')],
   thumb: [P('M11 14 L15.5 5 Q19 4.5 18.5 9 L17.5 13 L25.5 13 Q28.5 13 28 16.5 L26.5 25.5 Q26 28 23 28 L11 28Z', '#ffc9a0'), R(4, 13.5, 6.5, 14.5, BLUE, 1.5)],
+  bingocoin: [C(16, 16, 12.5, GOLD), C(16, 16, 9, GOLD2, 'f'), C(11.5, 16, 3, '#fff1b0', 'f'), L('M18.5 13 L23.5 19 M23.5 13 L18.5 19', '#fff1b0', 2.2)],   // 2026-11-21 빙고 코인 (화면에서는 사용자 그림으로 바뀜)
   trophy: [P('M9 4 L23 4 L23 11 Q23 19 16 19.5 Q9 19 9 11Z', GOLD), S('M9 7 Q3.5 7 4.5 12 Q5.5 15.5 10 15.5 M23 7 Q28.5 7 27.5 12 Q26.5 15.5 22 15.5', GOLD2, 2.4), R(14, 19, 4, 4.5, GOLD2, .5), R(9.5, 23, 13, 5, BROWN, 1.5), P('M12.5 7 L14.5 7 L14 14 Q12.5 12 12.5 7Z', '#fff1b0', 'f')],
   gold1: medal(GOLD, GOLD2), gold2: medal('#d6dde5', '#aab4bf'), gold3: medal('#e09a5a', '#b9733a'),
   tube: [P('M11 4 L21 4 L21 22.5 A5 5 0 0 1 11 22.5Z', '#e9f6ff'), P('M11 14.5 L21 14.5 L21 22.5 A5 5 0 0 1 11 22.5Z', '#7be07b', 'f'), R(9, 2.5, 14, 3.6, '#e9f6ff', 1.5), C(14.5, 19, 1.3, '#c8f5c8', 'd'), C(17.5, 22.5, 1, '#c8f5c8', 'd')],
@@ -206,7 +209,7 @@ export const ICONS = {
 
 // 이모지 → 그림 이름
 export const EMOJI = {
-  '🪙': 'coin', '🏷️': 'tag', '🏷': 'tag', '💰': 'money', '🪵': 'wood', '🪨': 'stone', '🐚': 'fishcoin', '🌻': 'farmcoin', '🌷': 'tulip', '📘': 'book', '📖': 'book', '⭐': 'star', '🎯': 'target', '🖥️': 'monitor', '🖥': 'monitor', '🌟': 'star', '✨': 'sparkle',
+  '🟡': 'bingocoin', '🎱': 'bingocoin', '🪙': 'coin', '🏷️': 'tag', '🏷': 'tag', '💰': 'money', '🪵': 'wood', '🪨': 'stone', '🐚': 'fishcoin', '🌻': 'farmcoin', '🌷': 'tulip', '📘': 'book', '📖': 'book', '⭐': 'star', '🎯': 'target', '🖥️': 'monitor', '🖥': 'monitor', '🌟': 'star', '✨': 'sparkle',
   '🗡️': 'sword', '🗡': 'sword', '⚔️': 'swords', '⚔': 'swords', '🏹': 'bow', '🪄': 'staff', '🛡️': 'shield', '🛡': 'shield', '⛑️': 'helmet', '⛑': 'helmet', '🧥': 'armor', '👢': 'boots', '👒': 'hat', '🎀': 'ribbon', '👑': 'crown',
   '🔨': 'hammer', '⚒️': 'hammer', '⚒': 'hammer', '🪓': 'axe', '⛏️': 'pick', '⛏': 'pick', '🔥': 'fire', '🔮': 'orb', '🌀': 'portal', '💪': 'muscle', '🏃': 'run', '🧠': 'brain', '🍀': 'clover',
   '❤️': 'heart', '❤': 'heart', '♥': 'heart', '💗': 'heartPink',
@@ -216,7 +219,7 @@ export const EMOJI = {
   '🐟': 'fish', '🐠': 'tropical', '🐡': 'blowfish', '🦀': 'crab', '🐙': 'octopus', '🐢': 'turtle', '🐍': 'snake', '🦈': 'shark', '🦐': 'shrimp', '🐉': 'dragon', '👹': 'ogre', '🐋': 'whale',
   '🎣': 'rod', '🪝': 'hook', '🪱': 'worm', '📏': 'ruler',
   '⚙️': 'gear', '⚙': 'gear', '✏️': 'pencil', '✏': 'pencil', '🔑': 'key', '🧾': 'receipt', '🔒': 'lock', '🔍': 'search', '🔎': 'search', '📢': 'speaker', '📣': 'speaker', '📅': 'calendar', '📋': 'clipboard', '📊': 'chart',
-  '🎁': 'gift', '🎉': 'party', '🎈': 'balloon', '🎰': 'slot', '🎨': 'palette', '👕': 'shirt', '👀': 'eyes', '👥': 'people', '👋': 'wave', '🚶': 'walk', '👷': 'worker', '📦': 'box', '🚚': 'truck',
+  '🎁': 'gift', '🎉': 'party', '💃': 'dance', '🤸': 'breakdance', '🎈': 'balloon', '🎰': 'slot', '🎨': 'palette', '👕': 'shirt', '👀': 'eyes', '👥': 'people', '👋': 'wave', '🚶': 'walk', '👷': 'worker', '📦': 'box', '🚚': 'truck',
   '➕': 'plus', '✅': 'check', '🚫': 'ban', '⚠️': 'warn', '⚠': 'warn', '🚨': 'siren', '❗': 'exclaim', '❓': 'question', '⏳': 'hourglass', '⏱️': 'timer', '⏱': 'timer', '💤': 'zzz', '💨': 'wind', '🔄': 'refresh',
   '↔️': 'swap', '↔': 'swap', '⛶': 'full', '🗗': 'win', '🌙': 'moon', '💥': 'blast', '🌧️': 'rain', '🌧': 'rain', '❄️': 'snow', '❄': 'snow', '⚡': 'bolt', '☄️': 'meteor', '☄': 'meteor', '☀️': 'sun', '☀': 'sun', '📱': 'phone', '💻': 'pc', '💬': 'chat', '🔴': 'live', '📺': 'tv', '📰': 'paper', '👍': 'thumb', '🏆': 'trophy', '🥇': 'gold1', '🥈': 'gold2', '🥉': 'gold3',
   '🧪': 'tube', '😇': 'angel', '🌈': 'rainbow', '😵': 'dizzy', '🐱': 'cat', '🙈': 'hide', '😀': 'smile', '😂': 'laugh', '😑': 'meh', '😉': 'wink', '😢': 'sad',
