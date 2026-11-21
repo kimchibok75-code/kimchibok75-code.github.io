@@ -1,6 +1,6 @@
 // 자동 사냥 계산 (기획서 4장). 화면의 전투는 보여 주기용이고, 실제 결과는 여기서 정해짐.
 // 흐른 시간만큼 몬스터를 한 마리씩 잡는 과정을 빠르게 흉내 냄.
-import { CHAIN, FIELDS, MONS, HUNT, POTS, FAR, derive, expPenalty, addExp, pick, biteDmg, cntAdd, gimOf, gimDmg, potPick, offlineLife, OFF_XP } from '../../assets/js/game-rules.js';
+import { CHAIN, FIELDS, MONS, HUNT, POTS, FAR, derive, expPenalty, addExp, pick, biteDmg, cntAdd, gimOf, gimDmg, potPick, offlineLife, OFF_XP, HUNT_RATE } from '../../assets/js/game-rules.js';
 
 const MAX_STEPS = 300000;   // 한 번 계산할 때 최대 반복 (안전장치)
 
@@ -93,7 +93,7 @@ export function settle(c, at, onGap = HUNT.onlineGap) {   // onGap: 100%로 쳐 
   const f = FIELDS[h.f], out = { sec: gap, offline, kills: 0, exp: 0, gold: 0, drops: [], sold: 0, up: 0, pots: 0, bosses: [], bossSkip: [], died: false };
   let D = derive(c);
   const st = { hp: Math.min(c.hp, D.maxHp), pots: c.pots, potAt: c.potAt, used: 0, cd: h.cd || {}, sh: 0, bt: 0 };
-  let steps = 0;
+  let steps = 0, onG = 0, onE = 0, onT = 0;   // 화면을 켜 둔 몫(offLeft가 다 쓰인 뒤)의 골드·경험치·시간 → life.hgr
   while (sec > 0 && steps++ < MAX_STEPS) {
     const lv0 = c.lv, isBoss = h.t >= h.boss;
     if (isBoss) {
@@ -105,18 +105,23 @@ export function settle(c, at, onGap = HUNT.onlineGap) {   // onGap: 100%로 쳐 
       Object.assign(st, { ...test, cd: { ...st.cd }, used: st.used + test.used }); c.pots = st.pots;
       if (r.dead) { sec -= r.t; h.t += r.t; out.died = true; out.bossDied = f.boss.n; break; }
       sec -= r.t; h.t += r.t;
-      reward(c, h, out, f, f.boss, D, true, offLeft > 0 ? OFF_XP() : 1); offLeft -= r.t;
+      const on = offLeft <= 0, [g, e] = reward(c, h, out, f, f.boss, D, true, on ? 1 : OFF_XP()); offLeft -= r.t; if (on) { onG += g; onE += e; onT += r.t; }
       out.bosses.push(f.boss.n);
     } else {
       const mon = MONS[pick(f.mons)], r = fight(st, D, mon, false);
       sec -= r.t; h.t += r.t;
       if (r.dead) { out.died = true; break; }
-      reward(c, h, out, f, mon, D, false, offLeft > 0 ? OFF_XP() : 1); offLeft -= r.t;
+      const on = offLeft <= 0, [g, e] = reward(c, h, out, f, mon, D, false, on ? 1 : OFF_XP()); offLeft -= r.t; if (on) { onG += g; onE += e; onT += r.t; }
     }
     if (c.lv !== lv0) { D = derive(c); st.hp = D.maxHp; }   // 레벨업하면 체력 가득
   }
   h.debt = sec < 0 ? -sec : 0; h.cd = Object.fromEntries(Object.entries(st.cd).map(([k, v]) => [k, Math.max(0, +v.toFixed(2))]));
   c.hp = Math.max(0, Math.round(st.hp)); out.pots = st.used; h.pots += st.used;
+  // 2026-11-21 내 실제 사냥 속도 (1분당 골드·경험치): 최근 30분(HUNT_RATE.keep)쯤을 무게로 한 평균
+  if (c.life && onT >= 10) {
+    const [g0, e0, w0] = Array.isArray(c.life.hgr) ? c.life.hgr : [0, 0, 0], w = Math.min(HUNT_RATE.keep, w0 + onT), k = onT / (Math.min(HUNT_RATE.keep, w0) + onT);
+    c.life.hgr = [Math.round(g0 + (onG / onT * 60 - g0) * k), Math.round(e0 + (onE / onT * 60 - e0) * k), Math.round(w)];
+  }
   cntAdd(c, 'kills', out.kills); if (out.bosses.length) cntAdd(c, 'boss', out.bosses.length);
   if (offline >= 60 && !out.died) out.life = offlineLife(c, offEff * (1 - HUNT.offlineHunt));
   if (out.died) {
@@ -134,6 +139,7 @@ function reward(c, h, out, f, mon, D, boss, xm = 1) {
   c.gold += g; out.kills++; out.exp += e; out.gold += g; h.kills++; h.exp += e; h.gold += g;
   if (boss) h.bosses++;
   if (mon.k) cntAdd(c, 'mk_' + mon.k);   // 2026-11-21 몬스터 뱃지: 종류별 처치 수
+  return [g, e];
 }
 export function summary(h, at) {
   return { f: h.f, sec: Math.round((at - h.start) / 1000), kills: h.kills, exp: h.exp, gold: h.gold, pots: h.pots, drops: h.drops, sold: h.sold, bosses: h.bosses, best: h.best };

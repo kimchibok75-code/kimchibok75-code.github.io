@@ -607,13 +607,20 @@ export const WISH = { cost: 100, big: 1000, cd: 5 * MIN, jpMul: 3 };   // 2026-1
 // 바로 받는 골드·경험치는 내 레벨 사냥 N분어치 (레벨이 올라도 쓸모 있게)
 export const wishGold = (lv, min) => Math.round((1500 * lv + 8000) * .55 * min / 60);
 export const wishExp = (lv, min) => Math.round(huntIdleExp(lv) / .7 * min / 60);
+// 2026-11-21 내 실제 사냥 속도: 서버 hunt.js가 화면을 켜 둔 사냥(100% 구간)의 1분당 골드·경험치를 평균 내어 life.hgr = [골드, 경험치, 모은 초]에 기억
+// 골드 주머니 · 분수 골드/경험치 · 무지개는 이 값 × 분. 기록이 1분 안 되면 예전 어림값(wishGold·wishExp)
+export const HUNT_RATE = { min: 60, keep: 1800 };   // 2026-11-21 min 120 → 60초 (사용자 결정)
+const hRate = c => { const r = c.life?.hgr; return Array.isArray(r) && r[2] >= HUNT_RATE.min ? r : null; };
+export const huntGoldN = (c, min) => { const r = hRate(c); return r ? Math.round(r[0] * min) : wishGold(c.lv, min); };
+export const huntExpN = (c, min) => { const r = hRate(c); return r ? Math.round(r[1] * min) : wishExp(c.lv, min); };
 // 버프 (하나만, 새로 받으면 바뀜)
 export const BUFFS = { gold: { n: '반짝이는 물보라', i: '💰', d: '골드 +30%', fx: { goldP: 30 } }, exp: { n: '맑은 물결', i: '📘', d: '경험치 +30%', fx: { expP: 30 } },
   atk: { n: '용기의 물방울', i: '⚔️', d: '공격력 +20%', fx: { atkP: 20 } }, fish: { n: '물고기의 노래', i: '🎣', d: '물고기 값 +30% · 낚을 확률 +10%p', fx: { fishP: 30, fishZ: 10 } },
   luck: { n: '무지개 축복', i: '🌈', d: '골드 +30% · 경험치 +30% · 치명타 +5%p', fx: { goldP: 30, expP: 30, crit: 5 } } };
 // [무게(%), 결과] — 꽝 50% (2026-11-21 30 → 50, 나머지는 같은 비율로 줄임)
-export const WISH_TABLE = [[50, { k: 'none' }], [12, { k: 'gold', m: 5 }], [9.3, { k: 'exp', m: 5 }], [7, { k: 'buff', b: 'exp', min: 60 }], [7, { k: 'buff', b: 'gold', min: 60 }],
-  [4.3, { k: 'buff', b: 'atk', min: 60 }], [4.3, { k: 'buff', b: 'fish', min: 60 }], [4.3, { k: 'pots', n: 5 }], [1.5, { k: 'rainbow', m: 30, b: 'luck', min: 90 }], [.3, { k: 'jackpot' }]];
+// 2026-11-21 골드·경험치가 내 실제 사냥 5분어치가 돼서 확률을 줄임 (골드 12 → 3, 경험치 9.3 → 2.3). 줄인 몫은 음료(4.3 → 17.3)와 빙고 코인 1개(3)로
+export const WISH_TABLE = [[50, { k: 'none' }], [3, { k: 'gold', m: 5 }], [2.3, { k: 'exp', m: 5 }], [7, { k: 'buff', b: 'exp', min: 60 }], [7, { k: 'buff', b: 'gold', min: 60 }],
+  [4.3, { k: 'buff', b: 'atk', min: 60 }], [4.3, { k: 'buff', b: 'fish', min: 60 }], [17.3, { k: 'pots', n: 5 }], [3, { k: 'bgc', n: 1 }], [1.5, { k: 'rainbow', m: 30, b: 'luck', min: 90 }], [.3, { k: 'jackpot' }]];
 export const WISH_TABLE_BIG = WISH_TABLE.map(([w, o]) => [o.k === 'none' ? w - .3 : o.k === 'jackpot' ? w + .3 : w, o]);   // 💎 큰 소원: 꽝 49.7% · 잭팟 0.6%
 export const wishTable = big => (big ? WISH_TABLE_BIG : WISH_TABLE);
 export function rollWish(big) { const t = wishTable(big); let r = Math.random() * t.reduce((a, [w]) => a + w, 0); for (const [w, o] of t) { if ((r -= w) < 0) return o; } return t[0][1]; }

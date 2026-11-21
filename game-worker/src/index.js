@@ -4,7 +4,7 @@ import { INCENSE, SAVER, saverLife, jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, 
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, wishGold, wishExp, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill, skAllMax,
-  offlineLife, offlineHuntAway, PRESET_CD, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, EVENT_SHOP, PULL_NS, gachaCostN, skCostN, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait, fishCasts } from '../../assets/js/game-rules.js';
+  offlineLife, offlineHuntAway, PRESET_CD, dayKey, dailyState, checkDaily, eventNow, worldFx, VILLAGE, giveScore, liveGift, fxText, addExp, RAID, RAID_BOSS, raidReward, raidCrowd, raidDps, raidSet, autoSettle, lifeExp, RSK, rskCount, rskLv, HOUSE_TIERS, houseSettle, EVENT_SHOP, PULL_NS, gachaCostN, skCostN, NPC_MAX, npcBlk, npcList, npcState, npcProg, npcActive, npcGold, npcExp, fishWait, fishCasts, huntGoldN, huntExpN } from '../../assets/js/game-rules.js';
 import { isSolid, NODES, BACK, tileAt, WATER, waterIn, seaAt, shadowAt, FSHADOW } from '../../assets/js/game-map.js';
 import { canHouseD } from '../../assets/js/game-dong.js';
 import { scanBad } from './filter.js';
@@ -666,7 +666,7 @@ const GAME = {
     if (it) {   // 쓰는 물건: 사면 바로 효과
       const have = c.life[S.coin] || 0; if (have < it.cost) fail(400, `빙고 코인이 ${it.cost - have}개 모자라요`);
       c.life[S.coin] = have - it.cost; const r = { ev: k, log: ['event-buy', k] };
-      if (k === 'pouch') { r.gold = wishGold(c.lv, it.min); c.gold += r.gold; }
+      if (k === 'pouch') { r.gold = huntGoldN(c, it.min); c.gold += r.gold; }
       else { const cp = c.life.cpn = { ...(c.life.cpn || {}) }; cp[it.cpn] = Math.max(cp[it.cpn] || 0, at) + it.min * 60e3; r.until = cp[it.cpn]; }
       return r;
     }
@@ -917,8 +917,9 @@ const GAME = {
     const big = !!b.big, cost = big ? WISH.big : WISH.cost;   // 💎 큰 소원 (2026-11-21): 1000골드, 잭팟 2배. 쿨타임은 같이
     spend(c, cost); L.wishAt = at; cntAdd(c, 'wish');
     const o = b._o ||= rollWish(big), r = { k: o.k, big };
-    if (o.k === 'gold' || o.k === 'rainbow') { r.gold = wishGold(c.lv, o.m); c.gold += r.gold; }
-    if (o.k === 'exp') { r.exp = wishExp(c.lv, o.m); r.up = addExp(c, r.exp); }
+    if (o.k === 'gold' || o.k === 'rainbow') { r.gold = huntGoldN(c, o.m); c.gold += r.gold; }
+    if (o.k === 'bgc') { r.n = o.n; L.bgc = (L.bgc || 0) + o.n; }   // 2026-11-21 빙고 코인
+    if (o.k === 'exp') { r.exp = huntExpN(c, o.m); r.up = addExp(c, r.exp); }
     if (o.k === 'jackpot') { b._jp ??= await jackpot(env, user); r.gold = b._jp; c.gold += r.gold; c._noEarn = 1; }
     if (o.k === 'jackpot' || o.k === 'rainbow') cntAdd(c, 'jackpot');
     if (o.b) { L.buff = { k: o.b, until: at + o.min * 60e3 }; r.buff = o.b; r.min = o.min; }

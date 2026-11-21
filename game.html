@@ -1549,7 +1549,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 <script type="module">
 'use strict';
 import { EVENT_SHOP, COUPONS, gachaCostN, skCostN, skAllMax, cpnLeft, BINGO, bingoCallAt, bingoLastAt, bingoLines, BINGO_LINES, BINGO_FLOOR, BINGO_WALK, BINGO_HOST, bingoCoins, NEWBIE, raidSlotStart, INCENSE, incLv, SAVER, CHAIN, CLEAVE, PIERCE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
-  T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, SKIN_THEMES, themeKeys, themeGot, themeDone, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, wishTable, BUFFS, wishGold, wishExp,
+  T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, SKIN_THEMES, themeKeys, themeGot, themeDone, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, wishTable, BUFFS, wishGold, wishExp, huntGoldN, huntExpN,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
@@ -8326,7 +8326,7 @@ function eventSheet(b, keep) {
     const st = own ? chip('✔ 가짐', 'up') : bbtn('buy:' + k, have >= S.cost ? '사기' : `${S.cost - have}개 모자람`, `🎱 ${S.cost}`, { main: have >= S.cost, dis: have < S.cost });
     return `<li class="bs-row fk-row${own ? ' own' : ''}"><span class="bs-ri fk-ic"><canvas data-k="${k}"></canvas></span><div><b class="t">${it.n}</b><div class="cs">${chip(kindOf(k))}${chip(fxText(it.fx || {}), 'up')}</div></div><div class="bs-act">${st}</div></li>`; };
   const useRow = it => { const ok = have >= it.cost, cp = it.cpn && cpnLeft(me, it.cpn);   // 2026-11-21 쓰는 물건 (사면 바로 효과)
-    const d = it.k === 'pouch' ? chip(`💰 지금 받으면 ${goldTxt(wishGold(me.lv, it.min))} (내 레벨 사냥 ${it.min}분어치)`, 'up') : chip(`${it.min}분 동안 ${it.cpn === 'exp' ? '경험치' : '골드'} ×1.5`, 'up') + (cp ? chip(`⏳ ${fmtLeft(Math.ceil(cp / 1000))} 남음 · 사면 ${it.min}분 늘어나요`, 'gold') : '');
+    const d = it.k === 'pouch' ? chip(`💰 지금 받으면 ${goldTxt(huntGoldN(me, it.min))} (내 실제 사냥 ${it.min}분어치)`, 'up') : chip(`${it.min}분 동안 ${it.cpn === 'exp' ? '경험치' : '골드'} ×1.5`, 'up') + (cp ? chip(`⏳ ${fmtLeft(Math.ceil(cp / 1000))} 남음 · 사면 ${it.min}분 늘어나요`, 'gold') : '');
     return `<li class="bs-row ev-row"><span class="bs-ri ev-ic"><img src="assets/img/town/${it.img}.webp?v=__BUILD__" alt=""></span><div><b class="t">${it.n}</b><div class="cs">${d}</div></div><div class="bs-act">${bbtn('use:' + it.k, ok ? '사기' : `${it.cost - have}개 모자람`, `🎱 ${it.cost}`, { main: ok, dis: !ok })}</div></li>`; };
   bsOpen(b, { tag: '이벤트에서 모은 코인으로 특별한 물건을 바꿔요', wal: ['bgc'], tabs: EV_TABS, tab: 'bingo',
     body: `<div class="bs-card hero"><h4>🎱 빙고 코인 <small>${fmtN(have)}개</small></h4>
@@ -8535,10 +8535,10 @@ function openWish(msg, keep) {
   reopen = () => openWish(msg, true); ftLoad();
   const L = LIFE(), left = Math.max(0, Math.ceil((L.wishAt + WISH.cd - Date.now()) / 1000)), b = buffNow(), poor = me.gold < WISH.cost, poorB = me.gold < WISH.big;
   const pctT = (t, f) => +(t.filter(([, o]) => f(o)).reduce((a, [w]) => a + w, 0) / t.reduce((a, [w]) => a + w, 0) * 100).toFixed(1), pct = f => pctT(WISH_TABLE, f), pctB = f => pctT(wishTable(true), f);
-  const n = L.cnt?.wish || 0, F0 = FT.v, g5 = wishGold(me.lv, 5), e5 = wishExp(me.lv, 5);
+  const n = L.cnt?.wish || 0, F0 = FT.v, g5 = huntGoldN(me, 5), e5 = huntExpN(me, 5);
   // 2026-11-21 확률이 높은 것부터 (막대·설명 같은 순서)
-  const odds = [['💧 꽝', pct(o => o.k === 'none'), '#b9c6d3', '아무 일도 없음'], ['🪙 골드', pct(o => o.k === 'gold'), '#f2c14e', `${fmtN(g5)} (사냥 5분어치)`], ['📘 경험치', pct(o => o.k === 'exp'), '#7cc1ef', `${fmtN(e5)} (사냥 5분어치)`],
-    ['✨ 버프', pct(o => o.k === 'buff'), '#8fd18a', '60분'], ['🍹 음료', pct(o => o.k === 'pots'), '#f39ac2', '특대 음료 5개'], ['🌈 무지개', pct(o => o.k === 'rainbow'), '#a77be0', '골드 사냥 30분어치 + 축복 90분'],
+  const odds = [['💧 꽝', pct(o => o.k === 'none'), '#b9c6d3', '아무 일도 없음'], ['🪙 골드', pct(o => o.k === 'gold'), '#f2c14e', `${fmtN(g5)} (내 사냥 5분어치)`], ['📘 경험치', pct(o => o.k === 'exp'), '#7cc1ef', `${fmtN(e5)} (내 사냥 5분어치)`],
+    ['✨ 버프', pct(o => o.k === 'buff'), '#8fd18a', '60분'], ['🍹 음료', pct(o => o.k === 'pots'), '#f39ac2', '특대 음료 5개'], ['🎱 빙고 코인', pct(o => o.k === 'bgc'), '#e0a33a', '빙고 코인 1개'], ['🌈 무지개', pct(o => o.k === 'rainbow'), '#a77be0', '골드 사냥 30분어치 + 축복 90분'],
     ['💰 잭팟', pct(o => o.k === 'jackpot'), '#e8553a', `모인 돈 × ${WISH.jpMul}`]].sort((a, b) => b[1] - a[1]);
   const wins = F0?.wins || [];
   const body = `${msg ? `<div class="wishres">${msg}</div>` : ''}
@@ -8571,6 +8571,7 @@ async function doWish(big) {
     exp: `📘 맑은 지혜가 스며들어요! 경험치 <b>+${fmtN(w.exp || 0)}</b>${w.up ? ` (레벨 +${w.up}!)` : ''}`,
     buff: w.buff && `${BUFFS[w.buff].i} <b>${BUFFS[w.buff].n}</b>! ${BUFFS[w.buff].d} (${w.min}분)`,
     pots: `🍹 <b>특대 음료 ${w.n || 5}개</b>가 떠올랐어요`,
+    bgc: `🎱 <b>빙고 코인 ${w.n || 1}개</b>가 반짝이며 떠올랐어요`,
     jackpot: `💰💰 <b>잭팟!!!</b> 분수에 모인 돈 × ${WISH.jpMul} = 🪙 <b>${fmtN(w.gold || 0)}</b>`,
     rainbow: `🌈 <b>무지개 소원!!</b> 🪙 ${fmtN(w.gold || 0)} + 무지개 축복 90분`,
   }[w.k] || '💧 퐁당!';
