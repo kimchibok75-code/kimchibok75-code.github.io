@@ -729,3 +729,17 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
 .art-body blockquote ul { margin: 0 0 12px; padding-left: 20px; }
 .art-body blockquote cite { display: block; margin-top: 8px; color: var(--muted); font-size: 14.5px; font-style: italic; }
 .art-body .src { font-size: 14.5px; margin-top: 30px; }
+
+/* 읽을 거리: 유전자 목록 · 사진 짝 · 표 (2026-11-21) */
+.art-body .gpair { display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr); gap: 10px; align-items: start; margin: 6px 0 16px; }
+.art-body ul.genes { margin: 0 0 16px; padding-left: 22px; }
+.art-body ul.genes li { margin: 2px 0; }
+.art-body b.up { color: #3fae6a; }
+.art-body b.dn { color: #e0605a; }
+.art-body .xtable-wrap { overflow-x: auto; margin: 10px 0 18px; }
+.art-body .xtable { width: 100%; border-collapse: collapse; font-size: 15.5px; line-height: 1.6; text-align: center; }
+.art-body .xtable th, .art-body .xtable td { border: 1px solid var(--stroke); padding: 10px 12px; vertical-align: middle; }
+.art-body .xtable thead th { background: var(--glass); }
+.art-body .xtable tbody th { font-weight: 700; background: var(--glass); }
+.art-body .xtable td.mid { color: var(--muted); }
+@media (max-width: 600px) { .art-body .xtable { font-size: 14px; } .art-body .xtable th, .art-body .xtable td { padding: 8px 6px; } }

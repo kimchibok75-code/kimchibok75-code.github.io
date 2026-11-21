@@ -1,6 +1,19 @@
 {
   "posts": [
     {
+      "id": "sanguo-xeno",
+      "title": "다양한 인종형에 생귀오파지 이식",
+      "author": "뿔베리",
+      "date": "2026-11-21",
+      "tags": [
+        "바이오테크",
+        "생귀오파지",
+        "유전자"
+      ],
+      "cover": "assets/img/posts/sanguo-xeno/six.webp",
+      "excerpt": "더트몰·네안데르탈인·피그스킨·임피드·웨이스터·이타킨이 생귀오파지가 되면 각각 어떻게 변할지 정리했습니다."
+    },
+    {
       "id": "mech-names",
       "title": "메카노이드 이름의 유래",
       "author": "뿔베리",
