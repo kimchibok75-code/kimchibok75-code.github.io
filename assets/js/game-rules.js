@@ -389,7 +389,8 @@ export const FIELDS = [
 export const BOSS_BUFF = { s: 1.3, hp: 1.25, atk: 1.15 };
 for (const f of FIELDS) { const b = f.boss; b.s = +(b.s * BOSS_BUFF.s).toFixed(2); b.hp = Math.round(b.hp * BOSS_BUFF.hp); b.atk = Math.round(b.atk * BOSS_BUFF.atk); }
 // 내 레벨이 몬스터보다 10 이상 높으면 경험치 줄어듦
-export const expPenalty = (lv, mlv) => { const d = lv - mlv; return d >= 10 ? Math.max(.2, 1 - (d - 9) * .1) : 1; };
+// 2026-11-21 사용자 결정: 낮은 사냥터 경험치 감소(몬스터보다 10레벨 이상 높으면 1레벨마다 −10%) 삭제 → 늘 100%. 부르는 곳은 그대로 둠
+export const expPenalty = () => 1;
 // 레벨업 (최고 레벨에서는 경험치가 더 쌓이지 않음). 올라간 레벨 수를 돌려줌
 export function addExp(c, n) {
   let up = 0; c.exp += n;

@@ -3703,8 +3703,8 @@ function drawAmbient(f, t) {
 }
 function openHuntSelect() {
   openModal(`<h3>⚔️ 사냥터 입구</h3><p>사냥터를 고르면 바로 <b>자동 사냥</b>이 시작돼요. 캐릭터가 알아서 싸우고, 체력이 낮으면 물약을 마셔요.</p>
-    <div class="actions">${FIELDS.map((f, i) => { const lock = me.lv < f.min, ml = f.mons.map(k => MONS[k].lv), lo = Math.min(...ml) + 10, hi = Math.max(...ml) + 10, cut = Math.round(f.mons.reduce((a, k) => a + 1 - expPen(me.lv, MONS[k].lv), 0) / f.mons.length * 100), tag = lock ? ['bad', `🔒 Lv.${f.min}부터`] : cut > 0 ? ['bad', `경험치 −${cut}%`] : ['good', '추천']; /* 2026-11-21 경험치 감소 기준을 정확히 (몬스터 Lv + 10부터) */ return `<button class="btn field-card${lock ? ' locked' : ''}" data-f="${i}"${lock ? ' disabled' : ''}><span style="font-size:26px">${f.i}</span><span><b>${f.n}</b><small style="display:block">Lv.${f.min}–${f.max} · ${f.mons.map(k => (MONS[k].mg ? '🔮' : '') + MONS[k].n + ` Lv.${MONS[k].lv}`).join(', ')}</small><small class="xpcut${me.lv >= lo ? ' on' : ''}">📉 경험치 감소: Lv.${lo}부터${hi > lo ? ` · Lv.${hi}부터 모든 몬스터` : ''}</small></span><span class="tagok ${tag[0]}">${tag[1]}</span></button>`; }).join('')}</div>
-    <p class="muted">🔮 표시는 <b>마법 공격</b> 몬스터예요 (마법 방어력으로 막아요. 지력을 올리면 늘어요).<br>물약 ${me.pots.s + me.pots.l + me.pots.xl}개 · 체력 ${me.potAt}% 이하일 때 자동으로 마셔요.<br>레벨이 모자란 사냥터는 들어갈 수 없어요.<br><b>📉 경험치 감소:</b> 몬스터보다 내 레벨이 <b>10 이상</b> 높으면, 1레벨마다 그 몬스터 경험치가 <b>10%씩</b> 줄어요 (최대 80%까지). 보스도 같아요.<br>화면을 닫아도 <b>최대 4시간</b>까지 계속 움직여요 (골드 50% · 경험치 10%). 다시 들어오면 결과를 보여 줘요.</p><button class="close" data-close>닫기</button>`,
+    <div class="actions">${FIELDS.map((f, i) => { const lock = me.lv < f.min, tag = lock ? ['bad', `🔒 Lv.${f.min}부터`] : me.lv <= f.max ? ['good', '추천'] : null; /* 2026-11-21 낮은 사냥터 경험치 감소 삭제 → 안내 줄도 뺌 */ return `<button class="btn field-card${lock ? ' locked' : ''}" data-f="${i}"${lock ? ' disabled' : ''}><span style="font-size:26px">${f.i}</span><span><b>${f.n}</b><small style="display:block">Lv.${f.min}–${f.max} · ${f.mons.map(k => (MONS[k].mg ? '🔮' : '') + MONS[k].n + ` Lv.${MONS[k].lv}`).join(', ')}</small></span>${tag ? `<span class="tagok ${tag[0]}">${tag[1]}</span>` : ''}</button>`; }).join('')}</div>
+    <p class="muted">🔮 표시는 <b>마법 공격</b> 몬스터예요 (마법 방어력으로 막아요. 지력을 올리면 늘어요).<br>물약 ${me.pots.s + me.pots.l + me.pots.xl}개 · 체력 ${me.potAt}% 이하일 때 자동으로 마셔요.<br>레벨이 모자란 사냥터는 들어갈 수 없어요.<br>화면을 닫아도 <b>최대 4시간</b>까지 계속 움직여요 (골드 50% · 경험치 10%). 다시 들어오면 결과를 보여 줘요.</p><button class="close" data-close>닫기</button>`,
   el => el.querySelector('.actions').addEventListener('click', async e => {
     const bt = e.target.closest('[data-f]'), i = bt?.dataset.f; if (i == null || huntBusy) return;
     if (me.lv < FIELDS[+i].min) return toast(`Lv.${FIELDS[+i].min}부터 들어갈 수 있어요`);
@@ -5373,7 +5373,7 @@ function killMon(m, D) {   // 보여 주기용: 진짜 경험치·골드·장비
   if (!m.boss) { HT.loc.kills++; HT.loc.exp += e; HT.loc.gold += Math.max(1, Math.round(m.d.gold * (1 + D.goldB / 100))); syncBars(); }
   floatText(m.x, m.y - 14, `+${e} EXP`, '#ffe9a8', 13, 1.3);
 }
-const expPen = (lv, mlv) => { const d = lv - mlv; return d >= 10 ? Math.max(.2, 1 - (d - 9) * .1) : 1; };
+const expPen = () => 1;   // 2026-11-21 낮은 사냥터 경험치 감소 삭제 (game-rules.js expPenalty와 같음)
 function usePotion(D) {
   const miss = D.maxHp - me.hp, p = me.pots;
   const k = potPick(p, D.maxHp, me.hp);   // 서버(hunt.js drink)와 같은 규칙
