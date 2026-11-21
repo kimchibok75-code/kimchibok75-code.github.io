@@ -1592,7 +1592,7 @@ import { EVENT_SHOP, COUPONS, gachaCostN, skCostN, skAllMax, cpnLeft, BINGO, bin
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
-import { vfxCast, vfxHit, vfxDraw, vfxClear } from './assets/js/game-vfx.js?v=__BUILD__';   // 2026-11-21 스킬 이펙트
+import { vfxCast, vfxHit, vfxDraw, vfxClear, fairyStart, fairyFollow, fairyShot } from './assets/js/game-vfx.js?v=__BUILD__';   // 2026-11-21 스킬 이펙트
 import { iconize, preloadIcons, fillTextIco, measureTextIco, drawIco, emojiKey, ico, icoImgFlat, setIconOverride } from './assets/js/game-icons.js?v=__BUILD__';
 import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSolid, noise2, inCore, BUILDINGS as MAP_BUILDINGS, SPOTS, PORTAL, BACK, FISH_AT, PLOTS, BENCHES, NODES, DECO,
   HOUSE_W, HOUSE_H, DPORTAL, ROOM_W, ROOM_H, ROOM_DOOR, soft, PLAZA_C, PLAZA_R, nearWater, waterIn, shoreNear, seaAt, coastY, SEA_AT, fishShadows, FSHADOW } from './assets/js/game-map.js?v=__BUILD__';
@@ -4708,6 +4708,18 @@ function drawDragonOld(x, y, t, open, look, dead) {
 function raidSkillTick(dt, D, D0, live, near) {
   for (const k of D.skills) if (RD.cd[k.s.id] > 0) RD.cd[k.s.id] -= dt;
   if (RD.bt > 0) RD.bt -= dt;
+  fairyFollow(me.x, me.y - (me.jz || 0));
+  if (RD.fy) {   // 2026-11-22 요정 소환: 보스에게 빛 구슬
+    const F = RD.fy; F.t -= dt; F.n -= dt;
+    if (F.t <= 0) RD.fy = null;
+    else if (F.n <= 0 && live) {
+      F.n += F.fr; const bt = RD.bt > 0, crit = Math.random() * 100 < D.crit + (bt ? RD.bcrit : 0);
+      let dmg = D.hit * F.m * (.9 + Math.random() * .2) * (1 + (D.bossP || 0) / 100) * (1 + (bt ? RD.batk : 0) / 100); if (crit) dmg *= D.critM || 1.5;
+      dmg = Math.round(dmg * RDEF()); RD.acc += dmg;
+      const hx = D0.x + (Math.random() - .5) * 80, hy = D0.y - 50 - Math.random() * 60;
+      fairyShot(hx, hy, () => raidFloat(hx, hy - 6, crit ? `🧚 ${dmg.toLocaleString()}!` : dmg.toLocaleString(), '#ffb8ec', crit ? 16 : 13));
+    }
+  }
   RD.skT -= dt;
   for (const q of RD.q) q.t -= dt;
   const due = RD.q.filter(q => q.t <= 0); RD.q = RD.q.filter(q => q.t > 0); if (live) due.forEach(q => q.f());
@@ -4741,7 +4753,8 @@ function raidSkill({ s, p }, D, D0) {
       if (i === 0 && p.stun) raidFloat(D0.x, D0.y - 200, s.id === 'm_ice' ? '❄️ 얼음!' : '💫 휘청!', '#9fe0ff', 16);
     } });
     if (p.dot) for (let k = 1; k <= 4; k++) RD.q.push({ t: k * .9, f: () => { const dmg = Math.max(1, Math.round(D.hit * p.dot / 4 * RDEF())); RD.acc += dmg; raidFloat(D0.x + 40, D0.y - 100, `☠ ${dmg.toLocaleString()}`, '#8be06a', 14); raidBurst(D0.x + 30, D0.y - 90, '#8be06a', 5, 70, 2.4); } });
-  } else if (s.k === 'heal') {
+  } else if (s.k === 'summon') { RD.fy = { t: p.dur, n: .3, m: p.m, fr: p.fr }; fairyStart(p.dur); raidFloat(me.x, me.y - 60, '🧚 요정 등장!', '#ffb8ec', 14); }
+  else if (s.k === 'heal') {
     const v = Math.round(D.maxHp * p.v / 100); me.hp = Math.min(D.maxHp, me.hp + v);
     raidBurst(me.x, me.y - 24, '#8af0a0', 16, 130, 3); raidFloat(me.x, me.y - 60, `+${v.toLocaleString()}`, '#8af0a0', 18);
   } else if (s.k === 'shield') { RD.sh = Math.max(RD.sh || 0, p.sh); RD.shRoll = s.id === 'b_roll'; if (RD.shRoll) raidFloat(me.x, me.y - 60, '💨 회피 준비', '#cfe9ff', 14); }   // 궁수 뒤로 구르기는 보호막 대신 회피
@@ -4977,6 +4990,7 @@ function updateHunt(dt) {
   // 스킬: 쿨타임 줄이기 · 예약된 연타 처리 · 현황판 아이콘
   for (const k of D.skills) HT.cd[k.s.id] = (HT.cd[k.s.id] || 0) - dt;
   if (HT.bt > 0) HT.bt -= dt;
+  fairyFollow(me.x, me.y - (me.jz || 0)); if (HT.fy) fairyTick(dt, D);
   for (const q of HT.q) { q.t -= dt; if (q.t <= 0) { q.done = 1; q.f(); } } HT.q = HT.q.filter(q => !q.done);
   HT.skT = (HT.skT || 0) - dt; if (HT.skT <= 0) { HT.skT = .2; renderHbSk(D); }
   HT.atkT = Math.max(0, HT.atkT - dt * (HT.slowT > 0 ? .7 : 1));   // 점액에 맞으면 공격도 느려짐
@@ -5096,6 +5110,22 @@ function drawWave(g, x, y, a, al, s) {
   for (let i = 1; i <= 3; i++) { g.globalAlpha = Math.max(0, al) * (.3 - i * .08); g.fillStyle = '#ffd66e'; g.beginPath(); g.arc(-8 - i * 14, 0, 26, -1.1, 1.1); g.arc(-18 - i * 14, 0, 22, 1, -1, true); g.closePath(); g.fill(); }
   g.restore();
 }
+// 2026-11-22 요정 소환: HT.fy = {t 남은 초, n 다음 공격까지, m, fr}. 가까운 몬스터에게 빛 구슬 (서버 hunt.js와 같은 간격·피해)
+function fairyTick(dt, D) {
+  const F = HT.fy; F.t -= dt; F.n -= dt; if (F.t <= 0) { HT.fy = null; return; }
+  if (F.n > 0 || HT.dying) return;
+  const tg = HT.target && !HT.target.dead && Math.hypot(HT.target.x - me.x, HT.target.y - me.y) < 7 * T ? HT.target : HT.mons.filter(m => !m.dead).reduce((a, m) => { const d = Math.hypot(m.x - me.x, m.y - me.y); return d < 7 * T && (!a || d < a[1]) ? [m, d] : a; }, null)?.[0];
+  if (!tg) { F.n = .15; return; }
+  F.n += F.fr; const h = skHit(tg, D, F.m);
+  fairyShot(tg.x, tg.y - 20 * tg.d.s, () => fairyHit(tg, h, D));
+}
+function fairyHit(m, h, D) {   // 작은 타격: 멈칫·흔들림 없이 숫자만
+  if (m.dead) return;
+  m.hp -= h.dmg; m.aggro = true; m.hitT = .08; m.sq = .6;
+  if (D.steal) me.hp = Math.min(D.maxHp, me.hp + h.dmg * D.steal / 100);
+  floatText(m.x + (Math.random() - .5) * 14, m.y - 34 * m.d.s, h.kind === 'crit' ? `🧚 ${h.dmg}!` : `${h.dmg}`, '#ffb8ec', h.kind === 'crit' ? 16 : 13);
+  if (m.hp <= 0) killMon(m, D);
+}
 // ───────── 스킬 자동 시전 (보여 주기용. 실제 결과는 서버 hunt.js가 같은 규칙으로 계산) ─────────
 const SK_COL = { sword: '#ffcf5a', bow: '#9be27a', staff: '#c9a2ff' };
 function skHit(m, D, mul) {
@@ -5147,7 +5177,8 @@ function castSkill({ s, p }, tg, D) {
       if (p.dash) { fxBurst(m.x, m.y - 14, '#fff3c4', 14, 240, 3); fxShake(5); m.vx += (me.dir || 1) * 160; }
     } });
     if (p.dot) for (let k = 1; k <= 4; k++) HT.q.push({ t: k * .9, f: () => { const m = tg; if (m.dead) return; const dmg = Math.max(1, Math.round(D.hit * p.dot / 4)); m.hp -= dmg; floatText(m.x + 10, m.y - 34 * m.d.s, `☠ ${dmg}`, '#8be06a', 14); fxBurst(m.x, m.y - 14, '#8be06a', 5, 60, 2.4, -40); if (m.hp <= 0) killMon(m, D); } });
-  } else if (s.k === 'heal') {
+  } else if (s.k === 'summon') { HT.fy = { t: p.dur, n: .3, m: p.m, fr: p.fr }; fairyStart(p.dur); floatText(me.x, me.y - 60, '🧚 요정 등장!', '#ffb8ec', 14); }
+  else if (s.k === 'heal') {
     const v = Math.round(D.maxHp * p.v / 100); me.hp = Math.min(D.maxHp, me.hp + v);
     fxBurst(me.x, me.y - 24, '#8af0a0', 22, 140, 3, -80); fxRing(me.x, me.y - 10, '#8af0a0', 50, .5); floatText(me.x, me.y - 60, `+${v}`, '#8af0a0', 18, 1.2, true);
   } else if (s.k === 'shield') { HT.sh = Math.max(HT.sh, p.sh); HT.shRoll = s.id === 'b_roll'; if (HT.shRoll) { floatText(me.x, me.y - 60, '💨 회피 준비', '#cfe9ff', 14); fxBurst(me.x, me.y - 6, '#e7eef5', 10, 90, 2.4, 0); } else fxRing(me.x, me.y - 22, '#8fd3ff', 36, .5); }

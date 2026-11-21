@@ -1034,6 +1034,8 @@ export function worldFx(w, t) {
 // k: hit(피해: m 배 × x 번, stun 초 동안 몬스터 멈춤, dot 독 피해 배율) · heal(최대 체력 v%) · shield(다음 공격 x번 막음) · buff(dur 초 동안 atk% · crit%p)
 // r: 희귀도 1 보통 · 2 희귀 · 3 전설 (뽑기 확률이 다름)
 const SK = (id, cls, n, i, r, cd, k, o, d) => ({ id, cls, n, i, r, cd, k, ...o, d });
+// 2026-11-22 요정 소환 숫자 (밸런스 시험으로 맞춤): dur 요정이 있는 초 · fr 공격 간격(초) · m 한 번 피해 배율 (스킬 레벨마다 +10%)
+export const FAIRY = { dur: 10, fr: .5, m: .5 };
 export const SKILLS = [
   SK('s_bash', 'sword', '돌진 베기', '🏃', 1, 2.5, 'hit', { m: 1.7, stun: .3, dash: 1 },   // 2026-11-21 쿨타임 6 → 2.5초 (사용자 요청), 대신 피해·기절 조금 줄임
   '멀리 있는 몬스터에게 순식간에 달려들어 베고 잠깐 휘청이게 함 (주변 몬스터도 함께)'),
@@ -1053,7 +1055,9 @@ export const SKILLS = [
   SK('m_ice', 'staff', '얼음 창', '❄️', 1, 10, 'hit', { m: 1.6, stun: 2 }, '얼음 창으로 찌르고 몬스터를 얼려 멈추게 함'),
   SK('m_shield', 'staff', '마법 보호막', '🔮', 2, 16, 'shield', { x: 3 }, '보호막이 다음 공격 세 번을 막음'),
   SK('m_bolt', 'staff', '번개 사슬', '⚡', 2, 12, 'hit', { m: .85, x: 4, chain: 1 }, '번개가 주변 몬스터로 튀며 최대 네 마리를 때림 (혼자면 같은 몬스터를 네 번)'),
-  SK('m_heal', 'staff', '치유의 빛', '✨', 3, 22, 'heal', { v: 25 }, '따뜻한 빛으로 체력을 크게 회복'),
+  // 2026-11-22 치유의 빛(회복, 거의 쓸모없었음) → 요정 소환: 작은 요정이 dur초 동안 내 둘레를 날며 fr초마다 목표를 공격 (피해 m배). id는 그대로 (모은 장 수 유지)
+  //   cd = 요정이 있는 10초 + 그 뒤 쿨타임 10초 (쓴 때부터 20초)
+  SK('m_heal', 'staff', '요정 소환', '🧚', 3, 20, 'summon', { m: FAIRY.m, dur: FAIRY.dur, fr: FAIRY.fr }, '작은 요정을 불러 10초 동안 내 둘레를 날며 함께 공격함'),
   SK('m_meteor', 'staff', '메테오', '☄️', 3, 30, 'hit', { m: 8.5, stun: 1 }, '하늘에서 운석을 떨어뜨림'),
 ];
 export const skillOf = id => SKILLS.find(s => s.id === id);
@@ -1068,13 +1072,14 @@ export const skLv = n => SK_NEED.filter(x => n >= x).length;
 export function skPow(s, lv) {
   const L = Math.max(0, lv - 1);
   return { m: (s.m || 0) * (1 + .1 * L), n: s.x || 1, stun: s.stun || 0, dot: (s.dot || 0) * (1 + .1 * L), v: (s.v || 0) * (1 + .07 * L),
-    sh: (s.k === 'shield' ? s.x : 0) + Math.floor(L / 3), atk: (s.atk || 0) * (1 + .07 * L), crit: (s.crit || 0) * (1 + .07 * L), dur: s.dur || 0, dash: s.dash || 0, chain: s.chain || 0, wave: s.wave || 0, cd: s.cd * (1 - .02 * L) };
+    sh: (s.k === 'shield' ? s.x : 0) + Math.floor(L / 3), atk: (s.atk || 0) * (1 + .07 * L), crit: (s.crit || 0) * (1 + .07 * L), dur: s.dur || 0, dash: s.dash || 0, chain: s.chain || 0, wave: s.wave || 0, fr: s.fr || 0, cd: s.cd * (1 - .02 * L) };
 }
 export function skText(s, lv) {
   const p = skPow(s, lv), pc = x => Math.round(x * 100) + '%';
   const eff = s.k === 'hit' ? `피해 ${pc(p.m)}${p.n > 1 ? ` × ${p.n}번` : ''}${p.stun ? ` · ${p.stun}초 멈춤` : ''}${p.dot ? ` · 독 ${pc(p.dot)}` : ''}`
+    : s.k === 'summon' ? `${p.dur}초 동안 요정이 ${p.fr}초마다 공격 · 한 번 피해 ${pc(p.m)}`
     : s.k === 'heal' ? `체력 ${Math.round(p.v)}% 회복` : s.k === 'shield' ? `공격 ${p.sh}번 막기` : `${p.dur}초 동안 ${p.atk ? `공격력 +${Math.round(p.atk)}%` : `치명타 +${Math.round(p.crit)}%p`}`;
-  return `${eff} · 쿨타임 ${p.cd.toFixed(1)}초`;
+  return `${eff} · 쿨타임 ${(s.k === 'summon' ? p.cd - p.dur : p.cd).toFixed(1)}초`;   // 요정: 요정이 사라진 뒤부터 센 쿨타임
 }
 // 가진 스킬: c.life.sk = { 스킬id: 모은 장 수 }. 지금 클래스 스킬만 사냥에서 씀
 export function mySkills(c, cls = c.cls) {
@@ -1130,7 +1135,7 @@ export const raidCrowd = n => 1 + Math.min(.6, Math.max(0, (n || 1) - 1) * .03);
 export const raidDps = D => {
   const cm = (1 + Math.min(70, D.crit) / 100 * ((D.critM || 1.5) - 1)) * (1 + (D.bossP || 0) / 100);
   let sk = 0, bm = 1;
-  for (const { s, p } of D.skills || []) { if (s.k === 'hit') sk += D.hit * (p.m * p.n + p.dot) / p.cd; else if (s.k === 'buff') bm += p.atk / 100 * Math.min(1, p.dur / p.cd); }
+  for (const { s, p } of D.skills || []) { if (s.k === 'hit') sk += D.hit * (p.m * p.n + p.dot) / p.cd; else if (s.k === 'summon') sk += D.hit * p.m * (p.dur / p.fr) / p.cd; else if (s.k === 'buff') bm += p.atk / 100 * Math.min(1, p.dur / p.cd); }
   return Math.max(1, Math.round((D.hit / D.gap * (1 + (D.sp || 0) / 100 * ((D.spMul || 2) - 1)) * bm + sk) * cm));
 };
 // 보스 공격 순서 (시작 시각으로 정해짐 → 모두의 화면이 같음). at = 시작 뒤 초, k = 종류, x·y = 칸 좌표, warn = 미리 보여 주는 초

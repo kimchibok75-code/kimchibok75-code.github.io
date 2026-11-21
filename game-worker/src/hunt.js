@@ -13,8 +13,9 @@ function fight(st, D, mon, boss) {
   const gm = gimOf(mon, boss);   // 기믹: 쿨타임마다 큰 공격 (첫 번째는 조금 뒤에)
   let nextGim = gm ? (D.far ? FAR.lead : 0) + 1.5 + Math.random() * gm.cd * .6 : Infinity;
   const cd = st.cd ||= {};
-  const tick = dt => { for (const k of sk) cd[k.s.id] = (cd[k.s.id] || 0) - dt; if (st.bt > 0) st.bt -= dt; };
+  const tick = dt => { for (const k of sk) cd[k.s.id] = (cd[k.s.id] || 0) - dt; if (st.bt > 0) st.bt -= dt; if (st.fy > 0) { st.fy -= dt; st.fn -= dt; } };
   tick(t);
+  if (st.fy > 0 && st.fn < .15) st.fn = .15;   // 2026-11-22 요정: 걷는 동안엔 못 때림 → 새 몬스터를 찾자마자 다시 공격
   if (!boss && st.pre > 0) hp -= Math.min(st.pre, mon.hp);   // 2026-11-20 검사 다수 타격: 앞 싸움에서 주변 몬스터가 이미 맞은 피해
   st.pre = 0;
   const heal = () => { st.hp = Math.min(D.maxHp, st.hp + (t - healed) * regen); healed = t; };   // 사냥 중에도 체력이 천천히 참
@@ -37,12 +38,15 @@ function fight(st, D, mon, boss) {
     if (ready) {
       const { s: S, p: P } = ready; cd[S.id] = P.cd; st.casts = (st.casts || 0) + 1;
       if (S.k === 'hit') { wave = !!P.wave; for (let i = 0; i < P.n; i++) { if (P.chain && i > 0 && !boss) roll(P.m, true); else if (hp > 0) roll(P.m); } if (P.dot && hp > 0) hp -= Math.round(D.hit * P.dot); if (P.stun) { nextBite += P.stun; nextGim += P.stun; } wave = false; }
+      else if (S.k === 'summon') { st.fy = P.dur; st.fn = .3; st.fm = P.m; st.fr = P.fr; }   // 2026-11-22 요정 소환: dur초 동안 fr초마다 공격
       else if (S.k === 'heal') { heal(); st.hp = Math.min(D.maxHp, st.hp + D.maxHp * P.v / 100); }
       else if (S.k === 'shield') st.sh = Math.max(st.sh || 0, P.sh);
       else { st.bt = P.dur; st.batk = P.atk; st.bcrit = P.crit; }
       continue;
     }
     let nextSk = Infinity; for (const k of sk) nextSk = Math.min(nextSk, cd[k.s.id]);
+    const nextFy = st.fy > 0 && st.fn <= st.fy ? Math.max(0, st.fn) : Infinity;   // 요정의 다음 공격
+    if (nextFy <= nextSk && nextFy < nextHit && nextFy < nextBite && nextFy < nextGim) { const dt = nextFy; t += dt; nextHit -= dt; nextBite -= dt; nextGim -= dt; tick(dt); st.fn += st.fr; roll(st.fm); continue; }
     if (nextSk < nextHit && nextSk < nextBite && nextSk < nextGim) { t += nextSk; nextHit -= nextSk; nextBite -= nextSk; nextGim -= nextSk; tick(nextSk); continue; }
     if (nextGim < nextHit && nextGim <= nextBite) {   // 기믹 큰 공격 (막기·회피는 보통 공격과 같음)
       const dt = nextGim; t += dt; nextHit -= dt; nextBite = bite; nextGim = gm.cd; tick(dt); heal();
@@ -92,7 +96,7 @@ export function settle(c, at, onGap = HUNT.onlineGap) {   // onGap: 100%로 쳐 
   h.last = at;
   const f = FIELDS[h.f], out = { sec: gap, offline, kills: 0, exp: 0, gold: 0, drops: [], sold: 0, up: 0, pots: 0, bosses: [], bossSkip: [], died: false };
   let D = derive(c);
-  const st = { hp: Math.min(c.hp, D.maxHp), pots: c.pots, potAt: c.potAt, used: 0, cd: h.cd || {}, sh: 0, bt: 0 };
+  const st = { hp: Math.min(c.hp, D.maxHp), pots: c.pots, potAt: c.potAt, used: 0, cd: h.cd || {}, sh: 0, bt: 0, fy: h.fy?.[0] || 0, fn: h.fy?.[1] || 0, fm: h.fy?.[2] || 0, fr: h.fy?.[3] || .5 };   // fy: 요정 남은 초 (정산 사이에도 이어짐)
   let steps = 0, onG = 0, onE = 0, onT = 0;   // 화면을 켜 둔 몫(offLeft가 다 쓰인 뒤)의 골드·경험치·시간 → life.hgr
   // 2026-11-21 보스 시간이 됐으면 남은 시간이 없어도 바로 보스전 (화면이 보스 시간에 맞춰 정산을 부름. 쓴 시간은 debt로 넘어감)
   while ((sec > 0 || (h.t >= h.boss && !out.died)) && steps++ < MAX_STEPS) {
@@ -101,9 +105,9 @@ export function settle(c, at, onGap = HUNT.onlineGap) {   // onGap: 100%로 쳐 
       h.boss += HUNT.bossEvery;
       // 보스: 이길 수 있을 때만 싸움 (질 것 같으면 피해서 손해 없음). 2026-11-21 보스전은 늘 풀 컨디션(체력 가득·스킬 쿨타임 0)으로 계산 → 이기고 지는 게 들쭉날쭉하지 않게
       // life.bossF(사냥 현황판 '강한 보스도 싸우기' 체크)면 질 것 같아도 싸움 → 지면 쓰러짐
-      const test = { ...st, hp: D.maxHp, sh: 0, bt: 0, pots: { ...st.pots }, cd: {}, used: 0 }, r = fight(test, D, f.boss, true);
+      const test = { ...st, hp: D.maxHp, sh: 0, bt: 0, fy: 0, pots: { ...st.pots }, cd: {}, used: 0 }, r = fight(test, D, f.boss, true);
       if (r.dead && !c.life?.bossF) { out.bossSkip.push(f.boss.n); h.boss = h.t + HUNT.bossEvery; continue; }
-      Object.assign(st, { ...test, cd: { ...st.cd }, used: st.used + test.used }); c.pots = st.pots;
+      Object.assign(st, { ...test, cd: { ...st.cd }, fy: 0, used: st.used + test.used }); c.pots = st.pots;
       if (r.dead) { sec -= r.t; h.t += r.t; out.died = true; out.bossDied = f.boss.n; break; }
       sec -= r.t; h.t += r.t; h.boss = h.t + HUNT.bossEvery;   // 2026-11-21 다음 보스는 보스를 잡은 때부터 5분
       const on = offLeft <= 0, [g, e] = reward(c, h, out, f, f.boss, D, true, on ? 1 : OFF_XP()); offLeft -= r.t; if (on) { onG += g; onE += e; onT += r.t; }
@@ -116,7 +120,7 @@ export function settle(c, at, onGap = HUNT.onlineGap) {   // onGap: 100%로 쳐 
     }
     if (c.lv !== lv0) { D = derive(c); st.hp = D.maxHp; }   // 레벨업하면 체력 가득
   }
-  h.debt = sec < 0 ? -sec : 0; h.cd = Object.fromEntries(Object.entries(st.cd).map(([k, v]) => [k, Math.max(0, +v.toFixed(2))]));
+  h.debt = sec < 0 ? -sec : 0; h.fy = st.fy > 0 ? [+st.fy.toFixed(2), +st.fn.toFixed(2), st.fm, st.fr] : undefined; h.cd = Object.fromEntries(Object.entries(st.cd).map(([k, v]) => [k, Math.max(0, +v.toFixed(2))]));
   c.hp = Math.max(0, Math.round(st.hp)); out.pots = st.used; h.pots += st.used;
   // 2026-11-21 내 실제 사냥 속도 (1분당 골드·경험치): 최근 30분(HUNT_RATE.keep)쯤을 무게로 한 평균
   if (c.life && onT >= 10) {

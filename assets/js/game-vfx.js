@@ -82,9 +82,9 @@ export function vfxCast(id, o) {
       circle(x, y, 50, '#7fc8ff', .9); shape({ k: 'hex', x, y: y - 26, r: 46, c: '#7fc8ff', life: .8 }); flash(x, y - 26, '#bfe4ff', 70, .3);
       for (let k = 0; k < 14; k++) part({ x: x + rnd(-40, 40), y: y - rnd(0, 10), vx: 0, vy: rnd(-120, -50), c: '#bfe4ff', s: rnd(3, 6), life: rnd(.5, .9), drag: .5 });
       break;
-    case 'm_heal':   // 치유의 빛: 하늘에서 빛 기둥 + 초록·금빛 가루가 솟아오름
-      pillar(x, y, 80, 260, '#a8ffb8', .9); pillar(x, y, 30, 260, '#ffffff', .6); ring(x, y, '#8af0a0', 16, 80, .6, 6); circle(x, y, 40, '#8af0a0', .9);
-      for (let k = 0; k < 30; k++) part({ x: x + rnd(-34, 34), y: y - rnd(0, 30), vx: rnd(-20, 20), vy: rnd(-200, -70), c: k % 3 ? '#8af0a0' : '#fff2a8', s: rnd(3, 7), life: rnd(.6, 1.1), drag: .6 });
+    case 'm_heal':   // 2026-11-22 요정 소환: 발밑 분홍 마법진 + 빛 기둥에서 요정이 톡 튀어나옴 (요정 자체는 fairyStart)
+      circle(x, y, 44, '#ff9fe0', .8); pillar(x, y, 46, 150, '#ffc6f0', .5); flash(x, y - 40, '#ffd6f6', 60, .35); ring(x, y, '#ffb8ec', 14, 70, .5, 5);
+      for (let k = 0; k < 22; k++) { const a = Math.random() * 6.283; part({ x: x + Math.cos(a) * 18, y: y - 40 + Math.sin(a) * 12, vx: Math.cos(a) * rnd(60, 160), vy: Math.sin(a) * rnd(40, 120) - 40, c: k % 3 ? '#ffb8ec' : '#fff2a8', s: rnd(2.5, 5), life: rnd(.4, .8), drag: 2 }); }
       break;
     case 'm_meteor': {   // 메테오: 목표 바닥에 붉은 마법진 → 왼쪽 위에서 운석이 불꼬리를 끌며 떨어짐 (맞는 순간 vfxHit에서 폭발)
       circle(tx, ty + 18, 70, '#ff7a3a', .95); circle(tx, ty + 18, 44, '#ffd35a', .95);
@@ -154,12 +154,62 @@ export function vfxHit(id, o) {
   }
 }
 
+// ───── 2026-11-22 요정 소환 (마법사): 작은 빛 구체 + 요정 날개가 내 둘레를 빙글빙글 날며 목표에 빛 구슬을 쏨 ─────
+// fairyStart(초) · fairyFollow(x, y 발) 매 장면 · fairyShot(tx, ty, 맞을 때) · 그리기는 vfxDraw가 같이 함
+const FY = { on: 0, t: 0, a: 0, x: 0, y: 0, px: 0, py: 0, ready: 0, shots: [] };
+export function fairyStart(dur) { if (!FY.on) { FY.a = Math.random() * 6.283; FY.ready = 0; } FY.on = 1; FY.t = dur; }
+export const fairyActive = () => !!FY.on;
+export function fairyFollow(x, y) { FY.px = x; FY.py = y; }
+export function fairyShot(tx, ty, hit) {
+  if (!FY.on) return;
+  FY.shots.push({ x0: FY.x, y0: FY.y, tx, ty, t: 0, dur: Math.min(.32, Math.hypot(tx - FY.x, ty - FY.y) / 700 + .08), hit });
+  flash(FY.x, FY.y, '#ffd6f6', 22, .15);
+}
+function fairyStep(dt) {
+  if (FY.on) { FY.t -= dt; if (FY.t <= 0) { FY.on = 0; burst(FY.x, FY.y, '#ffb8ec', 14, 120, { life: .5 }); flash(FY.x, FY.y, '#ffd6f6', 40, .3); } }
+  if (!FY.on) return;
+  FY.a += dt * 3.4;   // 몸 둘레를 빙글빙글
+  const tx = FY.px + Math.cos(FY.a) * 34, ty = FY.py - 46 + Math.sin(FY.a) * 13 + Math.sin(FY.a * 2.7) * 5;
+  if (!FY.ready) { FY.x = FY.px; FY.y = FY.py - 40; FY.ready = 1; }
+  const k = 1 - Math.exp(-dt * 14); FY.x += (tx - FY.x) * k; FY.y += (ty - FY.y) * k;
+  if (Math.random() < dt * 26) part({ x: FY.x + rnd(-3, 3), y: FY.y + rnd(-2, 4), vx: rnd(-14, 14), vy: rnd(8, 30), c: Math.random() < .3 ? '#fff2a8' : '#ffb8ec', s: rnd(1.6, 3.2), life: rnd(.35, .7), drag: 1.5 });
+}
+function fairyDraw(g, dt) {
+  for (let i = FY.shots.length - 1; i >= 0; i--) {   // 빛 구슬
+    const s = FY.shots[i]; s.t += dt; const k = Math.min(1, s.t / s.dur), x = s.x0 + (s.tx - s.x0) * k, y = s.y0 + (s.ty - s.y0) * k - Math.sin(k * Math.PI) * 16;
+    g.globalAlpha = .8; g.drawImage(glow('#ff6fd0'), x - 10, y - 10, 20, 20);
+    g.save(); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.fillStyle = '#ff7fd6'; g.beginPath(); g.arc(x, y, 3.4, 0, 6.283); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(x - .8, y - .8, 1.4, 0, 6.283); g.fill(); g.restore();
+    if (Math.random() < .6) part({ x, y, vx: rnd(-20, 20), vy: rnd(-20, 20), c: '#ffb8ec', s: rnd(1.5, 3), life: .25, drag: 3 });
+    if (k >= 1) { FY.shots.splice(i, 1); burst(s.tx, s.ty, '#ffb8ec', 6, 120, { life: .35 }); flash(s.tx, s.ty, '#ffd6f6', 26, .15); s.hit && s.hit(); }
+  }
+  if (!FY.on) return;
+  const x = FY.x, y = FY.y, fl = Math.sin(performance.now() / 1000 * 38), end = Math.min(1, FY.t * 2);   // 날개 파닥 · 사라지기 전 흐려짐
+  g.globalAlpha = .45 * end; g.drawImage(glow('#ff6fd0'), x - 24, y - 24, 48, 48);   // 둘레 빛
+  g.save(); g.globalCompositeOperation = 'source-over'; g.translate(x, y); g.globalAlpha = .9 * end;
+  for (const sd of [-1, 1]) {   // 작은 요정 날개 (위 큰 날개 + 아래 작은 날개, 파닥이며 접혔다 펴짐)
+    g.save(); g.scale(sd * (.55 + .45 * Math.abs(fl)), 1);
+    g.fillStyle = 'rgba(200,236,255,.8)'; g.strokeStyle = '#ffffff'; g.lineWidth = 1.1;
+    g.beginPath(); g.ellipse(8, -5.5, 9, 5, -.55, 0, 6.283); g.fill(); g.stroke();
+    g.fillStyle = 'rgba(255,170,230,.85)'; g.beginPath(); g.ellipse(6.5, 3.5, 5.6, 3.2, .45, 0, 6.283); g.fill(); g.stroke();
+    g.restore();
+  }
+  // 빛 구체 몸: 분홍 공 + 하얀 하이라이트 (더하기로 그리면 하얗게 날아가서 보통으로 칠함)
+  g.fillStyle = '#ff7fd6'; g.beginPath(); g.arc(0, 0, 5.2, 0, 6.283); g.fill();
+  g.fillStyle = '#ffd1f1'; g.beginPath(); g.arc(-.6, -.6, 3, 0, 6.283); g.fill();
+  g.fillStyle = '#ffffff'; g.beginPath(); g.arc(-1.6, -1.8, 1.4, 0, 6.283); g.fill();
+  g.restore();
+  g.globalAlpha = .7 * end; g.drawImage(glow('#ff9fe0'), x - 11, y - 11, 22, 22);
+  const r = performance.now() / 1000 * 5;   // 몸 둘레를 도는 작은 반짝이 두 개
+  for (let k = 0; k < 2; k++) { const b = r + k * Math.PI; g.globalAlpha = .9 * end; g.drawImage(glow('#fff2a8'), x + Math.cos(b) * 12 - 3, y + Math.sin(b) * 5 - 3, 6, 6); }
+}
+
 // ───── 그리기 (각 장면의 카메라 변환 안에서, 매 장면 한 번) ─────
-export function vfxClear() { P.length = 0; S.length = 0; Q.length = 0; }
+export function vfxClear() { P.length = 0; S.length = 0; Q.length = 0; FY.on = 0; FY.shots.length = 0; }
 export function vfxBusy() { return P.length + S.length + Q.length > 0; }
 export function vfxDraw(g) {
   const now = performance.now() / 1000; let dt = last ? now - last : 0; last = now; if (dt > .05) dt = .05; if (dt <= 0 && !T0) { T0 = 1; }
-  if (!P.length && !S.length && !Q.length) return;
+  fairyStep(dt);
+  if (!P.length && !S.length && !Q.length && !FY.on && !FY.shots.length) return;
   for (let k = Q.length - 1; k >= 0; k--) { const q = Q[k]; q.t -= dt; if (q.t <= 0) { Q.splice(k, 1); q.f(); } }
   g.save(); g.globalCompositeOperation = 'lighter'; g.lineCap = 'round'; g.lineJoin = 'round';
   for (let k = S.length - 1; k >= 0; k--) {
@@ -172,6 +222,7 @@ export function vfxDraw(g) {
     const kk = p.t / p.life, s = p.grow ? p.s * (.6 + kk * .9) : p.s * (1 - kk * .6), al = p.grow ? (1 - kk) * .45 : 1 - kk * kk;
     g.globalAlpha = al; const im = glow(p.c); if (p.sq) g.drawImage(im, p.x - s * .6, p.y - s * 1.6, s * 1.2, s * 3.2); else g.drawImage(im, p.x - s * 2, p.y - s * 2, s * 4, s * 4);
   }
+  fairyDraw(g, dt);
   g.restore();
 }
 function drawShape(g, s, k, dt) {
