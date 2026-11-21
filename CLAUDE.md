@@ -85,6 +85,13 @@
    - 비밀 키(`ONESIGNAL_REST_API_KEY`)는 이미 Cloudflare에 저장돼 있으므로 다시 넣을 필요 없음
 5. 집 컴퓨터의 Claude 메모리(한국어 설명, 모드 URL 처리법)는 이 파일에 다 옮겨 두었으니 따로 챙길 것 없음
 
+## 테스트 서버 (이 컴퓨터 안에서만) — 2026-11-21
+- **게임 업데이트 순서 (사용자 결정)**: 고친 것을 먼저 이 컴퓨터의 테스트 서버에서 확인 → 사용자가 직접 해 보고 "올려"라고 하면 그때 진짜 서버·사이트에 배포
+- 켜기: 프로젝트 폴더의 **`테스트 서버 켜기.bat`** 더블클릭 → `scripts/test-server.ps1`이 화면 서버(5173)·게임 서버(wrangler dev --local, 8787)를 최소화 창 2개로 켜고, 크롬 앱 창(따로 프로필 `%LOCALAPPDATA%\ChibokTownTest`)으로 `game.html?api=http://localhost:8787`을 엶. 끄기 = "테스트 - …" 창 2개 닫기
+- 데이터: 이 컴퓨터의 로컬 D1. **`테스트 데이터 다시 복사.bat`**(`game-worker/scripts/copy-to-local.mjs`)이 진짜 서버에서 김치복·테스트 계정(계정·캐릭터·집·낚시·농사·기부) + 공동 건설·분수·모드 순서만 읽어 와서 로컬을 비우고 넣음 (진짜 서버는 읽기만). 테스트 서버가 꺼져 있어야 함
+- 화면 표시: 진짜 서버가 아니면 game.html이 위 가운데 빨간 띠 '🧪 테스트 서버' + 탭 이름 앞 [테스트] (`#testBadge`)
+- 생방송 알림·치지직은 테스트에서 안 됨. 로컬 D1에 새 migration도 적용할 것 (`d1 migrations apply kimchibok-game --local`)
+
 ## 작업 환경 메모 (Windows)
 - git과 gh가 PATH에 없으면 먼저 실행:
   `$env:Path = "C:\Program Files\Git\cmd;C:\Program Files\GitHub CLI;" + $env:Path`
@@ -953,3 +960,18 @@
 - 치지직 채팅이 안 넘어오던 원인: 마을 채팅 규칙(60글자)에 걸려 긴 채팅이 통째로 버려졌음 → chzzk.js가 60글자로 잘라 보냄, 이모티콘 `{:이름:}`은 뺌. 닉네임 비교는 대소문자·앞뒤 띄어쓰기 무시. 마을에 새로 들어오면 Town이 Chzzk `/nick`으로 닉네임 기억을 비움
 - **🔗 치지직 연동 확인** (닉네임 창 버튼, 닉네임 바꾼 직후 자동): `GET /api/chzzk/check` → Chzzk `/seen`(이번 방송에서 이 닉네임이 채팅했나, `this.seen`) + 각 채널 Town `/where?id=`(광장 근처·사냥·집 안·채팅 금지) → 화면 `chzzkCheckShow`
 - `wrangler deployments list`는 100개까지만 보여서 새 배포가 안 보임 → `deployments status`로 확인 (몇 초 늦게 바뀔 수 있음)
+
+### 자동 낚시 자리 · 집 값 · 고렙 · 사이버 전사 — 2026-11-21 (#11, 테스트 서버 확인 중)
+- 자동 생활 낚시: 강(바다) 전체에서 무작위 물가 자리(`auSpots`, 지난 자리와 8칸 넘게)를 골라 **한 자리에서 5번 연속**(`AU_FISH_N`) → 다음 묶음은 바다(강). 같은 물에 물고기 그림자가 보이면 그쪽 먼저(`auShadow`, 30칸 안). 낚시만 모드 순서 = 강 → 바다
+- 레이드 입장(`enterRaid`) 때 도구·낚싯대·들고 있던 물고기/작물·말풍선을 치움. 레이드 중엔 자동 생활·알바 말풍선과 자랑을 안 그림(`!RD`)
+- 채팅창은 사냥터·레이드에서도 마을과 같은 크기 (예전 `body.hunting .chat-log` 64px 줄 삭제)
+- 집 단계 값 올림 (`HOUSE_TIERS`: 빌라까지 누적 골드 113만 · 목재 5,300 · 석재 3,900)
+- `expCurve`: 70레벨부터 1레벨마다 ×(1 + 0.08×(L−69)) 더 (80 ×1.88 · 85 ×2.28)
+- **사이버 전사 세트** (id `cyber`, 스킨샵): 원본 `내 디자인/스킨/*_guide_사이버전사.png` → `텍스쳐 템플릿/char·weapon/`에 복사 → town-art.py `tpl_set('사이버전사', 'cy', cut=140)` (알파 140 아래 은은한 빛은 지우고 나머지는 불투명) → game.html `CYS`·`TSK.cyber`. 값 45,000~60,000, 효과는 마법소녀 정도
+- town-art.py를 다시 돌리면 `sign.webp`·`soon-sign.webp`가 다시 인코딩돼 바뀜 → 의도한 게 아니면 `git checkout`으로 되돌리기
+- **사냥꾼 쉼터** `hrest` (71,40 4×3) · **사냥 랭킹판** `huntrank` (68,40 2×2): game-map.js **18번**. 그림 `내 디자인/건물_사냥꾼 쉼터.png`·`건물_사냥 랭킹.png` → town-art.py 1번 → `b-hrest`, `b-huntrank`
+  - 🔥 향로 `life.inc` 0~5 (`INCENSE`, `incLv`): 단계마다 사냥터 몬스터 +1 (화면 `spawnMon` 8 + 단계), 서버는 `derive`의 `walkM`에 `incWalk` = 8/(8+단계) (다음 몬스터까지 덜 걸음). 값·조건 `INCENSE.lv` = [골드, 누적 처치] 6만/1,500 · 18만/5천 · 50만/1.2만 · 120만/2.5만 · 300만/5만. 서버 `/api/hunt/incense`
+  - ⚔️ 사냥왕 세트 (id `huntking`, `KINGS.hunt`, `/api/hunt/king`, 템플릿 `*_guide_사냥왕.png` → `tpl_set('사냥왕', 'hk')` → `HKS`): 몬스터 3천 · 보스 30 · 10종×100마리 · 레이드 10 · 몬스터 2만 · 거대 코브라
+  - 사냥 랭킹 = `/api/rank?k=kills` (`life.cnt.kills`), 화면 `huntRankSheet`
+- 카페 알바비 `100 + 16×레벨`, 팁 `10 + 2.6×레벨` (30레벨 1분 약 1,200골드, 사냥 방치와 비슷하게 맞춤)
+- 낚시: '하루 400마리 넘으면 값 절반' 없앰 (`FISHING.dayFull`는 안 씀). 낚시 기록표·랭킹은 낚은 순간 값(효과 포함 `sell`)으로, 쓰고 나면 랭킹 기억 비움

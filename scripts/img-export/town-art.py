@@ -159,7 +159,7 @@ def keep_rgba(name):
 # 1) 가게 건물 (한 장에 하나). 2026-11-19 새 그림은 배경이 투명 → keep_rgba
 for src, key in [('건물_가챠센터', 'gacha'), ('건물_카페', 'cafe'), ('건물_스킨샵', 'skin'), ('건물_마을회관', 'hall'), ('건물_대장간', 'smith'),
                  ('건물_낚시점', 'fishshop'), ('건물_벌목소', 'lumber'), ('건물_채석장', 'quarry'), ('건물_텃밭 창고', 'farmshed'),
-                 ('건물_무한의탑', 'tower'), ('건물_김치볶음밥 전문점', 'kfr'), ('건물_도감센터', 'dex'), ('건물_게시판_건의', 'suggest'), ('건물_게시판_초보자 가이드', 'beginner')]:   # 2026-11-19 무한의 탑 · 김치볶음밥 전문점
+                 ('건물_무한의탑', 'tower'), ('건물_김치볶음밥 전문점', 'kfr'), ('건물_도감센터', 'dex'), ('건물_게시판_건의', 'suggest'), ('건물_게시판_초보자 가이드', 'beginner'), ('건물_사냥꾼 쉼터', 'hrest'), ('건물_사냥 랭킹', 'huntrank')]:   # 2026-11-21 사냥꾼 쉼터 · 사냥 랭킹   # 2026-11-19 무한의 탑 · 김치볶음밥 전문점
     r = keep_rgba(src)
     b = bbox(r[:, :, 3]); save('b-' + key, r[b[1]:b[3], b[0]:b[2]], width=720)
 
@@ -245,12 +245,13 @@ bg.resize((1344, round(1344 * bg.height / bg.width)), Image.LANCZOS).save(os.pat
 META['ogre-bg'] = [bg.width, bg.height]
 TPL = os.path.join('텍스쳐 템플릿')
 # 템플릿 틀 그대로 그린 스킨 세트 → <prefix>-<부위>.webp + META[prefix] = {부위: [x, y, w, h]} (게임 단위, 발/손잡이 기준)
-def tpl_set(tag, prefix):
+def tpl_set(tag, prefix, cut=0):   # cut: 그 값보다 옅은 알파(은은한 빛)는 지우고 나머지는 불투명하게 (2026-11-21 사이버 전사)
     OS = {}
     for src, n, ox, oy, k in [('char/hat_guide_' + tag, 'hat', 192, 336, 4), ('char/suit-front_guide_' + tag, 'suit', 192, 336, 4), ('char/eyes_guide_' + tag, 'eyes', 192, 336, 4),
                               ('weapon/sword_guide_' + tag, 'sword', 192, 368, 8), ('weapon/bow_guide_' + tag, 'bow', 192, 368, 8), ('weapon/staff_guide_' + tag, 'staff', 192, 368, 8)]:
         if not os.path.exists(os.path.join(TPL, src + '.png')): continue
         a = np.asarray(Image.open(os.path.join(TPL, src + '.png')).convert('RGBA')).copy(); a[a[:, :, 3] == 0] = 0
+        if cut: a[a[:, :, 3] < cut] = 0; a[:, :, 3] = np.where(a[:, :, 3] > 0, 255, 0)
         if n == 'eyes':   # 눈은 두 덩어리라 clean(가장 큰 덩어리만)을 쓰지 않음
             b0 = bbox(a[:, :, 3], pad=1); full = a[b0[1]:b0[3], b0[0]:b0[2]]; best = (b0[0], b0[1]); H0, W0 = full.shape[:2]
         else:
@@ -268,6 +269,8 @@ META['mg'] = tpl_set('마법소녀', 'mg')   # 2026-11-18 마법소녀 스킨 (�
 META['fk'] = tpl_set('낚시왕', 'fk')   # 2026-11-19 낚시왕 스킨 (낚시점 보상)
 META['mk'] = tpl_set('채굴왕', 'mk')   # 2026-11-19 채굴왕 스킨 (채광소 보상)
 META['fa'] = tpl_set('농사왕', 'fa')   # 2026-11-20 농사왕 스킨 (텃밭 창고 보상)
+META['hk'] = tpl_set('사냥왕', 'hk')   # 2026-11-21 사냥왕 스킨 (사냥꾼 쉼터 보상)
+META['cy'] = tpl_set('사이버전사', 'cy', cut=140)   # 2026-11-21 사이버 전사 스킨 (스킨샵, 은은한 빛은 빼고 외곽만)
 
 # 10) 소원 분수 (2026-11-18 새 그림, 흰 배경): 그림 + 물 칸만 뗀 그림(물결·반짝임을 물 안에만 그리려고) + 위치(비율)
 r = cut_bg(load('건물_분수')); b = bbox(r[:, :, 3]); t = r[b[1]:b[3], b[0]:b[2]]

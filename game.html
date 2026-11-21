@@ -972,7 +972,6 @@ body.hunting .zoom { display: none; }
 .huntbox .hb-pots i { font-style: normal; text-align: center; padding: 3px 0; border-radius: 8px; background: var(--paper-2, #eef0e8); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .huntbox .hb-pots i.no { color: #d14a32; }
 .huntbox .hb-pots img.ico { width: 16px; height: 16px; vertical-align: -3px; }
-body.hunting .chat-log { height: 64px; }
 
 /* ───── 휴대폰 ───── */
 @media (max-width: 760px) {
@@ -1463,7 +1462,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 
 <script type="module">
 'use strict';
-import { SAVER, CHAIN, CLEAVE, PIERCE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
+import { INCENSE, incLv, SAVER, CHAIN, CLEAVE, PIERCE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
   T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS, wishGold, wishExp,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
@@ -1474,6 +1473,12 @@ import { G, PATH, WATER, STONE, SOIL, DOCK, SAND, GRAVEL, FOREST, tileAt, isSoli
 import { UPDATES } from './assets/js/game-updates.js?v=__BUILD__';   // 2026-11-21 업데이트 노트
 import { DW, DH, DONG_NAME, dTileAt, dSolid, dSoft, DTREES, DBENCH, DGATE, DSPAWN, canHouseD, treeUnderHouse, LAKE } from './assets/js/game-dong.js?v=__BUILD__';
 const API = (location.hostname === 'localhost' && new URLSearchParams(location.search).get('api')) || 'https://kimchibok-game.kimchibok.workers.dev';   // 시험용: localhost에서만 ?api=http://localhost:8787 로 바꿀 수 있음
+// 테스트 서버 표시 (2026-11-21): 진짜 서버가 아니면 화면 위 가운데에 늘 빨간 '🧪 테스트 서버' 띠 + 탭 이름 앞에 [테스트]
+if (!API.startsWith('https://kimchibok-game.')) {
+  const tb = document.createElement('div'); tb.id = 'testBadge'; tb.textContent = '🧪 테스트 서버 · 진짜 게임과 따로예요';
+  tb.style.cssText = 'position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:99999;padding:3px 14px;border-radius:0 0 10px 10px;background:#e0263a;color:#fff;font:800 13px/1.4 sans-serif;letter-spacing:.3px;box-shadow:0 2px 8px rgba(0,0,0,.35);pointer-events:none;';
+  document.body.append(tb); document.title = '[테스트] ' + document.title;
+}
 const LIVE_API = 'https://kimchibok-live.kimchibok.workers.dev/live';
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -1534,7 +1539,7 @@ const ARMOR_C = ['#e3d6bb', '#b07a45', '#9aa5b1', '#dfe6ee', '#b8433a', '#f2c14e
 const SHOE_C = ['#d2b06a', '#7a4a2a', '#7f8b98', '#5d7690', '#3fb6a8', '#e0b23a'];
 // 2026-11-20 의상 스킨을 입으면 신발 색을 의상에 맞춤. 코드로 그린 의상은 직접 고른 색, 그림 의상은 그림 아래쪽 색을 뽑아 어둡게
 const SUIT_SHOE = { hoodie: '#f0efe9', hanbok: '#c94f6d', apron: '#6b4a2e', tux: '#16181d', knight: '#7a5636', cabbage: '#3d7a35' };
-const SUIT_IMG = { rdragon: 'rd-suit', ogre: 'og-suit', magic: 'mg-suit', fishking: 'fk-suit', mineking: 'mk-suit', farmking: 'fa-suit' };
+const SUIT_IMG = { rdragon: 'rd-suit', ogre: 'og-suit', magic: 'mg-suit', cyber: 'cy-suit', huntking: 'hk-suit', fishking: 'fk-suit', mineking: 'mk-suit', farmking: 'fa-suit' };
 const SHOE_MEM = {};
 function suitShoe(id) {
   if (!id) return null; if (SUIT_SHOE[id]) return SUIT_SHOE[id]; if (SHOE_MEM[id]) return SHOE_MEM[id];
@@ -1623,7 +1628,9 @@ const MGS = { hat: [-23.5, -58, 47, 39], suit: [-13.5, -23.5, 27.5, 20.25], eyes
 const MKS = { hat: [-22.5, -57.75, 45.75, 34], suit: [-13.25, -23, 26.75, 18.25], eyes: [-12.5, -33.75, 25, 8.5], sword: [-10.75, -30.375, 21.375, 40.25], bow: [-8.75, -18.125, 16.5, 36.375], staff: [-13.75, -34.125, 27.625, 47] };
 const FKS = { hat: [-24.5, -55, 49.5, 28.75], suit: [-9.75, -22.25, 19.75, 17], eyes: [-12.5, -33.75, 25, 8.25], sword: [-9.5, -33, 18.75, 44.5], bow: [-10, -19.25, 18.625, 38.5], staff: [-13.25, -36, 26.875, 48.125] };
 const FAS = { hat: [-23.25, -57, 46.25, 28.75], suit: [-10.25, -20.5, 21.5, 17], eyes: [-11, -35.75, 22, 11.25], sword: [-11.25, -34, 22.625, 44.125], bow: [-9, -18.875, 17.875, 37.875], staff: [-15.875, -30.25, 35.25, 42.5] };   // 2026-11-20 농사왕
-const TSK = { ogre: ['og', OGS], magic: ['mg', MGS], fishking: ['fk', FKS], mineking: ['mk', MKS], farmking: ['fa', FAS] };
+const CYS = { hat: [-18.75, -51.25, 38, 32.75], suit: [-12.25, -23.25, 25.5, 19.25], eyes: [-13.5, -34, 27, 9.75], sword: [-11.125, -29.5, 22.625, 40.25], bow: [-12.875, -19.875, 19.5, 39.875], staff: [-15.375, -35.625, 30.625, 46.75] };   // 2026-11-21 사이버 전사 (meta 'cy')
+const HKS = { hat: [-23.75, -56.25, 47.75, 39.75], suit: [-12, -23, 24.5, 20.75], eyes: [-13.25, -33, 26, 8.75], sword: [-7.625, -29.625, 19.875, 40.125], bow: [-10, -20.25, 18.5, 39.25], staff: [-15.875, -38.125, 32.375, 48.125] };   // 2026-11-21 사냥왕 (meta 'hk')
+const TSK = { huntking: ['hk', HKS], cyber: ['cy', CYS], ogre: ['og', OGS], magic: ['mg', MGS], fishking: ['fk', FKS], mineking: ['mk', MKS], farmking: ['fa', FAS] };
 const HAT_NOHAIR = new Set();   // 늘 헤어를 숨길 모자 (2026-11-18: 비움 — 헤어는 '모자를 써도 헤어 보이기' 체크로만 정함)
 function wskParts(type, id) {
   const ts = TSK[id]; if (ts && ART[ts[0] + '-' + type]) return [imgPart(ts[0] + '-' + type, ...ts[1][type])];
@@ -1702,7 +1709,7 @@ function suitParts(id, bob, hy) {
         { path: E(-8.6, y + 2, 3.8, 3), c: '#9aa5b1' }, { path: E(8.6, y + 2, 3.8, 3), c: '#9aa5b1' }); break;
     case 'cabbage': sl = '#bfe39a'; F.push(body('#bfe39a'), { flat: 1, path: R(-.5, y + 2, 1, 11, .5), c: 'rgba(255,255,255,.6)' }, { flat: 1, path: PG([[0, y + 7], [-5, y + 4], [-5, y + 5.2], [0, y + 8.5]]), c: 'rgba(255,255,255,.45)' },
       ...[-8, -3, 3, 8].map(x => ({ path: E(x, y + 1, 3.8, 2.6, x * .06), c: '#7fcf6a' }))); break;
-    case 'ogre': case 'magic': case 'fishking': case 'mineking': case 'farmking': { sl = { ogre: '#7d9a3c', magic: '#f7b6cf', fishking: '#e9d9b0', mineking: '#d9a441', farmking: '#3f6f9a' }[id]; const [pf, ps] = TSK[id];
+    case 'ogre': case 'magic': case 'fishking': case 'mineking': case 'farmking': case 'cyber': case 'huntking': { sl = { ogre: '#7d9a3c', magic: '#f7b6cf', cyber: '#e9eef3', huntking: '#7a5232', fishking: '#e9d9b0', mineking: '#d9a441', farmking: '#3f6f9a' }[id]; const [pf, ps] = TSK[id];
       if (ART[pf + '-suit']) { F.push(imgPart(pf + '-suit', ps.suit[0], y + ps.suit[1] + 20, ps.suit[2], ps.suit[3])); break; }
       F.push(body(sl)); break; }
     case 'rdragon': sl = '#a8322a';
@@ -1998,7 +2005,7 @@ const MON_IMG = ['rat', 'hen', 'boar', 'wolf', 'shroom', 'vine', 'eagle', 'turtl
 const ART_N = ['sign', 'd-head', 'og-head', ...FIELDS.map(f => 'hbg-' + f.id), ...MON_IMG.map(k => 'mon-' + k), 'fx-dragon', 'fx-ogre', 'b-farmrank', 'b-suggest', 'b-beginner', 'b-dex', 'bench', 'soon-sign', 'b-tower', 'b-kfr', 'dportal', 'dportal-hole', 'b-gacha', 'b-cafe', 'b-skin', 'b-hall', 'b-smith', 'b-fishshop', 'b-fishrank', 'b-lumber', 'b-quarry', 'b-farmshed', 'farm', 'fountain', 'fountain-water', ...[1, 2, 3, 4, 5, 6, 7, 8].map(i => 'hair-' + i),
   ...[1, 2, 3, 4, 5].map(i => 'tree-' + i), ...[1, 2, 3, 4, 5, 6, 7, 8].flatMap(i => ['house-' + i, 'house-' + i + '-roof']),
   'rd-hat', 'rd-suit', 'rd-sword', 'rd-bow', 'rd-staff', 'portal', 'portal-hole',
-  ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].flatMap(n => ['mg-' + n, 'fk-' + n, 'mk-' + n, 'fa-' + n])];
+  ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].map(n => 'og-' + n), ...['hat', 'suit', 'eyes', 'sword', 'bow', 'staff'].flatMap(n => ['mg-' + n, 'fk-' + n, 'mk-' + n, 'fa-' + n, 'cy-' + n, 'hk-' + n]), 'b-hrest', 'b-huntrank'];
 // 2026-11-20 레이드 그림(배경·드래곤·오우거 조각)은 레이드 창을 열거나 들어갈 때 불러옴 (처음 접속할 때 메모리 아끼기)
 const ART_RAID = ['raid-bg', 'ogre-bg', ...['head', 'wing', 'arm', 'body', 'leg'].map(n => 'd-' + n), ...['head', 'body', 'rarm', 'larm', 'leg'].map(n => 'og-' + n)];
 let raidArtP = null;
@@ -2441,7 +2448,7 @@ const LAB = { tower: 60, kfr: 60, cafe: 62, gacha: 100, skin: 66, hall: 86, smit
 // 그림 건물: 차지하는 칸보다 조금 넓게(비율 그대로), 아래쪽이 칸 아래 + 6px
 const BP = 4;   // 그림 테두리 여백
 const B_ALL = .9;   // 2026-11-20 사용자 요청: 모든 건물 그림 90% (벤치·분수·나무·돌·포탈은 그대로)
-const BSC = { suggest: 1.12, beginner: 1.12, dex: 1.05, farmshed: 1.3, fishshop: 1.35, tower: .62, fishrank: 1.15, farmrank: 1.15 };   // 2026-11-20 낚시 랭킹판   // 2026-11-18 사용자 요청: 작아 보이던 텃밭 창고 · 낚시점만 크게 / 2026-11-19 무한의 탑은 작게
+const BSC = { suggest: 1.12, beginner: 1.12, dex: 1.05, farmshed: 1.3, fishshop: 1.35, tower: .62, fishrank: 1.15, farmrank: 1.15, huntrank: 1.15 };   // 2026-11-20 낚시 랭킹판   // 2026-11-18 사용자 요청: 작아 보이던 텃밭 창고 · 낚시점만 크게 / 2026-11-19 무한의 탑은 작게
 // 그림 건물이 실제로 놓이는 자리 (bSprite와 같은 계산)
 // 마을회관: 집 모든 단계 금액 (i 아이콘 설명)
 function houseTierTip(lv) {
@@ -3033,12 +3040,12 @@ function nameTagAt(c, now) {
   }
   ctx.font = '800 9.5px "IBM Plex Sans KR", sans-serif'; ctx.lineJoin = 'round'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(31,42,58,.8)';
   ctx.strokeText(`Lv.${c.lv}`, c.x, top - 6); ctx.fillStyle = '#fff'; ctx.fillText(`Lv.${c.lv}`, c.x, top - 6); top -= 12;
-  if (c.brag && !HT) top = drawBrag(c, top, now);
+  if (c.brag && !HT && !RD) top = drawBrag(c, top, now);
   if (c.emote && c.emote.until > now) { const k = 1 - (c.emote.until - now) / 2200; ctx.font = '22px sans-serif'; ctx.globalAlpha = Math.min(1, (1 - k) * 3); fillTextIco(ctx, c.emote.e, c.x + tw / 2 + 12, c.y - 60 - k * 14); ctx.globalAlpha = 1; }
   if (c.bubble && c.bubble.until > now) bubbleAt(c.x, top - 2, c.bubble.text, c === me);
-  else if (c === me && me.job && !HT) { const l = jobLeft(); bubbleAt(c.x, top - 2, l ? `☕ 알바 중 ${fmtSec(l)}` : '☕ 알바 끝!', true); }
-  else if ((c === me ? AU.on : c.au) && !HT && !c.hunt) bubbleAt(c.x, top - 2, '🧺 자동 생활 중…', c === me);
-  else if (c === me && F.auto && !HT) bubbleAt(c.x, top - 2, `🎣 낚시 중 · 미끼 ${me.life?.fish?.pack || 0}`, true);
+  else if (c === me && me.job && !HT && !RD) { const l = jobLeft(); bubbleAt(c.x, top - 2, l ? `☕ 알바 중 ${fmtSec(l)}` : '☕ 알바 끝!', true); }
+  else if ((c === me ? AU.on : c.au) && !HT && !RD && !c.hunt) bubbleAt(c.x, top - 2, '🧺 자동 생활 중…', c === me);
+  else if (c === me && F.auto && !HT && !RD) bubbleAt(c.x, top - 2, `🎣 낚시 중 · 미끼 ${me.life?.fish?.pack || 0}`, true);
 }
 function drawTownFloats() {
   for (const f of TF) { const k = f.t / 1.4; ctx.globalAlpha = Math.min(1, (1 - k) * 2.5); ctx.font = '900 15px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(31,42,58,.9)'; ctx.fillStyle = f.color; const y = f.y - k * 34; fillTextIco(ctx, f.text, f.x, y, true); }
@@ -3569,6 +3576,9 @@ function enterRaid(start, boss) {
     dead: false, ended: false, goal: null, ctl: 0, shake: 0, flash: 0, ws: null, tries: 0,
     cd: {}, q: [], skT: 1.2, sh: 0, bt: 0, batk: 0, bcrit: 0, emb: [] };   // cd·q·skT = 스킬, sh = 보호막, bt = 버프, emb = 불티
   me.x = RW() / 2 + (Math.random() - .5) * 6 * T; me.y = RH() - 3 * T; me.path = []; me.moving = false; me.sit = -1; me.hp = derive().maxHp; cam = { x: me.x, y: me.y - 4 * T };
+  // 2026-11-21 레이드는 깨끗한 상태로: 들고 있던 도끼·곡괭이·낚싯대, 들고 있던 물고기·작물, 말풍선을 치우고 무기를 다시 듦
+  if (me.fz) netSend({ t: 'fish', s: 0 });
+  GA = null; me.tool = null; me.toolW = undefined; me.toolT = 0; me.toolBusy = false; me.fz = null; me.brag = null; me.bubble = null; me.then = null; me.afterLand = null;
   S.zoom = raidFit();   // 처음엔 맵 전체가 보이게 (2026-11-18). 휠·버튼으로 확대 가능
   document.body.classList.add('hunting', 'raiding'); $('#raidBox').hidden = false; setPlace(`${RAID_BOSS[boss].n} 레이드`); $('#raidTitle').textContent = `${RAID_BOSS[boss].i} ${RAID_BOSS[boss].n} 레이드`; iconize($('#raidTitle'));
   netSend({ t: 'hunt', on: true });
@@ -4270,7 +4280,7 @@ function enterHunt(h) {
   $('#hbMan').checked = false; $('#hbManT').textContent = '자동 전투 중'; document.body.classList.remove('hunt-man');   // 들어갈 때는 늘 자동 전투
   loadZoom();   // 사냥터 확대 값
   me.sit = -1; me.x = HW * T / 2; me.y = HH * T / 2; me.path = []; me.moving = false; cam = { x: me.x, y: me.y };
-  for (let i = 0; i < 8; i++) spawnMon(false);
+  for (let i = 0; i < INCENSE.base + incLv(me); i++) spawnMon(false);   // 2026-11-21 사냥꾼 쉼터 향로: 단계마다 +1마리
   document.body.classList.add('hunting'); $('#huntBox').hidden = false; $('#hbField').textContent = `${f.i} ${f.n}`;
   setPlace(f.n);
   clearInterval(syncT); syncT = setInterval(huntSync, 60e3);   // 서버는 90초까지 100%로 쳐 줌
@@ -5658,7 +5668,7 @@ function spend(n) { if (me.gold < n) { toast('골드가 부족해요'); return f
 //  · 점진적 공개 · 밀러의 법칙: 긴 설명은 접은 '도움말'에, 화면에는 한 줄 소개 + 숫자 꼬리표만
 //  · 상태 보이기: 진행 막대, 모자란 재료는 빨간 꼬리표에 '얼마 모자란지'까지
 //  · 일관성(제이콥의 법칙): 모든 건물이 같은 순서 — 머리 → 지갑 → 탭 → 내용 → 도움말 → 주 버튼
-const BC = { guideq: '#3b6fd6', suggest: '#d0743a', beginner: '#3f9a4a', dex: '#8a5bd0', tower: '#7b6fd6', kfr: '#d9472b', raid: '#c0392b', cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', fishrank: '#1f7fa8', farmrank: '#5a9a2e', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a', fountain: '#3f8fd0' };
+const BC = { hrest: '#b5562b', huntrank: '#c0392b', guideq: '#3b6fd6', suggest: '#d0743a', beginner: '#3f9a4a', dex: '#8a5bd0', tower: '#7b6fd6', kfr: '#d9472b', raid: '#c0392b', cafe: '#c98a4b', gacha: '#e8553a', smith: '#6f7f92', skin: '#d0659b', hall: '#4a86c5', fishshop: '#2f9bb3', fishrank: '#1f7fa8', farmrank: '#5a9a2e', lumber: '#5f9a3a', quarry: '#8b8f99', farmshed: '#7aae45', rank: '#d9a21b', guide: '#4f9d5a', fountain: '#3f8fd0' };
 S.btab = {}; S.bhelp = {};
 const WAL = { gold: () => ['🪙', me.gold], wood: () => [RES.wood.i, LIFE().res.wood], stone: () => [RES.stone.i, LIFE().res.stone], fish: () => [COIN.fish[0], LIFE().coins.fish], farm: () => [COIN.farm[0], LIFE().coins.farm] };
 const fmtN = n => Math.floor(n || 0).toLocaleString();
@@ -5703,6 +5713,8 @@ function openBuilding(b, keep) {
   if (id === 'fishshop') return fishShop(b, keep);
   if (id === 'fishrank') return fishRankSheet(b, keep);
   if (id === 'farmrank') return farmRankSheet(b, keep);
+  if (id === 'hrest') return hrestSheet(b, keep);
+  if (id === 'huntrank') return huntRankSheet(b, keep);
   if (id === 'dex') return dexSheet(b, keep);
   if (id === 'suggest') return suggestSheet(b, keep);
   if (id === 'beginner') return beginnerSheet(b, keep);
@@ -6083,7 +6095,7 @@ const SIGN_INFO = {
     odds: () => sgSec('🙋 손님', sgList([
       ['⏱️', `1분에 ${JOB_GUEST.slots.length}번 기회`, `기회마다 ${Math.round(JOB_GUEST.chance * 100)}% 확률로 손님이 와요 (평균 약 ${(JOB_GUEST.slots.length * JOB_GUEST.chance).toFixed(1)}명)`],
       ['⭐', `VIP 손님 ${Math.round(JOB_GUEST.vip * 100)}%`, `팁을 ${JOB_GUEST.vipMul}배로 줘요`],
-      ['💵', '팁', `(8 + 알바 레벨 × 2.2) × 0.8~1.4배 · 지금 약 ${fmtN(Math.round(JOB_GUEST.tip(cafeLv(me))))}골드`] ])) }),
+      ['💵', '팁', `(10 + 알바 레벨 × 2.6) × 0.8~1.4배 · 지금 약 ${fmtN(Math.round(JOB_GUEST.tip(cafeLv(me))))}골드`] ])) }),
   dex: () => ({ intro: '칭호 · 뱃지 · 물고기 · 작물 · 스킨을 모아 보는 곳', list: [
     ['🏷️', '칭호', '조건을 이루면 얻어요. 가진 칭호의 효과는 모두 붙고, 하나를 골라 이름 위에 달아요'],
     ['🍀', '뱃지', '이름표 왼쪽에 달아요. 효과는 없고 자랑용이에요'],
@@ -7242,7 +7254,7 @@ const AU_SEQ = ['tree', 'rock', 'fish', 'tree', 'rock', 'sea', 'walk'];
 const AU_KINDS = { all: ['🧺', '전체', '텃밭 → 나무 → 바위 → 낚시 → 산책'], fish: ['🎣', '낚시만', '강·바다 낚시만 (한 번 낚을 때마다 5초 더 쉼)'], tree: ['🪓', '벌목 우선', '나무를 주로 베고, 가끔 바위·낚시'],
   rock: ['⛏️', '채굴 우선', '바위를 주로 캐고, 가끔 나무·낚시'], farm: ['🌱', '농사 우선', '텃밭이 곧 다 자라면 밭 옆에서 기다렸다가 바로 수확'], cafe: ['☕', '카페 알바만', '카페 알바를 끝나는 대로 계속'] };
 AU.kind = 'all'; try { const k = localStorage.getItem('cbt-automode'); if (AU_KINDS[k]) AU.kind = k; } catch {}
-const AU_SEQS = { tree: ['tree', 'tree', 'tree', 'rock', 'tree', 'tree', 'fish'], rock: ['rock', 'rock', 'rock', 'tree', 'rock', 'rock', 'fish'], fish: ['fish', 'fish', 'sea'], farm: AU_SEQ, all: AU_SEQ };
+const AU_SEQS = { tree: ['tree', 'tree', 'tree', 'rock', 'tree', 'tree', 'fish'], rock: ['rock', 'rock', 'rock', 'tree', 'rock', 'rock', 'fish'], fish: ['fish', 'sea'], farm: AU_SEQ, all: AU_SEQ };
 const auSeq = () => AU_SEQS[AU.kind] || AU_SEQ;
 const AU_FISH_EXTRA = 5000;   // 낚시만: 재사용 대기 +5초
 const AU_SAY = { tree: ['🪓 나무 하러 가 볼까?', '🌳 오늘도 벌목!'], rock: ['⛏️ 돌 캐러 가자~', '🪨 반짝이는 거 없나?'], fish: ['🎣 강에서 한 마리 낚아 볼까', '🐟 강 낚시 시간!'], sea: ['🌊 바다로 가자!', '🐚 바다 낚시 해 볼까'], walk: ['🚶 잠깐 산책~', '👋 다들 뭐 하나?'], farm: ['🌱 텃밭 좀 볼까?', '🥕 수확할 시간!'] };
@@ -7251,13 +7263,29 @@ function auNode(k) {   // 다시 자란 것 중 가장 가까운 나무·바위
   for (const n of NODES) { if (n.k !== k || n.off || AU.bad.has(n.i) || !nodeReady(n)) continue; const d = Math.hypot(n.x * T - me.x, n.y * T - me.y); if (d < bd) { bd = d; b = n; } }
   return b;
 }
-function auWater(sea) {   // 강(또는 바다) 낚시터 근처에서 던질 물 칸
-  const sp = sea ? SEA_AT : FISH_AT, cx = Math.floor(sp.x / T), cy = Math.floor(sp.y / T); let best = null, bd = 1e9;
-  for (let y = cy - 6; y <= cy + 6; y++) for (let x = cx - 6; x <= cx + 6; x++) {
-    if (tileAt(x, y) !== WATER || !!seaAt(x, y) !== sea) continue;
-    const d = Math.hypot(x - cx, y - cy) + Math.random() * 2; if (d < bd) { bd = d; best = [(x + .5) * T, (y + .5) * T]; }
+// 2026-11-21 자동 낚시 자리 (사용자 요청): 강(바다) 어디든 무작위 물가 자리를 골라 그 자리에서 5번 연속 → 다음 묶음은 바다(강)의 다른 무작위 자리
+// 물고기 그림자가 같은 물(강/바다)에 보이면 그쪽으로 먼저 감. 한 묶음 안에서는 자리를 안 바꿈 (너무 왔다 갔다 하지 않게)
+const AU_FISH_N = 5;
+const AU_WSPOT = {};
+function auSpots(sea) {   // 땅(2칸 안에 걸어갈 수 있는 곳)이 가까운 물 칸 목록 (강 / 바다 따로, 한 번만 계산)
+  const k = sea ? 's' : 'r'; if (AU_WSPOT[k]) return AU_WSPOT[k];
+  const out = [];
+  for (let y = 1; y < MH - 1; y++) for (let x = 1; x < MW - 1; x++) {
+    if (!waterIn(x, y) || !!seaAt(x, y) !== sea) continue;
+    let land = false; for (let b = -2; b <= 2 && !land; b++) for (let a = -2; a <= 2; a++) if (!waterIn(x + a, y + b) && !TOWN.bad(x + a, y + b)) { land = true; break; }
+    if (land) out.push([x, y]);
   }
-  return best;
+  return AU_WSPOT[k] = out;
+}
+function auWater(sea) {   // 무작위 물가 자리 (지난 자리와 8칸 넘게 떨어진 곳을 먼저)
+  const sp = auSpots(sea); if (!sp.length) return null;
+  const L = AU.lastW, far = L ? sp.filter(([x, y]) => Math.hypot(x - L[0], y - L[1]) > 8) : sp, P = (far.length ? far : sp)[Math.floor(Math.random() * (far.length ? far : sp).length)];
+  AU.lastW = P; return [(P[0] + .5) * T, (P[1] + .5) * T];
+}
+function auShadow(sea) {   // 같은 물(강/바다)에 보이는 아직 안 낚은 물고기 그림자 중 가장 가까운 것 (30칸 안)
+  const gone = LIFE()?.fsh || []; let b = null, bd = 30 * T;
+  for (const sh of fishShadows(Date.now())) { if (sh.a < .3 || gone.includes(sh.id) || !!sh.sea !== sea) continue; const d = Math.hypot(sh.x * T - me.x, sh.y * T - me.y); if (d < bd) { bd = d; b = sh; } }
+  return b;
 }
 function auFarm(now) {   // 텃밭 할 일이 있는 칸 번호 — 없으면 null (두둑을 누르면 모두 수확 / 모두 심기)
   const f = LIFE()?.farm; if (!f) return null;
@@ -7271,7 +7299,7 @@ function auFarm(now) {   // 텃밭 할 일이 있는 칸 번호 — 없으면 nu
 function auNext() {
   const Q = auSeq(); AU.i = (AU.i + 1) % Q.length; AU.mode = Q[AU.i];
   if ((AU.mode === 'fish' || AU.mode === 'sea') && bagFull() && AU.kind !== 'fish') { AU.i = (AU.i + 1) % Q.length; AU.mode = Q[AU.i]; }   // 물고기 가방이 꽉 차면 낚시는 건너뜀
-  AU.left = AU.mode === 'tree' || AU.mode === 'rock' ? 3 + Math.floor(Math.random() * 3) : AU.mode === 'walk' ? 1 : 5 + Math.floor(Math.random() * 4);
+  AU.left = AU.mode === 'tree' || AU.mode === 'rock' ? 3 + Math.floor(Math.random() * 3) : AU.mode === 'walk' ? 1 : AU_FISH_N;   // 2026-11-21 낚시는 한 자리에서 5번 연속
   AU.walkT = 12 + Math.random() * 8; AU.water = null; ROAM.next = 0;
   if (Math.random() < .6) say(me, pick(AU_SAY[AU.mode]), 2200);
 }
@@ -7312,10 +7340,12 @@ function autoPace(dt) {
   if (m === 'fish' || m === 'sea') {
     if (now < F.nextAt + (AU.kind === 'fish' ? AU_FISH_EXTRA : 0)) return;
     if (bagFull()) { AU.left = 0; return; }
+    const sh = auShadow(m === 'sea'); if (sh) AU.water = [sh.x * T, sh.y * T];   // 그림자가 있으면 그쪽 먼저 (그림자는 천천히 헤엄치니 매번 지금 자리로)
     AU.water ||= auWater(m === 'sea'); if (!AU.water) { AU.left = 0; return; }
     AU.left--; AU.wait = 1.2;
     const [px, py] = AU.water;
     if (nearWater(...meTile()) && Math.hypot(me.x - px, me.y - py) < 4 * T) handFish(px, py); else fishAtWater(px, py);
+    if (!F.busy && !me.path.length) { AU.water = null; AU.left++; }   // 갈 수 없는 자리였으면 다음엔 다른 자리 (횟수는 안 셈)
     return;
   }
   // 산책: 돌아다니며 인사 (예전 자유 행동)
@@ -7436,7 +7466,7 @@ function startGather(n) {
   walkNear(me, (n.x + .5) * T, (n.y + .5) * T);
 }
 function gatherTick(dt) {
-  me.tool = GA ? (GA.node.k === 'tree' ? 'axe' : 'pick') : !HT && F.auto ? 'rod' : null; me.toolT = GA?.t || 0; me.toolBusy = !!GA?.busy;
+  me.tool = GA && !RD ? (GA.node.k === 'tree' ? 'axe' : 'pick') : !HT && !RD && F.auto ? 'rod' : null; me.toolT = GA?.t || 0; me.toolBusy = !!GA?.busy;
   me.toolW = GA && !GA.busy ? chopPose(1 - (GA.st ?? CHOP.first) / CHOP.gap) : undefined;
   if (!GA || GA.busy) return;
   if (me.moving || STEER.on || me.room || me.path.length) { GA = null; return; }
@@ -7629,6 +7659,45 @@ function farmShop(b, keep) {
       if (x === 'rank') return openBuilding(BUILDINGS.find(q => q.id === 'farmrank'));
       const j = await act('/api/farm/shop', { k: x }); if (j) { const T0 = x === 'hoe' ? HOES : FERTS, l = LIFE().farm[x]; toast(`${x === 'hoe' ? '⛏️' : '🧪'} ${T0[l][0]} (Lv${l + 1})!`); emote(me, '🎉'); logAct(`${T0[l][0]} 구입`); reopen?.(); }
     }, keep);
+}
+// ───────── 🔥 사냥꾼 쉼터 (2026-11-21, 사냥터 포탈 아래): 향로 올리기(사냥터 몬스터 +1마리씩) · 사냥왕 세트 ─────────
+const HR_TABS = [['inc', '🔥 향로'], ['king', '⚔️ 사냥왕']];
+const goPortal = () => { closeModal(); teleport(PORTAL.x - T * .6, PORTAL.y + T * 1.1); toast('🌀 포탈을 누르면 사냥터를 골라 들어가요'); };
+function hrestSheet(b, keep) {
+  const tab = btab('hrest', 'inc', HR_TABS.map(t => t[0]));
+  if (tab === 'king') return kingSheet(b, keep, KINGS.hunt, HR_TABS, () => hrestSheet(b, true), '/api/hunt/king', ['portal', '🌀 사냥하러 가기']);
+  reopen = () => hrestSheet(b, true);
+  const L = LIFE(), l = incLv(me), have = L.cnt?.kills || 0, max = l >= INCENSE.max, nx = max ? null : INCENSE.lv[l], short = !max && have < nx[1];
+  const lvRow = (i) => { const [g, k] = INCENSE.lv[i], done = i < l; return `<tr${i === l ? ' class="cur"' : ''}><td>Lv${i + 1}</td><td>${INCENSE.base + i + 1}마리</td><td>${goldTxt(g)}</td><td>${fmtN(k)}마리</td><td>${done ? '✅' : ''}</td></tr>`; };
+  bsOpen(b, { tag: '향을 피워 사냥터에 몬스터를 더 불러 모아요', wal: ['gold'],
+    tabs: HR_TABS, tab: 'inc',
+    body: `<div class="bs-card hero"><h4>🔥 향로 <small>Lv${l} / ${INCENSE.max}</small></h4>${steps(l, INCENSE.max)}
+        <div class="cs">${chip(`사냥터 몬스터 ${INCENSE.base + l}마리${l ? ` (+${l})` : ''}`, l ? 'up' : '')}${chip(`⚔️ 지금까지 잡은 몬스터 ${fmtN(have)}마리`)}</div>
+        <p class="muted">몬스터가 많을수록 다음 몬스터를 찾아 덜 걸어서, 같은 시간에 더 많이 잡아요. 한 번 올리면 영원히 그대로예요.</p></div>
+      ${max ? '<div class="bs-card"><h4>🏅 향로를 끝까지 올렸어요!</h4></div>' : `<ul class="bs-list fshop"><li class="bs-row"><span class="bs-ri">🔥</span><div><b class="t">다음 단계 Lv${l + 1}</b><div class="cs">${chip(`사냥터 몬스터 +1마리 → ${INCENSE.base + l + 1}마리`, 'up')}${chip(`⚔️ 처치 ${fmtN(Math.min(have, nx[1]))} / ${fmtN(nx[1])}마리`, short ? 'no' : 'up')}</div></div>
+        <div class="bs-act">${bbtn('up', short ? `${fmtN(nx[1] - have)}마리 더` : '올리기', goldTxt(nx[0]), { main: !short, dis: short || me.gold < nx[0] })}</div></li></ul>`}
+      <div class="bs-card"><h4>📊 단계별</h4><table class="bs-table"><thead><tr><th>단계</th><th>몬스터</th><th>골드</th><th>필요 처치</th><th></th></tr></thead><tbody>${INCENSE.lv.map((_, i) => lvRow(i)).join('')}</tbody></table></div>`,
+    foot: `<div class="bs-two">${bbtn('rank', '🏆 사냥 랭킹판')}${bbtn('portal', '🌀 사냥하러 가기', '', { main: true })}</div>` },
+    async x => {
+      if (x === 'portal') return goPortal();
+      if (x === 'rank') return openBuilding(BUILDINGS.find(q => q.id === 'huntrank'));
+      if (x === 'up') { const g = INCENSE.lv[l][0]; if (!(await ask(`향로를 Lv${l + 1}로 올릴까요?
+${fmtN(g)} 골드를 써요`, { title: '🔥 향로 올리기', ok: '올리기' }))) return; took(await api('/api/hunt/incense', {})); sfx('build'); toast(`🔥 향로 Lv${l + 1}! 사냥터 몬스터가 ${INCENSE.base + l + 1}마리가 돼요`); hrestSheet(b, true); }
+    }, keep);
+}
+// 🏆 사냥 랭킹판 (2026-11-21, 쉼터 왼쪽): 지금까지 잡은 몬스터 수 (서버 /api/rank?k=kills, 상위 50명 + 내 순위)
+const HRK = { d: null, at: 0 };
+async function huntRankSheet(b, keep) {
+  reopen = () => huntRankSheet(b, true);
+  const d = HRK.d, list = !d ? '<p class="muted" style="text-align:center;padding:18px 0">순위를 불러오는 중…</p>' : d.error ? `<p class="muted">${esc(d.error)}</p>` : !d.list.length ? '<p class="muted" style="text-align:center;padding:18px 0">아직 기록이 없어요</p>'
+    : `<ol class="rk-list">${d.list.map((x, i) => `<li class="${x.id === me.uid ? 'mine' : ''}${i < 3 ? ' top' : ''}"><span class="rk-n">${['🥇', '🥈', '🥉'][i] || i + 1}</span><span class="rk-who"><b>${esc(x.nick)}</b><small>Lv.${x.lv} · ${CLASSES[x.cls]?.i || ''} ${CLASSES[x.cls]?.n || ''}</small></span><span class="rk-v">${fmtN(x.v)}마리</span></li>`).join('')}</ol>`;
+  const mine = d && !d.error ? `<div class="cs">${chip(`내 순위: ${d.me.rank ? `${d.me.rank}위` : '순위 없음'}`, d.me.rank ? 'up' : '')}${chip(`⚔️ ${fmtN(d.me.v || 0)}마리`)}</div>` : '';
+  bsOpen(b, { tag: '몬스터를 가장 많이 잡은 사냥꾼은 누구?', body: `<div class="bs-card hero">${mine || '<div class="cs">' + chip('⚔️ 지금까지 잡은 몬스터 수로 순위를 매겨요') + '</div>'}</div>${list}`,
+    foot: `<div class="bs-two">${bbtn('rest', '🔥 사냥꾼 쉼터')}${bbtn('portal', '🌀 사냥하러 가기', '', { main: true })}</div>` },
+    x => { if (x === 'portal') return goPortal(); if (x === 'rest') return openBuilding(BUILDINGS.find(q => q.id === 'hrest')); }, keep);
+  if (keep || (d && !d.error && Date.now() - HRK.at < 30e3)) return;
+  try { HRK.d = await api('/api/rank?k=kills'); } catch (e) { HRK.d = { error: e.message }; } HRK.at = Date.now();
+  if (!modal.hidden && sheet.querySelector('.bs-head h3')?.textContent.includes('사냥 랭킹판')) huntRankSheet(b, true);
 }
 // 🏆 농사 랭킹판 (텃밭 창고 옆): 제일 비싼 · 제일 무거운 · 제일 많이 수확
 const FMR_TABS = [['price', '💰 제일 비싼'], ['w', '📏 제일 무거운'], ['count', '🌾 제일 많이']];
@@ -8668,7 +8737,7 @@ async function handFish(px, py) {
 // 결과 보여 주기. here = 아직 그 자리에서 낚시하는 모습이면 true
 function fishShow(j, here) {
   const f = j.fish;
-  if (j.caught) {
+  if (j.caught) { F.caughtAt = Date.now();
     sfx('catch'); if (here) rodEnd(me, f, j.big); else toast(bragText(f, j.big));
     netSend({ t: 'fish', s: 2, id: f.id, g: f.grade, n: f.n, len: f.len, big: !!j.big, sh: j.sh || 0 }); if (j.sh) { SH_GONE.add(j.sh); toast('🐟 그림자 명당에서 낚았어요!'); }
     F.msg = `${j.sea ? '[바다] ' : '[민물] '}${fishTag(f)} ${fmtCm(f.len)}${j.big ? ' <b>대어!</b>' : ''} → ${j.sold ? `바로 팔림 ${goldTxt(f.price)}` : `🎒 가방 ${j.bagN}/${FISH_BAG} · ${goldTxt(f.price)}`}${j.tired ? ' (오늘 많이 낚아서 절반)' : ''}`;
@@ -8750,7 +8819,7 @@ async function fishRankSheet(b, keep) {
       if (x === 'go') { closeModal(); teleport(FISH_AT.x, FISH_AT.y); return toast('🎣 물을 누르면 바로 낚싯대를 던져요'); }
       if (x === 'shop') return openBuilding(BUILDINGS.find(b => b.id === 'fishshop'));
     }, keep);
-  if (keep || (r && !r.error && Date.now() - (F.rankAt || 0) < 20e3)) return;
+  if (keep || (r && !r.error && Date.now() - (F.rankAt || 0) < 20e3 && (F.rankAt || 0) > (F.caughtAt || 0))) return;   // 2026-11-21 낚은 뒤에는 바로 새로 읽음
   try { F.rank = await api('/api/fish/rank'); } catch (x) { F.rank = { error: x.message }; } F.rankAt = Date.now();
   if (!modal.hidden && sheet.querySelector('.fr-list, .bs-card.hero') && sheet.querySelector('.bs-head h3')?.textContent.includes('랭킹판')) fishRankSheet(b, true);
 }

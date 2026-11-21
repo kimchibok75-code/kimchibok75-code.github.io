@@ -47,7 +47,8 @@ export const allOk = o => Object.values(o).every(Boolean);
 // ───────── 성장 (기획서 3장) ─────────
 export const pick = a => a[Math.floor(Math.random() * a.length)];
 // 2026-11-20 사용자 요청: 저레벨은 그대로, 15레벨부터 1레벨마다 필요 경험치 +1% (20 ×1.05 · 30 ×1.15 · 40 ×1.25 · 50 ×1.35 · 55부터 ×1.4 고정)
-export const expCurve = L => 1 + Math.max(0, Math.min(L, 55) - 15) * .01;
+// 2026-11-21 고렙 조정 (사용자 요청): 70레벨부터 1레벨마다 필요 경험치 +8%씩 더 (70 ×1.08 · 75 ×1.48 · 80 ×1.88 · 85 ×2.28)
+export const expCurve = L => (1 + Math.max(0, Math.min(L, 55) - 15) * .01) * (1 + Math.max(0, L - 69) * .08);
 export const needExp = L => Math.round(100 * Math.pow(L, 2) * expCurve(L));   // 2026-11-19: 50 → 100 (레벨업 경험치 2배, 사용자 요청)
 // ───────── 장비 (뽑기로만 얻음, 기획서 3-2) ─────────
 // 등급 7개. m: 수치 배율, p: 뽑기 확률(%), d: 분해할 때 골드 배율
@@ -105,17 +106,21 @@ export const HATS = [{ id: 'none', n: '없음', price: 0 }, { id: 'clear', n: '�
   { id: 'rdragon', n: '🐉 용의 뿔', price: 0, raid: 'rdragon', fx: { atkP: 4, crit: 2 } },
   { id: 'ogre', n: '👹 오우거 투구', price: 0, raid: 'ogre', fx: { hpP: 5, defP: 4 } },
   { id: 'magic', n: '💗 마법소녀 왕관', price: 30000, fx: { expP: 4, crit: 2 } },
+  { id: 'cyber', n: '⚡ 사이버 전사 헬멧', price: 50000, fx: { defP: 3, expP: 2 } },   // 2026-11-21 사이버 전사 세트 (스킨샵): 값은 높게, 효과는 마법소녀 정도로만
   { id: 'fishking', n: '🎣 낚시왕 모자', price: 0, fk: 1, fx: { fishP: 8, fishZ: 2 } },
   { id: 'mineking', n: '⛏️ 채굴왕 헬멧', price: 0, fk: 1, fx: { gather: 1, hpP: 3 } },
-  { id: 'farmking', n: '🌾 농사왕 밀짚모자', price: 0, fk: 1, fx: { farmP: 8, goldP: 2 } }];   // fk = 낚시점 '낚시왕' 보상 (2026-11-19, 상점에 안 팖)   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
+  { id: 'farmking', n: '🌾 농사왕 밀짚모자', price: 0, fk: 1, fx: { farmP: 8, goldP: 2 } },
+  { id: 'huntking', n: '⚔️ 사냥왕 모자', price: 0, fk: 1, fx: { atkP: 2, expP: 2 } }];   // 2026-11-21 사냥왕 (사냥꾼 쉼터 보상)   // fk = 낚시점 '낚시왕' 보상 (2026-11-19, 상점에 안 팖)   // 2026-11-18 마법소녀 세트 (스킨샵)   // raid = 레이드에서만 얻음 (상점에 안 팖)
 // 눈 모양 스킨 (가진 것은 hats 목록에 'eye:별' 처럼 저장). dot은 기본
 export const EYE_SKINS = [{ id: 'dot', n: '👀 기본 눈', price: 0 }, { id: 'line', n: '😑 실눈', price: 10000, fx: { defP: 3 } }, { id: 'star', n: '⭐ 별 눈', price: 10000, fx: { expP: 3 } }, { id: 'wink', n: '😉 윙크', price: 15000, fx: { crit: 2, atkP: 0.5 } }, { id: 'heart', n: '💗 하트 눈', price: 15000, fx: { hpP: 4 } }, { id: 'cat', n: '🐱 고양이 눈', price: 15000, fx: { fishC: 8 } }, { id: 'big', n: '✨ 반짝 큰 눈', price: 20000, fx: { goldP: 5 } },
   { id: 'rdragon', n: '🐉 용의 눈', price: 0, raid: 'rdragon', fx: { crit: 3, expP: 5 } },
   { id: 'ogre', n: '👹 오우거 눈', price: 0, raid: 'ogre', fx: { atkP: 2, hpP: 3 } },
   { id: 'magic', n: '💗 반짝 마법 눈', price: 30000, fx: { crit: 2, goldP: 3 } },
+  { id: 'cyber', n: '⚡ 사이버 눈', price: 45000, fx: { crit: 2, expP: 2 } },
   { id: 'fishking', n: '🎣 낚시왕 눈', price: 0, fk: 1, fx: { crit: 2, fishZ: 2 } },
   { id: 'mineking', n: '⛏️ 채굴왕 눈', price: 0, fk: 1, fx: { crit: 2, defP: 2 } },
-  { id: 'farmking', n: '🌾 농사왕 눈', price: 0, fk: 1, fx: { crit: 2, farmP: 4 } }];
+  { id: 'farmking', n: '🌾 농사왕 눈', price: 0, fk: 1, fx: { crit: 2, farmP: 4 } },
+  { id: 'huntking', n: '⚔️ 사냥왕 눈', price: 0, fk: 1, fx: { crit: 2, bossP: 3 } }];
 // 의상 스킨 (몸 전체 겉모습, 입으면 갑옷 그림 대신 보임). 가진 것은 c.hats 에 'suit:id', 입은 것은 c.suit
 export const SUITS = [
   { id: 'hoodie', n: '🧥 후드티', price: 10000, fx: { spdP: 3 } },
@@ -127,9 +132,11 @@ export const SUITS = [
   { id: 'rdragon', n: '🐉 레드 드래곤 갑옷', price: 0, raid: 'rdragon', fx: { hpP: 8, defP: 6 } },
   { id: 'ogre', n: '👹 오우거 가죽 갑옷', price: 0, raid: 'ogre', fx: { hpP: 6, atkP: 2 } },
   { id: 'magic', n: '💗 마법소녀 드레스', price: 30000, fx: { hpP: 5, expP: 3 } },
+  { id: 'cyber', n: '⚡ 사이버 전사 아머', price: 60000, fx: { hpP: 4, defP: 3 } },
   { id: 'fishking', n: '🎣 낚시왕 조끼', price: 0, fk: 1, fx: { hpP: 4, fishC: 10 } },
   { id: 'mineking', n: '⛏️ 채굴왕 작업복', price: 0, fk: 1, fx: { defP: 5, hpP: 3 } },
   { id: 'farmking', n: '🌾 농사왕 멜빵바지', price: 0, fk: 1, fx: { hpP: 4, farmP: 10 } },
+  { id: 'huntking', n: '⚔️ 사냥왕 갑옷', price: 0, fk: 1, fx: { hpP: 4, defP: 3 } },
 ];
 // 무기 스킨 (그 무기의 겉모습만). 가진 것은 'wsk:무기:id', 쓰는 것은 c.wsk = { sword, bow, staff }
 export const WSKINS = [
@@ -157,6 +164,9 @@ export const WSKINS = [
   { t: 'sword', id: 'magic', n: '💗 하트 날개 검', price: 30000, fx: { atkP: 4, expP: 2 } },
   { t: 'bow', id: 'magic', n: '💗 꽃 날개 활', price: 30000, fx: { atkP: 4, expP: 2 } },
   { t: 'staff', id: 'magic', n: '💗 달빛 요술봉', price: 30000, fx: { atkP: 4, expP: 2 } },
+  { t: 'sword', id: 'cyber', n: '⚡ 사이버 광선 대검', price: 55000, fx: { atkP: 3, crit: 1 } },
+  { t: 'bow', id: 'cyber', n: '⚡ 사이버 레이저 활', price: 55000, fx: { atkP: 3, crit: 1 } },
+  { t: 'staff', id: 'cyber', n: '⚡ 사이버 코어 지팡이', price: 55000, fx: { atkP: 3, crit: 1 } },
   { t: 'sword', id: 'ogre', n: '👹 오우거 돌칼', price: 0, raid: 'ogre', fx: { atkP: 3, hpP: 3 } },
   { t: 'bow', id: 'ogre', n: '👹 오우거 뼈활', price: 0, raid: 'ogre', fx: { atkP: 3, hpP: 3 } },
   { t: 'staff', id: 'ogre', n: '👹 오우거 돌 지팡이', price: 0, raid: 'ogre', fx: { atkP: 3, hpP: 3 } },
@@ -169,10 +179,18 @@ export const WSKINS = [
   { t: 'sword', id: 'farmking', n: '🌾 농사왕 검', price: 0, fk: 1, fx: { atkP: 3, farmP: 4 } },
   { t: 'bow', id: 'farmking', n: '🌾 농사왕 활', price: 0, fk: 1, fx: { atkP: 3, farmP: 4 } },
   { t: 'staff', id: 'farmking', n: '🌾 농사왕 지팡이', price: 0, fk: 1, fx: { atkP: 3, farmP: 4 } },
+  { t: 'sword', id: 'huntking', n: '⚔️ 사냥왕 검', price: 0, fk: 1, fx: { atkP: 3, bossP: 4 } },
+  { t: 'bow', id: 'huntking', n: '⚔️ 사냥왕 활', price: 0, fk: 1, fx: { atkP: 3, bossP: 4 } },
+  { t: 'staff', id: 'huntking', n: '⚔️ 사냥왕 지팡이', price: 0, fk: 1, fx: { atkP: 3, bossP: 4 } },
 ];
 // 낚시왕 보상 (2026-11-19, 낚시점 '낚시왕' 탭): 물고기 50마리마다 한 부위씩, '받기'를 눌러야 받음. 순서 = 모자 · 의상 · 눈 · 검 · 활 · 지팡이
 // '왕' 세트 (2026-11-19): 낚시왕(낚시점, 물고기 50마리마다) · 채굴왕(채석장, 손으로 캔 석재 100개마다). cnt = life.cnt 의 어느 값으로 셈
 const kingKeys = id => [id, 'suit:' + id, 'eye:' + id, 'wsk:sword:' + id, 'wsk:bow:' + id, 'wsk:staff:' + id];
+// 🔥 사냥꾼 쉼터 향로 (2026-11-21): 단계마다 사냥터 몬스터 +1마리 (최대 +5). 서버는 몬스터가 많을수록 다음 몬스터까지 덜 걷는 것으로 계산
+// [골드, 필요한 누적 처치 수]
+export const INCENSE = { base: 8, max: 5, lv: [[60000, 1500], [180000, 5000], [500000, 12000], [1200000, 25000], [3000000, 50000]] };
+export const incLv = c => Math.max(0, Math.min(INCENSE.max, c?.life?.inc || 0));
+export const incWalk = c => INCENSE.base / (INCENSE.base + incLv(c));
 export const KINGS = {
   // 2026-11-20 낚시왕은 부위마다 다른 목표 (순서 상관없이, 이룬 것부터 받음). v(cnt) = 지금 값
   fish: { id: 'fishking', n: '낚시왕', i: '👑', cnt: 'fish', every: 50, what: '물고기', unit: '마리', keys: kingKeys('fishking'), goals: [
@@ -192,6 +210,15 @@ export const KINGS = {
     { t: '작물 도감 25종 채우기', u: '종', need: 25, v: c => CROP_LIST.filter(x => c['cc_' + x.id]).length },
     { t: '큰 작물 30개 수확하기', u: '개', need: 30, v: c => c.bigCrop || 0 },
     { t: '전설 작물 수확하기', u: '개', need: 1, v: c => c.legendCrop || 0 },
+  ] },
+  // 2026-11-21 사냥왕 (사냥꾼 쉼터 '사냥왕' 탭): 부위마다 다른 목표, 이룬 것부터 받음. 순서 = 모자 · 의상 · 눈 · 검 · 활 · 지팡이
+  hunt: { id: 'huntking', n: '사냥왕', i: '⚔️', cnt: 'kills', every: 3000, what: '몬스터', unit: '마리', keys: kingKeys('huntking'), goals: [
+    { t: '몬스터 3,000마리 잡기', u: '마리', need: 3000, v: c => c.kills || 0 },
+    { t: '사냥터 보스 30번 잡기', u: '번', need: 30, v: c => c.boss || 0 },
+    { t: '몬스터 10종을 100마리씩 잡기', u: '종', need: 10, v: c => Object.keys(c).filter(k => k.startsWith('mk_') && c[k] >= 100).length },
+    { t: '레이드 10번 성공하기', u: '번', need: 10, v: c => c.raid || 0 },
+    { t: '몬스터 20,000마리 잡기', u: '마리', need: 20000, v: c => c.kills || 0 },
+    { t: '늪지 보스 거대 코브라 잡기', u: '번', need: 1, v: c => c.mk_cobra || 0 },
   ] },
 };
 export const FISH_KING = KINGS.fish;
@@ -288,7 +315,7 @@ export function derive(c) {
     def: Math.round((def + str * .5) * (1 + (fx.defP || 0) / 100)), mdef: Math.round((def * .5 + int * .5) * (1 + ((fx.defP || 0) + (fx.mdefP || 0)) / 100)), maxHp: Math.round((100 + c.lv * 20 + str * 5 + dex * 2 + hp) * (1 + (fx.hpP || 0) / 100)),
     gap: wt.gap / Math.min(bow ? BOW_ASPD_MAX : 2, 1 + dex * .005) / (1 + (fx.aspd || 0) / 100), spd: Math.min(1.8, (1 + dex * .003) * (1 + (fx.spdP || 0) / 100)), crit: Math.min(70, 5 + luk * .25 + (fx.crit || 0)), critM: 1.5 + (fx.critD || 0) / 100,
     eva: Math.min(45, dex * .2 + (fx.eva || 0)), sp: Math.min(SP_MAX, 5 + int * .1 + (fx.sp || 0)), spMul: Math.min(SPMUL_MAX, 2 + int * .02) * (wt.sp || 1), goldB: Math.min(LUK_GOLD_MAX, luk) + (fx.goldP || 0), expB: fx.expP || 0, enhB: Math.min(15, luk * .05 + (fx.enhB || 0)),
-    bossP: fx.bossP || 0, steal: fx.steal || 0, walkM: staff ? STAFF_WALK : 1, cleave: cls === 'sword' ? CLEAVE.hit : 0, cleaveSk: cls === 'sword' ? CLEAVE.sk : 0, pierce: bow ? PIERCE.k : 0, regen: HUNT.huntRegen + (fx.regen || 0) / 100, potP: fx.potP || 0 };
+    bossP: fx.bossP || 0, steal: fx.steal || 0, walkM: (staff ? STAFF_WALK : 1) * incWalk(c), cleave: cls === 'sword' ? CLEAVE.hit : 0, cleaveSk: cls === 'sword' ? CLEAVE.sk : 0, pierce: bow ? PIERCE.k : 0, regen: HUNT.huntRegen + (fx.regen || 0) / 100, potP: fx.potP || 0 };
 }
 
 // 새 캐릭터 기본값: 무기 3개(1단계 일반) 모두 낌, 클래스는 검사
@@ -441,11 +468,12 @@ export function cafeGain(c, xp) {   // 경험치를 더하고 오른 레벨 수�
   if (C.lv >= CAFE.max) C.xp = 0;
   return up;
 }
-export const JOB = { sec: 60, pay: cl => 80 + cl * 14 };   // 카페 알바 1분: 알바 레벨 1 = 94 · 10 = 220 · 30 = 500 (예전 60 + 캐릭터 레벨×7)
+export const JOB = { sec: 60, pay: cl => 100 + cl * 16 };   // 2026-11-21 올림: 1 = 116 · 10 = 260 · 30 = 580 (예전 80 + 14×레벨)
+// (예전)    // 카페 알바 1분: 알바 레벨 1 = 94 · 10 = 220 · 30 = 500 (예전 60 + 캐릭터 레벨×7)
 // 카페 손님 (2026-11-17): 알바 중 가끔 마을 주민이 와서 커피를 사 감 → 팁. 알바 시작 시각(jobAt)으로 정해져서 화면·서버 같은 계산
 // 1분을 7토막(5초부터 7초씩)으로 나눠 토막마다 chance 확률로 손님 1명 (평균 약 5명). 팁 = tip(레벨) × 0.8~1.4, vip 확률로 VIP 손님(팁 ×5)
 // 밸런스: 30레벨 1분에 알바비 270 + 팁 약 250 (사냥 방치 시간당 약 2.8만 ≈ 1분 470)
-export const JOB_GUEST = { slots: [[5, 11], [12, 18], [19, 25], [26, 32], [33, 39], [40, 46], [47, 53]], chance: .75, tip: cl => 8 + cl * 2.2, vip: .06, vipMul: 5,
+export const JOB_GUEST = { slots: [[5, 11], [12, 18], [19, 25], [26, 32], [33, 39], [40, 46], [47, 53]], chance: .75, tip: cl => 10 + cl * 2.6,   /* 2026-11-21 8 + 2.2×레벨 → 10 + 2.6×레벨 */ vip: .06, vipMul: 5,
   menu: ['아메리카노', '카페라테', '바닐라 라테', '카푸치노', '핫초코', '딸기 스무디', '녹차 라테', '아이스티', '돌체 라테', '캐러멜 마키아토', '레몬에이드', '흑당 밀크티', '에스프레소', '김치 라테(?)', '고구마 라테', '자몽 허니 블랙티'] };
 export function jobGuests(jobAt, lv) {
   const r = seeded('job' + jobAt), out = [];
@@ -1114,13 +1142,13 @@ export function offlineHuntAway(c, sec) {
 // inc = 1시간 임대 수입(골드, 빌라부터). 수입은 최대 HOUSE_INC_CAP 시간까지만 쌓임 → 마을회관에서 받기
 export const HOUSE_TIERS = [
   { n: '일반 집' },
-  { n: '다락방 집', cost: { gold: 20000, wood: 150, stone: 100 } },
-  { n: '2층 집', cost: { gold: 60000, wood: 300, stone: 220 } },
-  { n: '저택', cost: { gold: 150000, wood: 450, stone: 350 }, inc: 5000 },
-  { n: '빌라', cost: { gold: 300000, wood: 600, stone: 480 }, inc: 9000 },
-  { n: '3층 빌라', cost: { gold: 600000, wood: 800, stone: 650 }, inc: 15000 },
-  { n: '4층 빌라', cost: { gold: 1200000, wood: 1000, stone: 850 }, inc: 25000 },
-  { n: '궁전', cost: { gold: 2500000, wood: 1400, stone: 1200 }, inc: 45000 },
+  { n: '다락방 집', cost: { gold: 30000, wood: 300, stone: 200 } },   // 2026-11-21 값 올림 (사용자 요청: 빌라가 너무 빨리 나옴). 골드 약 1.5~2.5배, 목재·석재 약 2~7배
+  { n: '2층 집', cost: { gold: 100000, wood: 700, stone: 500 } },
+  { n: '저택', cost: { gold: 300000, wood: 1500, stone: 1100 }, inc: 5000 },
+  { n: '빌라', cost: { gold: 700000, wood: 2800, stone: 2100 }, inc: 9000 },
+  { n: '3층 빌라', cost: { gold: 1500000, wood: 4500, stone: 3500 }, inc: 15000 },
+  { n: '4층 빌라', cost: { gold: 3000000, wood: 7000, stone: 5500 }, inc: 25000 },
+  { n: '궁전', cost: { gold: 6000000, wood: 10000, stone: 8000 }, inc: 45000 },
 ];
 export const HOUSE_INC_CAP = 12;
 // 임대 수입 정산 (h = life.house). 돌려줌: { have(받을 수 있는 골드), cap, rate }

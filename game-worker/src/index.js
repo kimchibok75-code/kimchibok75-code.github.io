@@ -1,6 +1,6 @@
 // 치복 타운 서버 (Cloudflare Worker + D1) — 1단계: 계정 · 로그인 · 저장 / 2단계: 사냥 · 상점 · 강화
 // 계산과 검사는 전부 서버가 함. 화면이 보낸 숫자는 믿지 않음.
-import { SAVER, saverLife, jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, GUIDE_MARKS, guideQ, guideProg, guideInit, guideNext, npcExp as guideExp, TAG_COLORS, RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
+import { INCENSE, SAVER, saverLife, jobGuests, CAFE, cafeLv, cafeGain, GUIDE_Q, GUIDE_MARKS, guideQ, guideProg, guideInit, guideNext, npcExp as guideExp, TAG_COLORS, RODS, BAITS, KINGS, kingNext, kingNeed, kingGoal, kingReady, hasBadge, fkItem, OWNER_NICK, jobTips, nickChecks, pwChecks, allOk, newCharacter, derive, makeItem, FACES, BODIES, HAIRS, hairId, HAIR_COLORS, EYES, MW, MH, T, STATS, SLOTS, CLASSES, HATS, EYE_SKINS, SUITS, WSKINS, wskKey, POTS, FIELDS, ENH_COST, ENH_MAX, HUNT, spentPoints, itemName, enhRate, JOB, FISHING, rollFish, fishHit, isBigFish,
   GACHA, GACHA_TEN, gachaInfo, rollGacha, itemPower, dismantle, GRADES, PRESETS, defaultPresets, totalPoints,
   fixLife, cntAdd, checkTitles, titleOf, FISH_SHOP, FISH_BY, FISH_BAG, FISH_COIN_GOLD, FISH_PRICE_MAX, FG_KEYS, CROP_BY, HOES, FERTS, FARM, farmPlots, rollCrop, isBigCrop, FARM_COIN_GOLD, GATHER, WORK, workSettle, HOUSE, WISH, rollWish, wishGold, wishExp, START, LV_CAP, TITLES, rollOpts, STAGES,
   SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, SKILL_GACHA, skGachaInfo, rollSkill,
@@ -794,7 +794,15 @@ const GAME = {
     return { log: ['farm-shop', `${k} Lv${l + 2}`] };
   },
   '/api/farm/autosell'(c, b) { const g = b?.g || {}; c.life.farm.sell = Object.fromEntries(FG_KEYS.map(k => [k, g[k] ? 1 : 0])); },   // 수확하자마자 팔기 (등급별)
-  '/api/farm/king'(c, b) { return kingClaim(c, 'farm', b); },   // 농사왕 세트 (텃밭 창고 '농사왕' 탭)
+  '/api/farm/king'(c, b) { return kingClaim(c, 'farm', b); },
+  '/api/hunt/king'(c, b) { return kingClaim(c, 'hunt', b); },   // 2026-11-21 사냥왕 세트 (사냥꾼 쉼터)
+  '/api/hunt/incense'(c) {   // 2026-11-21 사냥꾼 쉼터 향로 올리기 (사냥터 몬스터 +1마리)
+    if (c.hunt) fail(400, '사냥 중에는 올릴 수 없어요');
+    const l = c.life.inc || 0; if (l >= INCENSE.max) fail(400, '이미 최고 단계예요');
+    const [gold, need] = INCENSE.lv[l], have = c.life.cnt?.kills || 0; if (have < need) fail(400, `몬스터를 ${(need - have).toLocaleString()}마리 더 잡아야 해요 (누적 ${need.toLocaleString()}마리 필요)`);
+    spend(c, gold); c.life.inc = l + 1;
+    return { log: ['incense', `Lv${l + 1}`] };
+  },   // 농사왕 세트 (텃밭 창고 '농사왕' 탭)
   // 채집: 마을의 나무·바위 (사람마다 따로 자람)
   async '/api/gather'(c, b, at, out, env) {
     townOnly(c); notWorking(c);
@@ -1032,9 +1040,10 @@ async function fishOnce(c, b, at, env, user, now) {
   if (lgOnly) for (let i = 0; i < 400 && fish.grade !== 'legend'; i++) fish = rollFish(RODS.length - 1, BAITS.length - 1, sea);
   const base = { wait, cooldown: FISHING.cooldown, sea, sh: sh ? sh.id : 0 };
   if (!lgOnly && Math.random() >= Math.min(.99, fishHit(F.rod, D.fx) + (sh ? FSHADOW.hit : 0))) return { ...base, caught: false, fish: { i: fish.i, n: fish.n, grade: fish.grade, id: fish.id } };
-  const day = dayKey(now), dayN = fd[0] === day ? fd[1] + 1 : 1; c.life.fday = [day, dayN]; const tired = dayN > FISHING.dayFull ? .5 : 1;   // 하루에 너무 많이 낚으면 값이 절반
+  const day = dayKey(now), dayN = fd[0] === day ? fd[1] + 1 : 1; c.life.fday = [day, dayN]; const tired = 1;   // 2026-11-21 사용자 요청: '하루 400마리 넘으면 값 절반' 없앰 (원래 매크로 대비용) // 하루에 너무 많이 낚으면 값이 절반
   const big = isBigFish(fish), price = Math.round(fish.price * tired), info = JSON.stringify({ id: fish.id, i: fish.i, n: fish.n, grade: fish.grade, len: fish.len, price });
   const sell = Math.min(FISH_PRICE_MAX, Math.round(price * (1 + ((D.fx.fishP || 0) + (D.fx.fishC || 0)) / 100)));
+  const info2 = JSON.stringify({ id: fish.id, i: fish.i, n: fish.n, grade: fish.grade, len: fish.len, price: sell });
   // 물고기 가방에 넣음 (최대 50). 그 등급을 '낚자마자 팔기'로 해 두었거나 가방이 꽉 찼으면 바로 팔림
   const bag = fishBag(c), auto = !!c.life.fsell?.[fish.grade] || bag.length >= FISH_BAG;
   if (auto) c.gold += sell; else { const k = c.life.fbk = (c.life.fbk || 0) + 1; bag.push({ k, id: fish.id, len: fish.len, p: sell, at: now }); }
@@ -1047,7 +1056,7 @@ async function fishOnce(c, b, at, env, user, now) {
         ON CONFLICT(user_id) DO UPDATE SET count = count + 1, gold = gold + excluded.gold, day = excluded.day, day_n = excluded.day_n,
         best_price_fish = CASE WHEN excluded.best_price > best_price THEN excluded.best_price_fish ELSE best_price_fish END, best_price = MAX(best_price, excluded.best_price),
         best_len_fish = CASE WHEN excluded.best_len > best_len THEN excluded.best_len_fish ELSE best_len_fish END, best_len = MAX(best_len, excluded.best_len)`)
-      .bind(user.id, price, day, dayN, price, info, fish.len, info).run(); } };   // 낚았을 때만 한 번 씀 (없으면 새로)
+      .bind(user.id, sell, day, dayN, sell, info2, fish.len, info2).run(); delete RANK_MEM._fish; delete RANK_MEM.fishp; delete RANK_MEM.fishl; delete RANK_MEM.fishn; } };   // 낚았을 때만 한 번 씀 (없으면 새로). 2026-11-21 낚은 순간의 값(효과 포함)으로 기록하고 랭킹 기억을 비움 → 바로 반영
 }
 
 // ───────── 랭킹 (2026-11-17): 레벨 · 번 돈 · 낚시 · 강화 합 · 기여도. 상위 50명 + 내 순위. 1분 동안 기억 ─────────
@@ -1057,6 +1066,7 @@ const ENH_SUM = ['sword', 'bow', 'staff', 'hat', 'armor', 'shoes'].map(k => jx('
 const RANK = {
   lv: { v: 'c.lv', t: 'c.exp', min: 10 },   // 2026-11-20 사용자 요청: 레벨 랭킹은 Lv.10부터
   earn: { v: jx('c.life', '$.earn'), t: 'c.lv' },
+  kills: { v: jx('c.life', '$.cnt.kills'), t: 'c.lv' },   // 2026-11-21 사냥 랭킹: 잡은 몬스터 수
   fishp: { v: 'COALESCE(f.best_price, 0)', t: 'COALESCE(f.count, 0)', i: 'f.best_price_fish' },   // 제일 비싼 물고기
   fishl: { v: 'COALESCE(f.best_len, 0)', t: 'COALESCE(f.count, 0)', i: 'f.best_len_fish' },       // 제일 큰 물고기
   fishn: { v: 'COALESCE(f.count, 0)', t: 'COALESCE(f.best_price, 0)' },                              // 제일 많이 잡은 (2026-11-20)
