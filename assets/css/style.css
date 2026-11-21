@@ -743,3 +743,12 @@ mark { background: rgba(255, 179, 71, .35); color: inherit; border-radius: 3px; 
 .art-body .xtable tbody th { font-weight: 700; background: var(--glass); }
 .art-body .xtable td.mid { color: var(--muted); }
 @media (max-width: 600px) { .art-body .xtable { font-size: 14px; } .art-body .xtable th, .art-body .xtable td { padding: 8px 6px; } }
+.art-body .xtable.mood thead th { font-size: 14.5px; }
+.art-body .xtable.mood thead img { display: block; width: 56px; height: 56px; margin: 0 auto 4px; border-radius: 8px; border: 1px solid var(--stroke); cursor: zoom-in; }
+.art-body .xtable.mood tbody th { font-size: 14.5px; font-weight: 600; }
+.art-body .xtable tbody th.bt { background: rgba(110, 200, 255, .28); }
+.art-body .xtable tbody th.an { background: rgba(140, 210, 110, .3); }
+.art-body .xtable tbody th.id { background: rgba(255, 150, 120, .3); }
+.art-body .xtable.mood { table-layout: fixed; }
+.art-body .xtable.mood thead th:first-child { width: 24%; }
+@media (max-width: 600px) { .art-body .xtable.mood { font-size: 13px; } .art-body .xtable.mood thead img { width: 40px; height: 40px; } .art-body .xtable.mood th, .art-body .xtable.mood td { padding: 7px 3px; } }

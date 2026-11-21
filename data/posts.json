@@ -1,6 +1,19 @@
 {
   "posts": [
     {
+      "id": "trait-mood",
+      "title": "식인종, 피의 갈망, 사이코패스 무드 변화 비교",
+      "author": "뿔베리",
+      "date": "2026-11-21",
+      "tags": [
+        "특성",
+        "무드",
+        "정보"
+      ],
+      "cover": "assets/img/posts/trait-mood/three.webp",
+      "excerpt": "'얘가 이거 때문에 무드가 깎였던가?' 림월드 3대 인간 말종 특성의 무드 변화를 직접 실험해서 정리했습니다."
+    },
+    {
       "id": "sanguo-xeno",
       "title": "다양한 인종형에 생귀오파지 이식",
       "author": "뿔베리",
