@@ -1,5 +1,5 @@
 {
-  "updatedAt": 1795241915953,
+  "updatedAt": 1795263760131,
   "cafeId": 31260801,
   "url": "https://cafe.naver.com/kimchibok",
   "items": [
@@ -10,7 +10,7 @@
       "head": "소개",
       "author": "펩사이신",
       "time": 1795241565973,
-      "comments": 0,
+      "comments": 1,
       "likes": 0,
       "image": false,
       "thumb": null,
