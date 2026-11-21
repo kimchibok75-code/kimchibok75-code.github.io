@@ -645,11 +645,14 @@ body.hunting .side { display: none; }
 .bar span { position: relative; display: block; text-align: center; font-size: calc(12px * var(--fs)); font-weight: 700; line-height: 16px; font-variant-numeric: tabular-nums; }
 .lv { font-family: var(--font-display); color: var(--kimchi); margin-right: 5px; }
 .points { display: flex; justify-content: space-between; align-items: center; background: #fff4e0; border: 1px solid #f1d29c; border-radius: 10px; padding: 7px 10px; font-size: calc(14px * var(--fs)); font-weight: 700; font-variant-numeric: tabular-nums; }
-.stat { display: grid; grid-template-columns: minmax(0, 1fr) auto 36px 40px 46px; gap: 6px; align-items: center; padding: 7px 8px 7px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.stat { display: grid; grid-template-columns: minmax(0, 1fr) auto 26px 30px 36px; gap: 3px; align-items: center; padding: 7px 8px 7px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
 .stat b { font-size: calc(15px * var(--fs)); }
 .stat { position: relative; }
-.stat .plus.p10 { font-size: 13px; padding: 0; }
+.stat .plus.p10 { font-size: 12px; padding: 0; }
 .stat .plus.p1 { font-size: 14px; padding: 0; }   /* 2026-11-22 +1 · +10 · +100 */
+.stat .plus { width: 100%; height: 26px; border-width: 1.5px; border-radius: 7px; font-size: 12px; letter-spacing: -.02em; }   /* 2026-11-22 작고 촘촘하게 (사용자 요청) */
+.stat .plus.p1 { font-size: 13px; }
+.stat .val { margin-right: 5px; }
 .stat .stn { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .stat .info { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--ink-soft); background: #fff; color: var(--ink-soft); font: italic 700 calc(12px * min(var(--fs), 1.15)) Georgia, serif; line-height: 1; padding: 0; display: grid; place-items: center; cursor: help; }
 .stat .info:hover, .stat .stn.open .info { background: var(--ink); border-color: var(--ink); color: #fff; }
