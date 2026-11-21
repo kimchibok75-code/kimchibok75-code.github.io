@@ -583,8 +583,9 @@ export const HOUSE = { cost: { gold: 10000, wood: 60, stone: 40 }, move: { gold:
 export const costText = o => Object.entries(o).map(([k, v]) => `${k === 'gold' ? '🪙' : RES[k].i} ${v.toLocaleString()}`).join(' · ');
 
 // ───────── 소원 분수: 5분에 한 번, 100골드 (2026-11-21 개편) ─────────
-// 던진 골드는 분수에 모이고(서버 fountain.pool), 아주 드물게 💰 잭팟 = 모인 돈의 1.5배를 한 번에 받음 → 0부터 다시 모임
-export const WISH = { cost: 100, cd: 5 * MIN, jpMul: 1.5 };   // 2026-11-18 쿨타임 10분 → 5분 · 2026-11-21 10 → 100골드
+// 던진 골드는 분수에 모이고(서버 fountain.pool), 아주 드물게 💰 잭팟 = 모인 돈의 3배를 한 번에 받음 → 0부터 다시 모임
+// 2026-11-21 잭팟 1.5 → 3배 · 💎 큰 소원(big): 1000골드, 잭팟 0.3 → 0.6% (꽝에서 0.3%p 가져옴). 쿨타임은 보통 소원과 같이 씀
+export const WISH = { cost: 100, big: 1000, cd: 5 * MIN, jpMul: 3 };   // 2026-11-18 쿨타임 10분 → 5분 · 2026-11-21 10 → 100골드
 // 바로 받는 골드·경험치는 내 레벨 사냥 N분어치 (레벨이 올라도 쓸모 있게)
 export const wishGold = (lv, min) => Math.round((1500 * lv + 8000) * .55 * min / 60);
 export const wishExp = (lv, min) => Math.round(huntIdleExp(lv) / .7 * min / 60);
@@ -595,7 +596,9 @@ export const BUFFS = { gold: { n: '반짝이는 물보라', i: '💰', d: '골�
 // [무게(%), 결과] — 꽝 50% (2026-11-21 30 → 50, 나머지는 같은 비율로 줄임)
 export const WISH_TABLE = [[50, { k: 'none' }], [12, { k: 'gold', m: 5 }], [9.3, { k: 'exp', m: 5 }], [7, { k: 'buff', b: 'exp', min: 60 }], [7, { k: 'buff', b: 'gold', min: 60 }],
   [4.3, { k: 'buff', b: 'atk', min: 60 }], [4.3, { k: 'buff', b: 'fish', min: 60 }], [4.3, { k: 'pots', n: 5 }], [1.5, { k: 'rainbow', m: 30, b: 'luck', min: 90 }], [.3, { k: 'jackpot' }]];
-export function rollWish() { let r = Math.random() * WISH_TABLE.reduce((a, [w]) => a + w, 0); for (const [w, o] of WISH_TABLE) { if ((r -= w) < 0) return o; } return WISH_TABLE[0][1]; }
+export const WISH_TABLE_BIG = WISH_TABLE.map(([w, o]) => [o.k === 'none' ? w - .3 : o.k === 'jackpot' ? w + .3 : w, o]);   // 💎 큰 소원: 꽝 49.7% · 잭팟 0.6%
+export const wishTable = big => (big ? WISH_TABLE_BIG : WISH_TABLE);
+export function rollWish(big) { const t = wishTable(big); let r = Math.random() * t.reduce((a, [w]) => a + w, 0); for (const [w, o] of t) { if ((r -= w) < 0) return o; } return t[0][1]; }
 
 // ───────── 장비 랜덤 옵션 (뽑을 때 붙음) ─────────
 // w: 1단계 일반 기준 범위 · s: 비교 점수 배율 · u: 단위

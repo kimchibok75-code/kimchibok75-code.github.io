@@ -351,8 +351,8 @@ async function fountain(env) {
   return FOUNT.v;
 }
 async function jackpot(env, user) {
-  const t = now(), r = await env.DB.prepare('UPDATE fountain SET last = pool, pool = 0, prev = since, since = ? WHERE id = 1 RETURNING last, prev').bind(t).first();   // SET 오른쪽은 바꾸기 전 값 → prev = 지난 잭팟 시각
-  const g = Math.max(Math.round(WISH.cost * WISH.jpMul), Math.round((r?.last || 0) * WISH.jpMul)), wait = r?.prev ? t - r.prev : 0, n = Math.round((r?.last || 0) / WISH.cost) + 1;   // n = 몇 번째 소원에서 (당첨된 소원 포함)
+  const t = now(), r = await env.DB.prepare('UPDATE fountain SET last = pool, pool = 0, prev = since, since = ?, cnt = 0 WHERE id = 1 RETURNING last, prev, cnt').bind(t).first();   // RETURNING의 cnt는 바꾸기 전 값   // SET 오른쪽은 바꾸기 전 값 → prev = 지난 잭팟 시각
+  const g = Math.max(Math.round(WISH.cost * WISH.jpMul), Math.round((r?.last || 0) * WISH.jpMul)), wait = r?.prev ? t - r.prev : 0, n = (r?.cnt || 0) + 1;   // n = 몇 번째 소원에서 (당첨된 소원 포함, 2026-11-21 cnt 열로 셈)
   await env.DB.batch([env.DB.prepare('INSERT INTO fountain_win (user_id, nick, gold, at, wait, n) VALUES (?, ?, ?, ?, ?, ?)').bind(user.id, user.nick, g, t, wait, n),
     env.DB.prepare('DELETE FROM fountain_win WHERE id NOT IN (SELECT id FROM fountain_win ORDER BY id DESC LIMIT 10)')]);
   FOUNT.at = 0; return g;
@@ -897,8 +897,9 @@ const GAME = {
     townOnly(c);
     const L = c.life, left = Math.ceil((L.wishAt + WISH.cd * (eventNow(at)?.k === 'wish' ? .5 : 1) - at) / 1000);
     if (left > 0) fail(400, `분수가 아직 잔잔해요. ${Math.ceil(left / 60)}분 뒤에 다시 빌 수 있어요`);
-    spend(c, WISH.cost); L.wishAt = at; cntAdd(c, 'wish');
-    const o = b._o ||= rollWish(), r = { k: o.k };
+    const big = !!b.big, cost = big ? WISH.big : WISH.cost;   // 💎 큰 소원 (2026-11-21): 1000골드, 잭팟 2배. 쿨타임은 같이
+    spend(c, cost); L.wishAt = at; cntAdd(c, 'wish');
+    const o = b._o ||= rollWish(big), r = { k: o.k, big };
     if (o.k === 'gold' || o.k === 'rainbow') { r.gold = wishGold(c.lv, o.m); c.gold += r.gold; }
     if (o.k === 'exp') { r.exp = wishExp(c.lv, o.m); r.up = addExp(c, r.exp); }
     if (o.k === 'jackpot') { b._jp ??= await jackpot(env, user); r.gold = b._jp; c.gold += r.gold; c._noEarn = 1; }
@@ -906,7 +907,7 @@ const GAME = {
     if (o.b) { L.buff = { k: o.b, until: at + o.min * 60e3 }; r.buff = o.b; r.min = o.min; }
     if (o.k === 'pots') { r.n = o.n; c.pots.xl = Math.min(999, c.pots.xl + o.n); }
     return { wish: r, log: ['wish', o.k], chron: o.k === 'jackpot' ? ['wish', `소원 분수에서 💰 잭팟! 🪙 ${r.gold.toLocaleString()}골드를 받았어요`] : null,
-      after: () => env.DB.prepare('UPDATE fountain SET pool = pool + ? WHERE id = 1').bind(WISH.cost).run().then(() => { FOUNT.at = 0; }).catch(() => {}) };   // 던진 골드는 분수에 모임
+      after: () => env.DB.prepare('UPDATE fountain SET pool = pool + ?, cnt = cnt + 1 WHERE id = 1').bind(cost).run().then(() => { FOUNT.at = 0; }).catch(() => {}) };   // 던진 골드는 분수에 모임
   },
   // 집: 짓기(처음) · 옮기기(이사) · 지붕 색. 집 자리는 서버가 지도로 확인
   async '/api/house/build'(c, b, at, out, env, user) {

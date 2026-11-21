@@ -1542,7 +1542,7 @@ a.iconbtn { color: inherit; text-decoration: none; }
 <script type="module">
 'use strict';
 import { BINGO, bingoCallAt, bingoLastAt, bingoLines, BINGO_LINES, BINGO_FLOOR, BINGO_WALK, BINGO_HOST, bingoCoins, NEWBIE, raidSlotStart, INCENSE, incLv, SAVER, CHAIN, CLEAVE, PIERCE, PRESET_CD, JOB_GUEST, GACHA_COST, CAFE, cafeLv, GUIDE_Q, guideProg, GUIDE_MARKS, TAG_COLORS, FISH_KING, KINGS, kingNext, kingNeed, kingGoal, kingReady, fkItem, jobGuests, gimOf, gimDmg, MON_GIM, GIMMICK, needExp, GRADES, WTYPES, SLOTS, STATS, CLASSES, WEAPON_SLOTS, ARMOR_SLOTS, ENH_RATE, ENH_COST, ENH_MAX, ENH_STEP, HATS, EYE_SKINS, SUITS, WSKINS, hairId, wskKey, raidSet, RAID, RAID_BOSS, RAID_HIT, OGRE_SWING, raidBossOf, raidPattern, raidReward, raidCrowd, raidDps, RSK, rskCount, rskLv, rskNeed, rskFx, AUTO_LIFE, lifeExpHour, lifeExp, HOUSE_TIERS, HOUSE_INC_CAP, houseSettle, HAIRS, HAIR_COLORS, itemStats, itemPower, itemIcon, itemName, itemDesc, dismantle, GACHA, GACHA_ODDS, GACHA_TEN, gachaInfo, SKILLS, SK_RARE, SK_NEED, SK_MAX, skLv, skText, skPow, SKILL_GACHA, skGachaInfo, PRESETS, derive as deriveOf, pick, nickChecks as nickRule, pwChecks, newCharacter, MONS, FIELDS, POTS, HUNT, LV_CAP, spentPoints, biteDmg, enhRate, JOB, FISH_GRADES,
-  T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, BUFFS, wishGold, wishExp,
+  T, MW, MH, START, STAGES, ITEM_NAMES, makeItem, OPTS, OPT_N, W_OPTS, A_OPTS, optText, FISH_SHOP, FISHING, fishOdds, fishHit, fishCasts, isBigFish, DEX_STEP, DEX_FX, DEX_SKINS, dexN, dexSkinGot, BADGES, BADGE_GROUPS, badgeOf, hasBadge, FISH_RIVER, FISH_SEA, FISH_LIST, FISH_BY, fishByName, FG_KEYS, RODS, BAITS, FISH_BAG, CROP_LIST, CROP_BY, HOES, FERTS, FARM, farmPlots, cropPool, cropOdds, cropW, plotStage, isBigCrop, GATHER, RES, WORK, workSettle, HOUSE, costText, WISH, WISH_TABLE, wishTable, BUFFS, wishGold, wishExp,
   TITLES, TITLE_GROUPS, titleOf, titleName, titleProg, titleFx, skinFx, fxText,
   dayKey, dailyTasks, dailyProg, DAILY_N, STAMP_GOAL, dailyGold, weekBox, eventNow, nextEvent, EVENTS, LIVE_FX, liveGift, VILLAGE, worldFx, NPC_MAX, npcBlk, npcLeft, npcList, npcProg, npcActive, npcGold, npcExp, potPick, OFFLINE_LIFE } from './assets/js/game-rules.js?v=__BUILD__';
 import { sfx, bgm, SND, sndSave, sndUnlock } from './assets/js/game-sound.js?v=__BUILD__';
@@ -2621,6 +2621,7 @@ function bFull(b) {
   const L = me.life; if (!L) return '';
   if ((b.id === 'lumber' || b.id === 'quarry') && L.work?.[b.id]?.n) { const r = workSettle({ ...L.work[b.id] }, b.id, Date.now()); return r.cap && r.have >= r.cap ? (b.id === 'lumber' ? '🪵' : '🪨') : ''; }
   if (b.id === 'hall' && L.house) { const r = houseSettle({ ...L.house }, Date.now()); return r.cap && r.have >= r.cap ? '🏠' : ''; }
+  { const K = { fishshop: KINGS.fish, hrest: KINGS.hunt, farmshed: KINGS.farm }[b.id]; if (K && kReady(K)) return '❗'; }   // 2026-11-21 받을 수 있는 왕 세트 스킨이 있으면 ❗ (낚시점 · 사냥꾼 쉼터 · 텃밭 창고)
   return '';
 }
 function drawBuilding(b, now) { hoverWrap(b, (b.x + b.w / 2) * T, (b.y + b.h) * T, () => drawBuilding0(b, now)); }
@@ -2908,7 +2909,7 @@ function screenSlide(k, r, K, f, now) {
     }
     return;
   }
-  if (k === 'jp') {   // 분수 잭팟: 지금 받을 수 있는 금액(모인 돈 × 1.5) + 지난 당첨자 → 분수에 소원 빌기 독려
+  if (k === 'jp') {   // 분수 잭팟: 지금 받을 수 있는 금액(모인 돈 × 3) + 지난 당첨자 → 분수에 소원 빌기 독려
     const v = FT.v, w = v.wins?.[0], cx = r.x + r.w / 2, pul = .5 + .5 * Math.sin(now / 260);
     const glow = ctx.createRadialGradient(cx, r.y + r.h * .48, 0, cx, r.y + r.h * .48, r.w * .45);
     glow.addColorStop(0, `rgba(255,200,60,${.22 + .12 * pul})`); glow.addColorStop(1, 'rgba(255,200,60,0)'); ctx.fillStyle = glow; ctx.fillRect(r.x, r.y, r.w, r.h);
@@ -2957,8 +2958,9 @@ function drawScreen(s, now) {
   ctx.fillStyle = 'rgba(255,255,255,.05)'; for (let y = r.y; y < r.y + r.h; y += 3) ctx.fillRect(r.x, y, r.w, 1);   // 전광판 줄무늬
   if (S.live) { ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(r.x, r.y + r.h - 20 * K, r.w, 20 * K); ctx.fillStyle = '#fff'; ctx.font = f(700, 11); ctx.fillText('▶ 눌러서 방송 보기', r.x + r.w / 2, r.y + r.h - 10 * K); }
   ctx.restore();
-  const bw = 42 * K, bh = 16 * K; ctx.fillStyle = S.live ? (Math.floor(now / 600) % 2 ? '#ff3b3b' : '#ff6b6b') : '#5d6b7e'; rr(ctx, r.x + 8, r.y + 8, bw, bh, 5 * K); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.font = f(800, 10); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(S.live ? '● LIVE' : 'OFF AIR', r.x + 8 + bw / 2, r.y + 8 + bh / 2 + .5);
+  if (!S.live) return;   // 2026-11-21 방송이 꺼져 있으면 왼쪽 위 'OFF AIR' 꼬리표 안 그림 (사용자 요청)
+  const bw = 42 * K, bh = 16 * K; ctx.fillStyle = Math.floor(now / 600) % 2 ? '#ff3b3b' : '#ff6b6b'; rr(ctx, r.x + 8, r.y + 8, bw, bh, 5 * K); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = f(800, 10); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('● LIVE', r.x + 8 + bw / 2, r.y + 8 + bh / 2 + .5);
 }
 // 사냥터 포탈 그림 (2026-11-18 사용자 그림): 가운데 파란 소용돌이 칸만 코드로 돌림 + 빛 줄기 · 빨려 드는 빛 알갱이
 const PORTAL_W = 92, PORTAL_FOOT = .97, PORTAL_HOLE = [.3102, .3988, .3795, .3683];   // 소용돌이 칸 (그림 안 비율, town-art.py 8번 meta.portal.hole)
@@ -7540,10 +7542,10 @@ let seenAt = 0;
 const SV = { on: false, k: '', at: 0, beatT: null, tick: null, got: {}, hunt: { kills: 0, exp: 0, gold: 0 }, input: performance.now(), mx: 0, my: 0 };
 const SV_TXT = { hunt: ['⚔️', '자동 사냥 중'], life: ['🧺', '자동 생활 중'], idle: ['💤', '쉬는 중'] };
 function svPoke() { SV.input = performance.now(); if (SV.on) svWake(); }
-for (const t of ['keydown', 'pointerdown', 'wheel', 'touchstart']) addEventListener(t, e => { if (SV.on) { e.preventDefault(); e.stopImmediatePropagation(); } svPoke(); }, { capture: true, passive: false });
+for (const t of ['keydown', 'pointerdown', 'wheel', 'touchstart']) addEventListener(t, e => { if (SV.on) { e.preventDefault(); e.stopImmediatePropagation(); if (t === 'wheel') return; } svPoke(); }, { capture: true, passive: false });   // 휠도 화면 보호기를 안 풂
 // 2026-11-21 보호기를 깨운 누르기가 뒤이어 click으로 떨어져 창 바깥을 누른 것처럼 레이드 모집 창을 닫던 것 막음
 addEventListener('click', e => { if (performance.now() - (SV.wakeAt || 0) < 700) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
-addEventListener('pointermove', e => { if (Math.hypot(e.clientX - SV.mx, e.clientY - SV.my) > 12) { SV.mx = e.clientX; SV.my = e.clientY; svPoke(); } }, true);
+addEventListener('pointermove', e => { if (SV.on) return; if (Math.hypot(e.clientX - SV.mx, e.clientY - SV.my) > 12) { SV.mx = e.clientX; SV.my = e.clientY; svPoke(); } }, true);   // 2026-11-21 화면 보호기 중에는 마우스를 움직여도 안 풀림 (클릭·키·터치로만, 사용자 요청)
 setInterval(() => {   // 5분 동안 조작이 없으면 보호기
   if (SV.on || !token || $('#app').hidden || S.away || RD || S.place || performance.now() - SV.input < SAVER.idle) return;
   svStart(HT ? 'hunt' : AU.on ? 'life' : 'idle');
@@ -8418,15 +8420,16 @@ function kingSheet(b, keep, K, tabs, back, url, go) {
 // ───────── 소원 분수 ─────────
 const buffNow = () => { const b = LIFE()?.buff; return b && b.until > Date.now() && BUFFS[b.k] ? b : null; };
 // 2026-11-18 건물 창 틀(bsOpen)로: 머리 → 지갑 → 결과 → 분수 상태(남은 시간 막대) → 잭팟 → 나올 확률 → 역대 당첨자 → 아래 고정 버튼
-// 2026-11-21 개편: 100골드 · 꽝 50%(2026-11-21 30 → 50) · 사냥 N분어치 골드·경험치 · 60분 버프 · 💰 잭팟 = 분수에 모인 돈 × 1.5 (서버 /api/fountain)
+// 2026-11-21 개편: 100골드 · 꽝 50%(2026-11-21 30 → 50) · 사냥 N분어치 골드·경험치 · 60분 버프 · 💰 잭팟 = 분수에 모인 돈 × 3 (서버 /api/fountain)
+// 2026-11-21 💎 큰 소원 버튼: 1000골드 · 잭팟 0.6% (꽝 −0.3%p). 쿨타임은 보통 소원과 같이
 const FT = { at: 0, v: null };
 function ftLoad(force) { if (!force && FT.v && Date.now() - FT.at < 15e3) return; FT.at = Date.now(); api('/api/fountain').then(v => { FT.v = v; if (modalHtml.includes('data-ft')) reopen?.(); }).catch(() => {}); }
 const jpWait = ms => { const m = Math.max(1, Math.round(ms / 60e3)), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mm = m % 60; return d ? `${d}일${h ? ` ${h}시간` : ''}` : h ? `${h}시간${mm ? ` ${mm}분` : ''}` : `${mm}분`; };   // 잭팟까지 걸린 시간
 function openWish(msg, keep) {
   if (HT) return;
   reopen = () => openWish(msg, true); ftLoad();
-  const L = LIFE(), left = Math.max(0, Math.ceil((L.wishAt + WISH.cd - Date.now()) / 1000)), b = buffNow(), poor = me.gold < WISH.cost;
-  const tot = WISH_TABLE.reduce((a, [w]) => a + w, 0), pct = f => +(WISH_TABLE.filter(([, o]) => f(o)).reduce((a, [w]) => a + w, 0) / tot * 100).toFixed(1);
+  const L = LIFE(), left = Math.max(0, Math.ceil((L.wishAt + WISH.cd - Date.now()) / 1000)), b = buffNow(), poor = me.gold < WISH.cost, poorB = me.gold < WISH.big;
+  const pctT = (t, f) => +(t.filter(([, o]) => f(o)).reduce((a, [w]) => a + w, 0) / t.reduce((a, [w]) => a + w, 0) * 100).toFixed(1), pct = f => pctT(WISH_TABLE, f), pctB = f => pctT(wishTable(true), f);
   const n = L.cnt?.wish || 0, F0 = FT.v, g5 = wishGold(me.lv, 5), e5 = wishExp(me.lv, 5);
   // 2026-11-21 확률이 높은 것부터 (막대·설명 같은 순서)
   const odds = [['💧 꽝', pct(o => o.k === 'none'), '#b9c6d3', '아무 일도 없음'], ['🪙 골드', pct(o => o.k === 'gold'), '#f2c14e', `${fmtN(g5)} (사냥 5분어치)`], ['📘 경험치', pct(o => o.k === 'exp'), '#7cc1ef', `${fmtN(e5)} (사냥 5분어치)`],
@@ -8436,7 +8439,7 @@ function openWish(msg, keep) {
   const body = `${msg ? `<div class="wishres">${msg}</div>` : ''}
     <div class="bs-card hero" data-ft><h4>${left ? '💤 분수가 잔잔해요' : '✨ 분수가 반짝여요'}<small>${left ? `${fmtLeft(left)} 뒤에` : '지금 빌 수 있어요'}</small></h4>
       ${thinBar(left ? 1 - left / (WISH.cd / 1000) : 1)}
-      <div class="cs">${chip(`🪙 ${WISH.cost} / 1번`)}${chip(`⏱ ${WISH.cd / 60e3}분에 한 번`)}${chip(`🙏 지금까지 ${fmtN(n)}번`)}</div></div>
+      <div class="cs">${chip(`🪙 ${WISH.cost} / 1번`)}${chip(`💎 ${fmtN(WISH.big)} = 잭팟 ${pctB(o => o.k === 'jackpot')}%`)}${chip(`⏱ ${WISH.cd / 60e3}분에 한 번`)}${chip(`🙏 지금까지 ${fmtN(n)}번`)}</div></div>
     <div class="bs-card jpcard"><h4>💰 잭팟 당첨금<small>모인 돈 × ${WISH.jpMul}</small></h4><div class="jpgold">🪙 ${F0 ? fmtN(F0.prize) : '…'}</div>
       <p class="muted">모두가 던진 동전이 분수에 모여요 (지금 ${F0 ? fmtN(F0.pool) : '…'}골드). 잭팟이 나오면 한 번에 받고, 0부터 다시 모여요.</p>${F0?.since ? `<div class="cs">${chip(`⏳ ${wins.length ? '지난 잭팟' : '잭팟 시작'}부터 ${jpWait(Date.now() - F0.since)}째`)}</div>` : ''}</div>
     ${b ? `<div class="bs-card"><h4>${BUFFS[b.k].i} ${BUFFS[b.k].n}<small>${fmtLeft(Math.ceil((b.until - Date.now()) / 1000))} 남음</small></h4><p class="muted">${BUFFS[b.k].d} · 지금 받고 있는 축복</p></div>` : ''}
@@ -8445,13 +8448,16 @@ function openWish(msg, keep) {
     <div class="bs-card"><h4>🏆 역대 잭팟 당첨자<small>최근 10명</small></h4>${wins.length ? `<ol class="jpwins">${wins.map(w => `<li><b>${esc(w.nick)}</b><span>🪙 ${fmtN(w.gold)}</span><small>${fmtT(w.at)}</small>${w.wait ? `<em>⏳ ${jpWait(w.wait)} 만에${w.n ? ` · ${fmtN(w.n)}번째 소원` : ''}</em>` : ''}</li>`).join('')}</ol>` : `<p class="muted">${F0 ? '아직 당첨자가 없어요. 첫 주인공이 되어 보세요!' : '불러오는 중…'}</p>`}</div>`;
   const help = `<ul><li>꽝은 ${pct(o => o.k === 'none')}%예요. 나머지는 모두 쓸모 있는 것!</li>
     <li>버프: ${Object.values(BUFFS).map(x => `${x.i} ${x.n}(${x.d})`).join(' · ')}</li>
+    <li>💎 큰 소원은 ${fmtN(WISH.big)}골드, 잭팟 확률이 2배(${pctB(o => o.k === 'jackpot')}%)예요. 쿨타임은 보통 소원과 같이 써요.</li>
     <li>버프는 한 번에 하나만, 새로 받으면 바뀌어요.</li><li>골드·경험치는 내 레벨 사냥 기준이라 레벨이 올라도 쓸모 있어요.</li>
     <li>소원을 많이 빌면 칭호도 생겨요 🏷️</li></ul>`;
-  const foot = bbtn('wish', left ? `💤 ${fmtLeft(left)} 뒤에 빌 수 있어요` : poor ? '골드가 모자라요' : `🪙 ${WISH.cost} 던지고 소원 빌기`, '', { main: 1, wide: 1, dis: left || poor });
-  bsOpen({ id: 'fountain', icon: '⛲', name: '소원 분수' }, { tag: '동전을 던지고 소원을 빌어 보세요', wal: ['gold'], body, help, foot, live: !!left || !!b }, x => x === 'wish' && doWish(), keep);
+  const foot = left ? bbtn('wish', `💤 ${fmtLeft(left)} 뒤에 빌 수 있어요`, '', { main: 1, wide: 1, dis: 1 })
+    : `<div class="bs-two">${bbtn('wish', poor ? '골드가 모자라요' : `🪙 ${WISH.cost} 소원 빌기`, `잭팟 ${pct(o => o.k === 'jackpot')}%`, { main: 1, dis: poor })}${bbtn('big', poorB ? '골드가 모자라요' : `💎 ${fmtN(WISH.big)} 큰 소원`, `잭팟 ${pctB(o => o.k === 'jackpot')}% (2배)`, { dis: poorB })}</div>`;
+  bsOpen({ id: 'fountain', icon: '⛲', name: '소원 분수' }, { tag: '동전을 던지고 소원을 빌어 보세요', wal: ['gold'], body, help, foot, live: !!left || !!b }, x => (x === 'wish' || x === 'big') && doWish(x === 'big'), keep);
 }
-async function doWish() {
-  const fo = SPOTS.find(s => s.id === 'fountain'), j = await act('/api/wish', {}); if (!j) return;
+async function doWish(big) {
+  if (big && !(await ask(`💎 ${fmtN(WISH.big)}골드를 던져 큰 소원을 빌까요? (잭팟 확률 2배 · 쿨타임은 보통 소원과 같이)`, { title: '큰 소원', ok: '던지기' }))) return;
+  const fo = SPOTS.find(s => s.id === 'fountain'), j = await act('/api/wish', big ? { big: 1 } : {}); if (!j) return;
   const w = j.wish, fx = (fo.x + 1) * T, fy = (fo.y + .5) * T;
   townFloat(fx, fy, '🪙', '#ffd166');
   const msg = {
