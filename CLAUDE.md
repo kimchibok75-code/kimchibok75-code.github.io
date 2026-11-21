@@ -1027,6 +1027,9 @@
 - 화면 보호기: 마우스 움직임·휠로는 안 풀림, 클릭·키·터치로만 (사용자 요청)
 - 낚시점(`KINGS.fish`) · 사냥꾼 쉼터(`KINGS.hunt`) · 텃밭 창고(`KINGS.farm`): 받을 수 있는 부위가 있으면(`kReady`) 건물 위 ❗ (`bFull`이 '❗'을 돌려주면 `icoBubble`). 채석장(채굴왕)은 사용자가 말 안 해서 안 넣음
 
+### 화면 꺼짐 방지 — 2026-11-21 (#14)
+- 설정 → '📱 화면 꺼짐 방지' (브라우저 Screen Wake Lock이 있을 때만 보임, 기본 켬, localStorage `cbt-wake`). `WAKE`, `wakeSync`: 화면이 보일 때 `navigator.wakeLock.request('screen')`, 숨으면 브라우저가 풀고 다시 보이면(visibilitychange)·누를 때 다시 요청. 배터리 절약 모드 등에서 거절되면 조용히 넘어감 (soundSetHtml 바로 아래)
+
 ### 오류 모으기 · 누적 기록 · 랭킹 프로필 — 2026-11-21 (#12에 같이, 테스트 서버 확인 중)
 - **🐞 오류 모으기**: 화면 오류(`showErr` → `errSend`)를 3초 모아 `POST /api/errlog {list}`로. 한 번 켤 때 같은 오류는 한 번만, 모두 8개까지. 서버는 사람마다 한 시간 20개까지, 서버 500 오류도 `errServer`가 같은 표에 (같은 것 1분에 한 번)
   - D1 `errlog` (`migrations/0022_errlog.sql`): 같은 오류(sig = 메시지 + 파일·줄)는 한 줄, `n` 횟수 · `nicks` 겪은 사람(|로 구분, 240자까지) · 기기(ua) · 버전 · 장소(마을/사냥터/레이드 + 열린 창 이름) · stack. 크론이 14일 지난 것 지움

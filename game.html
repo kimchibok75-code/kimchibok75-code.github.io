@@ -7422,8 +7422,25 @@ function resetSheet() {
 // 소리 설정 (이 기기에만 저장)
 const soundSetHtml = () => `<div class="sndset"><label>🔊 효과음 <input type="range" id="sndSfx" min="0" max="100" step="5" value="${Math.round(SND.sfx * 100)}"></label>
   <label>🎵 배경 음악 <input type="range" id="sndBgm" min="0" max="100" step="5" value="${Math.round(SND.bgm * 100)}"></label>
-  <label class="chk"><input type="checkbox" id="sndMute" ${SND.mute ? 'checked' : ''}> 🔇 소리 모두 끄기</label></div>`;
+  <label class="chk"><input type="checkbox" id="sndMute" ${SND.mute ? 'checked' : ''}> 🔇 소리 모두 끄기</label>
+  ${'wakeLock' in navigator ? `<label class="chk"><input type="checkbox" id="wakeOn" ${WAKE.on ? 'checked' : ''}> 📱 화면 꺼짐 방지</label>` : ''}</div>`;
+// 2026-11-21 화면 꺼짐 방지 (사용자 요청: 휴대폰 크롬 앱이 화면이 꺼지면서 멈춤). 브라우저 Screen Wake Lock → 게임이 화면에 떠 있는 동안만, 다른 앱으로 가면 저절로 풀리고 돌아오면 다시 켬. 기본 켬, 이 기기에 기억 (localStorage cbt-wake)
+const WAKE = { on: (() => { try { return localStorage.getItem('cbt-wake') !== '0'; } catch { return true; } })(), lock: null, busy: false };
+async function wakeSync() {
+  if (!('wakeLock' in navigator) || WAKE.busy) return;
+  const want = WAKE.on && document.visibilityState === 'visible';
+  if (want && !WAKE.lock) {
+    WAKE.busy = true;
+    try { WAKE.lock = await navigator.wakeLock.request('screen'); WAKE.lock.addEventListener('release', () => { WAKE.lock = null; }); } catch { WAKE.lock = null; }   // 배터리 절약 모드 등에서는 거절될 수 있음 → 조용히 넘어감
+    WAKE.busy = false;
+  } else if (!want && WAKE.lock) { const l = WAKE.lock; WAKE.lock = null; l.release().catch(() => {}); }
+}
+document.addEventListener('visibilitychange', wakeSync);
+addEventListener('pointerdown', wakeSync, { passive: true });   // 처음 거절됐으면 누를 때 다시 시도
+setTimeout(wakeSync, 1500);
 document.addEventListener('input', e => {
+  if (e.target.id === 'wakeOn') { WAKE.on = e.target.checked; try { localStorage.setItem('cbt-wake', WAKE.on ? '1' : '0'); } catch {} wakeSync(); toast(WAKE.on ? '📱 게임이 떠 있는 동안 화면이 안 꺼져요' : '📱 화면 꺼짐 방지를 껐어요'); return; }
+
   const id = e.target.id; if (!['sndSfx', 'sndBgm', 'sndMute'].includes(id)) return;
   if (id === 'sndMute') SND.mute = e.target.checked; else SND[id === 'sndSfx' ? 'sfx' : 'bgm'] = +e.target.value / 100;
   sndSave(); if (id === 'sndSfx') sfx('coin');
